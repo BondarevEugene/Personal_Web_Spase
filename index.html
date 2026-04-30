@@ -3,301 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer Profile | Bondarev_E</title>
+    <title>TERMINAL | EUGENE BONDAREV | SYSTEM ARCHITECT</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --matrix-green: #00ff41;
-            --neon-blue: #00e5ff;
-            --dark-bg: #050505;
+            --matrix-green: #00cc33;
+            --dark-green: #003300;
+            --void-black: #000000;
+            --text-dim: #b0b0b0;
+            --accent-white: #dcdcdc;
         }
 
-        body, html {
+        body {
+            background-color: var(--void-black);
+            background: radial-gradient(circle at center, #001000 0%, var(--void-black) 100%);
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
             margin: 0;
-            padding: 0;
-            background-color: var(--dark-bg);
-            color: var(--matrix-green);
-            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
 
-        /* Matrix Rain Background */
-        #matrix-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            position: relative;
+        header {
+            border-left: 4px solid var(--matrix-green);
+            padding: 20px 40px;
+            margin-bottom: 50px;
+            background: rgba(0, 20, 0, 0.3);
         }
-
-        /* Glassmorphism Frames */
-        section {
-            background: rgba(0, 0, 0, 0.85);
-            border: 1px solid var(--matrix-green);
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
-            padding: 30px;
-            margin-bottom: 40px;
-            border-radius: 4px;
-            position: relative;
+        .logo {
+            font-family: 'Orbitron'; font-size: 2.2rem; font-weight: 900;
+            letter-spacing: 5px; color: var(--accent-white); text-transform: uppercase;
         }
+        .logo span { color: var(--matrix-green); }
 
-        section::before {
-            content: "";
-            position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            border: 1px solid var(--neon-blue);
-            z-index: -1;
-            filter: blur(5px);
-            opacity: 0.3;
+        /* [ КАРУСЕЛЬ ИЗОБРАЖЕНИЙ ВНУТРИ ПРОЕКТА ] */
+        .image-slider {
+            display: flex; overflow-x: auto; gap: 10px; margin-bottom: 20px;
+            scroll-snap-type: x mandatory; scrollbar-width: none;
         }
-
-        h1, h2 {
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            text-shadow: 0 0 10px var(--matrix-green);
-        }
-
-        .neon-text {
-            color: var(--neon-blue);
-            text-shadow: 0 0 5px var(--neon-blue), 0 0 15px var(--neon-blue);
-        }
-
-        .tech-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-
-        .tech-item {
-            border: 1px solid #333;
-            padding: 10px;
-            text-align: center;
-            transition: 0.3s;
-        }
-
-        .tech-item:hover {
-            border-color: var(--neon-blue);
-            color: var(--neon-blue);
-            transform: translateY(-5px);
+        .image-slider img {
+            flex: 0 0 100%; height: 400px; object-fit: cover;
+            border: 1px solid var(--dark-green); opacity: 0.7; scroll-snap-align: center;
         }
 
         .project-card {
-            border-left: 4px solid var(--neon-blue);
-            padding-left: 20px;
-            margin-top: 20px;
+            border: 1px solid var(--dark-green); background: rgba(0, 5, 0, 0.8);
+            margin-bottom: 80px; overflow: hidden;
+        }
+        .project-content { padding: 40px; }
+
+        .project-title { font-family: 'Orbitron'; font-size: 1.8rem; color: #fff; margin-bottom: 15px; }
+        .project-desc { color: var(--text-dim); margin-bottom: 25px; border-left: 2px solid var(--matrix-green); padding-left: 15px; }
+
+        .sub-section-title { color: var(--matrix-green); font-weight: bold; text-transform: uppercase; margin: 20px 0 10px 0; display: block; font-size: 0.85rem; letter-spacing: 1px; }
+        .feature-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .feature-list li { font-size: 0.9rem; }
+        .feature-list li::before { content: "— "; color: var(--matrix-green); }
+
+        .tech-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 40px;
+        }
+        .tech-node {
+            border: 1px solid var(--dark-green); padding: 15px; background: rgba(0, 15, 0, 0.5);
+        }
+        .tech-node strong { color: var(--matrix-green); display: block; font-size: 0.9rem; }
+
+        .complexity-box {
+            margin: 60px 0; padding: 40px; border: 1px solid var(--matrix-green); background: rgba(0,0,0,0.5); text-align: center;
         }
 
-        .project-image-placeholder {
-            width: 100%;
-            height: 200px;
-            background: #111;
-            border: 1px dashed var(--matrix-green);
+        footer {
+            margin-top: 80px; padding: 40px 0; border-top: 1px solid var(--dark-green);
+            display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .feature-list { grid-template-columns: 1fr; }
+            footer { grid-template-columns: 1fr; }
+        }
+
+                /* [ ОБНОВЛЕННАЯ КАРУСЕЛЬ ] */
+        .image-slider {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 15px 0;
-            color: #444;
+            overflow-x: scroll; /* Принудительно включаем прокрутку */
+            gap: 15px;
+            margin-bottom: 20px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: thin; /* Тонкая полоска прокрутки для Firefox */
+            scrollbar-color: var(--matrix-green) var(--void-black);
         }
 
-        a {
-            color: var(--neon-blue);
-            text-decoration: none;
-            font-weight: bold;
+        .image-slider::-webkit-scrollbar {
+            height: 8px; /* Высота скроллбара для Chrome/Edge */
         }
 
-        a:hover {
-            text-decoration: underline;
+        .image-slider::-webkit-scrollbar-thumb {
+            background: var(--matrix-green);
+            border-radius: 4px;
         }
 
-        .footer {
-            text-align: center;
-            font-size: 0.8rem;
-            opacity: 0.6;
+        .image-slider img {
+            flex: 0 0 80%; /* Каждая картинка занимает 80% ширины, чтобы было видно край следующей */
+            height: 450px;
+            object-fit: contain; /* Чтобы картинка не обрезалась, а вписывалась */
+            background: #000;
+            border: 1px solid var(--dark-green);
+            opacity: 1; /* Делаем ярче */
+            scroll-snap-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .image-slider img:hover {
+            transform: scale(1.02); /* Эффект при наведении */
+            border-color: var(--matrix-green);
         }
 
     </style>
 </head>
 <body>
 
-    <canvas id="matrix-canvas"></canvas>
+<div class="container">
+    <header>
+        <div class="logo">WEB<span>FACTORY</span> // ARCHITECT: |BONDAREV_E| </div>
+        <div style="font-size: 0.7rem; opacity: 0.6; letter-spacing: 2px;">[ STATUS: OPERATIONAL ] [ KYIV_UA ] [ VER: 5.1-MX ]</div>
+    </header>
 
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <h1 class="neon-text">> EUGENE BONDAREV</h1>
-            <p>// PYTHON & WEB DEVELOPER. SYSTEM_ARCHITECT.EXE</p>
-        </header>
-
-        <!-- About & Stack -->
-        <section>
-            <h2>[ Стек технологий ]</h2>
-            <div class="tech-grid">
-                <div class="tech-item">Python 3.12</div>
-                <div class="tech-item">FastAPI</div>
-                <div class="tech-item">PyQt6 (GUI)</div>
-                <div class="tech-item">PostgreSQL</div>
-                <div class="tech-item">SQLite3</div>
-                <div class="tech-item">Standard Libs</div>
-                <div class="tech-item">Asyncio</div>
-                <div class="tech-item">Docker</div>
+    <!-- PROJECT: GENESYS_ANALYTICS -->
+    <div class="project-card">
+    <div class="image-slider">
+        <img src="./assets/genesys/ui_main.png" alt="UI Main">
+        <img src="./assets/genesys/admin_panel.png" alt="Admin Panel">
+        <img src="./assets/genesys/db_schema.png" alt="DB Schema">
+        <img src="./assets/genesys/code_view.png" alt="Code View">
+        <img src="./assets/genesys/synergy.png" alt="Synergy">
+    </div>
+        <div class="project-content">
+            <div class="project-title">PROJECT: GENESYS_ANALYTICS</div>
+            <div class="project-desc">
+                Комплексное решение для глубокого анализа персональных данных. Система сочетает в себе математические алгоритмы прогнозирования и современную архитектуру управления контентом.
             </div>
-            <p style="margin-top: 20px;">
-                Специализируюсь на создании высокопроизводительных веб-сервисов и кроссплатформенных десктопных решений с глубокой интеграцией баз данных.
-            </p>
-        </section>
 
-        <!-- Projects -->
-        <section>
-            <h2>[ Реализованные проекты ]</h2>
-            <div class="project-card">
-                <h3 class="neon-text">PROJECT: GENESYS</h3>
-                <p>Профессиональная система анализа дат рождения. Алгоритмическая обработка данных, визуализация паттернов и работа со сложными структурами дат.</p>
-                <!-- Здесь можно вставить реальные скриншоты -->
-                <div class="project-image-placeholder">[ INTERFACE_SCREENSHOT_01.PNG ]</div>
-                <div class="project-image-placeholder">[ INTERFACE_SCREENSHOT_02.PNG ]</div>
-                <p><small>Stack: Python, PyQt6, Custom UI Engine, Datetime Analytics.</small></p>
-            </div>
-        </section>
+            <ul class="feature-list" style="margin-bottom: 30px;">
+                <li><strong>UI_CORE:</strong> Основная консоль управления</li>
+                <li><strong>ARCH:</strong> Реляционная структура базы данных SQLite</li>
+                <li><strong>MODULE:</strong> Предиктивный расчет совместимости (Synergy)</li>
+                <li><strong>ADMIN:</strong> CMS v2.0 для настройки векторов развития</li>
+                <li><strong>CODE:</strong> Backend-архитектура на Python/Flask</li>
+            </ul>
 
-        <!-- Contacts -->
-        <section id="contacts">
-            <h2>[ Контакты ]</h2>
-            <p>Telegram: <a href="https://t.me/bondarev_e">@bondarev_e</a></p>
-            <p>Instagram: <a href="https://instagram.com/eugene_invictus_bondarev">@eugene_invictus_bondarev</a></p>
-        </section>
-
-        <section id="advanced-tech">
-            <h2>[ ADVANCED_ENGINEERING & CRYPTOGRAPHY ]</h2>
-            <p>// Нестандартные решения и востребованные тренды 2024-2026</p>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
-                <!-- Блок Криптографии -->
-                <div class="tech-card">
-                    <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF4ZzRnd3B6bmx3bmx3bmx3bmx3bmx3bmx3bmx3bmx3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKSjPqcKUIwUu9G/giphy.gif"
-                         alt="Cryptography" style="width: 100%; height: 150px; object-fit: cover; opacity: 0.6; border: 1px solid #00ff41;">
-                    <h3 class="accent-neon">🛡 Cryptographic Integrity</h3>
-                    <p><small>Реализация протоколов безопасности с использованием <b>PyCryptodome</b>. Хеширование, симметричное шифрование (AES) и защита персональных данных в архитектуре Genesys.</small></p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <div>
+                    <span class="sub-section-title">🧠 Аналитическое ядро</span>
+                    <ul class="feature-list" style="grid-template-columns: 1fr;">
+                        <li><strong>Predictive Models:</strong> Алгоритмы на базе Python 3.12 для анализа временных циклов.</li>
+                        <li><strong>Psycho-Matrix:</strong> Визуализация данных через динамические графики.</li>
+                        <li><strong>Synergy Engine:</strong> Расчет резонанса объектов.</li>
+                    </ul>
                 </div>
-
-                <!-- Блок Асинхронности и Real-time -->
-                <div class="tech-card">
-                    <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF4ZzRnd3B6bmx3bmx3bmx3bmx3bmx3bmx3bmx3bmx3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/LpLd2NGvpaiys/giphy.gif"
-                         alt="Data Flows" style="width: 100%; height: 150px; object-fit: cover; opacity: 0.6; border: 1px solid #00e5ff;">
-                    <h3 class="accent-neon">⚡ High-Load WebSockets</h3>
-                    <p><small>Создание «живых» интерфейсов через <b>FastAPI WebSockets</b>. Обработка тысяч потоков данных в секунду без задержек — стандарт для современных систем мониторинга.</small></p>
+                <div>
+                    <span class="sub-section-title">⚙️ Системная архитектура</span>
+                    <ul class="feature-list" style="grid-template-columns: 1fr;">
+                        <li><strong>Flexible Admin:</strong> Управление профессиями без изменения кода.</li>
+                        <li><strong>External APIs:</strong> Интеграция с HH.ru для подбора вакансий.</li>
+                        <li><strong>ORM Integration:</strong> SQLAlchemy для работы с БД.</li>
+                    </ul>
                 </div>
             </div>
-
-            <!-- Раздел нестандартного веб-проектирования -->
-            <div style="margin-top: 30px; border: 1px solid #333; padding: 20px; background: rgba(0,0,0,0.5);">
-                <h3 style="color: #00ff41;">> NON-STANDARD WEB DESIGN (UX/UI)</h3>
-                <p>Проектирование интерфейсов, которые выходят за рамки обычных кнопок. Использование <b>Canvas API</b> и <b>Three.js</b> в связке с Python-бэкендом для создания визуализаций данных, как в проекте Genesys.</p>
-                <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF4ZzRnd3B6bmx3bmx3bmx3bmx3bmx3bmx3bmx3bmx3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/xT9IgzoKnwUtwdSBYk/giphy.gif"
-                     style="width: 100%; height: 100px; object-fit: cover; filter: grayscale(1) sepia(1) hue-rotate(90deg);">
-            </div>
-        </section>
-
-        <footer class="footer">
-            <p>© 2024 SYSTEM_FAILURE. ALL RIGHTS RESERVED.</p>
-        </footer>
+        </div>
     </div>
 
-    <script>
-        document.getElementById('tg-form').onsubmit = async (e) => {
-            e.preventDefault();
+    <!-- PROJECT: VALKYRIA_PROTOCOL -->
+    <div class="project-card">
+        <div class="project-content">
+            <div class="project-title">PROJECT: VALKYRIA_PROTOCOL</div>
+            <div class="project-desc">
+                Асинхронный высоконагруженный шлюз для автоматизации взаимодействия с распределенными системами через Telegram-интерфейс.
+            </div>
 
-            const backendUrl = "ССЫЛКА_ОТ_GOOGLE_CLOUD/send-message"; // Сюда вставь URL из п.2
+            <ul class="feature-list" style="margin-bottom: 30px;">
+                <li><strong>ENGINE:</strong> Aiogram 3.x Framework</li>
+                <li><strong>ASYNC:</strong> Полная неблокирующая архитектура</li>
+                <li><strong>SECURITY:</strong> Многоуровневая валидация через Pydantic</li>
+                <li><strong>CACHE:</strong> Redis-оптимизация очередей</li>
+            </ul>
 
-            const data = {
-                name: document.getElementById('name').value,
-                contact: document.getElementById('contact').value,
-                message: document.getElementById('message').value
-            };
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <div>
+                    <span class="sub-section-title">📡 Коммуникационный слой</span>
+                    <ul class="feature-list" style="grid-template-columns: 1fr;">
+                        <li><strong>Middleware System:</strong> Фильтрация и логирование трафика.</li>
+                        <li><strong>State Management:</strong> FSM для сложных сценариев диалога.</li>
+                    </ul>
+                </div>
+                <div>
+                    <span class="sub-section-title">🛠 Инфраструктура</span>
+                    <ul class="feature-list" style="grid-template-columns: 1fr;">
+                        <li><strong>Deployment:</strong> Контейнеризация через Docker.</li>
+                        <li><strong>Monitoring:</strong> Интеграция систем алертинга.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            const response = await fetch(backendUrl, {
+    <section>
+        <h2 style="font-family: 'Share Tech Mono'; color: #fff; border-bottom: 1px solid var(--matrix-green);">> TECH_STACK_CORE</h2>
+        <div class="tech-grid">
+            <div class="tech-node"><strong>Python 3.12</strong><span>Runtime Environment</span></div>
+            <div class="tech-node"><strong>FastAPI</strong><span>API Architecture</span></div>
+            <div class="tech-node"><strong>PostgreSQL</strong><span>Persistence Layer</span></div>
+            <div class="tech-node"><strong>Docker</strong><span>Infrastructure</span></div>
+            <div class="tech-node"><strong>Aiogram 3</strong><span>Bot Engine</span></div>
+            <div class="tech-node"><strong>Redis</strong><span>Memory Cache</span></div>
+            <div class="tech-node"><strong>SQLAlchemy</strong><span>ORM</span></div>
+            <div class="tech-node"><strong>Pytest</strong><span>Testing</span></div>
+        </div>
+
+        <div class="complexity-box">
+            <div style="font-size: 0.7rem; opacity: 0.5; letter-spacing: 3px;">// COMPLEXITY_LOGS_ANALYSIS</div>
+            <div style="font-size: 1.5rem; margin: 20px 0; color: var(--matrix-green);">
+                $$Difficulty\_Index = \frac{\sum (Inputs \times 4 + Logic \times 10 + API \times 7)}{Total\_Time}$$
+            </div>
+            <div style="color: #fff; font-weight: bold;">Вердикт: High Complexity System (8.7/10)</div>
+            <p style="font-size: 0.85rem; margin-top: 10px;">Проект включает в себя асинхронную обработку данных, сложные математические формулы и многоуровневую систему кэширования.</p>
+        </div>
+    </section>
+
+    <footer>
+        <div>
+            <span style="opacity: 0.4;">// AUTHOR</span><br>
+            <strong>EUGENE BONDAREV</strong><br>
+            Architect of Digital Realities © 2026
+        </div>
+        <div>
+            <span style="opacity: 0.4;">// DOCUMENTS</span><br>
+            <a href="#" style="color: var(--matrix-green); text-decoration: none;">NDA_STATUS.PDF</a><br>
+            <a href="#" style="color: var(--matrix-green); text-decoration: none;">PRIVACY_PROTOCOLS.MD</a>
+        </div>
+        <div>
+            <span style="opacity: 0.4;">// SYSTEM</span><br>
+            Build: 5.1-MX<br>
+            Env: Stable
+        </div>
+    </footer>
+</div>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+    // 1. СВЯЗЬ С БЭКЕНДОМ (ОТПРАВКА ФОРМЫ)
+    const contactForm = document.querySelector('form');
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Сбор данных из полей (используем плейсхолдеры как ориентир)
+        const formData = {
+            name: contactForm.querySelector('input[placeholder="IDENT_NAME"]').value,
+            contact: contactForm.querySelector('input[placeholder="SECURE_CHANNEL (TG/EMAIL)"]').value,
+            message: contactForm.querySelector('textarea').value
+        };
+
+        const button = contactForm.querySelector('button');
+        const originalText = button.innerText;
+        button.innerText = 'TRANSMITTING...';
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/send-message', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(formData)
             });
 
             if (response.ok) {
-                alert("SYSTEM: Данные успешно переданы в защищенный канал связи.");
+                alert('DATA TRANSMITTED SUCCESSFULLY');
+                contactForm.reset();
             } else {
-                alert("ERROR: Сбой протокола передачи. Попробуйте позже.");
+                throw new Error('SERVER_REJECTION');
             }
-        };
-
-        <section id="advanced-tech">
-    <h2>[ ADVANCED_ENGINEERING & CRYPTOGRAPHY ]</h2>
-    <p>// Нестандартные решения и востребованные тренды 2024-2026</p>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
-        <!-- Блок Криптографии -->
-        <div class="tech-card">
-            <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF4ZzRnd3B6bmx3bmx3bmx3bmx3bmx3bmx3bmx3bmx3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKSjPqcKUIwUu9G/giphy.gif"
-                 alt="Cryptography" style="width: 100%; height: 150px; object-fit: cover; opacity: 0.6; border: 1px solid #00ff41;">
-            <h3 class="accent-neon">🛡 Cryptographic Integrity</h3>
-            <p><small>Реализация протоколов безопасности с использованием <b>PyCryptodome</b>. Хеширование, симметричное шифрование (AES) и защита персональных данных в архитектуре Genesys.</small></p>
-        </div>
-
-        <!-- Блок Асинхронности и Real-time -->
-        <div class="tech-card">
-            <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF4ZzRnd3B6bmx3bmx3bmx3bmx3bmx3bmx3bmx3bmx3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/LpLd2NGvpaiys/giphy.gif"
-                 alt="Data Flows" style="width: 100%; height: 150px; object-fit: cover; opacity: 0.6; border: 1px solid #00e5ff;">
-            <h3 class="accent-neon">⚡ High-Load WebSockets</h3>
-            <p><small>Создание «живых» интерфейсов через <b>FastAPI WebSockets</b>. Обработка тысяч потоков данных в секунду без задержек — стандарт для современных систем мониторинга.</small></p>
-        </div>
-    </div>
-
-    <!-- Раздел нестандартного веб-проектирования -->
-    <div style="margin-top: 30px; border: 1px solid #333; padding: 20px; background: rgba(0,0,0,0.5);">
-        <h3 style="color: #00ff41;">> NON-STANDARD WEB DESIGN (UX/UI)</h3>
-        <p>Проектирование интерфейсов, которые выходят за рамки обычных кнопок. Использование <b>Canvas API</b> и <b>Three.js</b> в связке с Python-бэкендом для создания визуализаций данных, как в проекте Genesys.</p>
-        <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueXF4ZzRnd3B6bmx3bmx3bmx3bmx3bmx3bmx3bmx3bmx3JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/xT9IgzoKnwUtwdSBYk/giphy.gif"
-             style="width: 100%; height: 100px; object-fit: cover; filter: grayscale(1) sepia(1) hue-rotate(90deg);">
-    </div>
-</section>
-
-        const canvas = document.getElementById('matrix-canvas');
-        const ctx = canvas.getContext('2d');
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^";
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-
-        function draw() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = "#0F0";
-            ctx.font = fontSize + "px arial";
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = letters.charAt(Math.floor(Math.random() * letters.length));
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                drops[i]++;
-            }
+        } catch (error) {
+            console.error('Connection Error:', error);
+            alert('CONNECTION_FAILURE: Убедитесь, что main.py запущен');
+        } finally {
+            button.innerText = originalText;
         }
+    });
 
-        setInterval(draw, 33);
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    </script>
+    // 2. ПРОВЕРКА КАРТИНОК
+    // Если картинка не загрузилась, она подсветится красной рамкой в консоли
+    document.querySelectorAll('.image-slider img').forEach(img => {
+        img.onerror = function() {
+            console.error('CRITICAL: Не удалось загрузить изображение по пути:', this.src);
+            this.style.border = '2px solid red'; // Сигнал об ошибке пути
+        };
+    });
+</script>
 </body>
 </html>

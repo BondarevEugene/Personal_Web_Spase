@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>NDA | Confidentiality Agreement</title>
+    <style>
+        :root { --gold: #c5a059; --bg: #0a0a0a; --text: #d1d1d1; }
+        body { background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; line-height: 1.6; padding: 40px; }
+        .container { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.02); padding: 40px; border: 1px solid rgba(197,160,89,0.2); }
+        h1, h2 { color: var(--gold); text-transform: uppercase; }
+        .btn-print { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 20px; cursor: pointer; font-family: serif; margin-bottom: 20px; transition: 0.3s; }
+        .btn-print:hover { background: var(--gold); color: #000; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; padding: 0; }
+            .container { border: none; max-width: 100%; }
+            h1, h2 { color: black !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="window.print()" class="btn-print no-print">🖨 ДРУКУВАТИ NDA</button>
+
+        <article>
+            <h1>Договір про нерозголошення (NDA)</h1>
+            <p>Цей Договір укладений з метою захисту конфіденційної інформації, що передається в ході розробки проектів (Valkiria Bot, Genesys Analytics тощо).</p>
+
+            <h2>1. Визначення конфіденційної інформації</h2>
+            <p>Конфіденційною інформацією вважається: вихідний код, алгоритми (Python), логіка баз даних, бізнес-процеси та будь-які дані, передані Замовником.</p>
+
+            <h2>2. Зобов'язання сторін</h2>
+            <p>2.1. Виконавець зобов'язується не розголошувати третім особам отриману інформацію протягом 3 (трьох) років з моменту завершення співпраці.</p>
+
+            <h2>3. Відповідальність</h2>
+            <p>3.1. За порушення умов конфіденційності Сторона-порушник несе відповідальність згідно з чинним законодавством України.</p>
+        </article>
+    </div>
+</body>
+</html>

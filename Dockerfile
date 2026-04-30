@@ -1,9 +1,18 @@
-FROM python:3.10-slim
+# Используем легковесный образ Python
+FROM python:3.12-slim
 
+# Устанавливаем рабочую директорию
 WORKDIR /app
-COPY . .
 
+# Копируем зависимости
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Команда для запуска бэкенда
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Копируем все файлы проекта (включая assets и index.html)
+COPY . .
+
+# Открываем порт 8080 (стандарт для Cloud Run)
+EXPOSE 8080
+
+# Запускаем сервер, указывая порт из переменной окружения
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}"]

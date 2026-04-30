@@ -1,0 +1,46 @@
+<!--
+  [ FILE_DESCRIPTION ]
+  PROJECT: WebFactory Legal Protocol
+  LOCATION: offer.html
+  TECHNICAL_SPECS: Print-optimized CSS, Digital Signature Branding.
+-->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OFFER | WEBFACTORY PROTOCOL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron&family=JetBrains+Mono&display=swap');
+        body { background: #fff; color: #1a1a1a; font-family: 'JetBrains Mono', monospace; margin: 0; }
+        .nav-bar { background: #000; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Orbitron'; color: #00e5ff; font-weight: bold; }
+        .print-btn { background: #00e5ff; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-family: 'Orbitron'; }
+        .doc-content { max-width: 850px; margin: 50px auto; padding: 40px; border: 1px solid #eee; text-align: justify; }
+        h1 { border-bottom: 2px solid #000; padding-bottom: 10px; font-family: 'Orbitron'; font-size: 1.3rem; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .doc-content { border: none; margin: 0; padding: 0; }
+            body { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar no-print">
+        <div class="logo">WEBFACTORY_LEGAL</div>
+        <div>
+            <a href="index.html" style="color: #666; text-decoration: none; margin-right: 20px;">← К ТЕРМИНАЛУ</a>
+            <button class="print-btn" onclick="window.print()">ПЕЧАТЬ / PDF</button>
+        </div>
+    </div>
+
+    <div class="doc-content">
+        <h1>ПУБЛИЧНАЯ ОФЕРТА (DEVELOPMENT_AGREEMENT)</h1>
+        <p><strong>1. ПРЕДМЕТ ПРОТОКОЛА:</strong> Настоящий документ регулирует отношения между WebFactory (Разработчик) и Заказчиком в рамках создания цифровых систем на языке Python...</p>
+        <p><strong>2. ТЕХНОЛОГИЧЕСКИЙ СТЕК:</strong> Все решения по умолчанию строятся на архитектуре Python 3.12+ с использованием асинхронных библиотек...</p>
+        <p><strong>3. ГАРАНТИИ:</strong> Разработчик гарантирует чистоту кода и отсутствие скрытых бэкдоров в соответствии с протоколами безопасности WebFactory.</p>
+        <br><br>
+        <p style="font-size: 0.8rem; color: #999;">Genedated by WebFactory System Architect Cluster<br>ID: 0xBF-2026-KYIV</p>
+    </div>
+</body>
+</html>

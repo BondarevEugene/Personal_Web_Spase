@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Public Offer | Bondarev Eugene System Engineering</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #c5a059; --bg: #0a0a0a; --text: #d1d1d1; }
+        body { background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; line-height: 1.6; padding: 40px; }
+        .container { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.02); padding: 40px; border: 1px solid rgba(197,160,89,0.2); }
+        h1, h2 { color: var(--gold); text-transform: uppercase; font-size: 1.4rem; }
+        .btn-print { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 20px; cursor: pointer; font-family: serif; margin-bottom: 20px; transition: 0.3s; }
+        .btn-print:hover { background: var(--gold); color: #000; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; padding: 0; }
+            .container { border: none; max-width: 100%; }
+            h1, h2 { color: black !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="window.print()" class="btn-print no-print">🖨 PRINT DOCUMENT</button>
+
+        <article>
+            <h1>Public Offer Agreement</h1>
+            <p>This document is an official public offer by Individual Entrepreneur Eugene Bondarev (hereinafter referred to as the "Contractor") to provide software development services.</p>
+
+            <h2>1. Subject of the Agreement</h2>
+            <p>1.1. The Contractor agrees to provide services for software development, configuration, or support (hereinafter — the "Services"), and the Customer agrees to accept and pay for these Services.</p>
+
+            <h2>2. Service Delivery Procedure</h2>
+            <p>2.1. Services are provided based on the Technical Specification (TS) agreed upon by the parties via electronic communication channels (Telegram/Email).</p>
+
+            <h2>3. Cost and Payment</h2>
+            <p>3.1. The cost of services is determined individually for each project based on complexity and scope.</p>
+
+            <h2>4. Intellectual Property</h2>
+            <p>4.1. All rights to the software code developed under this agreement are transferred to the Customer upon full payment, unless otherwise specified in the TS.</p>
+        </article>
+    </div>
+</body>
+</html>

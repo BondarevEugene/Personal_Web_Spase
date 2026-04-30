@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Публічна оферта | Bondarev Systems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #c5a059; --bg: #0a0a0a; --text: #d1d1d1; }
+        body { background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; line-height: 1.6; padding: 40px; }
+        .container { max-width: 800px; margin: 0 auto; background: rgba(255,255,255,0.02); padding: 40px; border: 1px solid rgba(197,160,89,0.2); }
+        h1, h2 { color: var(--gold); text-transform: uppercase; }
+        .btn-print { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 20px; cursor: pointer; font-family: serif; margin-bottom: 20px; transition: 0.3s; }
+        .btn-print:hover { background: var(--gold); color: #000; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; padding: 0; }
+            .container { border: none; max-width: 100%; }
+            h1, h2 { color: black !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="window.print()" class="btn-print no-print">🖨 ДРУКУВАТИ ДОКУМЕНТ</button>
+
+        <article>
+            <h1>Публічна оферта</h1>
+            <p>Цей документ є офіційною пропозицією (офертою) фізичної особи-підприємця Бондарева Є. (надалі — Виконавець) щодо надання послуг з розробки програмного забезпечення.</p>
+
+            <h2>1. Предмет договору</h2>
+            <p>1.1. Виконавець зобов'язується надати послуги з розробки, налаштування або підтримки ПЗ (надалі — Послуги), а Замовник зобов'язується прийняти та оплатити ці Послуги.</p>
+
+            <h2>2. Порядок надання послуг</h2>
+            <p>2.1. Послуги надаються на основі Технічного завдання (ТЗ), погодженого сторонами через електронні канали зв'язку (Telegram/Email).</p>
+
+            <h2>3. Вартість та оплата</h2>
+            <p>3.1. Вартість послуг визначається індивідуально для кожного проекту.</p>
+        </article>
+    </div>
+</body>
+</html>
