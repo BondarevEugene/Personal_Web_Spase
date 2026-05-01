@@ -1,9 +1,9 @@
 steps:
-  # 1. Собираем Docker-образ (теперь с новым адресом)
+  # 1. Собираем Docker-образ
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'europe-west3-docker.pkg.dev/$PROJECT_ID/webfactory-repo/webfactory:latest', '.']
 
-  # 2. Пушим его в Artifact Registry
+  # 2. Пушим образ в Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'europe-west3-docker.pkg.dev/$PROJECT_ID/webfactory-repo/webfactory:latest']
 

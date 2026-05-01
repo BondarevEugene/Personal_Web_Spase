@@ -3,304 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL | EUGENE BONDAREV | SYSTEM ARCHITECT</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
+    <title>WEB FACTORY ENGINE | EUGENE BONDAREV | SYSTEM ARCHITECT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&family=JetBrains+Mono:wght@300&family=Space+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --matrix-green: #00cc33;
-            --dark-green: #003300;
-            --void-black: #000000;
-            --text-dim: #b0b0b0;
-            --accent-white: #dcdcdc;
+            --neon-purple: #bc00ff;
+            --neon-blue: #00f0ff;
+            --matrix-green: #00ff41;
+            --bg-dark: #0b0015;
+            --border: rgba(188, 0, 255, 0.3);
+            --gold: #d4af37;
+            --sub: #888;
         }
 
         body {
-            background-color: var(--void-black);
-            background: radial-gradient(circle at center, #001000 0%, var(--void-black) 100%);
-            color: var(--text-dim);
-            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            font-family: 'Rajdhani', sans-serif;
             margin: 0;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+        canvas#matrix-rain {
+            position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15;
+            filter: hue-rotate(280deg);
+        }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 20px; }
 
         header {
-            border-left: 4px solid var(--matrix-green);
-            padding: 20px 40px;
-            margin-bottom: 50px;
-            background: rgba(0, 20, 0, 0.3);
+            border-left: 5px solid var(--neon-purple);
+            padding: 30px 50px;
+            margin-bottom: 60px;
+            background: rgba(20, 0, 40, 0.6);
+            backdrop-filter: blur(10px);
+            clip-path: polygon(0 0, 100% 0, 98% 100%, 0 100%);
         }
+
         .logo {
-            font-family: 'Orbitron'; font-size: 2.2rem; font-weight: 900;
-            letter-spacing: 5px; color: var(--accent-white); text-transform: uppercase;
+            font-family: 'Orbitron'; font-size: 2.8rem; font-weight: 900;
+            letter-spacing: 8px; color: #fff; text-transform: uppercase;
         }
-        .logo span { color: var(--matrix-green); }
+        .logo span { color: var(--neon-blue); text-shadow: 0 0 15px var(--neon-blue); }
 
-        /* [ КАРУСЕЛЬ ИЗОБРАЖЕНИЙ ВНУТРИ ПРОЕКТА ] */
+        /* [ КАРУСЕЛЬ И ЗАГЛУШКИ ] */
         .image-slider {
-            display: flex; overflow-x: auto; gap: 10px; margin-bottom: 20px;
-            scroll-snap-type: x mandatory; scrollbar-width: none;
-        }
-        .image-slider img {
-            flex: 0 0 100%; height: 400px; object-fit: cover;
-            border: 1px solid var(--dark-green); opacity: 0.7; scroll-snap-align: center;
+            display: flex; overflow-x: auto; gap: 15px; margin-bottom: 30px;
+            scroll-snap-type: x mandatory; scrollbar-width: thin;
+            scrollbar-color: var(--neon-purple) #000;
         }
 
+        .image-slider img, .blueprint-placeholder {
+            flex: 0 0 85%; height: 500px; object-fit: contain;
+            background: #000; border: 1px solid var(--neon-purple);
+            scroll-snap-align: center; position: relative;
+        }
+
+        /* [ КАРТОЧКИ ПРОЕКТОВ ] */
         .project-card {
-            border: 1px solid var(--dark-green); background: rgba(0, 5, 0, 0.8);
-            margin-bottom: 80px; overflow: hidden;
+            background: rgba(15, 0, 30, 0.8);
+            border: 1px solid var(--border);
+            margin-bottom: 100px;
+            padding: 40px;
+            position: relative;
         }
-        .project-content { padding: 40px; }
 
-        .project-title { font-family: 'Orbitron'; font-size: 1.8rem; color: #fff; margin-bottom: 15px; }
-        .project-desc { color: var(--text-dim); margin-bottom: 25px; border-left: 2px solid var(--matrix-green); padding-left: 15px; }
+        .project-title { font-family: 'Orbitron'; font-size: 2.2rem; color: var(--neon-blue); margin-bottom: 20px; }
+        .project-desc { border-left: 3px solid var(--neon-purple); padding-left: 20px; margin-bottom: 30px; line-height: 1.8; }
 
-        .sub-section-title { color: var(--matrix-green); font-weight: bold; text-transform: uppercase; margin: 20px 0 10px 0; display: block; font-size: 0.85rem; letter-spacing: 1px; }
-        .feature-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .feature-list li { font-size: 0.9rem; }
-        .feature-list li::before { content: "— "; color: var(--matrix-green); }
+        .sub-section-title { color: var(--neon-purple); font-weight: bold; text-transform: uppercase; margin: 25px 0 15px 0; display: block; letter-spacing: 2px; }
 
-        .tech-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 40px;
+        .feature-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .feature-list li { font-size: 0.95rem; border-bottom: 1px dotted rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .feature-list li strong { color: var(--neon-blue); }
+
+        /* [ ТЕХНОЛОГИИ ] */
+        .tech-stack-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 50px 0;
         }
-        .tech-node {
-            border: 1px solid var(--dark-green); padding: 15px; background: rgba(0, 15, 0, 0.5);
+        .tech-item {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
+            padding: 20px; cursor: pointer; transition: 0.3s;
         }
-        .tech-node strong { color: var(--matrix-green); display: block; font-size: 0.9rem; }
+        .tech-item:hover { border-color: var(--neon-blue); background: rgba(0, 240, 255, 0.05); }
+        .tech-description { max-height: 0; opacity: 0; overflow: hidden; transition: 0.4s; font-size: 0.85rem; }
+        .tech-item.active .tech-description { max-height: 200px; opacity: 1; margin-top: 15px; }
 
+        /* [ КОМПЛЕКСНОСТЬ ] */
         .complexity-box {
-            margin: 60px 0; padding: 40px; border: 1px solid var(--matrix-green); background: rgba(0,0,0,0.5); text-align: center;
+            margin: 60px 0; padding: 50px; border: 1px solid var(--neon-purple);
+            background: radial-gradient(circle, rgba(188,0,255,0.1) 0%, transparent 100%);
+            text-align: center;
         }
 
+        /* [ FOOTER ] */
         footer {
-            margin-top: 80px; padding: 40px 0; border-top: 1px solid var(--dark-green);
-            display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; font-size: 0.8rem;
+            margin-top: 100px; border-top: 1px solid var(--border);
+            background: rgba(0,0,0,0.6); position: relative; padding: 60px 0 20px 0;
         }
 
-        @media (max-width: 768px) {
-            .feature-list { grid-template-columns: 1fr; }
-            footer { grid-template-columns: 1fr; }
-        }
-
-                /* [ ОБНОВЛЕННАЯ КАРУСЕЛЬ ] */
-        .image-slider {
-            display: flex;
-            overflow-x: scroll; /* Принудительно включаем прокрутку */
-            gap: 15px;
-            margin-bottom: 20px;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: thin; /* Тонкая полоска прокрутки для Firefox */
-            scrollbar-color: var(--matrix-green) var(--void-black);
-        }
-
-        .image-slider::-webkit-scrollbar {
-            height: 8px; /* Высота скроллбара для Chrome/Edge */
-        }
-
-        .image-slider::-webkit-scrollbar-thumb {
-            background: var(--matrix-green);
-            border-radius: 4px;
-        }
-
-        .image-slider img {
-            flex: 0 0 80%; /* Каждая картинка занимает 80% ширины, чтобы было видно край следующей */
-            height: 450px;
-            object-fit: contain; /* Чтобы картинка не обрезалась, а вписывалась */
-            background: #000;
-            border: 1px solid var(--dark-green);
-            opacity: 1; /* Делаем ярче */
-            scroll-snap-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .image-slider img:hover {
-            transform: scale(1.02); /* Эффект при наведении */
-            border-color: var(--matrix-green);
-        }
-
+        @keyframes scan { from { transform: translateY(-100%); } to { transform: translateY(500%); } }
     </style>
 </head>
 <body>
 
+<canvas id="matrix-rain"></canvas>
+
 <div class="container">
     <header>
-        <div class="logo">WEB<span>FACTORY</span> // ARCHITECT: |BONDAREV_E| </div>
-        <div style="font-size: 0.7rem; opacity: 0.6; letter-spacing: 2px;">[ STATUS: OPERATIONAL ] [ KYIV_UA ] [ VER: 5.1-MX ]</div>
+        <div class="logo">WEB<span>FACTORY</span> // ENGINE</div>
+        <div style="font-family: 'JetBrains Mono'; font-size: 0.75rem; letter-spacing: 3px; margin-top: 10px;">
+            > ARCHITECT: |BONDAREV_E|[cite: 3] // STATUS: OPERATIONAL [KYIV_UA]
+        </div>
     </header>
 
     <!-- PROJECT: GENESYS_ANALYTICS -->
     <div class="project-card">
-    <div class="image-slider">
-        <img src="./assets/genesys/ui_main.png" alt="UI Main">
-        <img src="./assets/genesys/admin_panel.png" alt="Admin Panel">
-        <img src="./assets/genesys/db_schema.png" alt="DB Schema">
-        <img src="./assets/genesys/code_view.png" alt="Code View">
-        <img src="./assets/genesys/synergy.png" alt="Synergy">
-    </div>
-        <div class="project-content">
-            <div class="project-title">PROJECT: GENESYS_ANALYTICS</div>
-            <div class="project-desc">
-                Комплексное решение для глубокого анализа персональных данных. Система сочетает в себе математические алгоритмы прогнозирования и современную архитектуру управления контентом.
+        <div class="image-slider">
+            <img src="./assets/genesys/ui_main.png" alt="UI_CORE_SYSTEM">
+            <img src="./assets/genesys/db_schema.png" alt="DATABASE_RELATIONS">
+            <img src="./assets/genesys/synergy.png" alt="SYNERGY_ENGINE_V2">
+        </div>
+
+        <div class="project-title">PROJECT: GENESYS_ANALYTICS[cite: 3]</div>
+        <div class="project-desc">
+            Комплексное решение для глубокого анализа персональных данных. Система сочетает математические алгоритмы прогнозирования и современную архитектуру управления контентом на базе Python 3.12[cite: 3].
+        </div>
+
+        <ul class="feature-list">
+            <li><strong>UI_CORE:</strong> Основная консоль управления[cite: 3]</li>
+            <li><strong>ARCH:</strong> Реляционная структура базы данных SQLite[cite: 3]</li>
+            <li><strong>MODULE:</strong> Предиктивный расчет совместимости (Synergy)[cite: 3]</li>
+            <li><strong>ADMIN:</strong> CMS v2.0 для настройки векторов развития[cite: 3]</li>
+        </ul>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 30px;">
+            <div>
+                <span class="sub-section-title">🧠 Аналитическое ядро</span>
+                <ul class="feature-list" style="grid-template-columns: 1fr;">
+                    <li>> <strong>Predictive Models:</strong> Анализ временных циклов[cite: 3].</li>
+                    <li>> <strong>Psycho-Matrix:</strong> Динамическая визуализация данных.</li>
+                    <li>> <strong>Synergy Engine:</strong> Расчет резонанса объектов[cite: 3].</li>
+                </ul>
             </div>
-
-            <ul class="feature-list" style="margin-bottom: 30px;">
-                <li><strong>UI_CORE:</strong> Основная консоль управления</li>
-                <li><strong>ARCH:</strong> Реляционная структура базы данных SQLite</li>
-                <li><strong>MODULE:</strong> Предиктивный расчет совместимости (Synergy)</li>
-                <li><strong>ADMIN:</strong> CMS v2.0 для настройки векторов развития</li>
-                <li><strong>CODE:</strong> Backend-архитектура на Python/Flask</li>
-            </ul>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-                <div>
-                    <span class="sub-section-title">🧠 Аналитическое ядро</span>
-                    <ul class="feature-list" style="grid-template-columns: 1fr;">
-                        <li><strong>Predictive Models:</strong> Алгоритмы на базе Python 3.12 для анализа временных циклов.</li>
-                        <li><strong>Psycho-Matrix:</strong> Визуализация данных через динамические графики.</li>
-                        <li><strong>Synergy Engine:</strong> Расчет резонанса объектов.</li>
-                    </ul>
-                </div>
-                <div>
-                    <span class="sub-section-title">⚙️ Системная архитектура</span>
-                    <ul class="feature-list" style="grid-template-columns: 1fr;">
-                        <li><strong>Flexible Admin:</strong> Управление профессиями без изменения кода.</li>
-                        <li><strong>External APIs:</strong> Интеграция с HH.ru для подбора вакансий.</li>
-                        <li><strong>ORM Integration:</strong> SQLAlchemy для работы с БД.</li>
-                    </ul>
-                </div>
+            <div>
+                <span class="sub-section-title">⚙️ Системная архитектура</span>
+                <ul class="feature-list" style="grid-template-columns: 1fr;">
+                    <li>> <strong>Flexible Admin:</strong> Управление без изменения кода[cite: 3].</li>
+                    <li>> <strong>External APIs:</strong> Интеграция с HH.ru и внешними шлюзами[cite: 3].</li>
+                    <li>> <strong>ORM Integration:</strong> SQLAlchemy для масштабируемости[cite: 3].</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- PROJECT: VALKYRIA_PROTOCOL -->
+    <!-- PROJECT: VALKYRIA -->
     <div class="project-card">
-        <div class="project-content">
-            <div class="project-title">PROJECT: VALKYRIA_PROTOCOL</div>
-            <div class="project-desc">
-                Асинхронный высоконагруженный шлюз для автоматизации взаимодействия с распределенными системами через Telegram-интерфейс.
-            </div>
-
-            <ul class="feature-list" style="margin-bottom: 30px;">
-                <li><strong>ENGINE:</strong> Aiogram 3.x Framework</li>
-                <li><strong>ASYNC:</strong> Полная неблокирующая архитектура</li>
-                <li><strong>SECURITY:</strong> Многоуровневая валидация через Pydantic</li>
-                <li><strong>CACHE:</strong> Redis-оптимизация очередей</li>
-            </ul>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-                <div>
-                    <span class="sub-section-title">📡 Коммуникационный слой</span>
-                    <ul class="feature-list" style="grid-template-columns: 1fr;">
-                        <li><strong>Middleware System:</strong> Фильтрация и логирование трафика.</li>
-                        <li><strong>State Management:</strong> FSM для сложных сценариев диалога.</li>
-                    </ul>
-                </div>
-                <div>
-                    <span class="sub-section-title">🛠 Инфраструктура</span>
-                    <ul class="feature-list" style="grid-template-columns: 1fr;">
-                        <li><strong>Deployment:</strong> Контейнеризация через Docker.</li>
-                        <li><strong>Monitoring:</strong> Интеграция систем алертинга.</li>
-                    </ul>
-                </div>
-            </div>
+        <div class="project-title">PROJECT: VALKYRIA_PROTOCOL[cite: 3]</div>
+        <div class="project-desc">
+            Асинхронный высоконагруженный шлюз для автоматизации взаимодействия с распределенными системами через Telegram-интерфейс[cite: 3].
         </div>
+        <ul class="feature-list">
+            <li><strong>ENGINE:</strong> Aiogram 3.x Framework[cite: 3]</li>
+            <li><strong>ASYNC:</strong> Полная неблокирующая архитектура[cite: 3]</li>
+            <li><strong>SECURITY:</strong> Валидация через Pydantic[cite: 3]</li>
+            <li><strong>CACHE:</strong> Redis-оптимизация очередей[cite: 3]</li>
+        </ul>
     </div>
 
+    <!-- TECH STACK -->
     <section>
-        <h2 style="font-family: 'Share Tech Mono'; color: #fff; border-bottom: 1px solid var(--matrix-green);">> TECH_STACK_CORE</h2>
-        <div class="tech-grid">
-            <div class="tech-node"><strong>Python 3.12</strong><span>Runtime Environment</span></div>
-            <div class="tech-node"><strong>FastAPI</strong><span>API Architecture</span></div>
-            <div class="tech-node"><strong>PostgreSQL</strong><span>Persistence Layer</span></div>
-            <div class="tech-node"><strong>Docker</strong><span>Infrastructure</span></div>
-            <div class="tech-node"><strong>Aiogram 3</strong><span>Bot Engine</span></div>
-            <div class="tech-node"><strong>Redis</strong><span>Memory Cache</span></div>
-            <div class="tech-node"><strong>SQLAlchemy</strong><span>ORM</span></div>
-            <div class="tech-node"><strong>Pytest</strong><span>Testing</span></div>
+        <h2 style="font-family: 'Orbitron'; color: #fff; border-bottom: 2px solid var(--neon-purple); display: inline-block; padding-bottom: 10px;">> CORE_PYTHON_STACK</h2>
+        <div class="tech-stack-grid" id="tech-grid">
+            <!-- JS inserts 20 items here -->
         </div>
 
         <div class="complexity-box">
-            <div style="font-size: 0.7rem; opacity: 0.5; letter-spacing: 3px;">// COMPLEXITY_LOGS_ANALYSIS</div>
-            <div style="font-size: 1.5rem; margin: 20px 0; color: var(--matrix-green);">
+            <div style="font-size: 1.8rem; margin: 20px 0; color: var(--neon-blue);">
                 $$Difficulty\_Index = \frac{\sum (Inputs \times 4 + Logic \times 10 + API \times 7)}{Total\_Time}$$
             </div>
-            <div style="color: #fff; font-weight: bold;">Вердикт: High Complexity System (8.7/10)</div>
-            <p style="font-size: 0.85rem; margin-top: 10px;">Проект включает в себя асинхронную обработку данных, сложные математические формулы и многоуровневую систему кэширования.</p>
+            <div style="color: #fff; font-weight: bold; letter-spacing: 5px;">VERDICT: HIGH_COMPLEXITY [8.7/10][cite: 3]</div>
+            <p style="font-size: 0.9rem; margin-top: 15px; opacity: 0.7;">Асинхронная обработка данных, сложные математические формулы и многоуровневое кэширование[cite: 3].</p>
         </div>
     </section>
 
+    <!-- WALLY TERMINAL -->
+    <section id="contact-section" style="border: 1px solid var(--neon-purple); background: #000; margin-bottom: 100px;">
+        <div style="background: var(--neon-purple); color: #000; padding: 10px 20px; font-weight: bold; font-family: 'Orbitron';">WALLY_COMM_LINK[cite: 3]</div>
+        <div id="chat-logs" style="height: 300px; overflow-y: auto; padding: 20px; font-family: 'JetBrains Mono'; color: var(--matrix-green);">
+            > [SYSTEM]: Канал связи установлен. Ожидание данных...[cite: 3]
+        </div>
+        <div style="display: flex; border-top: 1px solid var(--neon-purple);">
+            <input type="text" id="user-input" placeholder="Введите ваш запрос..." style="flex:1; background:transparent; border:none; color:#fff; padding:20px; outline:none;">
+            <button onclick="sendMessage()" style="background:var(--neon-purple); border:none; padding:0 30px; color:#fff; font-family:'Orbitron'; cursor:pointer;">SEND</button>
+        </div>
+    </section>
+
+    <!-- RICH FOOTER -->
     <footer>
-        <div>
-            <span style="opacity: 0.4;">// AUTHOR</span><br>
-            <strong>EUGENE BONDAREV</strong><br>
-            Architect of Digital Realities © 2026
-        </div>
-        <div>
-            <span style="opacity: 0.4;">// DOCUMENTS</span><br>
-            <a href="#" style="color: var(--matrix-green); text-decoration: none;">NDA_STATUS.PDF</a><br>
-            <a href="#" style="color: var(--matrix-green); text-decoration: none;">PRIVACY_PROTOCOLS.MD</a>
-        </div>
-        <div>
-            <span style="opacity: 0.4;">// SYSTEM</span><br>
-            Build: 5.1-MX<br>
-            Env: Stable
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--neon-purple), transparent); opacity: 0.3; animation: scan 4s linear infinite;"></div>
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 40px;">
+                <div>
+                    <div style="font-family: 'Space Mono'; font-size: 10px; color: var(--neon-blue); letter-spacing: 2px; margin-bottom: 20px;">// LEGAL_PROTOCOLS</div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <a href="#" style="text-decoration:none; color:#fff; font-size:11px; border-left:2px solid var(--border); padding-left:10px;">ПУБЛИЧНАЯ ОФЕРТА [VER_2.0]</a>
+                        <a href="#" style="text-decoration:none; color:#fff; font-size:11px; border-left:2px solid var(--border); padding-left:10px;">NDA_STATUS.PDF[cite: 3]</a>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-family: 'Space Mono'; font-size: 10px; color: var(--neon-blue); letter-spacing: 2px; margin-bottom: 20px;">// SYS_STATUS</div>
+                    <div style="font-size: 10px; font-family: 'Space Mono'; line-height: 1.8;">
+                        <div style="display:flex; justify-content:space-between;"><span>ARCHITECT:</span> <span>E_BONDAREV[cite: 3]</span></div>
+                        <div style="display:flex; justify-content:space-between;"><span>UPLINK:</span> <span style="color:var(--matrix-green);">STABLE[cite: 3]</span></div>
+                        <div style="display:flex; justify-content:space-between;"><span>CORE:</span> <span style="color:var(--neon-purple);">GENESIS_V5.1</span></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-family: 'Space Mono'; font-size: 10px; color: var(--neon-blue); letter-spacing: 2px; margin-bottom: 20px;">// CONTACT</div>
+                    <div style="font-size: 11px; color: #fff;">projectnumerology@gmail.com</div>
+                    <div style="font-size: 9px; color: var(--neon-purple); margin-top: 5px;">ID: #G-HR-PRO-2026</div>
+                </div>
+            </div>
+            <div style="border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 9px; font-family: 'Space Mono'; color: var(--sub);">
+                <div>© 2024 — 2026 // WEB FACTORY ENGINE // ALL_RIGHTS_RESERVED[cite: 3]</div>
+                <div style="color:var(--neon-blue)">LEVEL_4_ENCRYPTION_ACTIVE</div>
+            </div>
         </div>
     </footer>
 </div>
 
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <script>
-    // 1. СВЯЗЬ С БЭКЕНДОМ (ОТПРАВКА ФОРМЫ)
-    const contactForm = document.querySelector('form');
-    contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // 1. МАТРИЦА
+    const canvas = document.getElementById('matrix-rain');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const drops = Array(Math.floor(canvas.width/16)).fill(1);
+    function draw() {
+        ctx.fillStyle = "rgba(11, 0, 21, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#bc00ff"; ctx.font = "16px monospace";
+        drops.forEach((y, i) => {
+            const text = String.fromCharCode(Math.random() * 128);
+            ctx.fillText(text, i * 16, y * 16);
+            if (y * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++;
+        });
+    }
+    setInterval(draw, 50);
 
-        // Сбор данных из полей (используем плейсхолдеры как ориентир)
-        const formData = {
-            name: contactForm.querySelector('input[placeholder="IDENT_NAME"]').value,
-            contact: contactForm.querySelector('input[placeholder="SECURE_CHANNEL (TG/EMAIL)"]').value,
-            message: contactForm.querySelector('textarea').value
-        };
-
-        const button = contactForm.querySelector('button');
-        const originalText = button.innerText;
-        button.innerText = 'TRANSMITTING...';
-
-        try {
-            const response = await fetch('http://127.0.0.1:8000/send-message', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-
-            if (response.ok) {
-                alert('DATA TRANSMITTED SUCCESSFULLY');
-                contactForm.reset();
-            } else {
-                throw new Error('SERVER_REJECTION');
-            }
-        } catch (error) {
-            console.error('Connection Error:', error);
-            alert('CONNECTION_FAILURE: Убедитесь, что main.py запущен');
-        } finally {
-            button.innerText = originalText;
-        }
-    });
-
-    // 2. ПРОВЕРКА КАРТИНОК
-    // Если картинка не загрузилась, она подсветится красной рамкой в консоли
+    // 2. ГЕНЕРАТОР ЗАГЛУШЕК (ЕСЛИ КАРТИНКИ НЕ ГРУЗЯТСЯ)
     document.querySelectorAll('.image-slider img').forEach(img => {
         img.onerror = function() {
-            console.error('CRITICAL: Не удалось загрузить изображение по пути:', this.src);
-            this.style.border = '2px solid red'; // Сигнал об ошибке пути
+            const div = document.createElement('div');
+            div.className = 'blueprint-placeholder';
+            div.innerHTML = `
+                <div style="position:absolute; width:100%; height:100%; background:repeating-linear-gradient(45deg, rgba(188,0,255,0.05) 0, rgba(188,0,255,0.05) 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
+                <div style="position:relative; z-index:2; text-align:center; padding:20px;">
+                    <div style="font-family:'Orbitron'; color:var(--neon-blue); font-size:1.2rem;">[ ${this.alt} ]</div>
+                    <div style="color:var(--neon-purple); font-size:0.7rem; margin-top:10px;">ERROR: ASSET_NOT_FOUND // RENDER_SCHEMATIC_ACTIVE</div>
+                    <svg width="200" height="100" style="margin-top:30px; opacity:0.5"><rect width="200" height="100" fill="none" stroke="var(--neon-blue)" stroke-dasharray="5,5"/></svg>
+                </div>`;
+            this.parentNode.replaceChild(div, this);
         };
     });
+
+    // 3. ТЕХНОЛОГИИ (ТОП 20)
+    const techs = [
+        {n: "Django", d: "Корпоративный фреймворк для сложных систем[cite: 3]."},
+        {n: "FastAPI", d: "Скоростные асинхронные API[cite: 3]."},
+        {n: "Flask", d: "Гибкий микрофреймворк для модульных решений[cite: 3]."},
+        {n: "Aiogram", d: "Движок для асинхронных Telegram-ботов[cite: 3]."},
+        {n: "PostgreSQL", d: "Надежное хранилище данных высшего уровня[cite: 3]."},
+        {n: "Docker", d: "Контейнеризация и изоляция систем[cite: 3]."},
+        {n: "SQLAlchemy", d: "ORM для управления реляционными БД[cite: 3]."},
+        {n: "Pandas", d: "Анализ и трансформация больших данных[cite: 3]."},
+        {n: "Celery", d: "Фоновые задачи и очереди[cite: 3]."},
+        {n: "Redis", d: "Кэширование данных в реальном времени[cite: 3]."},
+        {n: "Pytest", d: "Автоматизация тестирования кода[cite: 3]."},
+        {n: "Pydantic", d: "Строгая валидация типов данных[cite: 3]."},
+        {n: "Requests", d: "Взаимодействие с внешними API[cite: 3]."},
+        {n: "NumPy", d: "Математические вычисления высокой плотности."},
+        {n: "Gunicorn", d: "WSGI-сервер для деплоя приложений[cite: 3]."},
+        {n: "Playwright", d: "Автоматизация браузерных сценариев[cite: 3]."},
+        {n: "Git", d: "Контроль версий и командная разработка[cite: 3]."},
+        {n: "BeautifulSoup", d: "Парсинг и извлечение данных из сети."},
+        {n: "JWT", d: "Безопасная аутентификация пользователей."},
+        {n: "MathJax", d: "Рендеринг сложных математических формул[cite: 3]."}
+    ];
+    const grid = document.getElementById('tech-grid');
+    techs.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'tech-item';
+        item.innerHTML = `<h3>${t.n}</h3><div class="tech-description">${t.d}</div>`;
+        item.onclick = () => item.classList.toggle('active');
+        grid.appendChild(item);
+    });
+
+    // 4. CHAT WALLY
+    async function sendMessage() {
+        const input = document.getElementById('user-input');
+        const logs = document.getElementById('chat-logs');
+        if(!input.value) return;
+        logs.innerHTML += `<div>> YOU: ${input.value}</div>`;
+        try {
+            const res = await fetch('/chat', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text: input.value}) });
+            const data = await res.json();
+            logs.innerHTML += `<div style="color:var(--neon-blue)">> WALLY: ${data.reply}</div>`;
+        } catch(e) { logs.innerHTML += `<div style="color:red">> SYSTEM_ERROR: OFFLINE</div>`; }
+        input.value = ''; logs.scrollTop = logs.scrollHeight;
+    }
 </script>
 </body>
 </html>
