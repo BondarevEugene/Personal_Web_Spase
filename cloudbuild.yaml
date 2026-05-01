@@ -1,11 +1,11 @@
 steps:
-  # 1. Собираем Docker-образ
+  # 1. Собираем Docker-образ (теперь с новым адресом)
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/webfactory', '.']
+    args: ['build', '-t', 'europe-west3-docker.pkg.dev/$PROJECT_ID/webfactory-repo/webfactory:latest', '.']
 
-  # 2. Пушим его в реестр
+  # 2. Пушим его в Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/webfactory']
+    args: ['push', 'europe-west3-docker.pkg.dev/$PROJECT_ID/webfactory-repo/webfactory:latest']
 
   # 3. Деплоим в Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,9 +15,9 @@ steps:
       - 'deploy'
       - 'webfactory'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/webfactory'
+      - 'europe-west3-docker.pkg.dev/$PROJECT_ID/webfactory-repo/webfactory:latest'
       - '--region'
-      - 'europe-west3' # Или твой регион (например us-central1)
+      - 'europe-west3'
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
