@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- 1. Подключаем Share Tech Mono из Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- FullCalendar Engine - индустриальный стандарт для CRM-систем-->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<style>
+    /* Кастомизация календаря под наш кибер-стиль */
+    .fc { background: rgba(0, 0, 0, 0.3); font-family: 'JetBrains Mono', monospace; }
+    .fc-toolbar-title { font-family: 'Orbitron'; color: var(--bright-purple) !important; font-size: 1rem !important; }
+    .fc-button { background: var(--neon-purple) !important; border: 1px solid var(--bright-purple) !important; text-transform: uppercase; font-size: 0.6rem !important; }
+    .fc-daygrid-day:hover { background: rgba(188, 19, 254, 0.05); }
+    .fc-event { background: var(--bright-purple); border: none; cursor: pointer; padding: 2px 5px; }
+    .fc-day-today { background: rgba(0, 210, 255, 0.05) !important; }
+</style>
+
+    <!-- Favicon: буква F в фиолетовом шестиграннике -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='Orbitron, sans-serif' font-size='50' fill='%23bc13fe' font-weight='bold'>F</text></svg>">
+    <meta charset="UTF-8">
+    <title>WF_CORE | ARCHITECT_PANEL</title>
+
+    <!-- CRM TAB CONTENT -->
+    <div id="crm-tab" class="tab-content" style="display:none;">
+        <div style="display: grid; grid-template-columns: 1fr 350px; gap: 25px;">
+            <!-- Календарная сетка -->
+            <div class="tech-card" style="min-height: 500px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <h3 style="font-family:'Orbitron'; margin:0;">// EVENT_SCHEDULER</h3>
+                    <button onclick="openNewEventModal()" class="action-btn" style="background:var(--ok-green); color:#000;">+ NEW_EVENT</button>
+                </div>
+                <!-- Сюда инжектится календарь (FullCalendar.js рекомендуется) -->
+                <div id="calendar-render" style="color: #fff;"></div>
+            </div>
+
+            <!-- Боковая панель: Скрипты и Очередь -->
+            <div>
+                <div class="tech-card" style="margin-bottom: 20px;">
+                    <h4 style="font-family:'Orbitron'; font-size:0.7rem; color:var(--soft-blue);">AUTOMATION_QUEUE</h4>
+                    <div id="event-list" style="font-size: 0.75rem;">
+                        <!-- Пример события -->
+                        <div style="border-left: 2px solid var(--bright-purple); padding: 10px; background: rgba(255,255,255,0.05); margin-top: 10px;">
+                            <b>Site Audit: Genesys</b><br>
+                            <span style="color: var(--muted-text);">Today at 18:00</span><br>
+                            <span style="color: var(--ok-green);">Script: analyze_core.py</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+
+        <!-- ADS MANAGEMENT TAB -->
+    <div id="ads-tab" class="tab-content" style="display:none;">
+        <h1 style="font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 30px;">ADVERTISING_ORCHESTRATOR</h1>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px;">
+            <!-- Google Ads Node -->
+            <div class="tech-card" style="border-left: 4px solid #4285F4;">
+                <h3 style="font-family:'Orbitron'; color:#4285F4;">GOOGLE_ADS_STREAM</h3>
+                <div style="display: flex; justify-content: space-between; margin: 15px 0;">
+                    <span>Active Campaigns: <b style="color:#fff;">12</b></span>
+                    <span>Daily Spend: <b style="color:#00ff88;">$450.20</b></span>
+                </div>
+                <div style="height: 150px; background: rgba(66, 133, 244, 0.1); border: 1px dashed #4285F4; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 0.7rem; color: #4285F4;">[ VISUAL_CHART_WAITING_DATA ]</span>
+                </div>
+                <div class="control-btns" style="margin-top: 15px;">
+                    <button class="ctrl-btn" onclick="nodeAction('G_ADS', 'optimize')">OPTIMIZE_BID</button>
+                    <button class="ctrl-btn" onclick="nodeAction('G_ADS', 'report')">GENERATE_PDF</button>
+                </div>
+            </div>
+
+            <!-- Meta Ads Node -->
+            <div class="tech-card" style="border-left: 4px solid #1877F2;">
+                <h3 style="font-family:'Orbitron'; color:#1877F2;">META_AD_DASHBOARD</h3>
+                <div style="display: flex; justify-content: space-between; margin: 15px 0;">
+                    <span>CTR: <b style="color:#fff;">3.8%</b></span>
+                    <span>Leads Today: <b style="color:#00ff88;">84</b></span>
+                </div>
+                <div style="height: 150px; background: rgba(24, 119, 244, 0.1); border: 1px dashed #1877F2; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 0.7rem; color: #1877F2;">[ PIXEL_TRAFFIC_ACTIVE ]</span>
+                </div>
+                <div class="control-btns" style="margin-top: 15px;">
+                    <button class="ctrl-btn" onclick="nodeAction('META', 'sync')">SYNC_PIXEL</button>
+                    <button class="ctrl-btn" onclick="nodeAction('META', 'pause')">PAUSE_LOW_ROI</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<style>
+    :root {
+        --deep-space: #030305;
+        --bright-purple: #bc13fe;
+        --soft-blue: #00d2ff;
+        --font-main: 'Share Tech Mono', monospace;
+        --font-header: 'Orbitron', sans-serif;
+        --critical-pink: #ff007f;
+        --ok-green: #00ff88;
+        --glass: rgba(15, 15, 25, 0.9);
+        --border: rgba(94, 10, 126, 0.3);
+    }
+
+    /* [ GLOBAL RESET ] */
+    body {
+        background-color: var(--deep-space);
+        color: #fff;
+        font-family: var(--font-main);
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+        line-height: 1.4;
+    }
+
+    /* Принудительная установка шрифта для системных элементов */
+    h1, h2, h3, h4, .nav-btn, .ctrl-btn, .action-btn, .fc-toolbar-title {
+        font-family: var(--font-header) !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* [ SIDEBAR ] */
+    .sidebar {
+        width: 260px;
+        background: rgba(5, 5, 10, 0.95);
+        border-right: 1px solid var(--border);
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        z-index: 10;
+    }
+
+    /* [ ТЕХНОЛОГИЧНЫЕ КНОПКИ: ЕДИНЫЙ СТИЛЬ ] */
+    .nav-btn, .ctrl-btn, .action-btn {
+        position: relative;
+        padding: 12px;
+        margin-bottom: 10px;
+        background: rgba(188, 19, 254, 0.05);
+        border: 1px solid var(--border);
+        color: var(--soft-blue);
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        backdrop-filter: blur(5px);
+        /* Срезанные углы согласно дизайну портала */
+        clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0% 30%);
+        overflow: hidden;
+    }
+
+    .nav-btn:hover, .ctrl-btn:hover, .action-btn:hover {
+        color: #fff;
+        background: rgba(0, 210, 255, 0.15);
+        border-color: var(--soft-blue);
+        box-shadow: 0 0 20px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .nav-btn.active {
+        background: rgba(188, 19, 254, 0.2);
+        border-color: var(--bright-purple);
+        color: #fff;
+        box-shadow: 0 0 15px var(--bright-purple);
+    }
+
+    /* Анимация "сканирующего луча" при наведении */
+    .nav-btn::after, .ctrl-btn::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -60%;
+        width: 20%;
+        height: 200%;
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: rotate(30deg);
+        transition: all 0.6s;
+    }
+
+    .nav-btn:hover::after, .ctrl-btn:hover::after {
+        left: 120%;
+    }
+
+    /* [ СПЕЦИФИЧЕСКИЕ СОСТОЯНИЯ ] */
+    .ctrl-btn[onclick*="restrict"] {
+        color: var(--critical-pink);
+        border-color: rgba(255, 0, 127, 0.3);
+    }
+
+    .ctrl-btn[onclick*="restrict"]:hover {
+        background: rgba(255, 0, 127, 0.2);
+        border-color: var(--critical-pink);
+        box-shadow: 0 0 20px var(--critical-pink);
+    }
+
+    /* Кнопка PANIC (Спец-анимация) */
+    .panic-btn {
+        background: repeating-linear-gradient(45deg, rgba(255, 0, 127, 0.1), rgba(255, 0, 127, 0.1) 10px, rgba(0, 0, 0, 0.2) 10px, rgba(0, 0, 0, 0.2) 20px);
+        border: 2px solid var(--critical-pink);
+        color: var(--critical-pink);
+        padding: 15px;
+        border-radius: 12px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+        margin-top: auto;
+        animation: alert-blink 2s infinite;
+    }
+
+    @keyframes alert-blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; border-color: #fff; }
+        100% { opacity: 1; }
+    }
+
+    /* [ INTERFACE COMPONENTS ] */
+    main { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
+    .tab-content { display: none; animation: fadeIn 0.4s ease; }
+    .tab-content.active { display: block; }
+
+    .tech-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        transition: 0.3s;
+    }
+
+    .project-manage-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        padding: 25px;
+        position: relative;
+        transition: 0.3s;
+    }
+    .project-manage-card:hover { border-color: var(--bright-purple); transform: translateY(-5px); }
+
+    /* [ LOGS & TERMINAL ] */
+    .stream-box {
+        background: #000;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+        height: 70vh;
+        overflow-y: auto;
+        font-size: 0.85rem;
+        color: #00ff41; /* Цвет терминала */
+        font-family: var(--font-main);
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+    <svg width="50" height="50" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 5px #bc13fe);">
+        <!-- Шестигранник -->
+        <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z"
+              fill="none" stroke="#bc13fe" stroke-width="3" />
+        <!-- Буква F -->
+        <text x="35" y="65" font-family="Orbitron" font-size="45" fill="#bc13fe" font-weight="bold">F</text>
+    </svg>
+    <nav class="sidebar">
+        <h2 style="font-family: 'Orbitron'; font-size: 0.9rem; color: var(--bright-purple); margin-bottom: 40px;">WF_SYSTEM_v5</h2>
+
+        <button class="nav-btn active" onclick="openTab('projects', this)">⌘ ECOSYSTEM_SITES</button>
+        <button class="nav-btn" onclick="openTab('analytics', this)">⌬ LOGS_ANALYTICS</button>
+        <!-- Добавляем вызов renderCRM() при клике -->
+        <button class="nav-btn" onclick="openTab('crm-tab', this); renderCRM()">📅 CRM_SCHEDULER</button>
+        <button class="nav-btn" onclick="openTab('ads-tab', this)">🚀 ADS_MANAGER</button>
+        <button class="nav-btn" onclick="openTab('crm-tab', this); renderCRM()">📅 CRM_SCHEDULER</button>
+        <!-- Кнопки навигации с пояснениями -->
+        <button class="nav-btn" onclick="openTab('seo-tab', this)">🔍 SEO_MONITOR</button> <!-- Мониторинг позиций -->
+        <button class="nav-btn" onclick="openTab('server-tab', this)">📡 SERVER_RESOURCES</button> <!-- Нагрузка CPU/RAM -->
+        <button class="nav-btn" onclick="openTab('ai-leads-tab', this)">🤖 AI_CHAT_LEADS</button> <!-- Диалоги нейросети -->
+        <div class="health-card" id="api-status" style="margin-top: 30px;">
+            <div style="font-size: 0.6rem; opacity: 0.6;">CORE_API_UPLINK</div>
+            <div style="margin-top: 5px; font-size: 0.7rem;"><span class="pulse-dot"></span> RUNNING</div>
+        </div>
+
+        <button class="panic-btn" onclick="togglePanic()">🚨 PANIC MODE</button>
+    </nav>
+
+    <main>
+        <!-- Вкладка: Управление проектами -->
+        <div id="projects" class="tab-content active">
+            <h1 style="font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 30px;">CONNECTED_NODES</h1>
+
+            <div class="project-grid">
+                <!-- Карточка сайта 1 -->
+                <div class="project-manage-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <strong style="font-size: 1.1rem;">GENESYS_ENGINE</strong><br>
+                            <span style="font-size: 0.7rem; color: #888;">webfactory.ua/genesys</span>
+                        </div>
+                        <span class="status-badge">ONLINE</span>
+                    </div>
+
+                    <div style="margin-top: 15px; font-size: 0.7rem; color: var(--bright-purple);">
+                        Traffic: 1.2k req/min | Latency: 24ms
+                    </div>
+
+                    <div class="control-btns">
+                        <button class="ctrl-btn" onclick="nodeAction('GENESYS', 'console')">CONSOLE</button>
+                        <button class="ctrl-btn" onclick="nodeAction('GENESYS', 'restart')">RESTART</button>
+                        <button class="ctrl-btn" style="color: var(--critical-pink);" onclick="nodeAction('GENESYS', 'restrict')">RESTRICT</button>
+                    </div>
+                </div>
+
+                <!-- Карточка сайта 2 -->
+                <div class="project-manage-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <strong style="font-size: 1.1rem;">WF_MAIN_PORTAL</strong><br>
+                            <span style="font-size: 0.7rem; color: #888;">webfactory.ua</span>
+                        </div>
+                        <span class="status-badge">ONLINE</span>
+                    </div>
+
+                    <div style="margin-top: 15px; font-size: 0.7rem; color: var(--bright-purple);">
+                        Active Users: 42 | Server Load: 12%
+                    </div>
+
+                    <div class="control-btns">
+                        <button class="ctrl-btn">CONSOLE</button>
+                        <button class="ctrl-btn">RESTART</button>
+                        <button class="ctrl-btn" style="color: var(--critical-pink);">RESTRICT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка: Аналитика и Логи -->
+        <div id="analytics" class="tab-content">
+            <h1 style="font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 30px;">SYSTEM_LOG_STREAM</h1>
+            <div class="stream-box" id="stream-logs">
+                > Initializing Analytics Deep Scan...<br>
+                > Bridge connected to main server.<br>
+            </div>
+        </div>
+
+                <!-- [ 1. SEO_MONITOR ] -->
+        <div id="seo-tab" class="tab-content" style="display:none;">
+            <h3 style="font-family:'Orbitron';">// SEARCH_ENGINE_INDEX_TRACKER</h3>
+            <div class="tech-card">
+                <table style="width:100%; font-size:0.8rem; border-collapse:collapse;">
+                    <thead>
+                        <tr style="color:var(--soft-blue); text-align:left; border-bottom:1px solid var(--border);">
+                            <th style="padding:10px;">KEYWORD</th>
+                            <th>POSITION</th>
+                            <th>CHANGE</th>
+                            <th>NODE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="seo-table-body">
+                        <!-- Данные подгружаются скриптом -->
+                        <tr>
+                            <td style="padding:10px;">создание сайтов киев</td>
+                            <td style="color:var(--ok-green);">#3</td>
+                            <td style="color:var(--ok-green);">▲ 2</td>
+                            <td>MAIN_PORTAL</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:10px;">python development ua</td>
+                            <td style="color:var(--soft-blue);">#12</td>
+                            <td style="color:var(--critical-pink);">▼ 1</td>
+                            <td>GENESYS</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- [ 2. SERVER_RESOURCES ] -->
+        <div id="server-tab" class="tab-content" style="display:none;">
+            <h3 style="font-family:'Orbitron';">// HARDWARE_TELEMETRY</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <!-- CPU Load -->
+                <div class="tech-card">
+                    <div style="font-size:0.7rem; margin-bottom:10px;">CPU_UTILIZATION (GENESYS_NODE)</div>
+                    <div style="height:10px; background:#111; border-radius:5px; overflow:hidden;">
+                        <div style="width:42%; height:100%; background:var(--bright-purple); box-shadow:0 0 10px var(--bright-purple);"></div>
+                    </div>
+                    <div style="text-align:right; font-size:0.6rem; margin-top:5px;">42% - STABLE</div>
+                </div>
+                <!-- RAM Load -->
+                <div class="tech-card">
+                    <div style="font-size:0.7rem; margin-bottom:10px;">MEMORY_RESERVE (VALKYRIA_SHIELD)</div>
+                    <div style="height:10px; background:#111; border-radius:5px; overflow:hidden;">
+                        <div style="width:68%; height:100%; background:var(--soft-blue); box-shadow:0 0 10px var(--soft-blue);"></div>
+                    </div>
+                    <div style="text-align:right; font-size:0.6rem; margin-top:5px;">6.8GB / 10GB</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- [ 3. AI_CHAT_LEADS ] -->
+        <div id="ai-leads-tab" class="tab-content" style="display:none;">
+            <h3 style="font-family:'Orbitron';">// NEURAL_INTERCEPTOR_LOGS</h3>
+            <div id="ai-chats-container">
+                <!-- Пример диалога -->
+                <div class="tech-card" style="margin-bottom:15px; border-left: 2px solid var(--ok-green);">
+                    <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:var(--muted-text);">
+                        <span>USER_ID: 8821_EXT</span>
+                        <span>STATUS: CONVERTED_TO_LEAD</span>
+                    </div>
+                    <div style="margin-top:10px; font-size:0.75rem;">
+                        <b style="color:var(--soft-blue);">AI:</b> Чем я могу помочь в разработке вашего проекта?<br>
+                        <b style="color:var(--bright-purple);">USER:</b> Мне нужен аудит безопасности для сайта на FastAPI.
+                    </div>
+                    <button class="ctrl-btn" style="margin-top:10px; width:auto; padding:5px 15px;">TAKE_CONTROL</button> <!-- Вмешаться в чат -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+            /**
+     * Имитация обновления серверных ресурсов
+     * Позволяет видеть динамику нагрузки без реального бэкенда (пока что)
+     */
+    function updateServerMetrics() {
+        const bars = document.querySelectorAll('#server-tab .tech-card div div');
+        bars.forEach(bar => {
+            const newVal = Math.floor(Math.random() * (90 - 10) + 10); // Рандомная нагрузка 10-90%
+            bar.style.width = newVal + "%";
+            bar.parentElement.nextElementSibling.innerText = newVal + "% - " + (newVal > 80 ? "CRITICAL" : "STABLE");
+        });
+    }
+    // Запускаем обновление каждые 3 секунды при открытой вкладке
+    setInterval(() => {
+        if(document.getElementById('server-tab').classList.contains('active')) {
+            updateServerMetrics();
+        }
+    }, 3000);
+
+    /**
+     * Логика для управления SEO-данными
+     */
+    function refreshSEOMetrics() {
+        const log = document.getElementById('stream-logs');
+        if (log) {
+            log.innerHTML = `<div style="color:var(--soft-blue)">> [SEO] Requesting Google Search Console API... OK.</div>` + log.innerHTML;
+        }
+    }
+<!-- =============================================
+        Функция отправки данных (submitTask)
+     ============================================= -->
+    async function submitTask() {
+        const taskData = {
+            title: document.getElementById('task-script').value + " | " + document.getElementById('task-target').value,
+            target: document.getElementById('task-target').value,
+            script: document.getElementById('task-script').value,
+            start: document.getElementById('task-start-date').value
+        };
+
+        const response = await fetch('/api/crm/add-event', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(taskData)
+        });
+
+        if(response.ok) {
+            document.getElementById('event-modal').style.display = 'none';
+            // Обновляем страницу или календарь, чтобы увидеть новую задачу[cite: 8]
+            location.reload();
+        } else {
+            alert("CRITICAL_ERROR: Failed to sync with Neural Core");
+        }
+    }
+
+
+<!-- =============================================
+Пример инициализации аналитики
+     ============================================= -->
+function initSEOChart(data) {
+    new Chart(document.getElementById('seo-analytics'), {
+        type: 'line',
+        data: {
+            labels: data.dates,
+            datasets: [{
+                label: 'Clicks (Search Console)',
+                borderColor: '#bc13fe',
+                data: data.clicks
+            }]
+        }
+    });
+}
+     <!-- ============================================= -->
+
+function nodeAction(nodeName, actionType) {
+    const log = document.getElementById('stream-logs');
+    const time = new Date().toLocaleTimeString();
+    const filter = document.getElementById('node-filter');
+
+    let msg = "";
+    let color = "var(--bright-purple)";
+
+    // Логика обработки действий
+    switch(actionType) {
+        case 'console':
+            msg = `> [${nodeName}] TERMINAL_LINK_ESTABLISHED. Initializing remote shell...`;
+            // Переключаем вкладку на логи[cite: 8]
+            openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
+            // Синхронизируем фильтр логов под конкретную ноду[cite: 8]
+            if (filter) filter.value = (nodeName === 'GENESYS' ? 'GENESYS' : 'MAIN');
+            break;
+
+        function nodeAction(nodeName, actionType) {
+    const log = document.getElementById('stream-logs');
+    const time = new Date().toLocaleTimeString();
+    const filter = document.getElementById('node-filter');
+    const card = event.target.closest('.project-manage-card');
+
+    let msg = "";
+    let color = "var(--bright-purple)";
+
+    // Технологичный префикс для всех логов
+    const logPrefix = `<span style="opacity:0.5; font-size:0.7rem;">[${time}]</span> `;
+
+    switch(actionType) {
+        case 'console':
+            msg = `TERMINAL_LINK_ESTABLISHED. Initializing remote shell on ${nodeName}... OK.`;
+            openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
+            if (filter) filter.value = (nodeName === 'GENESYS' ? 'GENESYS' : 'MAIN');[cite: 8]
+            break;
+
+        case 'restart':
+            msg = `REBOOT_SEQUENCE_STARTING. Recycling worker processes for ${nodeName}.`;
+            color = "#00d2ff";
+
+            if (card) {
+                // 1. Находим элемент с трафиком внутри карточки
+                const statsBlock = card.querySelector('div[style*="var(--bright-purple)"]');
+                const originalText = statsBlock.innerHTML;
+
+                // 2. Визуальный эффект перезагрузки
+                card.style.filter = "hue-rotate(180deg) blur(1px)";
+                card.style.opacity = "0.4";
+                statsBlock.innerHTML = `<span style="color:var(--critical-pink); animation: pulse 0.5s infinite;">OFFLINE (REBOOTING...)</span>`;[cite: 8]
+
+                setTimeout(() => {
+                    card.style.filter = "none";
+                    card.style.opacity = "1";
+                    statsBlock.innerHTML = originalText;
+                    log.innerHTML = `${logPrefix} <span style="color:#00ff80">> [${nodeName}] SYSTEM_RECOVERY_COMPLETE. Nodes synced.</span><br>` + log.innerHTML;
+                }, 2000);
+            }
+            break;
+
+        case 'restrict':
+            if (!confirm(`WARNING: Подтвердить изоляцию узла ${nodeName}? Это заблокирует внешний трафик.`)) return;
+
+            msg = `EMERGENCY_LOCKDOWN. Firewall restriction engaged for ${nodeName}.`;
+            color = "var(--critical-pink)";
+
+            if (event.target) {
+                event.target.innerText = "RESTRICTED";
+                event.target.style.background = "rgba(255, 0, 127, 0.2)";
+                event.target.style.borderColor = "var(--critical-pink)";
+                event.target.disabled = true; // Блокируем кнопку после активации
+            }
+
+            if (card) {
+                const badge = card.querySelector('.status-badge');
+                if (badge) {
+                    badge.innerText = "RESTRICTED";
+                    badge.style.background = "rgba(255, 0, 127, 0.1)";
+                    badge.style.color = "var(--critical-pink)";
+                }
+            }
+            break;
+    }
+
+    // Вывод в поток логов с анимацией появления
+    const logEntry = document.createElement('div');
+    logEntry.style.cssText = `margin-bottom:8px; color:${color}; border-left: 2px solid ${color}; padding-left: 10px; animation: fadeIn 0.4s ease-out;`;
+    logEntry.innerHTML = `${logPrefix} > [${nodeName}] ${msg}`;
+
+    log.prepend(logEntry); // Добавляет новый лог всегда в начало (сверху)
+}
+    // Вывод в консоль логов (новое сообщение всегда сверху)[cite: 8]
+    log.innerHTML = `
+        <div style="margin-bottom:8px; color:${color}; border-left: 2px solid ${color}; padding-left: 10px; animation: fadeIn 0.3s;">
+            <span style="opacity:0.5; font-size:0.7rem;">[${time}]</span> ${msg}
+        </div>
+    ` + log.innerHTML;
+}
+
+               // управление логами
+                let isLogging = true;
+        function toggleLogStream() {
+            isLogging = !isLogging;
+            document.getElementById('log-trigger').innerText = isLogging ? "STOP_STREAM" : "START_STREAM";
+        }
+
+        setInterval(() => {
+            if(!isLogging) return;
+            const filter = document.getElementById('node-filter').value;
+            const log = document.getElementById('stream-logs');
+            const node = Math.random() > 0.5 ? "GENESYS" : "MAIN";
+
+            if(filter === "ALL" || filter === node) {
+                const action = actions[Math.floor(Math.random() * actions.length)];
+                log.innerHTML = `<div style="margin-bottom:5px;"><span style="color:var(--bright-purple)">[${node}]</span> ${action}</div>` + log.innerHTML;
+            }
+        }, 1500);
+        // Переключение вкладок
+        function openTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Живые логи (теперь на отдельной вкладке)
+        const actions = ["Inbound request: /api/v1", "DB query optimized", "Cache hit: user_session", "Neural node synced", "Static assets served"];
+        setInterval(() => {
+            const log = document.getElementById('stream-logs');
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML = `<div style="margin-bottom:5px;"><span style="color:#555">[${time}]</span> > ${action}</div>` + log.innerHTML;
+        }, 2000);
+
+        // Panic Mode (Связь с бэкендом)
+async function togglePanic() {
+    const res = await fetch('/panic', {method: 'POST'});
+    const data = await res.json();
+    const btn = document.querySelector('.panic-btn');
+
+    if (data.panic_mode) {
+        btn.style.background = "var(--critical-pink)";
+        btn.style.color = "#000";
+        btn.innerText = "🚨 SYSTEM LOCKED";
+        document.body.style.filter = "sepia(1) saturate(2) hue-rotate(-50deg)";
+    } else {
+        btn.style.background = "rgba(255, 0, 127, 0.1)";
+        btn.style.color = "var(--critical-pink)";
+        btn.innerText = "🚨 PANIC MODE";
+        document.body.style.filter = "none";
+    }
+}
+
+        // Health Check (Связь с бэкендом)
+        setInterval(async () => {
+            try {
+                const res = await fetch('/health');
+                const statusCard = document.getElementById('api-status');
+                if(!res.ok) throw new Error();
+                statusCard.style.borderColor = "var(--border)";
+                statusCard.querySelector('.pulse-dot').style.background = "var(--ok-green)";
+            } catch {
+                const statusCard = document.getElementById('api-status');
+                statusCard.style.borderColor = "var(--critical-pink)";
+                statusCard.querySelector('.pulse-dot').style.background = "var(--critical-pink)";
+            }
+        }, 5000);
+
+        //функция «оживит» календарь и свяжет его с  данными//
+        // [ CRM ENGINE: FULLCALENDAR INITIALIZATION ]
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar-render');
+            if (!calendarEl) return; // Защита, если элемента нет на странице
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                editable: true,
+                selectable: true,
+                events: '/api/crm/events', // Источник данных из Python
+
+                // 1. ВЫБОР ДАТЫ (Открытие нашей модалки)
+                select: function(info) {
+                    const modal = document.getElementById('event-modal');
+                    const dateInput = document.getElementById('task-start-date');
+
+                    if (modal && dateInput) {
+                        modal.style.display = 'block';
+                        dateInput.value = info.startStr; // Передаем дату в скрытое поле
+                    }
+                },
+
+                // 2. КЛИК ПО СОБЫТИЮ (Инфо в логи)
+                eventClick: function(info) {
+                    const event = info.event;
+                    const log = document.getElementById('stream-logs');
+                    if (log) {
+                        log.innerHTML = `<div style="color:var(--ok-green)">> [CRM_INFO] Event: ${event.title} | Status: ${event.extendedProps.status || 'ACTIVE'}</div>` + log.innerHTML;
+                    }
+                    openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
+                }
+            });
+
+            // Функция для корректного рендеринга при переключении вкладок
+            window.renderCRM = function() {
+                setTimeout(() => {
+                    calendar.render();
+                    calendar.updateSize();
+                }, 100);
+            };
+        });
+
+        // Красивое действие при клике на событие
+        eventClick: function(info) {
+            const event = info.event;
+            const log = document.getElementById('stream-logs');
+            log.innerHTML = `<div style="color:var(--ok-green)">> [CRM_INFO] Event: ${event.title} | Status: ${event.extendedProps.status}</div>` + log.innerHTML;
+            openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
+        },
+
+        // Создание события по клику на дату
+        select: function(info) {
+            const title = prompt('SYSTEM: Введите название задачи:');
+            if (title) {
+                createNewEvent({
+                    title: title,
+                    start: info.startStr,
+                    target: 'GENESYS'
+                });
+            }
+        }
+    });
+
+    // Отрисовываем календарь при переключении на вкладку CRM
+    window.renderCRM = function() {
+        setTimeout(() => calendar.render(), 100);
+    };
+});
+
+// Функция отправки нового события на сервер
+async function createNewEvent(eventData) {
+    const response = await fetch('/api/crm/add-event', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(eventData)
+    });
+    if(response.ok) location.reload();
+}
+
+    // Универсальный переключатель вкладок
+    function openTab(tabId, btn) {
+        // Скрываем все вкладки
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.style.display = 'none';
+            tab.classList.remove('active');
+        });
+
+        // Снимаем активность со всех кнопок
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+        // Показываем нужную
+        const activeTab = document.getElementById(tabId);
+        if (activeTab) {
+            activeTab.style.display = 'block';
+            activeTab.classList.add('active');
+        }
+
+        // Активируем кнопку
+        btn.classList.add('active');
+    }
+    </script>
+
+<!-- [ MODAL: CRM_TASK_CREATOR ] -->
+<div id="event-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(10, 10, 15, 0.95); border: 2px solid var(--bright-purple); padding:30px; z-index:20000; backdrop-filter:blur(20px); width: 400px; box-shadow: 0 0 50px rgba(188, 19, 254, 0.3); border-radius: 8px;">
+    <h3 style="font-family:'Orbitron'; color:var(--bright-purple); margin-top:0; letter-spacing: 2px;">// NEW_AUTO_TASK</h3>
+
+    <div style="margin-bottom: 15px;">
+        <label style="font-size: 0.6rem; color: var(--soft-blue);">TARGET_NODE:</label><br>
+        <select id="task-target" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:8px; font-family:'JetBrains Mono'; margin-top:5px;">
+            <option value="LOCAL">LOCAL_HOST (WF_MAIN)</option>
+            <option value="GENESYS">GENESYS_ENGINE_NODE</option>
+            <option value="VALKYRIA">VALKYRIA_SHIELD</option>
+        </select>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label style="font-size: 0.6rem; color: var(--soft-blue);">SERVICE_FUNCTION:</label><br>
+        <select id="task-script" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:8px; font-family:'JetBrains Mono'; margin-top:5px;">
+            <option value="RESTART">SYSTEM_REBOOT</option>
+            <option value="HEALTH_SCAN">DIAGNOSTIC_SCAN</option>
+            <option value="DB_BACKUP">SQL_CORE_BACKUP</option>
+            <option value="SEO_SNAPSHOT">SEO_METRICS_SYNC</option>
+        </select>
+    </div>
+
+    <!-- Поля для даты и времени (скрытые, заполняются автоматом из календаря) -->
+    <input type="hidden" id="task-start-date">
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+        <button onclick="submitTask()" class="ctrl-btn" style="background:var(--ok-green); color:#000; font-weight:bold; border:none;">CONFIRM_EXEC</button>
+        <button onclick="document.getElementById('event-modal').style.display='none'" class="ctrl-btn" style="border: 1px solid var(--critical-pink); color: var(--critical-pink);">ABORT</button>
+    </div>
+</div>
+</body>
+</html>

@@ -2,3 +2,8 @@ fastapi
 uvicorn
 httpx
 python-multipart
+fastapi
+uvicorn
+firebase-admin
+genkit
+genkit-google-ai

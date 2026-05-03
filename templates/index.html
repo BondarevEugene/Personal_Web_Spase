@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- Favicon: буква F в фиолетовом шестиграннике -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='Orbitron, sans-serif' font-size='50' fill='%23bc13fe' font-weight='bold'>F</text></svg>">
+    <meta charset="UTF-8">
+    <title>WEBFACTORY | ARCHITECT BONDAREV_E</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-purple: #5e0a7e;
+            --bright-purple: #bc13fe;
+            --deep-void: #030305;
+            --soft-blue: #00d2ff;
+            --glass: rgba(10, 10, 15, 0.9);
+            --border: rgba(94, 10, 126, 0.4);
+            --muted-text: #888;
+        }
+
+        body {
+            background-color: var(--deep-void);
+            color: #e0e0ff;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            overflow-x: hidden;
+            transition: background 2s ease;
+        }
+
+        canvas#bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.2; }
+        #neural-overlay { position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none; }
+
+        .main-layout { margin-left: 80px; padding: 40px; max-width: 1400px; }
+
+        /* [ SIDEBAR ] */
+        .sidebar {
+            width: 70px; height: 100vh; background: var(--glass);
+            border-right: 1px solid var(--border);
+            position: fixed; left: 0; top: 0; z-index: 1000;
+            display: flex; flex-direction: column; align-items: center;
+            transition: 0.4s; backdrop-filter: blur(10px);
+        }
+        .sidebar:hover { width: 240px; }
+
+        /* [ HEADER ] */
+        .logo { font-family: 'Orbitron'; font-size: 2.5rem; letter-spacing: 5px; }
+
+        /* [ TECH STACK - НОВЫЙ БЛОК ] */
+        .tech-section { margin-bottom: 80px; }
+        .tech-category { margin-bottom: 30px; }
+        .tech-category h3 { font-family: 'Orbitron'; color: var(--soft-blue); font-size: 0.8rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
+        .tech-card {
+            background: rgba(20, 20, 30, 0.5); border: 1px solid var(--border);
+            padding: 15px; border-radius: 8px; transition: 0.3s;
+        }
+        .tech-card:hover { border-color: var(--bright-purple); transform: translateY(-3px); }
+        .tech-card b { color: #fff; font-size: 0.85rem; display: block; margin-bottom: 5px; }
+        .tech-card i { color: var(--muted-text); font-size: 0.7rem; font-style: normal; line-height: 1.3; display: block; }
+
+        /* [ ROI CALCULATOR ] */
+        .roi-container {
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 40px; border-radius: 20px; margin-bottom: 80px;
+        }
+        .range-row { margin: 25px 0; }
+        input[type=range] { width: 100%; accent-color: var(--bright-purple); cursor: pointer; }
+
+        /* [ PROJECTS ] */
+        .project-case {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 20px; overflow: hidden; margin-bottom: 80px;
+        }
+        .project-header { display: grid; grid-template-columns: 1.5fr 1fr; }
+        .project-visual { background: #000; min-height: 400px; position: relative; }
+        .carousel-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; width: 100%; height: 400px; scroll-behavior: smooth; }
+        .carousel-container img { flex: 0 0 100%; object-fit: contain; scroll-snap-align: center; }
+        .project-desc { padding: 40px; border-left: 1px solid var(--border); }
+        .tag { display: inline-block; padding: 4px 10px; border: 1px solid var(--soft-blue); font-size: 0.6rem; color: var(--soft-blue); margin-right: 5px; margin-bottom: 10px; }
+
+        //анализатор сайта
+        <section class="roi-container" style="margin-top: 80px;">
+    <h2 style="font-family:'Orbitron'; margin-top:0; color:var(--bright-purple);">🛰 SITE_COMPLEXITY_SCANNER</h2>
+    <p style="font-size: 0.8rem; color: var(--muted-text); margin-bottom: 20px;">Введите URL для анализа архитектуры и оценки стоимости разработки аналогичной системы.</p>
+
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <input type="text" id="scan-url" placeholder="https://example.com" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: #fff; padding: 12px; font-family: 'JetBrains Mono';">
+        <button onclick="scanSite()" style="background: var(--bright-purple); border: none; color: #fff; padding: 0 25px; cursor: pointer; font-family: 'Orbitron'; font-weight: bold;">SCAN</button>
+    </div>
+
+    <div id="scan-result" style="display:none; border-top: 1px solid var(--border); padding-top: 20px; animation: fadeIn 0.5s;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.8rem;">
+            <div>ARCHITECTURE: <span id="res-arch" style="color:var(--soft-blue)">--</span></div>
+            <div>SECURITY_LEVEL: <span id="res-sec" style="color:var(--soft-blue)">--</span></div>
+            <div>ESTIMATED_PRICE: <span id="res-price" style="color:#00ff80; font-weight: bold;">--</span></div>
+            <div>DEV_TIME: <span id="res-time" style="color:var(--soft-blue)">--</span></div>
+        </div>
+    </div>
+</section>
+
+<script>
+async function scanSite() {
+    const url = document.getElementById('scan-url').value;
+    if(!url) return alert("Введите URL");
+
+    const btn = event.target;
+    btn.innerText = "SCANNING...";
+
+    // Имитация анализа (позже подключим реальный бэкенд на Python)
+    setTimeout(() => {
+        document.getElementById('scan-result').style.display = 'block';
+        document.getElementById('res-arch').innerText = "High-Load Python/FastAPI";
+        document.getElementById('res-sec').innerText = "Enterprise (SSL+WAF)";
+        document.getElementById('res-price').innerText = "$" + (Math.random() * (5000 - 1500) + 1500).toFixed(0);
+        document.getElementById('res-time').innerText = "14-21 Days";
+        btn.innerText = "SCAN";
+    }, 2000);
+}
+</script>
+//конец анализатора сайта
+
+                <!-- [ SITE SCANNER SECTION ] -->
+        <section class="roi-container" style="margin-top: 80px; border: 1px solid var(--bright-purple); box-shadow: 0 0 20px rgba(188, 19, 254, 0.1);">
+            <h2 style="font-family:'Orbitron'; margin-top:0; color:var(--bright-purple);">🛰 CORE_SCANNER v2.0</h2>
+            <p style="font-size: 0.8rem; color: var(--muted-text); margin-bottom: 20px;">Введите URL для глубокого анализа архитектуры и оценки сложности.</p>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="scan-url" placeholder="https://domain.com" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: #fff; padding: 15px; font-family: 'JetBrains Mono'; outline: none;">
+                <button onclick="realScan()" id="scan-btn" style="background: var(--bright-purple); border: none; color: #fff; padding: 0 30px; cursor: pointer; font-family: 'Orbitron'; font-weight: bold; transition: 0.3s;">ANALYZE</button>
+            </div>
+
+            <div id="scan-result" style="display:none; border-top: 1px solid var(--border); padding-top: 25px;">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; font-size: 0.75rem;">
+                    <div style="color:var(--muted-text)">STACK: <span id="res-arch" style="color:#fff">--</span></div>
+                    <div style="color:var(--muted-text)">PROTECTION: <span id="res-sec" style="color:#fff">--</span></div>
+                    <div style="color:var(--muted-text)">ESTIMATED_COST: <span id="res-price" style="color:#00ff80; font-weight: bold;">--</span></div>
+                    <div style="color:var(--muted-text)">ENGINEERING_TIME: <span id="res-time" style="color:#00d2ff">--</span></div>
+                </div>
+                <div id="scan-metrics" style="margin-top: 15px; font-size: 0.6rem; color: #444; font-style: italic;"></div>
+            </div>
+        </section>
+
+        <!-- [ IT COMPANY ATTRIBUTES ] -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 60px; margin-bottom: 80px;">
+            <div class="tech-card">
+                <b>SLA 99.9% GUARANTEE</b>
+                <i>Отказоустойчивость систем уровня Tier 3. Мониторинг 24/7/365.</i>
+            </div>
+            <div class="tech-card">
+                <b>CYBER_AUDIT ACTIVE</b>
+                <i>Каждая строка кода проходит автоматизированный Pentest перед деплоем.</i>
+            </div>
+            <div class="tech-card">
+                <b>NEURAL WORKFLOW</b>
+                <i>Discovery → Arch_Design → Neural_Engineering → Deployment.</i>
+            </div>
+        </div>
+
+
+        /* [ FOOTER - ОБНОВЛЕННЫЙ ] */
+        footer {
+            border-top: 1px solid var(--border); padding: 80px 40px;
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 40px;
+            background: rgba(5, 5, 10, 0.95);
+        }
+        .footer-col h4 { font-family: 'Orbitron'; color: var(--soft-blue); font-size: 0.8rem; margin-bottom: 25px; letter-spacing: 2px; }
+        .footer-col p, .footer-col a { color: var(--muted-text); font-size: 0.75rem; text-decoration: none; display: block; margin-bottom: 10px; }
+        .footer-col a:hover { color: #fff; }
+        .sys-metric { font-size: 0.65rem; color: #444; margin-top: 5px; }
+        .status-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; background: rgba(0,255,128,0.1); color: #00ff80; font-size: 0.6rem; }
+    </style>
+</head>
+<body onmousemove="updateNeuralEcho(event)">
+
+<canvas id="bg-canvas"></canvas>
+<canvas id="neural-overlay"></canvas>
+
+<div class="sidebar">
+    <!-- Иконки или меню здесь -->
+</div>
+    <svg width="50" height="50" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 5px #bc13fe);">
+        <!-- Шестигранник -->
+        <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z"
+              fill="none" stroke="#bc13fe" stroke-width="3" />
+        <!-- Буква F -->
+        <text x="35" y="65" font-family="Orbitron" font-size="45" fill="#bc13fe" font-weight="bold">F</text>
+    </svg>
+<div class="main-layout">
+    <header class="cyber-header">
+        <div class="logo">WEB<span>FACTORY</span></div>
+        <div style="font-size: 0.8rem; font-weight: 300; letter-spacing: 2px; color: var(--bright-purple); opacity: 0.7; margin-top: -5px; text-transform: uppercase; line-height: 1.6;">
+            <div>Created & Engineered by <span style="color: #fff; font-weight: 700;">Bondarev_E</span></div>
+            <div style="color: #6a0dad; font-weight: 700; font-style: italic; letter-spacing: 3px; font-size: 0.7rem; opacity: 0.9;">
+                We can build your name. We do it because we can!
+            </div>
+        </div>
+        <div id="sys-clock" style="font-size: 0.7rem; color: var(--soft-blue); margin-top: 15px; opacity: 0.4;">
+            [ SYSTEM_STATUS: STABLE ] [ CLK: SYNCING... ]
+        </div>
+    </header>
+
+    <!-- ТЕХНОЛОГИЧЕСКИЙ СТЕК (20+ ТЕХНОЛОГИЙ) -->
+    <section class="tech-section">
+        <h2 style="font-family:'Orbitron'; font-size: 1.2rem; margin-bottom: 30px;">// CORE_TECHNOLOGY_STACK</h2>
+
+        <div class="tech-category">
+            <h3>[ BACKEND_CORE ]</h3>
+            <div class="tech-grid">
+                <div class="tech-card"><b>FastAPI</b><i>Асинхронная обработка высоконагруженных запросов.</i></div>
+                <div class="tech-card"><b>Python 3.11+</b><i>Основной язык логики и нейронных вычислений.</i></div>
+                <div class="tech-card"><b>Uvicorn</b><i>Высокопроизводительный ASGI сервер.</i></div>
+                <div class="tech-card"><b>SQLAlchemy</b><i>ORM для управления сложными структурами данных.</i></div>
+                <div class="tech-card"><b>Pydantic</b><i>Валидация данных и строгая типизация.</i></div>
+                <div class="tech-card"><b>PyJWT</b><i>Безопасная аутентификация через токены.</i></div>
+            </div>
+        </div>
+
+        <div class="tech-category">
+            <h3>[ AI_&_DATA_ANALYSIS ]</h3>
+            <div class="tech-grid">
+                <div class="tech-card"><b>Pandas</b><i>Анализ нумерологических матриц и больших данных.</i></div>
+                <div class="tech-card"><b>NumPy</b><i>Математические операции с векторами и массивами.</i></div>
+                <div class="tech-card"><b>Scikit-Learn</b><i>Предиктивная аналитика рыночных циклов.</i></div>
+                <div class="tech-card"><b>PyTorch</b><i>Построение и обучение глубоких нейронных сетей.</i></div>
+                <div class="tech-card"><b>Matplotlib</b><i>Генерация сложных архитектурных графиков.</i></div>
+            </div>
+        </div>
+
+        <div class="tech-category">
+            <h3>[ FRONTEND_INTERFACE ]</h3>
+            <div class="tech-grid">
+                <div class="tech-card"><b>Vanilla JS</b><i>Максимальная скорость отрисовки без лишних весов.</i></div>
+                <div class="tech-card"><b>HTML5 Canvas</b><i>Рендеринг нейронного эха и фоновых матриц.</i></div>
+                <div class="tech-card"><b>CSS Grid/Flex</b><i>Построение адаптивных кибер-интерфейсов.</i></div>
+                <div class="tech-card"><b>Fetch API</b><i>Real-time связь с бэкенд нодами.</i></div>
+                <div class="tech-card"><b>WebSockets</b><i>Двусторонний поток данных для консоли управления.</i></div>
+            </div>
+        </div>
+
+        <div class="tech-category">
+            <h3>[ INFRASTRUCTURE_&_DB ]</h3>
+            <div class="tech-grid">
+                <div class="tech-card"><b>PostgreSQL</b><i>Надежное хранение архитектурных логов.</i></div>
+                <div class="tech-card"><b>Redis</b><i>Кэширование состояний системы и мгновенный доступ.</i></div>
+                <div class="tech-card"><b>Docker</b><i>Контейнеризация для бесшовного деплоя.</i></div>
+                <div class="tech-card"><b>Nginx</b><i>Реверс-прокси и балансировка нагрузки.</i></div>
+                <div class="tech-card"><b>Git</b><i>Контроль версий системного кода.</i></div>
+                <div class="tech-card"><b>Google Cloud</b><i>Масштабируемый хостинг экосистемы.</i></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- СЕКЦИЯ ПРОЕКТОВ -->
+    <section id="portfolio">
+        <h2 style="font-family:'Orbitron'; font-size: 1.2rem; margin-bottom: 30px;">// ACTIVE_OPERATIONS</h2>
+
+        <div class="project-case">
+            <div class="project-header">
+                <div class="project-visual">
+                    <div class="carousel-container" id="carousel-genesys">
+                        <div style="padding:20px; font-size:0.7rem;">[LOADING_SYSTEM_ASSETS...]</div>
+                    </div>
+                </div>
+                <div class="project-desc">
+                    <div class="tag">AI_NUMEROLOGY</div><div class="tag">BIG_DATA</div>
+                    <h3>GENESYS_ENGINE</h3>
+                    <p>Аналитическая платформа для расшифровки временных кодов и рыночных циклов на базе Python-аналитики.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="project-case">
+            <div class="project-header">
+                <div class="project-visual">
+                    <div class="carousel-container" id="carousel-valkyria">
+                        <div style="padding:20px; font-size:0.7rem;">[WAITING_FOR_UPLINK...]</div>
+                    </div>
+                </div>
+                <div class="project-desc">
+                    <div class="tag">SECURITY</div><div class="tag">NEURAL_BLOCK</div>
+                    <h3>VALKYRIA_SYSTEM</h3>
+                    <p>Защитный протокол управления трафиком и визуализации угроз в реальном времени.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROI CALCULATOR -->
+    <section class="roi-container">
+        <h2 style="font-family:'Orbitron'; margin-top:0;">⚗ COMPLEXITY_CALCULATOR</h2>
+        <div class="range-row">
+            Логика системы: <span id="logic-val" style="color:var(--soft-blue)">5</span>
+            <input type="range" min="1" max="10" value="5" oninput="calculateROI()">
+        </div>
+        <div class="range-row">
+            Объем AI-модулей: <span id="ai-val" style="color:var(--soft-blue)">2</span>
+            <input type="range" min="0" max="20" value="2" oninput="calculateROI()">
+        </div>
+        <div style="font-size: 1.5rem; font-family: 'Orbitron';">ROI INDEX: <span id="roi-result" style="color:var(--bright-purple)">7.4</span></div>
+    </section>
+
+<!-- [ НОВЫЙ ИСПРАВЛЕННЫЙ ФУТЕР ] -->
+
+<footer style="margin-top: 80px; border-top: 1px solid var(--border); padding: 60px 0; display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 40px; width: 100%;">
+        <div class="footer-col">
+            <div class="logo" style="font-family: 'Orbitron'; font-size: 1.2rem; letter-spacing: 3px;">WEB<span style="color: var(--bright-purple);">FACTORY</span></div>
+            <p style="font-size: 0.7rem; color: var(--muted-text); margin-top: 10px; line-height: 1.4;">
+                Проектирование цифровых миров и нейронных интерфейсов повышенной сложности.
+            </p>
+        </div>
+        <div class="footer-col">
+            <h4 style="font-family:'Orbitron'; font-size:0.7rem; color:var(--soft-blue); margin-bottom: 20px;">NAVIGATION</h4>
+            <a href="/" style="color:var(--muted-text); text-decoration:none; display:block; font-size:0.7rem; margin-bottom:8px;">Architecture Hub</a>
+            <a href="javascript:void(0)" onclick="openAdmin(event)" style="color:var(--muted-text); text-decoration:none; display:block; font-size:0.7rem;">Admin Terminal</a>
+        </div>
+        <div class="footer-col">
+            <h4 style="font-family:'Orbitron'; font-size:0.7rem; color:var(--soft-blue); margin-bottom: 20px;">CONNECT</h4>
+            <a href="mailto:dev@webfactory.ua" style="color:var(--muted-text); text-decoration:none; display:block; font-size:0.7rem; margin-bottom:8px;">dev@webfactory.ua</a>
+            <a href="#" style="color:var(--muted-text); text-decoration:none; display:block; font-size:0.7rem;">Telegram</a>
+        </div>
+        <div class="footer-col">
+            <div class="status-pill" style="display:inline-block; padding:4px 12px; background:rgba(0,255,128,0.1); color:#00ff80; font-size:0.6rem; border-radius: 20px; font-weight: bold;">● ALL_NODES_ONLINE</div>
+            <div style="font-size: 0.6rem; color: #444; margin-top: 15px; font-family: 'JetBrains Mono';">
+                UPLINK: SECURE<br>
+                LATENCY: 14ms<br>
+                KERNEL: v5.8.2-STABLE
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script>
+// --- MATRIX BACKGROUND ---
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+const drops = Array(Math.floor(canvas.width/14)).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(3, 3, 5, 0.15)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#5e0a7e";
+    ctx.font = "14px monospace";
+    drops.forEach((y, i) => {
+        const text = String.fromCharCode(Math.random() * 128);
+        ctx.fillText(text, i * 14, y * 14);
+        if(y * 14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+    });
+}
+setInterval(drawMatrix, 50);
+
+// --- NEURAL ECHO ---
+const nCanvas = document.getElementById('neural-overlay');
+const nCtx = nCanvas.getContext('2d');
+nCanvas.width = window.innerWidth; nCanvas.height = window.innerHeight;
+let points = [];
+
+function updateNeuralEcho(e) {
+    points.push({x: e.clientX, y: e.clientY, r: 5, o: 1});
+    if(points.length > 40) points.shift();
+}
+
+function animateNeural() {
+    nCtx.clearRect(0,0,nCanvas.width, nCanvas.height);
+    points.forEach((p, i) => {
+        p.o -= 0.025;
+        nCtx.strokeStyle = `rgba(0, 210, 255, ${p.o})`;
+        nCtx.beginPath();
+        if(points[i-1]) {
+            nCtx.moveTo(points[i-1].x, points[i-1].y);
+            nCtx.lineTo(p.x, p.y);
+        }
+        nCtx.stroke();
+    });
+    requestAnimationFrame(animateNeural);
+}
+
+// Единая и правильная функция входа в админку
+function openAdmin(event) {
+    if (event) event.preventDefault(); // Блокируем переход по ссылке #
+
+    const password = prompt("Введите код доступа для терминала:");
+    if (password === "170788") {
+        // Перенаправляем на роут, который прописан в main.py
+        window.location.href = "/system-override";
+    } else if (password !== null) {
+        alert("Ошибка доступа. Протокол заблокирован.");
+    }
+}
+animateNeural();
+
+// --- IMAGE LOADER (DYNAMICS) ---
+async function loadProjectImages(projectName) {
+    try {
+        const response = await fetch(`/get-project-images/${projectName}`);
+        const images = await response.json();
+        const container = document.getElementById(`carousel-${projectName}`);
+        if (images.length > 0) {
+            container.innerHTML = images.map(src => `<img src="${src}" alt="Slide">`).join('');
+        } else {
+            container.innerHTML = '<div style="padding:20px; color:#444;">ASSETS_NOT_LINKED</div>';
+        }
+    } catch (err) { console.error(err); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadProjectImages('genesys');
+    loadProjectImages('valkyria');
+    setInterval(() => {
+        document.getElementById('sys-clock').innerText = `KYIV_TIME: ${new Date().toLocaleTimeString()}`;
+    }, 1000);
+});
+
+function calculateROI() {
+    const l = document.querySelectorAll('input[type=range]')[0].value;
+    const a = document.querySelectorAll('input[type=range]')[1].value;
+    document.getElementById('logic-val').innerText = l;
+    document.getElementById('ai-val').innerText = a;
+    const res = (parseInt(l) * 1.2 + parseInt(a) * 0.5).toFixed(1);
+    document.getElementById('roi-result').innerText = res;
+}
+
+ //---JavaScript для реального скрапинга---//
+async function realScan() {
+    const url = document.getElementById('scan-url').value;
+    const btn = document.getElementById('scan-btn');
+    if(!url) return alert("Введите корректный URL");
+
+    btn.innerText = "SCANNING_NODE...";
+    btn.style.opacity = "0.5";
+
+    try {
+        const response = await fetch('/analyze-site', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({url: url})
+        });
+        const data = await response.json();
+
+        document.getElementById('scan-result').style.display = 'block';
+        document.getElementById('res-arch').innerText = data.architecture || "Unknown Stack";
+        document.getElementById('res-sec').innerText = data.security;
+        document.getElementById('res-price').innerText = data.price;
+        document.getElementById('res-time').innerText = data.time;
+        document.getElementById('scan-metrics').innerText =
+            `[METRICS]: Scripts: ${data.metrics.scripts} | Styles: ${data.metrics.styles} | Latency: ${data.metrics.latency}`;
+    } catch (e) {
+        alert("Ошибка сканирования. Узел заблокирован.");
+    } finally {
+        btn.innerText = "ANALYZE";
+        btn.style.opacity = "1";
+    }
+}
+
+            const termMsgs = [
+            "Datalink encrypted...", "Neural node synced", "Analyzing market cycles",
+            "Buffer optimized", "Request filtered: 200 OK", "AI_Core: Stable",
+            "Uplink: Kyiv_Central", "Entropy check: PASS"
+        ];
+
+        function updateTerminal() {
+            const content = document.getElementById('term-content');
+            const msg = termMsgs[Math.floor(Math.random() * termMsgs.length)];
+            const div = document.createElement('div');
+            div.innerHTML = `> ${msg}`;
+            div.style.opacity = "0";
+            div.style.transition = "0.5s";
+            content.prepend(div);
+            setTimeout(() => div.style.opacity = "0.7", 10);
+            if(content.children.length > 5) content.removeChild(content.lastChild);
+        }
+        setInterval(updateTerminal, 3000);
+
+
+</script>
+    <div id="sys-terminal" style="position: fixed; bottom: 20px; right: 20px; width: 250px; background: rgba(0,0,0,0.8); border: 1px solid var(--border); padding: 10px; font-size: 0.6rem; color: var(--soft-blue); font-family: 'JetBrains Mono'; z-index: 9999; pointer-events: none; backdrop-filter: blur(5px);">
+        <div style="border-bottom: 1px solid var(--border); margin-bottom: 5px; padding-bottom: 3px; display: flex; justify-content: space-between;">
+            <span>CORE_LOG_STREAM</span>
+            <span style="color: var(--ok-green)">ACTIVE</span>
+        </div>
+        <div id="term-content"></div>
+    </div>
+
+//Живой системный терминал (Floating Console)
+<!--
+--------------------------------------------------------------------------------
+MODULE:  Live System Terminal (Floating Console)
+VERSION: 1.2.0
+DESCRIPTION: Overlay UI имитирующий потоковую обработку данных нейроядра.
+--------------------------------------------------------------------------------
+-->
+<div id="sys-terminal" style="position: fixed; bottom: 25px; right: 25px; width: 280px; background: rgba(5, 5, 10, 0.9); border: 1px solid var(--border); padding: 12px; font-size: 0.65rem; color: var(--soft-blue); font-family: 'JetBrains Mono', monospace; z-index: 10000; pointer-events: none; backdrop-filter: blur(8px); border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+    <div style="border-bottom: 1px solid var(--border); margin-bottom: 8px; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="letter-spacing: 1px; font-weight: bold;">[CORE_LOG_STREAM]</span>
+        <span style="color: var(--ok-green); font-size: 0.5rem; text-shadow: 0 0 5px var(--ok-green);">● ACTIVE</span>
+    </div>
+    <div id="term-content" style="height: 120px; overflow: hidden; display: flex; flex-direction: column-reverse;"></div>
+</div>
+
+<script>
+
+<!--
+--------------------------------------------------------------------------------
+MODULE:  Live System Terminal (Floating Console)
+VERSION: 1.2.0
+DESCRIPTION: Overlay UI имитирующий потоковую обработку данных нейроядра.
+--------------------------------------------------------------------------------
+-->
+/**
+ * TERMINAL CORE LOGIC
+ * Эмулирует задержку сети и обработку нейронных узлов
+ */
+const termMsgs = [
+    "Datalink encrypted via TLS 1.3", "Neural node synced [Kyiv_Node_01]",
+    "Analyzing market cycles...", "Entropy check: PASS",
+    "Request filtered: 200 OK", "AI_Core: Stable",
+    "Uplink: GENESYS_BRIDGE_ACTIVE", "Memory Buffer: Optimized (14ms)",
+    "Syncing CRM events...", "Executing background_scout.py"
+];
+
+function updateTerminal() {
+    const content = document.getElementById('term-content');
+    if(!content) return;
+
+    const msg = termMsgs[Math.floor(Math.random() * termMsgs.length)];
+    const time = new Date().toLocaleTimeString();
+
+    const div = document.createElement('div');
+    div.style.marginBottom = "4px";
+    div.style.opacity = "0";
+    div.style.transition = "all 0.4s ease";
+    div.innerHTML = `<span style="color:var(--muted-text)">[${time}]</span> > ${msg}`;
+
+    content.prepend(div);
+    setTimeout(() => div.style.opacity = "0.8", 50);
+
+    if(content.children.length > 8) content.removeChild(content.lastChild);
+}
+setInterval(updateTerminal, 2500);
+</script>
+<!--
+--------------------------------------------------------------------------------
+MODULE:  Live System Terminal (Floating Console)
+VERSION: 1.2.0
+DESCRIPTION: Overlay UI имитирующий потоковую обработку данных нейроядра.
+--------------------------------------------------------------------------------
+-->
+<div id="sys-terminal" style="position: fixed; bottom: 25px; right: 25px; width: 280px; background: rgba(5, 5, 10, 0.9); border: 1px solid var(--border); padding: 12px; font-size: 0.65rem; color: var(--soft-blue); font-family: 'JetBrains Mono', monospace; z-index: 10000; pointer-events: none; backdrop-filter: blur(8px); border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+    <div style="border-bottom: 1px solid var(--border); margin-bottom: 8px; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="letter-spacing: 1px; font-weight: bold;">[CORE_LOG_STREAM]</span>
+        <span style="color: var(--ok-green); font-size: 0.5rem; text-shadow: 0 0 5px var(--ok-green);">● ACTIVE</span>
+    </div>
+    <div id="term-content" style="height: 120px; overflow: hidden; display: flex; flex-direction: column-reverse;"></div>
+</div>
+
+<script>
+/**
+ * TERMINAL CORE LOGIC
+ * Эмулирует задержку сети и обработку нейронных узлов
+ */
+const termMsgs = [
+    "Datalink encrypted via TLS 1.3", "Neural node synced [Kyiv_Node_01]",
+    "Analyzing market cycles...", "Entropy check: PASS",
+    "Request filtered: 200 OK", "AI_Core: Stable",
+    "Uplink: GENESYS_BRIDGE_ACTIVE", "Memory Buffer: Optimized (14ms)",
+    "Syncing CRM events...", "Executing background_scout.py"
+];
+
+function updateTerminal() {
+    const content = document.getElementById('term-content');
+    if(!content) return;
+
+    const msg = termMsgs[Math.floor(Math.random() * termMsgs.length)];
+    const time = new Date().toLocaleTimeString();
+
+    const div = document.createElement('div');
+    div.style.marginBottom = "4px";
+    div.style.opacity = "0";
+    div.style.transition = "all 0.4s ease";
+    div.innerHTML = `<span style="color:var(--muted-text)">[${time}]</span> > ${msg}`;
+
+    content.prepend(div);
+    setTimeout(() => div.style.opacity = "0.8", 50);
+
+    if(content.children.length > 8) content.removeChild(content.lastChild);
+}
+setInterval(updateTerminal, 2500);
+</script>
+</body>
+</html>
