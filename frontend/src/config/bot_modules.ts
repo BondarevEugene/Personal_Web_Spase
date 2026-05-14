@@ -1,5 +1,8 @@
 import {
-  Cpu, Zap, ShoppingCart, MessageSquare, Shield, Code
+  Cpu
+}
+
+, Zap, ShoppingCart, MessageSquare, Shield, Code
 } from 'lucide-react';
 
 export const ALL_MODULES = [

@@ -196,6 +196,12 @@ async function scanSite() {
         <div id="sys-clock" style="font-size: 0.7rem; color: var(--soft-blue); margin-top: 15px; opacity: 0.4;">
             [ SYSTEM_STATUS: STABLE ] [ CLK: SYNCING... ]
         </div>
+
+                <div class="system-status" style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem;">
+            <span style="height: 10px; width: 10px; background-color: #2ecc71; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #2ecc71;"></span>
+            <span id="uptime-text">API Status: Operational (99.9% Uptime)</span>
+        </div> <!-- Live API Status" (Индикатор состояния) -->
+
     </header>
 
     <!-- ТЕХНОЛОГИЧЕСКИЙ СТЕК (20+ ТЕХНОЛОГИЙ) -->
@@ -283,6 +289,17 @@ async function scanSite() {
             </div>
         </div>
     </section>
+        <div class="project-card">
+        <h3>Архитектура системы</h3>
+        <div class="mermaid">
+            graph TD
+            A[Client/Web] -->|API Request| B(FastAPI Backend)
+            B --> C{PostgreSQL}
+            B --> D[Redis Cache]
+            B --> E[Celery Workers]
+            E --> F[S3 Storage]
+        </div>
+    </div>
 
     <!-- ROI CALCULATOR -->
     <section class="roi-container">
@@ -409,6 +426,37 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
         document.getElementById('sys-clock').innerText = `KYIV_TIME: ${new Date().toLocaleTimeString()}`;
     }, 1000);
+});
+
+ //Логика (JS): --- разобрать//
+
+document.addEventListener('keydown', (e) => {
+    // Вызов терминала на клавишу ` (тильда)
+    if (e.key === '`') {
+        const term = document.getElementById('terminal-overlay');
+        term.style.display = term.style.display === 'none' ? 'block' : 'none';
+        if (term.style.display === 'block') document.getElementById('terminal-input').focus();
+    }
+});
+
+const input = document.getElementById('terminal-input');
+const output = document.getElementById('terminal-output');
+
+input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const cmd = input.value.toLowerCase();
+        let response = '';
+
+        if (cmd === 'help') response = 'Available: about, stack, contact, clear, exit';
+        else if (cmd === 'about') response = 'Bondarev Eugene: Python Fullstack Developer.';
+        else if (cmd === 'stack') response = 'Python, FastAPI, Django, React, PostgreSQL, Docker.';
+        else if (cmd === 'clear') { output.innerHTML = ''; input.value = ''; return; }
+        else if (cmd === 'exit') { document.getElementById('terminal-overlay').style.display = 'none'; }
+        else response = `Command not found: ${cmd}`;
+
+        output.innerHTML += `<div>> ${input.value}</div><div>${response}</div>`;
+        input.value = '';
+    }
 });
 
 function calculateROI() {
@@ -586,5 +634,16 @@ function updateTerminal() {
 }
 setInterval(updateTerminal, 2500);
 </script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'dark'});</script>
+
+        <div id="terminal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; font-family: 'Courier New', monospace; color: #00ff00; padding: 20px;">
+        <div id="terminal-output">Welcome to Bondarev OS. Type 'help' for commands.</div>
+        <div style="display:flex;">
+            <span>>_ </span>
+            <input type="text" id="terminal-input" style="background:transparent; border:none; color:#00ff00; outline:none; width:100%; font-family: inherit;">
+        </div>
+    </div>
+
 </body>
 </html>

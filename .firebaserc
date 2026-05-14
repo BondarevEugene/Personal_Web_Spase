@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "web-factory-evo"
+  },
+  "targets": {
+    "webfactory-494918": {
+      "hosting": {
+        "main": [
+          "webfactory-494918"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
