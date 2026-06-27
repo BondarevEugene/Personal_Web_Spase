@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="uk"><head><meta charset="UTF-8"><title>PUBLIC OFFER</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        :root {
+            --bg-color: #050505; --container-bg: #0b0b0c; --text-main: #e2e8f0;
+            --text-muted: #8892b0; --accent-cyan: #00e5ff; --accent-green: #00ff41; --border-color: #1e1e24;
+        }
+        body { background: var(--bg-color); color: var(--text-main); font-family: 'JetBrains Mono', monospace; margin: 0; padding: 0; line-height: 1.7; }
+        .nav-bar { background: #000000; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); }
+        .logo { font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); font-weight: 700; letter-spacing: 2px; font-size: 1.1rem; }
+        .logo span { color: var(--accent-green); }
+        .print-btn { background: transparent; color: var(--accent-cyan); border: 1px solid var(--accent-cyan); padding: 8px 18px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; transition: all 0.3s ease; }
+        .print-btn:hover { background: var(--accent-cyan); color: #000; box-shadow: 0 0 15px var(--accent-cyan); }
+        .doc-container { max-width: 900px; margin: 50px auto; padding: 60px; background: var(--container-bg); border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { font-family: 'Orbitron', sans-serif; font-size: 1.6rem; color: #ffffff; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; margin-top: 0; margin-bottom: 30px; letter-spacing: 1px; }
+        h2 { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--accent-cyan); margin-top: 35px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        p, li { font-size: 0.9rem; color: var(--text-main); text-align: justify; }
+        ul { padding-left: 20px; list-style-type: square; }
+        li { margin-bottom: 10px; }
+        .footer-stamp { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; }
+        .lang-switch { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .lang-btn { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; padding: 6px 12px; border: 1px solid var(--border-color); background: #111; color: var(--text-muted); cursor: pointer; }
+        .lang-ua, .lang-en { display: none; }
+        #toggle-ua:checked ~ .doc-container .lang-ua { display: block; }
+        #toggle-en:checked ~ .doc-container .lang-en { display: block; }
+        #toggle-ua:checked ~ .doc-container .btn-ua, #toggle-en:checked ~ .doc-container .btn-en { background: var(--border-color); color: var(--accent-cyan); border-color: var(--accent-cyan); }
+        input[type="radio"] { display: none; }
+        @media print {
+            .no-print { display: none !important; }
+            .doc-container { border: none; margin: 0; padding: 0; background: transparent; box-shadow: none; }
+            body { background: #fff; color: #000; font-family: 'Courier New', monospace; }
+            h1, h2 { color: #000; border-bottom: 1px solid #000; }
+            p, li { color: #000; }
+            .lang-ua, .lang-en { display: block !important; page-break-after: always; }
+        }
+    </style>
+</head><body>
+<input type="radio" id="toggle-ua" name="lang-select" checked><input type="radio" id="toggle-en" name="lang-select">
+<div class="nav-bar no-print"><div class="logo">WEBFACTORY_<span>OFFER_PROTOCOL</span></div><div><button class="print-btn" onclick="window.print()">PRINT / PDF</button></div></div>
+<div class="doc-container"><div class="lang-switch no-print"><label for="toggle-ua" class="lang-btn btn-ua">UA (УКРАЇНСЬКА)</label><label for="toggle-en" class="lang-btn btn-en">EN (ENGLISH)</label></div>
+<div class="lang-ua"><h1>ПУБЛІЧНА ОФЕРТА / ДОГОВІР НА РОЗРОБКУ (v2.0)</h1><p>Цей документ є офіційною пропозицією WebFactory укласти Договір про надання послуг з проектування, компіляції та автоматизації цифрових екосистем з будь-якою особою, яка здійснить акцепт цієї оферти шляхом активації інтерфейсу або здійснення передоплати.</p><h2>2. Технологічний стек</h2><p>Усі програмні комплекси за замовчуванням проектуються на базі стеку: Python 3.11+, Fast API, асинхронних бібліотек aiogram v3 та контейнеризації Docker.</p><h2>3. Фінансові розрахунки</h2><p>Прийом платежів та активація комерційних ліцензій здійснюється через інтегровані цифрові вузли, включаючи системи банківського еквайрингу та шлюзи транзакцій Telegram Stars.</p><div class="footer-stamp">LEGAL_STATUS: CONTRACTUAL PROPOSAL ACTIVE<br>COMPLIANCE_ID: WF-OFFER-2026-EVO</div></div>
+<div class="lang-en"><h1>PUBLIC OFFER / DEVELOPMENT AGREEMENT (v2.0)</h1><p>This document represents an official offer by WebFactory to enter into a Services Agreement for the design, compilation, and automation of digital ecosystems with any entity accepting this offer via interface activation or advance payment.</p><h2>2. Technological Stack</h2><p>All software infrastructures are architected upon modern tech integrations: Python 3.11+, FastAPI, asynchronous aiogram v3 libraries, and Docker containerization.</p><h2>3. Financial Adjustments & Gateways</h2><p>Payment ingestion operates via integrated digital processing units, including banking clearings and Telegram Stars transaction gateways.</p><div class="footer-stamp">LEGAL_STATUS: CONTRACTUAL PROPOSAL ACTIVE<br>COMPLIANCE_ID: WF-OFFER-2026-EVO</div></div></div></body></html>

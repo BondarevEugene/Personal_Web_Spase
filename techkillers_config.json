@@ -1,0 +1,46 @@
+[
+  {
+    "id": "pythagoras_core",
+    "name": "Pythagoras_Calc_v2.5",
+    "type": "MATH_ENGINE",
+    "status": "OPERATIONAL",
+    "uptime": "99.98%",
+    "speed": "4.2ms",
+    "desc": "Вычислительное ядро квадрата Пифагора. Обрабатывает дату рождения, рассчитывает базовые и дополнительные числа, формирует векторы стрел силы и слабости.",
+    "metrics": "Load: 1.2% // Memory: 14MB",
+    "icon": "calculate"
+  },
+  {
+    "id": "interpretation_db",
+    "name": "Interpretation_Matcher",
+    "type": "DATA_BRIDGE",
+    "status": "OPERATIONAL",
+    "uptime": "100%",
+    "speed": "12.8ms",
+    "desc": "Реляционный маппер для сопоставления вычисленных кодов матриц с базой психологических и архетипических интерпретаций в PostgreSQL.",
+    "metrics": "Pool: 20/50 // Active_Queries: 0",
+    "icon": "storage"
+  },
+  {
+    "id": "destiny_graph",
+    "name": "Forecast_Trend_Generator",
+    "type": "GRAPH_ENGINE",
+    "status": "STDBY",
+    "uptime": "99.95%",
+    "speed": "8.5ms",
+    "desc": "Алгоритмический модуль построения графиков судьбы, воли и жизненных циклов. Генерирует массивы точек для динамических графиков.",
+    "metrics": "Threads: Idle // Cache: Active",
+    "icon": "analytics"
+  },
+  {
+    "id": "ai_coaching_bridge",
+    "name": "Genesys_AI_Agent_Node",
+    "type": "AI_GATEWAY",
+    "status": "OPERATIONAL",
+    "uptime": "99.71%",
+    "speed": "1240ms",
+    "desc": "Асинхронный шлюз для передачи расчетных данных в контекст ИИ-коучей. Формирует системные промпты на основе архетипов пользователя.",
+    "metrics": "API_Status: 200 OK // Tokens_Cached: 42k",
+    "icon": "psychology"
+  }
+]

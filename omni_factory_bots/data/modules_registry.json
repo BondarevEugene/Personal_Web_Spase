@@ -1,0 +1,70 @@
+{
+  "__meta__": {
+    "project": "OMNIFACTORY EVO",
+    "version": "1.0.0",
+    "description": "Централизованный реестр компонентов автоматизации"
+  },
+  "modules": {
+    "welcome": {
+      "cat": "core",
+      "label": "Welcome Core",
+      "icon": "MessageSquare",
+      "desc": "Приветствие и базовая инициализация пользователя"
+    },
+    "menu": {
+      "cat": "core",
+      "label": "Main Menu",
+      "icon": "Layout",
+      "desc": "Главное меню навигации бота"
+    },
+    "button_group": {
+      "cat": "core",
+      "label": "Button Group",
+      "icon": "List",
+      "desc": "Группа интерактивных кнопок"
+    },
+    "antispam": {
+      "cat": "admin",
+      "label": "Anti-Flood",
+      "icon": "ShieldCheck",
+      "desc": "Защита системы от спам-атак"
+    },
+    "logger": {
+      "cat": "admin",
+      "label": "Action Logger",
+      "icon": "Eye",
+      "desc": "Логирование действий пользователей"
+    },
+    "stats": {
+      "cat": "admin",
+      "label": "Bot Analytics",
+      "icon": "BarChart3",
+      "desc": "Детальная статистика использования"
+    },
+    "geo_picker": {
+      "cat": "geo",
+      "label": "Geo Picker",
+      "icon": "Navigation",
+      "desc": "Автоопределение адреса по геолокации"
+    },
+    "distance": {
+      "cat": "geo",
+      "label": "Distance Calc",
+      "icon": "Activity",
+      "desc": "Расчет стоимости доставки от склада"
+    },
+    "pickup": {
+      "cat": "geo",
+      "label": "Pickup Points",
+      "icon": "MapPin",
+      "desc": "Выбор пунктов самовывоза на карте"
+    },
+    "weather": {
+      "cat": "utils",
+      "label": "Weather Info",
+      "icon": "CloudLightning",
+      "desc": "Информер погоды для планирования"
+    }
+    // ... и остальные 41 модуль по аналогии
+  }
+}

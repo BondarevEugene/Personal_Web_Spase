@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OMNIFACTORY // DESIGN_SYSTEM_GUIDE</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400&family=Orbitron:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <div class="section">
+    <h2>// OMNIFACTORY_SYSTEM_ARCHITECTURE</h2>
+    <p><strong>1. ФАБРИКА (BotFactory):</strong> Это цех генерации. Она принимает JSON-граф из визуального редактора и, используя реестр модулей (Registry), "выпекает" готовый исполняемый Python-код. Ее задача — превратить абстракцию в логику.</p>
+    <p><strong>2. ОРКЕСТРАТОР (Orchestrator):</strong> Это операционная система бота. Он не генерирует код, он управляет жизнью бота в Runtime: ловит вебхуки, перенаправляет события, держит контекст диалогов (FSM) и управляет состоянием каждого модуля.</p>
+    <p><strong>3. КОНВЕЙЕР (Deployment Pipeline):</strong> От визуального узла в <code>tg_bots.html</code> -> к JSON-конфигу -> к генерации <code>main.py</code> -> к запуску Docker-контейнера. Это сквозной процесс, обеспечивающий автономность каждого бота.</p>
+</div>
+    <style>
+        :root {
+            /* Базовая палитра */
+            --bg-black: #050508;
+            --panel-bg: rgba(9, 9, 14, 0.85);
+            --neon-purple: #bc13fe;
+            --neon-cyan: #00ffff;
+            --text-main: #e4e4e7;
+            --text-dim: #71717a;
+            --border: rgba(188, 19, 254, 0.3);
+        }
+        body { background: var(--bg-black); color: var(--text-main); font-family: 'Inter', sans-serif; padding: 40px; line-height: 1.6; }
+
+        /* Стилизация элементов */
+        .section { margin-bottom: 50px; border-bottom: 1px solid #222; padding-bottom: 30px; }
+        h1, h2 { font-family: 'Orbitron', sans-serif; color: var(--neon-purple); text-transform: uppercase; }
+
+        .color-box { width: 100px; height: 100px; display: inline-block; margin: 10px; border-radius: 8px; border: 1px solid #fff; }
+
+        .code-block { background: #000; padding: 20px; font-family: 'JetBrains Mono', monospace; border-left: 4px solid var(--neon-purple); color: #00ff41; }
+
+        .ui-sample { background: var(--panel-bg); padding: 20px; border: 1px solid var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>OmniFactory // Design System v1.0</h1>
+    <p>Конституция визуального стиля для промышленного интерфейса.</p>
+
+    <div class="section">
+        <h2>1. Цветовая палитра</h2>
+        <div class="color-box" style="background: #050508;"></div> Background
+        <div class="color-box" style="background: #bc13fe;"></div> Neon Purple
+        <div class="color-box" style="background: #00ffff;"></div> Neon Cyan
+    </div>
+
+    <div class="section">
+        <h2>2. Типографика</h2>
+        <p><strong>Заголовки:</strong> Orbitron (технический, индустриальный).</p>
+        <p><strong>Основной текст:</strong> Inter (читабельность).</p>
+        <p><strong>Код/Логи:</strong> JetBrains Mono (моноширинный).</p>
+    </div>
+
+    <div class="section">
+        <h2>3. Компоненты (Standard)</h2>
+        <div class="ui-sample">
+            <h3 style="color:var(--neon-cyan)">// STATUS_ACTIVE</h3>
+            <button style="background:transparent; border: 1px solid var(--neon-purple); color:var(--neon-purple); padding: 10px 20px; cursor: pointer;">ACTION_TRIGGER</button>
+            <p>Используйте этот стиль для всех управляющих элементов.</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>4. Терминал (Логи)</h2>
+        <div class="code-block">
+            > SYSTEM_INIT... [OK]<br>
+            > ORCHESTRATOR_HUB_SYNC... [OK]<br>
+            > AWAITING_INPUT_STREAM...
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "bot_name": "MyFirstBot",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "message",
+      "content": "Привет! Я бот OmniFactory. Выбери действие:",
+      "next_steps": [
+        {"text": "Инфо о системе", "target": "info_node"},
+        {"text": "Начать задачу", "target": "task_node"}
+      ]
+    },
+    {
+      "id": "info_node",
+      "type": "message",
+      "content": "Это система управления автоматизацией нового поколения.",
+      "next_steps": [
+        {"text": "Назад", "target": "start"}
+      ]
+    },
+    {
+      "id": "task_node",
+      "type": "action",
+      "action_module": "ai_agent_process",
+      "content": "Запуск анализа...",
+      "next_steps": []
+    }
+  ]
+}

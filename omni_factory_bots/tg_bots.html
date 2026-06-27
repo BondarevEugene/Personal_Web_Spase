@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OMNIFACTORY // INDUSTRIAL_ARCHITECT v1.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.48/dist/drawflow.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow@0.0.48/dist/drawflow.min.css" rel="stylesheet">
+    <header>
+        <div class="logo">OMNIFACTORY // ARCHITECT</div>
+        <div id="build-status">IDLE</div>
+        <button class="btn-primary" onclick="triggerBuild()">DEPLOY_PIPELINE</button>
+    </header>
+
+    <div class="workspace">
+        <div class="sidebar" id="library"> </div>
+        <div id="drawflow"></div> <div class="inspector" id="props"> </div>
+    </div>
+    <style>
+        :root {
+            --bg: #09090b; --panel: #18181b; --accent: #7c3aed; --text: #e4e4e7; --border: #27272a;
+        }
+        body { margin: 0; height: 100vh; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; display: grid; grid-template-rows: 60px 1fr 200px; overflow: hidden; }
+
+        header { background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
+        .main-container { display: grid; grid-template-columns: 260px 1fr 300px; }
+
+        .sidebar { background: var(--panel); border-right: 1px solid var(--border); padding: 20px; }
+        .canvas-area { background: #0c0c0e; position: relative; }
+        .inspector { background: var(--panel); border-left: 1px solid var(--border); padding: 20px; }
+
+        footer { background: var(--panel); border-top: 1px solid var(--border); padding: 10px 20px; font-family: 'JetBrains Mono'; font-size: 0.8rem; color: #10b981; overflow-y: auto; }
+
+        .block-card { background: #27272a; padding: 10px; margin-bottom: 10px; border-radius: 6px; cursor: grab; font-size: 0.9rem; transition: 0.2s; }
+        .block-card:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent);">// OMNIFACTORY_ARCHITECT</div>
+    <div id="nav-actions">
+        <button onclick="saveProject()">SAVE_SCHEMA</button>
+        <button onclick="deployProject()" style="background: var(--accent); border:none; color:white; padding:5px 15px; border-radius:4px;">RUN_BUILD_PIPELINE</button>
+    </div>
+</header>
+
+<div class="main-container">
+    <div class="sidebar">
+        <h4>COMPONENTS</h4>
+        <div class="block-card" draggable="true">Node: Message_Sender</div>
+        <div class="block-card" draggable="true">Node: AI_Agent_Router</div>
+        <div class="block-card" draggable="true">Node: Database_Connector</div>
+        <div class="block-card" draggable="true">Node: Payment_Gateway</div>
+    </div>
+
+    <div id="drawflow" class="canvas-area"></div>
+
+    <div class="inspector">
+        <h4>PROPERTIES</h4>
+        <div id="prop-editor">Select node to configure...</div>
+    </div>
+</div>
+
+<footer>
+    <div id="terminal">> SYSTEM_READY... AWAITING SCHEMA...</div>
+</footer>
+
+<script>
+    const df = new Drawflow(document.getElementById('drawflow'));
+    df.start();
+
+    // Инициализация при клике на узел
+    df.on('nodeSelected', (id) => {
+        document.getElementById('prop-editor').innerHTML = `
+            <label>Node ID: ${id}</label><br>
+            <input type="text" placeholder="Variable Name" style="width:100%; margin:10px 0;">
+            <textarea style="width:100%; height:80px;"></textarea>
+        `;
+    });
+
+    function deployProject() {
+        const logs = document.getElementById('terminal');
+        logs.innerHTML += "<br>> [BUILD] Compiling graph to Python source...";
+        logs.innerHTML += "<br>> [DEPLOY] Injecting to Docker container...";
+        logs.innerHTML += "<br>> [SUCCESS] Bot architecture deployed.";
+    }
+</script>
+</body>
+</html>

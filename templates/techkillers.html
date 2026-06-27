@@ -1,0 +1,56 @@
+<div class="content-area" style="max-width: 1000px; margin: auto;">
+    <div class="dash-header" style="border-bottom: 2px solid var(--neon-purple); margin-bottom: 30px; padding-bottom: 20px;">
+        <h1 style="font-family: 'Orbitron'; font-size: 32px; color: #fff; margin-bottom: 10px;">GENESYS // PSYCHO-NUMEROLOGY ENGINE</h1>
+        <p style="color: var(--text-muted); font-size: 14px; letter-spacing: 2px;">Data-driven аналитика личности на основе квантового преобразования психоматриц</p>
+    </div>
+
+    <div class="slider-container" style="border: 1px solid var(--border-static); border-radius: 8px; background: #000; margin-bottom: 30px; position: relative; overflow: hidden;">
+        <div class="slider-track" id="slider" style="display: flex; transition: transform 0.5s ease; width: 100%;">
+            <div class="slide" style="min-width: 100%;"><img src="/assets/projects/genesys/img/admin_panel.png" onerror="this.style.display='none'" style="width:100%; height:400px; object-fit:contain;"></div>
+            <div class="slide" style="min-width: 100%;"><img src="/assets/projects/genesys/img/db_schema.png" onerror="this.style.display='none'" style="width:100%; height:400px; object-fit:contain;"></div>
+            <div class="slide" style="min-width: 100%;"><img src="/assets/projects/genesys/img/code_view.png" onerror="this.style.display='none'" style="width:100%; height:400px; object-fit:contain;"></div>
+        </div>
+        <div style="padding: 15px; display: flex; justify-content: center; gap: 20px;">
+            <button onclick="moveSlide(-1)" style="background:transparent; border:1px solid var(--neon-purple); color:#fff; padding:5px 15px; cursor:pointer;">❮ PREV</button>
+            <button onclick="moveSlide(1)" style="background:transparent; border:1px solid var(--neon-purple); color:#fff; padding:5px 15px; cursor:pointer;">NEXT ❯</button>
+        </div>
+    </div>
+
+    <div class="project-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+
+        <div class="tech-card" style="background: var(--panel-bg); padding: 30px; border: 1px solid var(--border-static);">
+            <h2 style="font-family: 'Orbitron'; font-size: 18px; margin-bottom: 20px; color: var(--neon-blue);">Engineering Stack</h2>
+            <ul style="color: var(--text-muted); font-size: 14px; line-height: 2; list-style-position: inside;">
+                <li><b>Engine:</b> Python 3.11+, NumPy для тензорных вычислений психоматрицы.</li>
+                <li><b>Data Layer:</b> ChromaDB для хранения семантических векторов профиля личности.</li>
+                <li><b>Architecture:</b> FastAPI micro-services, Pydantic-валидация входящих векторов.</li>
+                <li><b>UI-Layer:</b> Flet (Flutter-based) для кроссплатформенного рендеринга аналитики.</li>
+                <li><b>Reliability:</b> Docker-контейнеризация каждого экземпляра расчета для изоляции сессий.</li>
+            </ul>
+        </div>
+
+        <div class="tech-card" style="background: var(--panel-bg); padding: 30px; border: 1px solid var(--border-static);">
+            <h2 style="font-family: 'Orbitron'; font-size: 18px; margin-bottom: 20px; color: var(--neon-purple);">Business Logic</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">Genesys превращает сухие цифры в <b>Predictive Personality Profiling</b>.</p>
+            <ul style="color: var(--text-muted); font-size: 14px; line-height: 2; list-style-position: inside;">
+                <li><b>HR-Analytics:</b> Автоматический мэтчинг soft-skills кандидата с задачами команды.</li>
+                <li><b>CRM-Integration:</b> Модуль API для передачи данных совместимости в сторонние системы.</li>
+                <li><b>Retention:</b> Динамические отчеты по личностным циклам, стимулирующие повторные визиты.</li>
+                <li><b>Monetization:</b> Модель Freemium: расчет матрицы — бесплатно, развернутый психоаналитический PDF-отчет — платно.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        let currentSlide = 0;
+        const track = document.getElementById('slider');
+        window.moveSlide = function(dir) {
+            if(!track) return;
+            const slides = track.children;
+            currentSlide = (currentSlide + dir + slides.length) % slides.length;
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        };
+    })();
+</script>

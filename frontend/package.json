@@ -11,14 +11,17 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.4",
-    "framer-motion": "^10.18.0",
-    "lucide-react": "^0.263.1",
+    "@xyflow/react": "^12.10.2",
+    "axios": "^1.16.1",
+    "d3-color": "^3.1.0",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.16.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^24.12.2",
+    "@types/node": "^24.12.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",

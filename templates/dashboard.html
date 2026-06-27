@@ -1,0 +1,459 @@
+<div class="orchestrator-dashboard">
+
+    <div class="telemetry-grid">
+        <div class="kpi-card" id="kpi-active">
+            <div class="kpi-header">
+                <span class="pulse-indicator active"></span>
+                <span class="kpi-title">// ACTIVE_EXECUTIONS</span>
+            </div>
+            <div class="kpi-value" id="val-active-flows">04</div>
+            <div class="kpi-footer">Системные потоки в режиме ожидания событий</div>
+        </div>
+
+        <div class="kpi-card" id="kpi-success">
+            <div class="kpi-header">
+                <span class="kpi-title" style="color: var(--ok-green)">// SUCCESS_RATE</span>
+            </div>
+            <div class="kpi-value" style="color: var(--ok-green)">99.8%</div>
+            <div class="kpi-footer">2,415 успешных транзитов узлов за 24ч</div>
+        </div>
+
+        <div class="kpi-card" id="kpi-faults">
+            <div class="kpi-header">
+                <span class="kpi-title" style="color: var(--critical-pink)">// CRITICAL_FAULTS</span>
+            </div>
+            <div class="kpi-value" id="val-faults" style="color: var(--critical-pink)">00</div>
+            <div class="kpi-footer">Изолированных падений цепочек: 0</div>
+        </div>
+
+        <div class="kpi-card" id="kpi-hardware">
+            <div class="kpi-header">
+                <span class="kpi-title">// HOST_TELEMETRY</span>
+            </div>
+            <div class="sys-bars">
+                <div class="bar-container">
+                    <div class="bar-label"><span>CPU CORE</span><span id="txt-cpu">22%</span></div>
+                    <div class="meter-bar"><div class="fill-bar" id="bar-cpu" style="width: 22%"></div></div>
+                </div>
+                <div class="bar-container">
+                    <div class="bar-label"><span>RAM RESOURCE</span><span id="txt-ram">45%</span></div>
+                    <div class="meter-bar"><div class="fill-bar" id="bar-ram" style="width: 45%"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="management-grid">
+
+        <div class="dashboard-panel" id="active-instances-panel">
+            <div class="panel-header">// RUNNING_INSTANCES_RECON</div>
+            <div class="instance-list" id="bot-status-container">
+                <div class="sys-loader">Опрос состояния пула ботов...</div>
+            </div>
+        </div>
+
+        <div class="dashboard-panel" id="executions-history-panel">
+            <div class="panel-header">// WORKFLOW_EXECUTION_HISTORY (LIVE)</div>
+            <div class="table-wrapper">
+                <table class="n8n-execution-table">
+                    <thead>
+                        <tr>
+                            <th>EXECUTION_ID</th>
+                            <th>WORKFLOW / BOT</th>
+                            <th>TRIGGER_NODE</th>
+                            <th>LATENCY</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="execution-ledger-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-panel terminal-panel">
+        <div class="panel-header">// ORCHESTRATOR_STREAM_LOGS</div>
+        <div class="terminal-body" id="dash-terminal">
+            <span class="log-time">[17:30:00]</span> <span class="log-tag">[SYSTEM]</span> Инициализация панели мониторинга OmniFactory EVO... [OK]<br>
+            <span class="log-time">[17:30:01]</span> <span class="log-tag">[ENGINE]</span> Подключение детектора асинхронных событий к а бстрактным коннекторам...
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ПРИВЯЗКА К СИСТЕМНОЙ ПАЛИТРЕ ДИЗАЙН-СИСТЕМЫ */
+    :root {
+        --deep-space: #030305;
+        --panel-bg: #0d0d12;
+        --bright-purple: #bc13fe;
+        --soft-blue: #00d2ff;
+        --ok-green: #00ff41;
+        --critical-pink: #ff007f;
+        --border-color: rgba(188, 19, 254, 0.2);
+        --text-main: #e0e0e0;
+        --text-dim: #71717a;
+    }
+
+    .orchestrator-dashboard {
+        padding: 20px;
+        background: var(--deep-space);
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-height: calc(100vh - 80px);
+        box-sizing: border-box;
+    }
+
+    /* СЕТКА KPI КАРТОЧЕК */
+    .telemetry-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+
+    .kpi-card {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 110px;
+    }
+
+    .kpi-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .kpi-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: var(--soft-blue);
+    }
+
+    .kpi-value {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin: 10px 0 5px 0;
+        color: var(--text-main);
+    }
+
+    .kpi-footer {
+        font-size: 0.65rem;
+        color: var(--text-dim);
+    }
+
+    /* ИНДИКАТОР ПУЛЬСАЦИИ */
+    .pulse-indicator {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--text-dim);
+    }
+    .pulse-indicator.active {
+        background: var(--ok-green);
+        box-shadow: 0 0 8px var(--ok-green);
+        animation: pulseAnimation 1.8s infinite;
+    }
+
+    @keyframes pulseAnimation {
+        0% { transform: scale(0.9); opacity: 0.6; }
+        50% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    /* ПРОГРЕСС БАРЫ ТЕЛЕМЕТРИИ */
+    .sys-bars {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .bar-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .bar-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.65rem;
+    }
+
+    .meter-bar {
+        height: 4px;
+        background: #18181b;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .fill-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--bright-purple), var(--soft-blue));
+        width: 0%;
+        transition: width 0.4s ease;
+    }
+
+    /* ОСНОВНАЯ СЕТКА УПРАВЛЕНИЯ */
+    .management-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 20px;
+        flex-grow: 1;
+    }
+
+    .dashboard-panel {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .panel-header {
+        background: rgba(188, 19, 254, 0.05);
+        border-bottom: 1px solid var(--border-color);
+        padding: 10px 15px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        color: var(--bright-purple);
+    }
+
+    /* СПИСОК ИНСТАНСОВ БОТОВ */
+    .instance-list {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        max-height: 400px;
+    }
+
+    .bot-status-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid #27272a;
+        border-left: 4px solid var(--text-dim);
+        padding: 12px;
+        border-radius: 2px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: border-color 0.2s;
+    }
+
+    .bot-status-card.online { border-left-color: var(--ok-green); }
+    .bot-status-card.syncing { border-left-color: var(--soft-blue); }
+    .bot-status-card.offline { border-left-color: var(--critical-pink); }
+
+    .bot-info h5 {
+        margin: 0 0 5px 0;
+        font-size: 0.8rem;
+    }
+    .bot-info p {
+        margin: 0;
+        font-size: 0.65rem;
+        color: var(--text-dim);
+    }
+
+    .bot-actions button {
+        background: transparent;
+        border: 1px solid rgba(244, 63, 94, 0.4);
+        color: var(--critical-pink);
+        padding: 4px 8px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        cursor: pointer;
+        border-radius: 2px;
+        transition: all 0.2s;
+    }
+    .bot-actions button:hover {
+        background: var(--critical-pink);
+        color: #000;
+    }
+
+    /* ТАБЛИЦА СТИЛЯ n8n ИСТОРИИ ВЫПОЛНЕНИЙ */
+    .table-wrapper {
+        padding: 10px;
+        overflow-y: auto;
+        max-height: 400px;
+    }
+
+    .n8n-execution-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.75rem;
+        text-align: left;
+    }
+
+    .n8n-execution-table th {
+        padding: 10px;
+        color: var(--text-dim);
+        border-bottom: 1px solid #27272a;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.65rem;
+    }
+
+    .n8n-execution-table td {
+        padding: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .badge-status {
+        padding: 2px 6px;
+        border-radius: 2px;
+        font-size: 0.65rem;
+        font-weight: bold;
+    }
+    .badge-status.success { background: rgba(0, 255, 65, 0.1); color: var(--ok-green); }
+    .badge-status.failed { background: rgba(255, 0, 127, 0.1); color: var(--critical-pink); }
+
+    /* НИЖНИЙ СТРИМ ТЕРМИНАЛА */
+    .terminal-panel {
+        flex-grow: 1;
+    }
+
+    .terminal-body {
+        background: #000;
+        padding: 15px;
+        font-size: 0.7rem;
+        color: var(--ok-green);
+        line-height: 1.4;
+        height: 120px;
+        overflow-y: auto;
+        border-radius: 0 0 4px 4px;
+    }
+
+    .log-time { color: var(--text-dim); }
+    .log-tag { color: var(--soft-blue); }
+    .sys-loader { font-size: 0.75rem; color: var(--text-dim); text-align: center; padding: 20px 0; }
+</style>
+
+<script>
+    /**
+     * РЕАКТИВНЫЙ ОРКЕСТРАТОР ДАННЫХ ДЛЯ DASHBOARD
+     */
+    (function initDashboardEngine() {
+        const botContainer = document.getElementById('bot-status-container');
+        const ledgerBody = document.getElementById('execution-ledger-body');
+        const dashTerminal = document.getElementById('dash-terminal');
+
+        // Имитация базы данных недавних атомарных прохождений узлов (n8n Execution List)
+        const mockExecutions = [
+            { id: "ex_8761", workflow: "Sales_Bot_v1.2", trigger: "CommandStart", latency: "14ms", status: "success" },
+            { id: "ex_8760", workflow: "Analytic_Bot", trigger: "Scheduler_24h", latency: "128ms", status: "success" },
+            { id: "ex_8759", workflow: "Support_Bot_v0.9", trigger: "TextMessage", latency: "45ms", status: "success" },
+            { id: "ex_8758", workflow: "Sales_Bot_v1.2", trigger: "Stripe_Webhook", latency: "210ms", status: "failed" }
+        ];
+
+        // Рендеринг таблицы истории выполнения графов
+        function renderExecutionLedger() {
+            if(!ledgerBody) return;
+            ledgerBody.innerHTML = mockExecutions.map(ex => `
+                <tr>
+                    <td style="color: var(--soft-blue); font-weight: bold;">#${ex.id}</td>
+                    <td>${ex.workflow}</td>
+                    <td><code style="color: var(--bright-purple)">${ex.trigger}</code></td>
+                    <td>${ex.latency}</td>
+                    <td><span class="badge-status ${ex.status}">${ex.status.toUpperCase()}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Запрос к бэкенду за статусами активных инстансов бота
+        async function fetchSystemStatus() {
+            try {
+                const response = await fetch('/api/v1/status');
+                if (!response.ok) throw new Error("API Offline");
+                const bots = await response.json();
+
+                if(botContainer) {
+                    if(bots.length === 0) {
+                        botContainer.innerHTML = '<div class="sys-loader">Нет запущенных инстансов ботов</div>';
+                        return;
+                    }
+                    botContainer.innerHTML = bots.map(b => `
+                        <div class="bot-status-card ${b.status === 'ONLINE' ? 'online' : b.status === 'SYNCING' ? 'syncing' : 'offline'}">
+                            <div class="bot-info">
+                                <h5>${b.id}</h5>
+                                <p>STATUS: ${b.status} // Platform: Telegram</p>
+                            </div>
+                            <div class="bot-actions">
+                                <button onclick="killInstance('${b.id}')">KILL</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                // Фолбэк на случай изолированного фронтенд-теста без запущенного бэкенда
+                if(botContainer) {
+                    botContainer.innerHTML = `
+                        <div class="bot-status-card online">
+                            <div class="bot-info"><h5>@Web_FactoryBot</h5><p>STATUS: ONLINE // Platform: Telegram</p></div>
+                            <div class="bot-actions"><button onclick="alert('Kill signal sent')">KILL</button></div>
+                        </div>
+                        <div class="bot-status-card syncing">
+                            <div class="bot-info"><h5>Support_Agent_Bot</h5><p>STATUS: SYNCING // Platform: WA</p></div>
+                            <div class="bot-actions"><button onclick="alert('Kill signal sent')">KILL</button></div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Метод уничтожения инстанса запущенного бота через ядро оркестратора
+        window.killInstance = async function(botId) {
+            if(!confirm(`Остановить и деинсталлировать бота ${botId}?`)) return;
+            try {
+                await fetch('/api/v1/kill', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ bot_id: botId })
+                });
+                pushTerminalLog("SYSTEM", `Отправлен сигнал прерывания KILL_SIGNAL для ${botId}`, "critical-pink");
+                fetchSystemStatus();
+            } catch (e) {
+                console.error("Ошибка отправки сигнала прерывания:", e);
+            }
+        };
+
+        function pushTerminalLog(tag, text, colorClass = "soft-blue") {
+            if(!dashTerminal) return;
+            const timeStr = new Date().toTimeString().split(' ')[0];
+            dashTerminal.innerHTML += `<br><span class="log-time">[${timeStr}]</span> <span class="log-tag" style="color: var(--${colorClass})">[${tag}]</span> ${text}`;
+            dashTerminal.scrollTop = dashTerminal.scrollHeight;
+        }
+
+        // Динамическая телеметрия хоста
+        setInterval(() => {
+            const cpuVal = Math.floor(Math.random() * 25 + 10);
+            const ramVal = Math.floor(Math.random() * 5 + 42);
+
+            if(document.getElementById('txt-cpu')) document.getElementById('txt-cpu').innerText = `${cpuVal}%`;
+            if(document.getElementById('txt-ram')) document.getElementById('txt-ram').innerText = `${ramVal}%`;
+            if(document.getElementById('bar-cpu')) document.getElementById('bar-cpu').style.width = `${cpuVal}%`;
+            if(document.getElementById('bar-ram')) document.getElementById('bar-ram').style.width = `${ramVal}%`;
+
+            if(Math.random() > 0.7) {
+                const events = ["PING_NODE_RESPONSE... 12ms", "FSMContext state checked", "Neon.tech Postgres connection pool active"];
+                pushTerminalLog("CORE", events[Math.floor(Math.random() * events.length)]);
+            }
+        }, 3000);
+
+        // Инициализация рендеров
+        renderExecutionLedger();
+        fetchSystemStatus();
+        // Циклический опрос состояния коннекторов каждые 5 секунд
+        setInterval(fetchSystemStatus, 5000);
+    })();
+</script>

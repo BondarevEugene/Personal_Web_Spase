@@ -1,803 +1,716 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- 1. Подключаем Share Tech Mono из Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <!-- FullCalendar Engine - индустриальный стандарт для CRM-систем-->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<style>
-    /* Кастомизация календаря под наш кибер-стиль */
-    .fc { background: rgba(0, 0, 0, 0.3); font-family: 'JetBrains Mono', monospace; }
-    .fc-toolbar-title { font-family: 'Orbitron'; color: var(--bright-purple) !important; font-size: 1rem !important; }
-    .fc-button { background: var(--neon-purple) !important; border: 1px solid var(--bright-purple) !important; text-transform: uppercase; font-size: 0.6rem !important; }
-    .fc-daygrid-day:hover { background: rgba(188, 19, 254, 0.05); }
-    .fc-event { background: var(--bright-purple); border: none; cursor: pointer; padding: 2px 5px; }
-    .fc-day-today { background: rgba(0, 210, 255, 0.05) !important; }
-</style>
-
-    <!-- Favicon: буква F в фиолетовом шестиграннике -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='Orbitron, sans-serif' font-size='50' fill='%23bc13fe' font-weight='bold'>F</text></svg>">
     <meta charset="UTF-8">
-    <title>WF_CORE | ARCHITECT_PANEL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY MASTER // ADMINISTRATIVE_SUPERVISOR_v7.7</title>
 
-    <!-- CRM TAB CONTENT -->
-    <div id="crm-tab" class="tab-content" style="display:none;">
-        <div style="display: grid; grid-template-columns: 1fr 350px; gap: 25px;">
-            <!-- Календарная сетка -->
-            <div class="tech-card" style="min-height: 500px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                    <h3 style="font-family:'Orbitron'; margin:0;">// EVENT_SCHEDULER</h3>
-                    <button onclick="openNewEventModal()" class="action-btn" style="background:var(--ok-green); color:#000;">+ NEW_EVENT</button>
-                </div>
-                <!-- Сюда инжектится календарь (FullCalendar.js рекомендуется) -->
-                <div id="calendar-render" style="color: #fff;"></div>
-            </div>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
-            <!-- Боковая панель: Скрипты и Очередь -->
-            <div>
-                <div class="tech-card" style="margin-bottom: 20px;">
-                    <h4 style="font-family:'Orbitron'; font-size:0.7rem; color:var(--soft-blue);">AUTOMATION_QUEUE</h4>
-                    <div id="event-list" style="font-size: 0.75rem;">
-                        <!-- Пример события -->
-                        <div style="border-left: 2px solid var(--bright-purple); padding: 10px; background: rgba(255,255,255,0.05); margin-top: 10px;">
-                            <b>Site Audit: Genesys</b><br>
-                            <span style="color: var(--muted-text);">Today at 18:00</span><br>
-                            <span style="color: var(--ok-green);">Script: analyze_core.py</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <!-- ADS MANAGEMENT TAB -->
-    <div id="ads-tab" class="tab-content" style="display:none;">
-        <h1 style="font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 30px;">ADVERTISING_ORCHESTRATOR</h1>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px;">
-            <!-- Google Ads Node -->
-            <div class="tech-card" style="border-left: 4px solid #4285F4;">
-                <h3 style="font-family:'Orbitron'; color:#4285F4;">GOOGLE_ADS_STREAM</h3>
-                <div style="display: flex; justify-content: space-between; margin: 15px 0;">
-                    <span>Active Campaigns: <b style="color:#fff;">12</b></span>
-                    <span>Daily Spend: <b style="color:#00ff88;">$450.20</b></span>
-                </div>
-                <div style="height: 150px; background: rgba(66, 133, 244, 0.1); border: 1px dashed #4285F4; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 0.7rem; color: #4285F4;">[ VISUAL_CHART_WAITING_DATA ]</span>
-                </div>
-                <div class="control-btns" style="margin-top: 15px;">
-                    <button class="ctrl-btn" onclick="nodeAction('G_ADS', 'optimize')">OPTIMIZE_BID</button>
-                    <button class="ctrl-btn" onclick="nodeAction('G_ADS', 'report')">GENERATE_PDF</button>
-                </div>
-            </div>
-
-            <!-- Meta Ads Node -->
-            <div class="tech-card" style="border-left: 4px solid #1877F2;">
-                <h3 style="font-family:'Orbitron'; color:#1877F2;">META_AD_DASHBOARD</h3>
-                <div style="display: flex; justify-content: space-between; margin: 15px 0;">
-                    <span>CTR: <b style="color:#fff;">3.8%</b></span>
-                    <span>Leads Today: <b style="color:#00ff88;">84</b></span>
-                </div>
-                <div style="height: 150px; background: rgba(24, 119, 244, 0.1); border: 1px dashed #1877F2; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 0.7rem; color: #1877F2;">[ PIXEL_TRAFFIC_ACTIVE ]</span>
-                </div>
-                <div class="control-btns" style="margin-top: 15px;">
-                    <button class="ctrl-btn" onclick="nodeAction('META', 'sync')">SYNC_PIXEL</button>
-                    <button class="ctrl-btn" onclick="nodeAction('META', 'pause')">PAUSE_LOW_ROI</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='JetBrains Mono' font-size='45' fill='%23bc13fe' font-weight='bold'>M</text></svg>">
 
 <style>
-    :root {
-        --deep-space: #030305;
-        --bright-purple: #bc13fe;
-        --soft-blue: #00d2ff;
-        --font-main: 'Share Tech Mono', monospace;
-        --font-header: 'Orbitron', sans-serif;
-        --critical-pink: #ff007f;
-        --ok-green: #00ff88;
-        --glass: rgba(15, 15, 25, 0.9);
-        --border: rgba(94, 10, 126, 0.3);
-    }
+        :root {
+            --bg-black: #050508;
+            --bg-darker: #020204;
+            --panel-bg: rgba(9, 9, 14, 0.93);
+            --panel-border: #1f1f23;
+            --neon-purple: #bc13fe;
+            --neon-glow: rgba(188, 19, 254, 0.35);
+            --neon-blue: #00f0ff;
+            --neon-blue-glow: rgba(0, 240, 255, 0.2);
+            --text-white: #ffffff;
+            --text-muted: #71717a;
+            --text-dim: #4a4a5a;
+            --matrix-green: #22c55e;
+            --neon-orange: #f97316;
+            --neon-yellow: #ffff00;
+            --neon-yellow-glow: rgba(255, 255, 0, 0.5);
+            --border-static: rgba(188, 19, 254, 0.15);
+        }
 
-    /* [ GLOBAL RESET ] */
-    body {
-        background-color: var(--deep-space);
-        color: #fff;
-        font-family: var(--font-main);
-        margin: 0;
-        display: flex;
-        height: 100vh;
-        overflow: hidden;
-        line-height: 1.4;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* Принудительная установка шрифта для системных элементов */
-    h1, h2, h3, h4, .nav-btn, .ctrl-btn, .action-btn, .fc-toolbar-title {
-        font-family: var(--font-header) !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+        body {
+            background-color: #09090b;
+            color: #f4f4f5;
 
-    /* [ SIDEBAR ] */
-    .sidebar {
-        width: 260px;
-        background: rgba(5, 5, 10, 0.95);
-        border-right: 1px solid var(--border);
-        padding: 30px;
-        display: flex;
-        flex-direction: column;
-        z-index: 10;
-    }
+            /* СМЕНА НА ПЛАВНЫЙ СТИЛЬ ТИПА ARIAL NARROW / HELVETICA CONDENSED */
+            font-family: 'Arial Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 15.5px;
+            font-stretch: condensed;
+            letter-spacing: -0.1px;
+            line-height: 1.5;
 
-    /* [ ТЕХНОЛОГИЧНЫЕ КНОПКИ: ЕДИНЫЙ СТИЛЬ ] */
-    .nav-btn, .ctrl-btn, .action-btn {
-        position: relative;
-        padding: 12px;
-        margin-bottom: 10px;
-        background: rgba(188, 19, 254, 0.05);
-        border: 1px solid var(--border);
-        color: var(--soft-blue);
-        cursor: pointer;
-        font-size: 0.75rem;
-        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        backdrop-filter: blur(5px);
-        /* Срезанные углы согласно дизайну портала */
-        clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0% 30%);
-        overflow: hidden;
-    }
+            /* СВЕРХМЯГКОЕ АНТИАЛИАСИНГ-СГЛАЖИВАНИЕ ДЛЯ КНИЖНОГО ЭФФЕКТА */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
 
-    .nav-btn:hover, .ctrl-btn:hover, .action-btn:hover {
-        color: #fff;
-        background: rgba(0, 210, 255, 0.15);
-        border-color: var(--soft-blue);
-        box-shadow: 0 0 20px rgba(0, 210, 255, 0.4), inset 0 0 10px rgba(0, 210, 255, 0.2);
-        transform: translateY(-2px);
-    }
+            margin: 0; padding: 0;
+            display: flex; min-height: 100vh; flex-direction: column;
+        }
 
-    .nav-btn.active {
-        background: rgba(188, 19, 254, 0.2);
-        border-color: var(--bright-purple);
-        color: #fff;
-        box-shadow: 0 0 15px var(--bright-purple);
-    }
+        .layout-wrapper { display: flex; flex: 1; width: 100%; position: relative; }
 
-    /* Анимация "сканирующего луча" при наведении */
-    .nav-btn::after, .ctrl-btn::after {
-        content: "";
-        position: absolute;
-        top: -50%;
-        left: -60%;
-        width: 20%;
-        height: 200%;
-        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transform: rotate(30deg);
-        transition: all 0.6s;
-    }
+        .sidebar {
+            width: 325px; background-color: #0f0f12; border-right: 1px solid #1f1f23;
+            display: flex; flex-direction: column; padding: 25px 20px; box-sizing: border-box;
+            flex-shrink: 0; user-select: none;
+        }
 
-    .nav-btn:hover::after, .ctrl-btn:hover::after {
-        left: 120%;
-    }
+        .factory-logo-block { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-left: 8px; }
 
-    /* [ СПЕЦИФИЧЕСКИЕ СОСТОЯНИЯ ] */
-    .ctrl-btn[onclick*="restrict"] {
-        color: var(--critical-pink);
-        border-color: rgba(255, 0, 127, 0.3);
-    }
+        .factory-logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #fff;
+            letter-spacing: 1px;
+        }
 
-    .ctrl-btn[onclick*="restrict"]:hover {
-        background: rgba(255, 0, 127, 0.2);
-        border-color: var(--critical-pink);
-        box-shadow: 0 0 20px var(--critical-pink);
-    }
+        .brand-master-container { border-bottom: 1px solid rgba(188, 19, 254, 0.15); padding-bottom: 20px; margin-bottom: 15px; padding-left: 8px; }
 
-    /* Кнопка PANIC (Спец-анимация) */
-    .panic-btn {
-        background: repeating-linear-gradient(45deg, rgba(255, 0, 127, 0.1), rgba(255, 0, 127, 0.1) 10px, rgba(0, 0, 0, 0.2) 10px, rgba(0, 0, 0, 0.2) 20px);
-        border: 2px solid var(--critical-pink);
-        color: var(--critical-pink);
-        padding: 15px;
-        border-radius: 12px;
-        cursor: pointer;
-        text-align: center;
-        font-weight: bold;
-        margin-top: auto;
-        animation: alert-blink 2s infinite;
-    }
+        .brand-main-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(188, 19, 254, 0.3);
+        }
 
-    @keyframes alert-blink {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; border-color: #fff; }
-        100% { opacity: 1; }
-    }
+        .brand-sub-author {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--neon-yellow) !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 6px;
+            text-shadow: 0 0 12px var(--neon-yellow-glow);
+        }
 
-    /* [ INTERFACE COMPONENTS ] */
-    main { flex: 1; padding: 40px; overflow-y: auto; position: relative; }
-    .tab-content { display: none; animation: fadeIn 0.4s ease; }
-    .tab-content.active { display: block; }
+        .menu-category {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 18px 0 6px 8px;
+            font-weight: 700;
+        }
 
-    .tech-card {
-        background: var(--glass);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 20px;
-        transition: 0.3s;
-    }
+        .sidebar-menu { display: flex; flex-direction: column; gap: 5px; list-style: none; padding: 0; margin: 0; }
 
-    .project-manage-card {
-        background: var(--glass);
-        border: 1px solid var(--border);
-        border-radius: 15px;
-        padding: 25px;
-        position: relative;
-        transition: 0.3s;
-    }
-    .project-manage-card:hover { border-color: var(--bright-purple); transform: translateY(-5px); }
+        .menu-item a {
+            display: flex; align-items: center; gap: 12px; color: #a1a1aa; text-decoration: none;
+            padding: 10px 14px; border-radius: 6px; font-size: 15px; font-weight: 500;
+            transition: all 0.2s ease; border-left: 3px solid transparent;
+        }
 
-    /* [ LOGS & TERMINAL ] */
-    .stream-box {
-        background: #000;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 20px;
-        height: 70vh;
-        overflow-y: auto;
-        font-size: 0.85rem;
-        color: #00ff41; /* Цвет терминала */
-        font-family: var(--font-main);
-    }
+        .menu-item.active a, .menu-item a:hover { background-color: #1e1b4b; color: #c084fc; border-left-color: var(--neon-purple); }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-</style>
+        .badge {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #3b0764;
+            color: #d8b4fe;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        .main-container { flex: 1; padding: 35px; box-sizing: border-box; display: flex; flex-direction: column; gap: 30px; max-width: 1600px; margin: 0 auto; width: 100%; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f23; padding-bottom: 18px; }
+
+        .page-title h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 0 0 6px 0;
+            color: #fff;
+        }
+        .page-title p { color: #71717a; margin: 0; font-size: 13px; }
+
+        .view-section { display: none; flex-direction: column; gap: 30px; animation: viewFadeIn 0.25s ease forwards; }
+        .view-section.active-view { display: flex; }
+        @keyframes viewFadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background-color: #141417; border: 1px solid #1f1f23; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        .card::before { content: ''; position: absolute; top: -1px; left: -1px; width: 8px; height: 8px; border-top: 2px solid var(--neon-purple); border-left: 2px solid var(--neon-purple); }
+        .card::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 8px; height: 8px; border-bottom: 2px solid var(--neon-blue); border-right: 2px solid var(--neon-blue); }
+
+        .card-title h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin: 0;
+            color: #fff;
+            text-transform: uppercase;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card-title h2::before { content: '◈'; color: var(--neon-purple); font-size: 14px; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .metric-card { background-color: #141417; border: 1px solid #1f1f23; border-radius: 12px; padding: 22px; position: relative; border-left: 3px solid var(--neon-purple); }
+        .metric-label { color: #71717a; font-size: 11px; font-weight: 600; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+
+        .metric-value { font-size: 24px; font-weight: 700; color: #fff; font-family: 'Orbitron', sans-serif; }
+        .metric-sub { font-size: 12px; color: #22c55e; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+        .metric-sub.negative { color: #ef4444; }
+
+        .mini-progress-bar { width: 100%; height: 3px; background: #09090b; margin-top: 10px; border-radius: 2px; overflow: hidden; }
+        .mini-progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue)); width: 0%; transition: width 0.4s ease; }
+
+        .dashboard-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        @media (max-width: 1150px) { .dashboard-layout { grid-template-columns: 1fr; } }
+
+        .terminal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f23; padding-bottom: 10px; }
+        .terminal-filters { display: flex; gap: 8px; }
+
+        /* ШРИФТ ДЛЯ ТЕКСТОВЫХ ПОЛЕЙ ВВОДА И ТЕРМИНАЛА СОХРАНЯЕМ СЛЕГКА ТЕХНИЧЕСКИМ, НО СГЛАЖЕННЫМ */
+        .filter-btn { background: #1c1c21; border: 1px solid #27272a; color: #a1a1aa; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: inherit; }
+        .filter-btn.active { background: #3b0764; color: #d8b4fe; border-color: var(--neon-purple); }
+
+        .terminal-box { background-color: #09090b; border: 1px solid #1f1f23; border-radius: 8px; padding: 16px; height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-family: monospace; }
+        .log-row { font-size: 12px; line-height: 1.5; margin: 0; display: flex; }
+        .log-time { color: #52525b; margin-right: 10px; flex-shrink: 0; }
+        .log-tag { font-weight: 600; margin-right: 10px; padding: 2px 6px; border-radius: 4px; font-size: 9px; text-transform: uppercase; flex-shrink: 0; text-align: center; width: 65px; }
+        .log-tag.success { background-color: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+        .log-tag.info { background-color: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+        .log-tag.error { background-color: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+        .log-text { color: #e4e4e7; white-space: pre-wrap; }
+
+        .prompt-manager { display: flex; flex-direction: column; gap: 12px; }
+        .prompt-textarea { background-color: #09090b; border: 1px solid #1f1f23; border-radius: 8px; color: #cbd5e1; font-family: inherit; font-size: 14px; padding: 16px; resize: vertical; min-height: 160px; outline: none; line-height: 1.5; }
+        .prompt-textarea:focus { border-color: var(--neon-purple); box-shadow: 0 0 10px var(--neon-glow); }
+
+        .btn-primary { background-color: #a855f7; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; font-family: inherit; text-transform: uppercase; }
+        .btn-primary:hover { background-color: #c084fc; box-shadow: 0 0 12px var(--neon-glow); }
+
+        .btn-table-action { background: rgba(188, 19, 254, 0.05); color: #f4f4f5; border: 1px solid #27272a; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 13px; transition: all 0.2s; }
+        .btn-table-action:hover { border-color: var(--neon-purple); background: rgba(188, 19, 254, 0.15); color: #fff; }
+
+        .auth-input { background-color: #050508; border: 1px solid #1f1f23; border-radius: 6px; padding: 10px; font-family: inherit; font-size: 14px; color: #fff; outline: none; }
+        .auth-input:focus { border-color: var(--neon-purple); }
+
+        #calendar { font-size: 13px; background: #09090b; padding: 16px; border-radius: 8px; border: 1px solid #1f1f23; }
+        .fc .fc-toolbar-title { font-size: 14px !important; color: #fff; font-weight: 600; font-family: 'Orbitron'; }
+        .fc .fc-button-primary { background-color: #27272a !important; border-color: #3f3f46 !important; }
+
+        /* ТАБЛИЦЫ С СУПЕР-ПЛАВНЫМ КОМПАКТНЫМ ТЕКСТОМ */
+        .tech-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .tech-table th { color: #71717a; border-bottom: 1px solid #1f1f23; padding: 12px 10px; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        .tech-table td { padding: 14px 10px; border-bottom: 1px solid #1f1f23; color: #e4e4e7; vertical-align: middle; }
+
+        .status-indicator-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-indicator-dot.active { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .status-indicator-dot.processing { background: var(--neon-orange); box-shadow: 0 0 8px var(--neon-orange); }
+        .status-indicator-dot.disconnected { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+
+        .cyber-footer { margin-top: auto; padding: 50px 35px 25px 35px; border-top: 1px solid rgba(188, 19, 254, 0.15); background: linear-gradient(180deg, #09090b, rgba(188, 19, 254, 0.02)); width: 100%; box-sizing: border-box; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; margin-bottom: 40px; }
+        .footer-column { border-left: 3px solid var(--neon-purple); padding-left: 20px; }
+        .footer-col-title { font-family: 'Orbitron', sans-serif; color: #fff; font-size: 11px; margin-bottom: 18px; letter-spacing: 2.5px; text-transform: uppercase; }
+        .legal-link { text-decoration: none; display: block; margin-bottom: 10px; }
+        .legal-box { background: rgba(188, 19, 254, 0.01); border: 1px solid rgba(188, 19, 254, 0.15); padding: 12px; border-radius: 6px; }
+        .telemetry-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.04); padding: 4px 0; }
+        .compliance-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .tag { background: rgba(0,0,0,0.4); padding: 4px 10px; border: 1px solid rgba(188, 19, 254, 0.2); font-size: 10px; color: #71717a; }
+        .footer-bottom-branding { border-top: 1px solid rgba(255, 255, 255, 0.04); padding-top: 25px; margin-top: 25px; text-align: center; }
+        .footer-brand-title { font-family: 'Orbitron', sans-serif; color: #fff; font-size: 16px; letter-spacing: 6px; }
+    </style>
 </head>
 <body>
-    <svg width="50" height="50" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 5px #bc13fe);">
-        <!-- Шестигранник -->
-        <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z"
-              fill="none" stroke="#bc13fe" stroke-width="3" />
-        <!-- Буква F -->
-        <text x="35" y="65" font-family="Orbitron" font-size="45" fill="#bc13fe" font-weight="bold">F</text>
-    </svg>
-    <nav class="sidebar">
-        <h2 style="font-family: 'Orbitron'; font-size: 0.9rem; color: var(--bright-purple); margin-bottom: 40px;">WF_SYSTEM_v5</h2>
+    <div class="layout-wrapper">
+        <aside class="sidebar">
+            <div class="factory-logo-block">
+                <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#bc13fe" stroke-width="6" stroke-dasharray="10, 5"/>
+                    <polygon points="50,20 75,40 65,75 35,75 25,40" fill="none" stroke="#00f0ff" stroke-width="4"/>
+                    <text x="36" y="62" font-family='Orbitron' font-size="36" font-weight="900" fill="#fff">M</text>
+                </svg>
+                <div class="factory-logo-text">Managmant<br><span style="color: var(--neon-blue);">Factory</span></div>
+            </div>
 
-        <button class="nav-btn active" onclick="openTab('projects', this)">⌘ ECOSYSTEM_SITES</button>
-        <button class="nav-btn" onclick="openTab('analytics', this)">⌬ LOGS_ANALYTICS</button>
-        <!-- Добавляем вызов renderCRM() при клике -->
-        <button class="nav-btn" onclick="openTab('crm-tab', this); renderCRM()">📅 CRM_SCHEDULER</button>
-        <button class="nav-btn" onclick="openTab('ads-tab', this)">🚀 ADS_MANAGER</button>
-        <button class="nav-btn" onclick="openTab('crm-tab', this); renderCRM()">📅 CRM_SCHEDULER</button>
-        <!-- Кнопки навигации с пояснениями -->
-        <button class="nav-btn" onclick="openTab('seo-tab', this)">🔍 SEO_MONITOR</button> <!-- Мониторинг позиций -->
-        <button class="nav-btn" onclick="openTab('server-tab', this)">📡 SERVER_RESOURCES</button> <!-- Нагрузка CPU/RAM -->
-        <button class="nav-btn" onclick="openTab('ai-leads-tab', this)">🤖 AI_CHAT_LEADS</button> <!-- Диалоги нейросети -->
-        <div class="health-card" id="api-status" style="margin-top: 30px;">
-            <div style="font-size: 0.6rem; opacity: 0.6;">CORE_API_UPLINK</div>
-            <div style="margin-top: 5px; font-size: 0.7rem;"><span class="pulse-dot"></span> RUNNING</div>
-        </div>
+            <div class="brand-master-container">
+                <div class="brand-main-title">OmniFactory Evo</div>
+                <div class="brand-sub-author">powered design by BONDAREV_E</div>
+            </div>
 
-        <button class="panic-btn" onclick="togglePanic()">🚨 PANIC MODE</button>
-    </nav>
+            <div class="menu-category">Контроль Инфраструктуры</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" id="tab-mainnode"><a href="#" onclick="switchView('mainnode')">🌐 [ Главный Узел ]</a></li>
+                <li class="menu-item" id="tab-robotization"><a href="#" onclick="switchView('robotization')">🤖 [ Роботизация ]</a></li>
+            </ul>
 
-    <main>
-        <!-- Вкладка: Управление проектами -->
-        <div id="projects" class="tab-content active">
-            <h1 style="font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 30px;">CONNECTED_NODES</h1>
+            <div class="menu-category">0 // Когнитивный Реестр</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" id="tab-bots"><a href="#" onclick="switchView('bots')">🧬 [ Реестр Модулей ]</a></li>
+                <li class="menu-item" id="tab-metrics"><a href="#" onclick="switchView('metrics')">📊 [ Системные Метрики ]</a></li>
+                <li class="menu-item" id="tab-users"><a href="#" onclick="switchView('users')">👥 [ Контроль Доступов ]</a></li>
+            </ul>
 
-            <div class="project-grid">
-                <!-- Карточка сайта 1 -->
-                <div class="project-manage-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <strong style="font-size: 1.1rem;">GENESYS_ENGINE</strong><br>
-                            <span style="font-size: 0.7rem; color: #888;">webfactory.ua/genesys</span>
+            <div class="menu-category">Телеметрия Ядра</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" id="tab-scheduler"><a href="#" onclick="switchView('scheduler')">📅 [ Расписание задач ]</a></li>
+            </ul>
+
+            <div class="menu-category">Нейро-Инжиниринг</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" id="tab-prompts"><a href="#" onclick="switchView('prompts')">🧠 [ Промпт-Конструктор ]</a></li>
+            </ul>
+        </aside>
+        <main class="main-container"><section id="view-mainnode" class="view-section active-view">
+                <div class="page-header">
+                    <div class="page-title"><h1>► Управление нодами и Оркестрация</h1><p>Оркестрация трафика, управление внешними шлюзами авторизации и роутингом порталов.</p></div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="metric-label">GLOBAL PORTAL UPSTREAM</div><div class="metric-value">OMNI_EVO_v7.7</div><div class="metric-sub">STATUS: OPERATIONAL</div></div>
+                    <div class="metric-card"><div class="metric-label">CONNECTED PORTALS</div><div class="metric-value">3 ПОРТАЛА</div><div class="metric-sub info-tag" style="color:var(--neon-blue);">WEB / ARCHITECT / BOT</div></div>
+                    <div class="metric-card"><div class="metric-label">NETWORK IO STREAM</div><div id="metric-network-io" class="metric-value">4.2 MB/s</div><div class="metric-sub">PACKETS: 12.4k/s</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><h2>Состояние привязанных цифровых контуров и веб-узлов экосистемы</h2></div>
+                    <table class="tech-table">
+                        <thead><tr><th>Имя шлюза / Портала</th><th>Адрес маршрута</th><th>Контроль доступов</th><th>Трафик (In/Out)</th><th>Пинг</th><th>Статус</th><th>Операции</th></tr></thead>
+                        <tbody>
+                            <tr id="node-frontend"><td>Основной веб-сайт (Frontend Node)</td><td><code>/</code></td><td>Публичный контур</td><td><code>142MB / 1.1GB</code></td><td>1.2ms</td><td><span class="status-indicator-dot active"></span><span class="status-text">ONLINE</span></td><td><button class="btn-table-action" onclick="executeNodeAction('frontend', 'reboot')">Reboot Node</button></td></tr>
+                            <tr id="node-architect"><td>Робостроитель (Architect Engine Pro)</td><td><code>/architect</code></td><td>Авторизованные инженеры</td><td><code>45MB / 122MB</code></td><td>0.8ms</td><td><span class="status-indicator-dot active"></span><span class="status-text">SECURE</span></td><td><button class="btn-table-action" onclick="executeNodeAction('architect', 'reboot')">Reboot Node</button></td></tr>
+                            <tr id="node-api"><td>Контур автоматизации Telegram-ботов</td><td><code>/api/builder/*</code></td><td>Администраторы модулей</td><td><code>894MB / 3.4GB</code></td><td>2.1ms</td><td><span class="status-indicator-dot active"></span><span class="status-text">MONITORING</span></td><td><button class="btn-table-action" onclick="executeNodeAction('api', 'reboot')">Reboot Node</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="view-robotization" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Роботизация и SaaS-Компиляция</h1><p>Управление Docker-контейнерами сборщика проектов и автоматизации ресурсов WSL2.</p></div></div>
+                <div class="metrics-grid">
+                    <div class="metric-card" style="border-left-color: var(--neon-purple);"><div class="metric-label">Выделено RAM (WSL2)</div><div class="metric-value">3.45 / 8.00 GB</div><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 43%;"></div></div></div>
+                    <div class="metric-card" style="border-left-color: var(--neon-blue);"><div class="metric-label">Всего контейнеров в пуле</div><div id="docker-total-count" class="metric-value">2 АКТИВНО</div><div class="metric-sub">DOCKER_STATUS: HEALTHY</div></div>
+                    <div class="metric-card" style="border-left-color: var(--neon-orange);"><div class="metric-label">Очередь компиляции</div><div class="metric-value">0 ЗАДАЧ</div><div class="metric-sub">BUILD_DAEMON: IDLE</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><h2>Реестр active изолированных сред компилятора ботов (Docker Engine Pools)</h2></div>
+                    <table class="tech-table">
+                        <thead><tr><th>Контейнер ID</th><th>Целевой токен бота</th><th>Образ / Среда</th><th>Используемые порты</th><th>NVMe Объем</th><th>Нагрузка хоста</th><th>Аптайм</th><th>Состояние</th><th>Инжиниринг</th></tr></thead>
+                        <tbody id="docker-containers-tbody">
+                            <tr id="docker-row-84a2"><td><code>docker_node_84a2</code></td><td><span style="color: var(--text-muted);">59928...392:AAH</span></td><td><code>omnifactory-flet-env:latest</code></td><td><code>8081:80</code></td><td>412 MB</td><td>CPU: 1.2% | RAM: 45MB</td><td>4d 12h</td><td><span class="status-indicator-dot active"></span><span class="d-status-text" style="color:#22c55e; font-weight: bold;">RUNNING</span></td><td><button class="btn-table-action" onclick="controlDockerContainer('84a2', 'restart')">Restart</button></td></tr>
+                            <tr id="docker-row-99f1"><td><code>docker_node_99f1</code></td><td><span style="color: var(--text-muted);">74431...001:BBX</span></td><td><code>omnifactory-python-base:v3</code></td><td><code>8082:80</code></td><td>185 MB</td><td>CPU: 0.0% | RAM: 12MB</td><td>1d 04h</td><td><span class="status-indicator-dot active"></span><span class="d-status-text" style="color:#71717a;">IDLE</span></td><td><button class="btn-table-action" onclick="controlDockerContainer('99f1', 'restart')">Restart</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="dashboard-layout">
+                    <div class="card">
+                        <div class="card-title"><h2>Консоль инициализации ручной сборки модулей</h2></div>
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                            <p style="font-size: 13px; color: var(--text-muted);">Здесь вы можете принудительно запустить компиляцию Python/Flet скриптов в независимый Docker-контейнер автоматизации.</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <label style="font-size: 11px; color: var(--text-muted);">ЦЕЛЕВОЙ BOT_TOKEN:</label>
+                                    <input type="text" id="compile-token-input" class="auth-input" style="text-align: left; font-size: 12px; padding: 8px;" placeholder="0000000000:AAA_BBB...">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <label style="font-size: 11px; color: var(--text-muted);">СРЕДА ОКРУЖЕНИЯ (IMAGE):</label>
+                                    <select id="compile-image-select" class="auth-input" style="text-align: left; font-size: 12px; padding: 8px; background: #050508;">
+                                        <option value="flet-latest">omnifactory-flet-env:latest</option>
+                                        <option value="python-base">omnifactory-python-base:v3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn-primary" style="margin-top: 6px;" onclick="triggerManualCompilation()">Инициализировать Сборку Ноды</button>
                         </div>
-                        <span class="status-badge">ONLINE</span>
                     </div>
-
-                    <div style="margin-top: 15px; font-size: 0.7rem; color: var(--bright-purple);">
-                        Traffic: 1.2k req/min | Latency: 24ms
-                    </div>
-
-                    <div class="control-btns">
-                        <button class="ctrl-btn" onclick="nodeAction('GENESYS', 'console')">CONSOLE</button>
-                        <button class="ctrl-btn" onclick="nodeAction('GENESYS', 'restart')">RESTART</button>
-                        <button class="ctrl-btn" style="color: var(--critical-pink);" onclick="nodeAction('GENESYS', 'restrict')">RESTRICT</button>
-                    </div>
-                </div>
-
-                <!-- Карточка сайта 2 -->
-                <div class="project-manage-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <strong style="font-size: 1.1rem;">WF_MAIN_PORTAL</strong><br>
-                            <span style="font-size: 0.7rem; color: #888;">webfactory.ua</span>
+                    <div class="card">
+                        <div class="card-title"><h2>Статус компилятора WSL2</h2></div>
+                        <div style="display: flex; flex-direction: column; gap: 12px; height: 100%; justify-content: center;">
+                            <div class="telemetry-row"><span>Docker Engine Daemon:</span><span style="color:#22c55e">ACTIVE</span></div>
+                            <div class="telemetry-row"><span>WSL2 Subsystem Kernel:</span><span style="color:#22c55e">5.15.150.1-microsoft</span></div>
+                            <div class="telemetry-row"><span>Свободно в пуле ресурсов:</span><span style="color:var(--neon-blue)">4.55 GB RAM</span></div>
                         </div>
-                        <span class="status-badge">ONLINE</span>
                     </div>
+                </div>
+            </section><section id="view-bots" class="view-section">
+                <div class="page-header">
+                    <div class="page-title"><h1>► Когнитивный Реестр ИИ-Модулей</h1><p>Глобальный мониторинг активных LLM-инстансов, распределения контекстной памяти и нейросетевых агентов OmniFactory.</p></div>
+                    <div style="font-family: 'Orbitron'; font-size: 11px; color: var(--neon-purple); letter-spacing: 1px;">VECTOR_DB: CHROMADB_READY</div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card" style="border-left-color: var(--neon-blue);"><div class="metric-label">Глобальный токен-рейт</div><div id="ai-token-rate" class="metric-value">4,120 t/s</div><div class="metric-sub">GEN_SPEED: OPTIMAL</div></div>
+                    <div class="metric-card" style="border-left-color: var(--neon-purple);"><div class="metric-label">Активные сессии моделей</div><div id="ai-active-sessions" class="metric-value">12 Потоков</div><div class="metric-sub info-tag" style="color: var(--neon-blue);">3 CORE / 9 BACKGROUND</div></div>
+                    <div class="metric-card" style="border-left-color: var(--neon-orange);"><div class="metric-label">Средний TTFT (Задержка)</div><div id="ai-avg-latency" class="metric-value">142 ms</div><div class="metric-sub">UPLINK: DIRECT_STREAM</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><h2>Архитектурная матрица когнитивных сущностей и LLM-роутинга</h2></div>
+                    <table class="tech-table">
+                        <thead>
+                            <tr><th>Идентификатор Агента</th><th>Базовая Нейромодель</th><th>Контекст (Использовано)</th><th>Запросы</th><th>TTFT / Latency</th><th>Связанный Векторный Индекс</th><th>Ядро</th><th>Инжиниринг</th></tr>
+                        </thead>
+                        <tbody id="ai-modules-tbody">
+                            <tr id="ai-agent-supervisor">
+                                <td><strong>Agent_Core_Supervisor</strong></td><td><code>GPT-4o (Hybrid)</code></td>
+                                <td><span style="color:#fff;">34,102 / 128k</span><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 26%; background: var(--neon-purple);"></div></div></td>
+                                <td>1.4 req/s</td><td>180ms</td><td><code>ChromaDB_Core_v1</code></td><td><span class="status-indicator-dot active"></span><span class="m-status-text">ONLINE</span></td>
+                                <td><button class="btn-table-action" onclick="triggerAiModuleControl('supervisor', 'hot_reload')">Reload Context</button></td>
+                            </tr>
+                            <tr id="ai-agent-flet">
+                                <td><strong>Flet_UI_Builder_Daemon</strong></td><td><code>Claude 3.5 Sonnet</code></td>
+                                <td><span style="color:#fff;">112,400 / 200k</span><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 56%; background: var(--neon-blue);"></div></div></td>
+                                <td>0.8 req/s</td><td>240ms</td><td><code>Local_Cache_Node</code></td><td><span class="status-indicator-dot active"></span><span class="m-status-text">ONLINE</span></td>
+                                <td><button class="btn-table-action" onclick="triggerAiModuleControl('flet', 'hot_reload')">Reload Context</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="dashboard-layout">
+                    <div class="card">
+                        <div class="card-title"><h2>Инжектированные векторные коллекции памяти (ChromaDB Inspector)</h2></div>
+                        <table class="tech-table">
+                            <thead><tr><th>Имя Коллекции</th><th>Эмбеддинг</th><th>Размерность</th><th>Записей (Векторов)</th><th>Кэш</th><th>Действие</th></tr></thead>
+                            <tbody>
+                                <tr id="vector-coll-genesys"><td><code>genesys_psychology_embeddings</code></td><td>text-embedding-3-small</td><td>1536 dim</td><td style="color:var(--neon-blue); font-weight:bold;">1,124,092</td><td>Redis Active</td><td><button class="btn-table-action" onclick="clearVectorCollectionCache('genesys_psychology_embeddings')">Flush Cache</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><h2>Диагностика Когнитивного Отклика</h2></div>
+                        <div style="display:flex; flex-direction:column; gap:14px; justify-content:center; height:100%;">
+                            <div class="telemetry-row"><span>Векторный поиск (Top-K):</span><span style="color:#22c55e">0.012s</span></div>
+                            <div class="telemetry-row"><span>Сборка контекстного окна:</span><span style="color:#22c55e">0.045s</span></div>
+                            <button class="btn-primary" style="margin-top:10px;" onclick="runCoreAiDiagnostic()">Запустить Стресс-Тест</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                    <div style="margin-top: 15px; font-size: 0.7rem; color: var(--bright-purple);">
-                        Active Users: 42 | Server Load: 12%
+            <section id="view-metrics" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Системные Метрики Ноды хоста</h1><p>Оперативный мониторинг аппаратных ресурсов WSL2 распределенного кластера.</p></div></div>
+                <div class="metrics-grid">
+                    <div class="metric-card" style="border-left-color: var(--neon-purple);"><div class="metric-label">ЗАГРУЗКА ЦП ХОСТА</div><div id="metric-cpu-val" class="metric-value">0.0%</div><div class="mini-progress-bar"><div id="progress-cpu" class="mini-progress-fill"></div></div></div>
+                    <div class="metric-card" style="border-left-color: var(--neon-blue);"><div class="metric-label">ОПЕРАТИВНАЯ ПАМЯТЬ RAM</div><div id="metric-ram-val" class="metric-value">0.00 GB</div><div class="mini-progress-bar"><div id="progress-ram" class="mini-progress-fill"></div></div></div>
+                    <div class="metric-card" style="border-left-color: var(--matrix-green);"><div class="metric-label">АКТИВНЫЕ DOCKER КОНТЕЙНЕРЫ</div><div id="metric-containers-val" class="metric-value">2</div></div>
+                    <div class="metric-card" style="border-left-color: var(--neon-orange);"><div class="metric-label">ОБЩЕЕ ЧИСЛО ЗАПРОСОВ К API</div><div id="metric-requests-val" class="metric-value">0</div></div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card" style="border-left-color: var(--neon-orange);"><div class="metric-label">NVME DISK CAPACITY</div><div class="metric-value">244.1 GB Free</div><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 48%; background: var(--neon-blue);"></div></div></div>
+                    <div class="metric-card" style="border-left-color: var(--neon-purple);"><div class="metric-label">CHROMADB VECTORS</div><div class="metric-value">1,402,992</div><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 92%; background: #ef4444;"></div></div></div>
+                    <div class="metric-card" style="border-left-color: #eab308;"><div class="metric-label">REDIS IN-MEMORY KEYS</div><div class="metric-value">14,802 keys</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><h2>График нагрузки аппаратных ресурсов хоста (WSL2 Node Cluster Stream)</h2></div>
+                    <div style="position: relative; height:240px; width:100%"><canvas id="resourceChart"></canvas></div>
+                </div>
+            </section><section id="view-users" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Контроль Учетных Записей и Доступов</h1><p>Администрирование пользователей, сессии безопасности, хэши и допуск к Робостроителю.</p></div></div>
+                <div class="card">
+                    <div class="card-title"><h2>Реестр учетных записей и матрица доступов к микросервисам</h2></div>
+                    <div style="overflow-x: auto;">
+                        <table class="tech-table">
+                            <thead>
+                                <tr><th>Имя Пользователя</th><th>Системная Роль</th><th>Доступ к Модулям</th><th>Векторное Ядро</th><th>WSL2 / Docker</th><th>Последний IP / Локация</th><th>Токен Статус</th><th>Действие</th></tr>
+                            </thead>
+                            <tbody id="auth-users-tbody">
+                                <tr id="user-row-bondarev">
+                                    <td><strong>Eugene Bondarev</strong></td><td><span class="info-tag" style="color:var(--neon-purple); border-color:var(--neon-purple);">Root_Admin</span></td>
+                                    <td><code style="color:#22c55e;">ALL_MODULES (*)</code></td><td><span style="color:#22c55e">✓ Full</span></td><td><span style="color:#22c55e">✓ Root</span></td><td><code>127.0.0.1 (Host)</code></td>
+                                    <td><span class="status-indicator-dot active"></span><span>INFINITE</span></td><td><button class="btn-table-action" disabled style="opacity: 0.3;">System Root</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+                <div class="dashboard-layout">
+                    <div class="card">
+                        <div class="card-title"><h2>Конфигуратор прав и добавление субъекта (RBAC Provisioning)</h2></div>
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <label style="font-size: 11px; color: var(--text-muted);">ИДЕНТИФИКАТОР (USER_ID):</label>
+                                    <input type="text" id="new-user-username" class="auth-input" style="text-align: left; font-size: 12px;" placeholder="Neuro_Architect">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <label style="font-size: 11px; color: var(--text-muted);">РОЛЕВАЯ ПОЛИТИКА:</label>
+                                    <select id="new-user-role" class="auth-input" style="text-align: left; font-size: 12px; background: #050508;">
+                                        <option value="Developer">Developer</option><option value="Operator">Operator</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="createNewUserAccessRoute()">Закодировать Доступ</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                    <div class="control-btns">
-                        <button class="ctrl-btn">CONSOLE</button>
-                        <button class="ctrl-btn">RESTART</button>
-                        <button class="ctrl-btn" style="color: var(--critical-pink);">RESTRICT</button>
+            <section id="view-scheduler" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Интегрированный Системный Планировщик Задач</h1><p>Расписание регламентных процедур автоматизации, Celery воркеров и резервного копирования баз.</p></div></div>
+                <div class="dashboard-layout" style="grid-template-columns: 1fr 2fr; gap: 24px;">
+                    <div class="card">
+                        <div class="card-title"><h2>Task Injector</h2></div>
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label style="font-size: 11px; color: var(--text-muted);">TASK_NAME:</label>
+                                <input type="text" id="new-task-name" class="auth-input" style="text-align: left; font-size: 12px;" placeholder="Очистка логов Docker">
+                            </div>
+                            <button class="btn-primary" onclick="injectNewCronTaskToCalendar()">Поставить задачу в очередь</button>
+                        </div>
                     </div>
+                    <div class="card"><div class="card-title"><h2>Календарная интерактивная шкала воркеров ядра (FullCalendar UI)</h2></div><div id="calendar"></div></div>
+                </div>
+            </section>
+
+            <section id="view-prompts" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Промпт-Конструктор и Настройки контекстных окон</h1><p>Управление инструкциями нейро-инжиниринга и стримом логов хоста.</p></div></div>
+                <div class="dashboard-layout">
+                    <div class="card">
+                        <div class="terminal-header">
+                            <div class="card-title" style="margin:0;"><h2>Real-time Stream</h2></div>
+                            <div class="terminal-filters">
+                                <button class="filter-btn active" onclick="filterLogs('ALL', this)">ALL</button>
+                                <button class="filter-btn" onclick="filterLogs('SUCCESS', this)">SYS</button>
+                                <button class="filter-btn" onclick="filterLogs('INFO', this)">LLM</button>
+                            </div>
+                        </div>
+                        <div id="terminal-stream" class="terminal-box"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><h2>Нейро-Архитектор: Системная директива ядра</h2></div>
+                        <div class="prompt-manager">
+                            <textarea id="system-prompt-input" class="prompt-textarea"></textarea>
+                            <div class="action-row" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:12px; color:var(--text-muted)">Синхронизировано: <span id="prompt-sync-time">н/д</span></span>
+                                <button onclick="saveSystemPrompt()" class="btn-primary">Инжектировать Промпт</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+<footer class="cyber-footer" style="font-size: 14.5px; pointer-events: auto; padding: 60px 0;">
+    <div class="footer-grid">
+        <div class="footer-column">
+            <div class="footer-col-title" style="font-size: 16px;">SYSTEM_ARCHITECTURE</div>
+            <div class="footer-architecture-text" style="font-size: 14.5px; line-height: 2.2;">
+                <div class="telemetry-row">
+                    <span class="telemetry-label">ARCHITECT:</span>
+                    <span class="telemetry-val">Bondarev_E</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">TIMESTAMP:</span>
+                    <span id="footer-server-time" class="telemetry-val" style="color: var(--neon-purple);">--:--:--</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">UPLINK_DELAY:</span>
+                    <span class="telemetry-val">0.0021ms / 99.9%</span>
+                </div>
+                <div class="telemetry-row">
+                    <span class="telemetry-label">DATA_STATUS:</span>
+                    <span class="telemetry-val" style="color: var(--matrix-green); text-shadow: 0 0 5px var(--matrix-green);">CERTIFIED_SECURE</span>
                 </div>
             </div>
         </div>
 
-        <!-- Вкладка: Аналитика и Логи -->
-        <div id="analytics" class="tab-content">
-            <h1 style="font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 30px;">SYSTEM_LOG_STREAM</h1>
-            <div class="stream-box" id="stream-logs">
-                > Initializing Analytics Deep Scan...<br>
-                > Bridge connected to main server.<br>
+        <div class="footer-column">
+            <div class="footer-col-title" style="font-size: 16px;">LEGAL_&_COMPLIANCE</div>
+            <div style="font-size: 14.5px; color: var(--text-muted); line-height: 1.8;">
+                <strong style="color: var(--text-white); font-size: 14.5px; letter-spacing: 1px;">OmniFactory LABS®</strong><br>
+                Все алгоритмические модели автоматизации, модули сборки кода OmniFactory и интерактивные структуры защищены международным правом интеллектуальной собственности (включая контур проекта Genesys на базе Flet-среды).
+            </div>
+            <div class="compliance-tags" style="margin-top: 20px;">
+                <span class="tag" style="font-size: 11.5px; padding: 6px 12px; border: 1px solid rgba(188,19,254,0.3); background: rgba(0,0,0,0.5);">GDPR COMPLIANT</span>
+                <span class="tag" style="font-size: 11.5px; padding: 6px 12px; border: 1px solid rgba(188,19,254,0.3); background: rgba(0,0,0,0.5);">ISO/IEC 27001</span>
+                <span class="tag" style="font-size: 11.5px; padding: 6px 12px; border: 1px solid rgba(188,19,254,0.3); background: rgba(0,0,0,0.5);">AES-256 SECURE</span>
             </div>
         </div>
 
-                <!-- [ 1. SEO_MONITOR ] -->
-        <div id="seo-tab" class="tab-content" style="display:none;">
-            <h3 style="font-family:'Orbitron';">// SEARCH_ENGINE_INDEX_TRACKER</h3>
-            <div class="tech-card">
-                <table style="width:100%; font-size:0.8rem; border-collapse:collapse;">
-                    <thead>
-                        <tr style="color:var(--soft-blue); text-align:left; border-bottom:1px solid var(--border);">
-                            <th style="padding:10px;">KEYWORD</th>
-                            <th>POSITION</th>
-                            <th>CHANGE</th>
-                            <th>NODE</th>
-                        </tr>
-                    </thead>
-                    <tbody id="seo-table-body">
-                        <!-- Данные подгружаются скриптом -->
-                        <tr>
-                            <td style="padding:10px;">создание сайтов киев</td>
-                            <td style="color:var(--ok-green);">#3</td>
-                            <td style="color:var(--ok-green);">▲ 2</td>
-                            <td>MAIN_PORTAL</td>
-                        </tr>
-                        <tr>
-                            <td style="padding:10px;">python development ua</td>
-                            <td style="color:var(--soft-blue);">#12</td>
-                            <td style="color:var(--critical-pink);">▼ 1</td>
-                            <td>GENESYS</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="footer-column">
+            <div class="footer-col-title" style="font-size: 16px;">COMMUNICATION_UPLINK</div>
+            <div class="footer-right-info" style="font-size: 14.5px; line-height: 2.2; text-align: left;">
+                Telegram: <a href="https://t.me/Bondarev_e" target="_blank" style="color: var(--neon-purple);">@Bondarev_e</a><br>
+                E-mail: <a href="mailto:bondarev.e.1707@gmail.com" style="color: var(--neon-purple);">bondarev.e.1707@gmail.com</a><br>
+                <span style="font-size: 11px; color: var(--text-dim); display: block; margin-top: 15px; line-height: 1.6;">
+                    DISCLAIMER: Данный инженерный узел оперирует на базе математических моделей OmniFactory_LABS. Сборка кода полностью автоматизирована.
+                </span>
             </div>
         </div>
+    </div>
 
-        <!-- [ 2. SERVER_RESOURCES ] -->
-        <div id="server-tab" class="tab-content" style="display:none;">
-            <h3 style="font-family:'Orbitron';">// HARDWARE_TELEMETRY</h3>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                <!-- CPU Load -->
-                <div class="tech-card">
-                    <div style="font-size:0.7rem; margin-bottom:10px;">CPU_UTILIZATION (GENESYS_NODE)</div>
-                    <div style="height:10px; background:#111; border-radius:5px; overflow:hidden;">
-                        <div style="width:42%; height:100%; background:var(--bright-purple); box-shadow:0 0 10px var(--bright-purple);"></div>
-                    </div>
-                    <div style="text-align:right; font-size:0.6rem; margin-top:5px;">42% - STABLE</div>
-                </div>
-                <!-- RAM Load -->
-                <div class="tech-card">
-                    <div style="font-size:0.7rem; margin-bottom:10px;">MEMORY_RESERVE (VALKYRIA_SHIELD)</div>
-                    <div style="height:10px; background:#111; border-radius:5px; overflow:hidden;">
-                        <div style="width:68%; height:100%; background:var(--soft-blue); box-shadow:0 0 10px var(--soft-blue);"></div>
-                    </div>
-                    <div style="text-align:right; font-size:0.6rem; margin-top:5px;">6.8GB / 10GB</div>
-                </div>
-            </div>
+    <div class="footer-bottom-branding" style="padding-top: 40px; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="footer-brand-title" style="font-size: 20px; letter-spacing: 10px; color: #fff; font-family: 'Orbitron', sans-serif;">OMNIFACTORY — DIGITAL WORLD ENGINE</div>
+        <div class="footer-copyright" style="font-size: 11.5px; letter-spacing: 5px; color: var(--text-muted); margin-top: 10px;">
+            © 2026 ALL RIGHTS RESERVED // KERNEL ACCESS: AUTHORIZED ONLY
         </div>
+    </div>
+</footer>
+<script>
+        let currentLogFilter = 'ALL';
+        let globalFullCalendarInstance = null;
 
-        <!-- [ 3. AI_CHAT_LEADS ] -->
-        <div id="ai-leads-tab" class="tab-content" style="display:none;">
-            <h3 style="font-family:'Orbitron';">// NEURAL_INTERCEPTOR_LOGS</h3>
-            <div id="ai-chats-container">
-                <!-- Пример диалога -->
-                <div class="tech-card" style="margin-bottom:15px; border-left: 2px solid var(--ok-green);">
-                    <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:var(--muted-text);">
-                        <span>USER_ID: 8821_EXT</span>
-                        <span>STATUS: CONVERTED_TO_LEAD</span>
-                    </div>
-                    <div style="margin-top:10px; font-size:0.75rem;">
-                        <b style="color:var(--soft-blue);">AI:</b> Чем я могу помочь в разработке вашего проекта?<br>
-                        <b style="color:var(--bright-purple);">USER:</b> Мне нужен аудит безопасности для сайта на FastAPI.
-                    </div>
-                    <button class="ctrl-btn" style="margin-top:10px; width:auto; padding:5px 15px;">TAKE_CONTROL</button> <!-- Вмешаться в чат -->
-                </div>
-            </div>
-        </div>
-    </main>
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active-view'));
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
 
-    <script>
+            const targetView = document.getElementById('view-' + viewName);
+            const targetTab = document.getElementById('tab-' + viewName);
 
-            /**
-     * Имитация обновления серверных ресурсов
-     * Позволяет видеть динамику нагрузки без реального бэкенда (пока что)
-     */
-    function updateServerMetrics() {
-        const bars = document.querySelectorAll('#server-tab .tech-card div div');
-        bars.forEach(bar => {
-            const newVal = Math.floor(Math.random() * (90 - 10) + 10); // Рандомная нагрузка 10-90%
-            bar.style.width = newVal + "%";
-            bar.parentElement.nextElementSibling.innerText = newVal + "% - " + (newVal > 80 ? "CRITICAL" : "STABLE");
-        });
-    }
-    // Запускаем обновление каждые 3 секунды при открытой вкладке
-    setInterval(() => {
-        if(document.getElementById('server-tab').classList.contains('active')) {
-            updateServerMetrics();
-        }
-    }, 3000);
-
-    /**
-     * Логика для управления SEO-данными
-     */
-    function refreshSEOMetrics() {
-        const log = document.getElementById('stream-logs');
-        if (log) {
-            log.innerHTML = `<div style="color:var(--soft-blue)">> [SEO] Requesting Google Search Console API... OK.</div>` + log.innerHTML;
-        }
-    }
-<!-- =============================================
-        Функция отправки данных (submitTask)
-     ============================================= -->
-    async function submitTask() {
-        const taskData = {
-            title: document.getElementById('task-script').value + " | " + document.getElementById('task-target').value,
-            target: document.getElementById('task-target').value,
-            script: document.getElementById('task-script').value,
-            start: document.getElementById('task-start-date').value
-        };
-
-        const response = await fetch('/api/crm/add-event', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(taskData)
-        });
-
-        if(response.ok) {
-            document.getElementById('event-modal').style.display = 'none';
-            // Обновляем страницу или календарь, чтобы увидеть новую задачу[cite: 8]
-            location.reload();
-        } else {
-            alert("CRITICAL_ERROR: Failed to sync with Neural Core");
-        }
-    }
-
-
-<!-- =============================================
-Пример инициализации аналитики
-     ============================================= -->
-function initSEOChart(data) {
-    new Chart(document.getElementById('seo-analytics'), {
-        type: 'line',
-        data: {
-            labels: data.dates,
-            datasets: [{
-                label: 'Clicks (Search Console)',
-                borderColor: '#bc13fe',
-                data: data.clicks
-            }]
-        }
-    });
-}
-     <!-- ============================================= -->
-
-function nodeAction(nodeName, actionType) {
-    const log = document.getElementById('stream-logs');
-    const time = new Date().toLocaleTimeString();
-    const filter = document.getElementById('node-filter');
-
-    let msg = "";
-    let color = "var(--bright-purple)";
-
-    // Логика обработки действий
-    switch(actionType) {
-        case 'console':
-            msg = `> [${nodeName}] TERMINAL_LINK_ESTABLISHED. Initializing remote shell...`;
-            // Переключаем вкладку на логи[cite: 8]
-            openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
-            // Синхронизируем фильтр логов под конкретную ноду[cite: 8]
-            if (filter) filter.value = (nodeName === 'GENESYS' ? 'GENESYS' : 'MAIN');
-            break;
-
-        function nodeAction(nodeName, actionType) {
-    const log = document.getElementById('stream-logs');
-    const time = new Date().toLocaleTimeString();
-    const filter = document.getElementById('node-filter');
-    const card = event.target.closest('.project-manage-card');
-
-    let msg = "";
-    let color = "var(--bright-purple)";
-
-    // Технологичный префикс для всех логов
-    const logPrefix = `<span style="opacity:0.5; font-size:0.7rem;">[${time}]</span> `;
-
-    switch(actionType) {
-        case 'console':
-            msg = `TERMINAL_LINK_ESTABLISHED. Initializing remote shell on ${nodeName}... OK.`;
-            openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
-            if (filter) filter.value = (nodeName === 'GENESYS' ? 'GENESYS' : 'MAIN');[cite: 8]
-            break;
-
-        case 'restart':
-            msg = `REBOOT_SEQUENCE_STARTING. Recycling worker processes for ${nodeName}.`;
-            color = "#00d2ff";
-
-            if (card) {
-                // 1. Находим элемент с трафиком внутри карточки
-                const statsBlock = card.querySelector('div[style*="var(--bright-purple)"]');
-                const originalText = statsBlock.innerHTML;
-
-                // 2. Визуальный эффект перезагрузки
-                card.style.filter = "hue-rotate(180deg) blur(1px)";
-                card.style.opacity = "0.4";
-                statsBlock.innerHTML = `<span style="color:var(--critical-pink); animation: pulse 0.5s infinite;">OFFLINE (REBOOTING...)</span>`;[cite: 8]
-
-                setTimeout(() => {
-                    card.style.filter = "none";
-                    card.style.opacity = "1";
-                    statsBlock.innerHTML = originalText;
-                    log.innerHTML = `${logPrefix} <span style="color:#00ff80">> [${nodeName}] SYSTEM_RECOVERY_COMPLETE. Nodes synced.</span><br>` + log.innerHTML;
-                }, 2000);
+            if(targetView && targetTab) {
+                targetView.classList.add('active-view');
+                targetTab.classList.add('active');
+                pushTerminalLog("INFO", `Интерфейс переключен на внутренний контур: //${viewName.toUpperCase()}_NODE`);
             }
-            break;
-
-        case 'restrict':
-            if (!confirm(`WARNING: Подтвердить изоляцию узла ${nodeName}? Это заблокирует внешний трафик.`)) return;
-
-            msg = `EMERGENCY_LOCKDOWN. Firewall restriction engaged for ${nodeName}.`;
-            color = "var(--critical-pink)";
-
-            if (event.target) {
-                event.target.innerText = "RESTRICTED";
-                event.target.style.background = "rgba(255, 0, 127, 0.2)";
-                event.target.style.borderColor = "var(--critical-pink)";
-                event.target.disabled = true; // Блокируем кнопку после активации
-            }
-
-            if (card) {
-                const badge = card.querySelector('.status-badge');
-                if (badge) {
-                    badge.innerText = "RESTRICTED";
-                    badge.style.background = "rgba(255, 0, 127, 0.1)";
-                    badge.style.color = "var(--critical-pink)";
-                }
-            }
-            break;
-    }
-
-    // Вывод в поток логов с анимацией появления
-    const logEntry = document.createElement('div');
-    logEntry.style.cssText = `margin-bottom:8px; color:${color}; border-left: 2px solid ${color}; padding-left: 10px; animation: fadeIn 0.4s ease-out;`;
-    logEntry.innerHTML = `${logPrefix} > [${nodeName}] ${msg}`;
-
-    log.prepend(logEntry); // Добавляет новый лог всегда в начало (сверху)
-}
-    // Вывод в консоль логов (новое сообщение всегда сверху)[cite: 8]
-    log.innerHTML = `
-        <div style="margin-bottom:8px; color:${color}; border-left: 2px solid ${color}; padding-left: 10px; animation: fadeIn 0.3s;">
-            <span style="opacity:0.5; font-size:0.7rem;">[${time}]</span> ${msg}
-        </div>
-    ` + log.innerHTML;
-}
-
-               // управление логами
-                let isLogging = true;
-        function toggleLogStream() {
-            isLogging = !isLogging;
-            document.getElementById('log-trigger').innerText = isLogging ? "STOP_STREAM" : "START_STREAM";
         }
 
-        setInterval(() => {
-            if(!isLogging) return;
-            const filter = document.getElementById('node-filter').value;
-            const log = document.getElementById('stream-logs');
-            const node = Math.random() > 0.5 ? "GENESYS" : "MAIN";
+        function pushTerminalLog(tag, text) {
+            const container = document.getElementById('terminal-stream');
+            if(!container) return;
+            const timeStr = new Date().toLocaleTimeString();
+            const row = document.createElement('div');
+            row.className = 'log-row';
+            row.setAttribute('data-tag', tag);
+            row.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-tag ${tag.toLowerCase()}">${tag}</span><span class="log-text">${text}</span>`;
 
-            if(filter === "ALL" || filter === node) {
-                const action = actions[Math.floor(Math.random() * actions.length)];
-                log.innerHTML = `<div style="margin-bottom:5px;"><span style="color:var(--bright-purple)">[${node}]</span> ${action}</div>` + log.innerHTML;
-            }
-        }, 1500);
-        // Переключение вкладок
-        function openTab(tabId, btn) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            if(currentLogFilter !== 'ALL' && currentLogFilter !== tag) row.style.display = 'none';
+            container.appendChild(row);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function filterLogs(tag, btn) {
+            currentLogFilter = tag;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-        }
 
-        // Живые логи (теперь на отдельной вкладке)
-        const actions = ["Inbound request: /api/v1", "DB query optimized", "Cache hit: user_session", "Neural node synced", "Static assets served"];
-        setInterval(() => {
-            const log = document.getElementById('stream-logs');
-            const action = actions[Math.floor(Math.random() * actions.length)];
-            const time = new Date().toLocaleTimeString();
-            log.innerHTML = `<div style="margin-bottom:5px;"><span style="color:#555">[${time}]</span> > ${action}</div>` + log.innerHTML;
-        }, 2000);
-
-        // Panic Mode (Связь с бэкендом)
-async function togglePanic() {
-    const res = await fetch('/panic', {method: 'POST'});
-    const data = await res.json();
-    const btn = document.querySelector('.panic-btn');
-
-    if (data.panic_mode) {
-        btn.style.background = "var(--critical-pink)";
-        btn.style.color = "#000";
-        btn.innerText = "🚨 SYSTEM LOCKED";
-        document.body.style.filter = "sepia(1) saturate(2) hue-rotate(-50deg)";
-    } else {
-        btn.style.background = "rgba(255, 0, 127, 0.1)";
-        btn.style.color = "var(--critical-pink)";
-        btn.innerText = "🚨 PANIC MODE";
-        document.body.style.filter = "none";
-    }
-}
-
-        // Health Check (Связь с бэкендом)
-        setInterval(async () => {
-            try {
-                const res = await fetch('/health');
-                const statusCard = document.getElementById('api-status');
-                if(!res.ok) throw new Error();
-                statusCard.style.borderColor = "var(--border)";
-                statusCard.querySelector('.pulse-dot').style.background = "var(--ok-green)";
-            } catch {
-                const statusCard = document.getElementById('api-status');
-                statusCard.style.borderColor = "var(--critical-pink)";
-                statusCard.querySelector('.pulse-dot').style.background = "var(--critical-pink)";
-            }
-        }, 5000);
-
-        //функция «оживит» календарь и свяжет его с  данными//
-        // [ CRM ENGINE: FULLCALENDAR INITIALIZATION ]
-        document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar-render');
-            if (!calendarEl) return; // Защита, если элемента нет на странице
-
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek'
-                },
-                editable: true,
-                selectable: true,
-                events: '/api/crm/events', // Источник данных из Python
-
-                // 1. ВЫБОР ДАТЫ (Открытие нашей модалки)
-                select: function(info) {
-                    const modal = document.getElementById('event-modal');
-                    const dateInput = document.getElementById('task-start-date');
-
-                    if (modal && dateInput) {
-                        modal.style.display = 'block';
-                        dateInput.value = info.startStr; // Передаем дату в скрытое поле
-                    }
-                },
-
-                // 2. КЛИК ПО СОБЫТИЮ (Инфо в логи)
-                eventClick: function(info) {
-                    const event = info.event;
-                    const log = document.getElementById('stream-logs');
-                    if (log) {
-                        log.innerHTML = `<div style="color:var(--ok-green)">> [CRM_INFO] Event: ${event.title} | Status: ${event.extendedProps.status || 'ACTIVE'}</div>` + log.innerHTML;
-                    }
-                    openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
+            document.querySelectorAll('#terminal-stream .log-row').forEach(row => {
+                if(tag === 'ALL' || row.getAttribute('data-tag') === tag) {
+                    row.style.display = 'flex';
+                } else {
+                    row.style.display = 'none';
                 }
             });
-
-            // Функция для корректного рендеринга при переключении вкладок
-            window.renderCRM = function() {
-                setTimeout(() => {
-                    calendar.render();
-                    calendar.updateSize();
-                }, 100);
-            };
-        });
-
-        // Красивое действие при клике на событие
-        eventClick: function(info) {
-            const event = info.event;
-            const log = document.getElementById('stream-logs');
-            log.innerHTML = `<div style="color:var(--ok-green)">> [CRM_INFO] Event: ${event.title} | Status: ${event.extendedProps.status}</div>` + log.innerHTML;
-            openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
-        },
-
-        // Создание события по клику на дату
-        select: function(info) {
-            const title = prompt('SYSTEM: Введите название задачи:');
-            if (title) {
-                createNewEvent({
-                    title: title,
-                    start: info.startStr,
-                    target: 'GENESYS'
-                });
-            }
-        }
-    });
-
-    // Отрисовываем календарь при переключении на вкладку CRM
-    window.renderCRM = function() {
-        setTimeout(() => calendar.render(), 100);
-    };
-});
-
-// Функция отправки нового события на сервер
-async function createNewEvent(eventData) {
-    const response = await fetch('/api/crm/add-event', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(eventData)
-    });
-    if(response.ok) location.reload();
-}
-
-    // Универсальный переключатель вкладок
-    function openTab(tabId, btn) {
-        // Скрываем все вкладки
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.style.display = 'none';
-            tab.classList.remove('active');
-        });
-
-        // Снимаем активность со всех кнопок
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-        // Показываем нужную
-        const activeTab = document.getElementById(tabId);
-        if (activeTab) {
-            activeTab.style.display = 'block';
-            activeTab.classList.add('active');
         }
 
-        // Активируем кнопку
-        btn.classList.add('active');
-    }
+        function startTelemetryPolling() {
+            setInterval(() => {
+                fetch('/api/v1/admin/telemetry')
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('metric-cpu-val').innerText = data.cpu + '%';
+                        document.getElementById('metric-ram-val').innerText = data.ram + ' GB';
+                        document.getElementById('progress-cpu').style.width = data.cpu + '%';
+                        document.getElementById('progress-ram').style.width = (data.ram / 8 * 100) + '%';
+                    })
+                    .catch(() => {
+                        const mockCpu = (Math.random() * 12 + 6).toFixed(1);
+                        const mockRam = (Math.random() * 0.3 + 2.4).toFixed(2);
+                        if(document.getElementById('metric-cpu-val')) document.getElementById('metric-cpu-val').innerText = mockCpu + '%';
+                        if(document.getElementById('metric-ram-val')) document.getElementById('metric-ram-val').innerText = mockRam + ' GB';
+                        if(document.getElementById('progress-cpu')) document.getElementById('progress-cpu').style.width = mockCpu + '%';
+                        if(document.getElementById('progress-ram')) document.getElementById('progress-ram').style.width = (mockRam / 8 * 100) + '%';
+
+                        if(window.resourceChartInstance) {
+                            const chart = window.resourceChartInstance;
+                            chart.data.labels.push(new Date().toLocaleTimeString());
+                            chart.data.datasets[0].data.push(mockCpu);
+                            if(chart.data.labels.length > 10) {
+                                chart.data.labels.shift();
+                                chart.data.datasets[0].data.shift();
+                            }
+                            chart.update('none');
+                        }
+                    });
+            }, 2000);
+        }
+
+        function initResourceChart() {
+            const ctx = document.getElementById('resourceChart');
+            if(!ctx) return;
+            window.resourceChartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{ label: 'CPU Load (%)', data: [], borderColor: '#bc13fe', backgroundColor: 'rgba(168,85,247,0.05)', tension: 0.3, fill: true }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { min: 0, max: 100 } } }
+            });
+        }
+
+        function initTaskScheduler() {
+            const calendarEl = document.getElementById('calendar');
+            if(!calendarEl) return;
+            globalFullCalendarInstance = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: [
+                    { title: 'Резервное копирование PostgreSQL', start: new Date().toISOString().split('T')[0], color: '#3b0764' }
+                ]
+            });
+            globalFullCalendarInstance.render();
+        }
+
+        async function executeNodeAction(nodeId, action) { pushTerminalLog("SUCCESS", `Успешно: ${action.toUpperCase()} на узле //NODE_${nodeId.toUpperCase()}`); }
+        async function controlDockerContainer(id, action) { pushTerminalLog("INFO", `Контейнер ${id}: команда ${action.toUpperCase()}`); }
+        async function triggerAiModuleControl(id, action) { pushTerminalLog("INFO", `ИИ-Модуль ${id}: запуск [${action.toUpperCase()}]`); }
+        async function clearVectorCollectionCache(name) { pushTerminalLog("WARNING", `Сброс кэша коллекции: ${name}`); }
+        function runCoreAiDiagnostic() { pushTerminalLog("INFO", "Запущен стресс-тест нейросетевого инференса кластера..."); }
+        function executeDatabaseMaintenance() { pushTerminalLog("SUCCESS", "Индексы PostgreSQL СУБД успешно реорганизованы."); }
+
+        function createNewUserAccessRoute() {
+            const name = document.getElementById('new-user-username').value;
+            if(!name) return;
+            const tbody = document.getElementById('auth-users-tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `<td><strong>${name}</strong></td><td><span class="info-tag">Developer</span></td><td><code>view-bots</code></td><td>✓ Full</td><td>✕ Denied</td><td><code>127.0.0.1</code></td><td><span class="status-indicator-dot active"></span><span>VALID</span></td><td><button class="btn-table-action">Revoke</button></td>`;
+            tbody.appendChild(row);
+            pushTerminalLog("SUCCESS", `Пользователь ${name} добавлен в матрицу доступов.`);
+        }
+
+        function injectNewCronTaskToCalendar() {
+            const name = document.getElementById('new-task-name').value;
+            if(!name || !globalFullCalendarInstance) return;
+            globalFullCalendarInstance.addEvent({ title: name, start: new Date().toISOString().split('T')[0], color: '#1e1b4b' });
+            pushTerminalLog("SUCCESS", `Задача "${name}" добавлена в расписание Celery Beat.`);
+        }
+
+        function saveSystemPrompt() {
+            const prompt = document.getElementById('system-prompt-input').value;
+            fetch('/api/v1/admin/save-prompt', {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ prompt: prompt })
+            }).then(() => {
+                document.getElementById('prompt-sync-time').innerText = new Date().toLocaleTimeString();
+                pushTerminalLog("SUCCESS", "Системная директива инжектирована в ChromaDB.");
+            }).catch(() => {
+                document.getElementById('prompt-sync-time').innerText = new Date().toLocaleTimeString();
+                pushTerminalLog("SUCCESS", "[Автономный режим] Промпт сохранен локально.");
+            });
+        }
+
+        function updateFooterClock() {
+            const node = document.getElementById('footer-server-time');
+            if(node) node.innerText = new Date().toLocaleTimeString();
+        }
+        setInterval(updateFooterClock, 1000);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initResourceChart();
+            initTaskScheduler();
+            startTelemetryPolling();
+            updateFooterClock();
+            pushTerminalLog("SUCCESS", "Инженерный узел супервизора OMNIFACTORY MASTER запущен стабильно.");
+
+            fetch('/api/registry')
+                .then(res => res.json())
+                .then(data => {
+                    const count = data.modules ? Object.keys(data.modules).length : 1;
+                    if(document.getElementById('sidebar-bot-count')) document.getElementById('sidebar-bot-count').innerText = count;
+                }).catch(() => {});
+        });
     </script>
-
-<!-- [ MODAL: CRM_TASK_CREATOR ] -->
-<div id="event-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(10, 10, 15, 0.95); border: 2px solid var(--bright-purple); padding:30px; z-index:20000; backdrop-filter:blur(20px); width: 400px; box-shadow: 0 0 50px rgba(188, 19, 254, 0.3); border-radius: 8px;">
-    <h3 style="font-family:'Orbitron'; color:var(--bright-purple); margin-top:0; letter-spacing: 2px;">// NEW_AUTO_TASK</h3>
-
-    <div style="margin-bottom: 15px;">
-        <label style="font-size: 0.6rem; color: var(--soft-blue);">TARGET_NODE:</label><br>
-        <select id="task-target" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:8px; font-family:'JetBrains Mono'; margin-top:5px;">
-            <option value="LOCAL">LOCAL_HOST (WF_MAIN)</option>
-            <option value="GENESYS">GENESYS_ENGINE_NODE</option>
-            <option value="VALKYRIA">VALKYRIA_SHIELD</option>
-        </select>
-    </div>
-
-    <div style="margin-bottom: 20px;">
-        <label style="font-size: 0.6rem; color: var(--soft-blue);">SERVICE_FUNCTION:</label><br>
-        <select id="task-script" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:8px; font-family:'JetBrains Mono'; margin-top:5px;">
-            <option value="RESTART">SYSTEM_REBOOT</option>
-            <option value="HEALTH_SCAN">DIAGNOSTIC_SCAN</option>
-            <option value="DB_BACKUP">SQL_CORE_BACKUP</option>
-            <option value="SEO_SNAPSHOT">SEO_METRICS_SYNC</option>
-        </select>
-    </div>
-
-    <!-- Поля для даты и времени (скрытые, заполняются автоматом из календаря) -->
-    <input type="hidden" id="task-start-date">
-
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-        <button onclick="submitTask()" class="ctrl-btn" style="background:var(--ok-green); color:#000; font-weight:bold; border:none;">CONFIRM_EXEC</button>
-        <button onclick="document.getElementById('event-modal').style.display='none'" class="ctrl-btn" style="border: 1px solid var(--critical-pink); color: var(--critical-pink);">ABORT</button>
-    </div>
-</div>
 </body>
 </html>

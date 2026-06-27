@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OMNIFACTORY // COCKPIT_V2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #f8fafc;
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --accent-green: #064e3b;
+            --accent-neon: #bc13fe;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
+            background-size: 25px 25px;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 3px solid var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .brand-box h1 { margin: 0; font-size: 1.2rem; letter-spacing: -0.01em; color: var(--accent-green); font-weight: 800; }
+        .brand-box span { color: var(--accent-neon); }
+        .user-tag { font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* MAIN CONTENT */
+        .viewport { flex: 1; display: flex; padding: 20px; gap: 20px; overflow: hidden; }
+
+        .side-panel { width: 280px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; backdrop-filter: blur(10px); }
+        .canvas-area { flex: 1; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.5); position: relative; }
+        .inspector-panel { width: 320px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+
+        /* MODULES */
+        .module-item {
+            padding: 12px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px;
+            font-family: 'JetBrains Mono'; font-size: 0.85rem; background: #fff; cursor: pointer; transition: 0.2s;
+        }
+        .module-item:hover { border-color: var(--accent-neon); transform: translateX(5px); }
+
+        /* FOOTER */
+        footer {
+            height: 45px;
+            background: #050508;
+            color: #71717a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            font-size: 0.75rem;
+            border-top: 1px solid var(--accent-neon);
+        }
+
+        .status-pulse {
+            color: #00ff41; font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand-box">
+        <h1>OMNIFACTORY <span>//</span> EVO_CORE</h1>
+        <div class="user-tag">CREATOR: Bondarev_E | PROJECT: GENESYS_AI</div>
+    </div>
+    <div style="text-align: right;">
+        <div style="font-size: 0.6rem; color: var(--text-muted); font-family: 'JetBrains Mono';">SYSTEM_TELEMETRY</div>
+        <div style="font-family: 'Orbitron'; font-weight: bold; color: var(--accent-green);">IDLE_MODE_ACTIVE</div>
+    </div>
+</header>
+
+<div class="viewport">
+    <aside class="side-panel">
+        <h3 style="font-family:'Orbitron'; font-size:0.9rem; color:var(--accent-green);">// MODULE_REGISTRY</h3>
+        <div class="module-item">WELCOME_CORE</div>
+        <div class="module-item">GEO_PICKER</div>
+        <div class="module-item">AI_CONSULTANT</div>
+    </aside>
+
+    <main class="canvas-area" id="drawflow-target">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: var(--text-muted); font-family: 'JetBrains Mono';">
+            // AWAITING_CORE_NODES
+        </div>
+    </main>
+
+    <aside class="inspector-panel">
+        <h3 style="font-family:'Orbitron'; font-size:0.9rem; color:var(--accent-neon);">// TELEMETRY</h3>
+        <div style="height: 150px; background: #000; border-radius: 4px; margin-bottom: 20px; font-family: 'JetBrains Mono'; color: #00ff41; padding: 10px; font-size: 0.7rem; overflow: hidden;">
+            > SYSTEM_INIT... OK<br>
+            > LINK_NODE: 0x4A2...<br>
+            > STATUS: READY_TO_DEPLOY
+        </div>
+    </aside>
+</div>
+
+<footer>
+    <div>
+        FACTORY_STATUS: <span class="status-pulse">● ONLINE_PRODUCTION_MODE</span>
+    </div>
+    <div style="font-family: 'Orbitron'; letter-spacing: 1px;">
+        © 2026 OMNIFACTORY EVO // AUTOMATION SYSTEM ENGINE
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OMNIFACTORY // EVO_CORE // ENTERPRISE_ARCHITECT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #050508; --bg-panel: #0d0d12; --bg-dark: #000000;
+            --accent-purple: #bc13fe; --accent-cyan: #00ffff; --ok-green: #00ff41; --warning-orange: #f59e0b;
+            --border-purple: rgba(188, 19, 254, 0.3); --border-dim: #27272a;
+            --text-bright: #e4e4e7; --text-dim: #a1a1aa;
+        }
+
+        body { margin: 0; display: grid; grid-template-rows: 55px 1fr 160px; height: 100vh; background: var(--bg-main); color: var(--text-bright); font-family: 'Inter', sans-serif; overflow: hidden; }
+
+        /* HEADER */
+        .ide-header { background: var(--bg-panel); border-bottom: 1px solid var(--border-purple); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .logo-text { font-family: 'Orbitron', sans-serif; font-weight: 900; color: var(--accent-cyan); letter-spacing: 1px; }
+        .core-badge { font-family: 'JetBrains Mono'; font-size: 0.6rem; background: rgba(0,255,255,0.1); color: var(--accent-cyan); padding: 2px 6px; border-radius: 2px; border: 1px solid var(--accent-cyan); margin-left: 10px; }
+        .btn-trigger { background: var(--accent-purple); border: 1px solid var(--accent-purple); color: #fff; padding: 6px 16px; cursor: pointer; font-weight: bold; font-family: 'JetBrains Mono'; font-size: 0.75rem; }
+        .btn-secondary { background: transparent; border: 1px solid var(--text-dim); color: var(--text-bright); padding: 6px 12px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.75rem; margin-right: 10px; }
+
+        /* CSS */
+
+        .editor-toolbar { background: #1a1a24; padding: 5px; border-radius: 5px 5px 0 0; display: flex; gap: 5px; border-bottom: 1px solid var(--accent-purple); }
+        .editor-toolbar button { background: #27272a; color: white; border: none; padding: 2px 8px; cursor: pointer; font-size: 0.7rem; border-radius: 2px; }
+        .rich-editor { background: #050508; color: var(--text-bright); border: 1px solid var(--border-dim); padding: 10px; min-height: 80px; font-family: 'JetBrains Mono'; font-size: 0.8rem; overflow-y: auto; }
+
+         .author-footer {
+            background: linear-gradient(to top, #050508, #0a0a0f);
+            padding: 20px;
+            border-top: 1px solid var(--accent-purple);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .footer-content { text-align: center; font-family: 'JetBrains Mono'; color: var(--text-dim); }
+        .footer-brand { font-family: 'Orbitron'; color: var(--accent-cyan); font-size: 0.8rem; letter-spacing: 4px; }
+        .footer-divider { width: 50px; height: 1px; background: var(--accent-purple); margin: 10px auto; }
+        .footer-credits { font-size: 0.65rem; }
+        .footer-credits span { color: var(--accent-purple); font-weight: bold; margin: 0 5px; }
+        .footer-copyright { font-size: 0.6rem; margin-top: 5px; opacity: 0.5; }
+
+        /* WORKSPACE */
+        .ide-workspace {
+            display: grid;
+            grid-template-columns: 280px 1fr 380px;
+            height: calc(100vh - 55px - 140px); /* Высота минус хедер и футер */
+            overflow: hidden;
+        }
+        .ide-sidebar { background: var(--bg-panel); border-right: 1px solid var(--border-dim); display: flex; flex-direction: column; }
+        .canvas-wrapper { position: relative; background: var(--bg-main); overflow: hidden; }
+        #drawflow {
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#1e1e24 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
+            cursor: grab;
+        }width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#1e1e24 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
+            cursor: grab;
+        }
+        .ide-inspector { background: var(--bg-panel); border-left: 1px solid var(--border-dim); display: flex; flex-direction: column; }
+
+        /* SIDEBAR */
+        .sidebar-search { padding: 15px; border-bottom: 1px solid var(--border-dim); }
+        .sidebar-search input { width: 100%; background: var(--bg-dark); border: 1px solid var(--border-dim); color: #fff; padding: 8px; font-family: 'JetBrains Mono'; font-size: 0.75rem; box-sizing: border-box; }
+        .sidebar-scroll { overflow-y: auto; padding: 15px; flex-grow: 1; }
+        .category-title { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; margin: 15px 0 8px 0; }
+
+        .node-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-dim); padding: 8px 10px; border-radius: 4px; cursor: grab; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .node-item:hover { border-color: var(--accent-purple); background: rgba(188, 19, 254, 0.05); }
+
+        .n-trigger { border-left: 3px solid var(--accent-cyan); }
+        .n-core { border-left: 3px solid var(--text-bright); }
+        .n-db { border-left: 3px solid #3b82f6; }
+        .n-ai { border-left: 3px solid var(--warning-orange); }
+
+        /* DRAWFLOW CUSTOMIZATION */
+        .drawflow .drawflow-node { background: var(--bg-panel) !important; border: 1px solid var(--border-dim) !important; border-top: 3px solid var(--accent-purple) !important; border-radius: 4px !important; color: #fff !important; font-family: 'JetBrains Mono', monospace !important; font-size: 0.7rem !important; min-width: 200px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; }
+        .drawflow .drawflow-node.selected { border-color: var(--accent-cyan) !important; border-top-color: var(--accent-cyan) !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.15) !important; }
+        .drawflow .connection .main-path { stroke: var(--text-dim) !important; stroke-width: 2px !important; }
+
+        /* INSPECTOR */
+        .inspector-tabs { display: flex; border-bottom: 1px solid var(--border-dim); background: rgba(0,0,0,0.2); }
+        .ins-tab { flex: 1; text-align: center; padding: 10px; font-size: 0.7rem; font-family: 'Orbitron'; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; }
+        .ins-tab.active { color: var(--accent-purple); border-bottom-color: var(--accent-purple); background: rgba(188,19,254,0.05); }
+
+        .inspector-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .prop-field { margin-bottom: 15px; }
+        .prop-field label { display: block; font-size: 0.65rem; color: var(--text-dim); margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; }
+        .prop-field input, .prop-field textarea, .prop-field select { width: 100%; background: var(--bg-dark); border: 1px solid var(--border-dim); color: var(--text-bright); padding: 8px; font-size: 0.75rem; box-sizing: border-box; font-family: 'JetBrains Mono'; border-radius: 2px; }
+        .prop-field select { cursor: pointer; }
+        .prop-field textarea { height: 80px; resize: vertical; }
+
+        /* FOOTER & TERMINAL */
+        .ide-footer { background: #000; border-top: 1px solid var(--border-dim); display: flex; flex-direction: column; }
+        .terminal-stream { padding: 10px 15px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ok-green); line-height: 1.5; overflow-y: auto; flex-grow: 1; }
+
+        /* SIGNATURE FROM INDEX.HTML */
+        .author-footer {
+            text-align: center;
+            padding: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            border-top: 1px solid rgba(255,255,255, 0.05);
+            background: #050508;
+        }
+        .author-footer span {
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="ide-header">
+        <div>
+            <span class="logo-text">OMNIFACTORY</span>
+            <span class="core-badge">ENTERPRISE_PIPELINE</span>
+        </div>
+        <div>
+            <button class="btn-secondary" onclick="saveGraph()">💾 COMPILE JSON</button>
+            <button class="btn-trigger" onclick="deployGraph()">🚀 DEPLOY WORKFLOW</button>
+        </div>
+    </header>
+
+    <div class="ide-workspace">
+
+        <aside class="ide-sidebar">
+            <div class="sidebar-search">
+                <input type="text" placeholder="Поиск интеграции...">
+            </div>
+            <div class="sidebar-scroll" id="library">
+
+                <div class="category-title">// 🌐 TRIGGERS (ВХОДНЫЕ ТОЧКИ)</div>
+                <div class="node-item n-trigger" draggable="true" ondragstart="drag(event)" data-node="webhook">🪝 Webhook (GET/POST)</div>
+                <div class="node-item n-trigger" draggable="true" ondragstart="drag(event)" data-node="cron">⏱️ Schedule (Cron)</div>
+                <div class="node-item n-trigger" draggable="true" ondragstart="drag(event)" data-node="tg_trigger">✈️ Telegram Event</div>
+
+                <div class="category-title">// ⚙️ CORE LOGIC (ОБРАБОТКА)</div>
+                <div class="node-item n-core" draggable="true" ondragstart="drag(event)" data-node="http_req">🔗 HTTP Request</div>
+                <div class="node-item n-core" draggable="true" ondragstart="drag(event)" data-node="switch">🔀 Switch (Router)</div>
+                <div class="node-item n-core" draggable="true" ondragstart="drag(event)" data-node="code">💻 Python/JS Code</div>
+
+                <div class="category-title">// 🗄 DATABASES (ХРАНИЛИЩА)</div>
+                <div class="node-item n-db" draggable="true" ondragstart="drag(event)" data-node="postgres">🐘 PostgreSQL</div>
+                <div class="node-item n-db" draggable="true" ondragstart="drag(event)" data-node="redis">🟥 Redis (Cache)</div>
+
+                <div class="category-title">// 🧠 AI & LLM (ИНТЕЛЛЕКТ)</div>
+                <div class="node-item n-ai" draggable="true" ondragstart="drag(event)" data-node="openai">🤖 OpenAI (GPT-4)</div>
+                <div class="node-item n-ai" draggable="true" ondragstart="drag(event)" data-node="chromadb">🔍 ChromaDB (Vector)</div>
+
+            </div>
+        </aside>
+
+        <main id="drawflow" ondrop="drop(event)" ondragover="allowDrop(event)"></main>
+
+        <aside class="ide-inspector">
+            <div class="inspector-tabs">
+                <div class="ins-tab active">ПАРАМЕТРЫ</div>
+                <div class="ins-tab">АВТОРИЗАЦИЯ</div>
+            </div>
+            <div class="inspector-body" id="inspector-ui">
+                <div style="color:var(--text-dim); font-size: 0.7rem; text-align: center; margin-top: 40px;">Выберите узел для настройки параметров интеграции...</div>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="ide-footer">
+        <div class="terminal-stream" id="ide-terminal">
+            > [SYSTEM] Ядро оркестрации загружено. Доступно 51+ интеграций.<br>
+            > [SYSTEM] Ожидание проектирования графа потока данных...
+        </div>
+
+        <div class="author-footer">
+            POWERED BY <span>OMNIFACTORY_CORE</span> // EUGENE BONDAREV © 2026
+        </div>
+    <footer class="author-footer">
+        <div class="footer-content">
+            <div class="footer-brand">OMNIFACTORY_EVO // CORE_ENGINE</div>
+            <div class="footer-divider"></div>
+            <div class="footer-credits">
+                ARCHITECT: <span>EUGENE BONDAREV</span> | SYSTEM_STATUS: <span>ONLINE</span> | VERSION: <span>2.6.0</span>
+            </div>
+            <div class="footer-copyright">
+                © 2026 // ALL_RIGHTS_RESERVED
+            </div>
+        </div>
+    </footer>
+
+<script>
+    // 0. Инициализация Drawflow
+    const editor = new Drawflow(document.getElementById("drawflow"));
+    editor.start();
+
+// 1. Инициализируем пустой объект
+let MODULE_SCHEMAS = {};
+
+// 2. Функция, которая берет данные из твоего registry.json и перекладывает их в логику билдера
+async function loadModulesFromRegistry() {
+    try {
+        const response = await fetch('/api/v1/registry'); // Твой бэкенд отдает registry.json
+        const registry = await response.json();
+
+        // Проходим по категориям из JSON
+        Object.values(registry).forEach(categoryModules => {
+            categoryModules.forEach(mod => {
+                // Превращаем JSON-модуль в схему для билдера
+                MODULE_SCHEMAS[mod.id] = {
+                    title: mod.label,
+                    color: "var(--accent-cyan)", // Можно задать цвета по категориям
+                    outputs: 1,
+                    fields: mod.config_fields || { description: { type: "text", default: mod.desc } }
+                };
+            });
+        });
+        logTerminal("Реестр 50+ модулей успешно интегрирован в IDE.");
+    } catch (e) {
+        logTerminal("Ошибка загрузки registry.json");
+    }
+}
+
+    // 3. Логика Drag & Drop
+    function allowDrop(ev) { ev.preventDefault(); }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("node_id", ev.target.getAttribute('data-node'));
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        const nodeType = ev.dataTransfer.getData("node_id");
+        if (!nodeType || !MODULE_SCHEMAS[nodeType]) return;
+
+        const drawflowRect = document.getElementById("drawflow").getBoundingClientRect();
+        const x = ev.clientX - drawflowRect.left;
+        const y = ev.clientY - drawflowRect.top;
+
+        const schema = MODULE_SCHEMAS[nodeType];
+
+        // Создаем узел
+        editor.addNode(nodeType, 1, schema.outputs || 1, x - 40, y - 20, nodeType, { config: {} },
+            `<div style="font-size:0.6rem; color:${schema.color}">// ${nodeType.toUpperCase()}</div><div style="font-weight:bold">${schema.title}</div>`
+        );
+        logTerminal(`Узел [${schema.title}] развернут.`);
+    }
+         window.addBtn = (nodeId, key) => {
+        let node = editor.getNodeFromId(nodeId);
+        if (!node.data.config[key]) node.data.config[key] = [];
+
+        node.data.config[key].push({ text: "Новая кнопка", callback: "action_id" });
+        editor.updateNodeDataFromId(nodeId, node.data);
+
+        // Перерисовываем инспектор
+        renderInspectorForm(nodeId);
+    };
+
+    window.removeBtn = (nodeId, key, index) => {
+        let node = editor.getNodeFromId(nodeId);
+        node.data.config[key].splice(index, 1);
+        editor.updateNodeDataFromId(nodeId, node.data);
+        renderInspectorForm(nodeId);
+    };
+    // 4. Смарт-Инспектор
+    editor.on('nodeSelected', (id) => {
+    const node = editor.getNodeFromId(id);
+    const inspector = document.getElementById('inspector-ui');
+    const schema = MODULE_SCHEMAS[node.name];
+    if (!schema) return;
+
+    const nodeData = node.data.config || {};
+    let html = `<div style="font-size:0.7rem; color:${schema.color}; margin-bottom:15px;">ID: #${id} | ${schema.title}</div>`;
+
+    // ПРОХОДИМ ПО ВСЕМ ПОЛЯМ
+    for (const [key, fieldInfo] of Object.entries(schema.fields)) {
+        html += `<div class="prop-field"><label>${key.toUpperCase()}</label>`;
+        const val = nodeData[key] || fieldInfo.default || '';
+
+        // ЕСЛИ ЭТО КНОПКИ
+        if (fieldInfo.type === 'buttons_list') {
+            html += `<div id="buttons-list" class="dynamic-container">
+                ${(nodeData[key] || []).map((btn, index) => `
+                    <div class="btn-row" style="display:flex; gap:5px; margin-bottom:5px;">
+                        <input type="text" value="${btn.text}" placeholder="Текст">
+                        <input type="text" value="${btn.callback}" placeholder="Action">
+                        <button onclick="removeBtn(${id}, '${key}', ${index})">×</button>
+                    </div>
+                `).join('')}
+                <button class="add-btn" onclick="addBtn(${id}, '${key}')">+ Добавить кнопку</button>
+            </div>`;
+        }
+        // ЕСЛИ ЭТО СПИСОК ВЫБОРА
+        else if (fieldInfo.type === 'rich_text') {
+            html += `
+            <div class="editor-toolbar">
+                <button onclick="document.execCommand('bold', false, null)">B</button>
+                <button onclick="document.execCommand('italic', false, null)">I</button>
+                <button onclick="document.execCommand('foreColor', false, '#bc13fe')">PPL</button>
+                <button onclick="document.execCommand('foreColor', false, '#00ffff')">CYN</button>
+            </div>
+            <div class="rich-editor" contenteditable="true"
+                 onblur="updateNodeData(${id}, '${key}', this.innerHTML)">${val}</div>`;
+        }
+        // ЕСЛИ ТЕКСТ
+        else {
+            html += `<input type="text" value="${val}" onchange="updateNodeData(${id}, '${key}', this.value)">`;
+        }
+        html += `</div>`;
+    }
+    inspector.innerHTML = html;
+});
+
+    editor.on('nodeUnselected', () => {
+        document.getElementById('inspector-ui').innerHTML = `<div style="color:var(--text-dim); font-size: 0.7rem; text-align: center; margin-top: 40px;">Выберите узел для настройки...</div>`;
+    });
+
+    function updateNodeData(nodeId, key, value) {
+        let node = editor.getNodeFromId(nodeId);
+        if(!node.data.config) node.data.config = {};
+        node.data.config[key] = value;
+        editor.updateNodeDataFromId(nodeId, node.data);
+    }
+
+    function logTerminal(msg) {
+        const term = document.getElementById('ide-terminal');
+        term.innerHTML += `<br>> <span style="color:var(--text-dim)">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+        term.scrollTop = term.scrollHeight;
+    }
+</script>
+</body>
+</html>
