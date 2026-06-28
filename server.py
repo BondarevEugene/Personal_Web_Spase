@@ -6,6 +6,8 @@
 # 1. ИМПОРТЫ
 # ==============================================================================
 import sys
+import os
+import uvicorn
 import logging
 import json
 from pathlib import Path
@@ -1646,6 +1648,7 @@ async def startup_event():
 # ФИНАЛЬНЫЙ СТАБИЛЬНЫЙ ПУСК
 # ==============================================================================
 if __name__ == "__main__":
-    # Убираем reload=True, если не хочешь, чтобы сервер перезапускался сам
-    # При разработке это удобно, но иногда создает "шум" в логах
-    uvicorn.run("server:app", host="0.0.0.0", port=8088, reload=False)
+    # Берем порт из переменной окружения PORT, которую дает Google
+    port = int(os.environ.get("PORT", 8080))
+    # СЛУШАЕМ 0.0.0.0 — это критически важно для Docker/Cloud Run
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
