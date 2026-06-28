@@ -1,0 +1,101 @@
+Metadata-Version: 2.4
+Name: genkit
+Version: 0.4.0
+Summary: Genkit AI Framework
+Author: Google
+License: Apache-2.0
+License-File: LICENSE
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: >=3.10
+Requires-Dist: anyio>=4.9.0
+Requires-Dist: asgiref>=3.8.1
+Requires-Dist: httpx>=0.28.1
+Requires-Dist: json5>=0.10.0
+Requires-Dist: opentelemetry-api>=1.29.0
+Requires-Dist: opentelemetry-sdk>=1.29.0
+Requires-Dist: partial-json-parser>=0.2.1.1.post5
+Requires-Dist: pillow
+Requires-Dist: psutil>=7.0.0
+Requires-Dist: pydantic>=2.10.5
+Requires-Dist: sse-starlette>=2.2.1
+Requires-Dist: starlette>=0.46.1
+Requires-Dist: strenum>=0.4.15; python_version < '3.11'
+Requires-Dist: structlog>=25.2.0
+Requires-Dist: uvicorn>=0.34.0
+Provides-Extra: dev-local-vectorstore
+Requires-Dist: genkit-plugin-dev-local-vectorstore; extra == 'dev-local-vectorstore'
+Provides-Extra: flask
+Requires-Dist: genkit-plugin-flask; extra == 'flask'
+Provides-Extra: google-genai
+Requires-Dist: genkit-plugin-google-genai; extra == 'google-genai'
+Provides-Extra: ollama
+Requires-Dist: genkit-plugin-ollama; extra == 'ollama'
+Provides-Extra: openai
+Requires-Dist: genkit-plugin-compat-oai; extra == 'openai'
+Description-Content-Type: text/markdown
+
+# genkit
+
+Genkit is a framework designed to help you build AI-powered applications and features.
+It provides open source libraries for Python, Node.js and Go, plus developer tools for testing
+and debugging.
+
+You can deploy and run Genkit libraries anywhere Python is supported. It's designed to work with
+many AI model providers and vector databases. While we offer integrations for Firebase and Google Cloud,
+you can use Genkit independently of any Google services.
+
+## Setup Instructions
+
+```bash
+pip install genkit
+pip install genkit-plugin-google-genai
+```
+
+```python
+import json
+from pydantic import BaseModel, Field
+from genkit.ai import Genkit
+from genkit.plugins.google_genai import GoogleAI
+
+ai = Genkit(
+    plugins=[GoogleAI()],
+    model='googleai/gemini-2.0-flash',
+)
+
+class RpgCharacter(BaseModel):
+    """An RPG game character."""
+
+    name: str = Field(description='name of the character')
+    back_story: str = Field(description='back story')
+    abilities: list[str] = Field(description='list of abilities (3-4)')
+
+@ai.flow()
+async def generate_character(name: str):
+    result = await ai.generate(
+        prompt=f'generate an RPG character named {name}',
+        output_schema=RpgCharacter,
+    )
+    return result.output
+
+
+async def main() -> None:
+    """Main function."""
+    print(json.dumps(await generate_character('Goblorb')))
+
+ai.run_main(main())
+```
+
+See https://python.api.genkit.dev for more details.
