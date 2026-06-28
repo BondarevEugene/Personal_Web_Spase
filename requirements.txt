@@ -9,3 +9,4 @@ firebase_admin~=7.4.0
 flet~=0.85.1
 Jinja2
 aiogram
+psycopg2-binary
