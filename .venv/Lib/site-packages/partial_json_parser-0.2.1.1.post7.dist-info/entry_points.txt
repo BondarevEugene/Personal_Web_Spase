@@ -1,0 +1,5 @@
+[console_scripts]
+json-playground = partial_json_parser.playground:main
+
+[gui_scripts]
+

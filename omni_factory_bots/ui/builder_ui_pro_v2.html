@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OMNIFACTORY // EVO_CORE // ENTERPRISE_ARCHITECT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #121214; --bg-panel: #18181b; --border-dim: #27272a;
+            --accent-purple: #bc13fe; --accent-cyan: #00ffff; --ok-green: #22c55e; --critical-pink: #ff007f;
+            --text-bright: #e4e4e7; --text-dim: #a1a1aa;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            background: var(--bg-main);
+            color: var(--text-bright);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ХЕДЕР */
+        .ide-header {
+            height: 55px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-dim);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; flex-shrink: 0;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 20px; }
+
+        .logo-text { font-family: 'Orbitron'; font-weight: 900; font-size: 1.1rem; color: var(--text-bright); letter-spacing: 1px;}
+        .logo-text span { color: var(--accent-purple); }
+
+        .btn-back { background: transparent; border: 1px solid var(--border-dim); color: var(--text-bright); padding: 6px 12px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.7rem; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .btn-back:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(0, 255, 255, 0.05); }
+
+        .header-actions { display: flex; gap: 10px; }
+        .btn-secondary { background: transparent; border: 1px solid var(--border-dim); color: var(--text-dim); padding: 5px 15px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.7rem; transition: 0.2s; }
+        .btn-secondary:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+        .btn-trigger { background: rgba(188, 19, 254, 0.1); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 5px 15px; cursor: pointer; font-family: 'JetBrains Mono'; font-size: 0.7rem; font-weight: bold; }
+        .btn-trigger:hover { background: var(--accent-purple); color: #fff; }
+
+        /* ВОРКСПЕЙС */
+        .ide-workspace {
+            display: grid;
+            grid-template-columns: 280px 1fr 380px; /* Идеальные пропорции: левая 280px, правая 380px, центр - всё остальное */
+            height: calc(100vh - 90px); /* 100% минус хедер и футер */
+            width: 100%;
+        }
+
+        /* ЛЕВАЯ ПАНЕЛЬ */
+        .ide-sidebar {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-dim);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .sidebar-search { padding: 15px; border-bottom: 1px solid var(--border-dim); }
+        .sidebar-search input { width: 100%; background: var(--bg-main); border: 1px solid var(--border-dim); color: var(--text-bright); padding: 8px; font-size: 0.7rem; font-family: 'JetBrains Mono'; box-sizing: border-box; }
+        .sidebar-scroll { overflow-y: auto; flex-grow: 1; padding: 15px; }
+
+        .category-title { font-family: 'Orbitron'; font-size: 0.65rem; color: var(--accent-cyan); margin: 15px 0 8px 5px; text-transform: uppercase; }
+        .node-item {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border-dim);
+            padding: 10px; margin-bottom: 6px; cursor: grab; font-family: 'JetBrains Mono'; font-size: 0.75rem;
+            transition: 0.2s;
+        }
+        .node-item:hover { border-color: var(--accent-purple); background: rgba(188,19,254,0.05); }
+
+        /* ХОЛСТ (ЦЕНТР) */
+        .canvas-wrapper {
+            position: relative;
+            background: var(--bg-main);
+            min-width: 0; /* Жестко удерживает сетку */
+            height: 100%;
+        }
+        #drawflow {
+            width: 100%; height: 100%; cursor: grab;
+            background-image: radial-gradient(#1e1e24 1.2px, transparent 1.2px); background-size: 24px 24px;
+        }
+
+        /* ПРАВАЯ ПАНЕЛЬ */
+        .ide-inspector {
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-dim);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        #inspector-ui { padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .ide-terminal {
+            height: 200px; background: #000; border-top: 1px solid var(--border-dim);
+            padding: 15px; font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--ok-green);
+            overflow-y: auto; flex-shrink: 0;
+        }
+
+        /* ФУТЕР */
+        .ide-footer {
+            height: 35px; background: #000; border-top: 1px solid var(--border-dim);
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px;
+            color: var(--text-dim); font-size: 0.65rem; font-family: 'JetBrains Mono';
+        }
+
+        /* ИНСПЕКТОР (ФОРМЫ) */
+        .prop-field { margin-bottom: 15px; }
+        .prop-field label { display: block; font-family: 'JetBrains Mono'; font-size: 0.65rem; color: var(--text-dim); margin-bottom: 5px; }
+        .prop-field input[type="text"], .prop-field input[type="number"], .prop-field select {
+            width: 100%; background: var(--bg-main); border: 1px solid var(--border-dim); color: var(--text-bright); padding: 8px; font-size: 0.75rem; box-sizing: border-box; outline: none;
+        }
+        .prop-field input:focus { border-color: var(--accent-purple); }
+        .btn-row input { flex-grow: 1; }
+        .btn-row button { background: rgba(255,0,127,0.1); border: 1px solid var(--critical-pink); color: var(--critical-pink); cursor: pointer; width: 30px; }
+        .add-btn { width: 100%; background: transparent; border: 1px dashed var(--accent-purple); color: var(--accent-purple); padding: 5px; cursor: pointer; margin-top: 5px; font-family: 'JetBrains Mono'; }
+        .rich-editor { border: 1px solid var(--border-dim); background: var(--bg-main); padding: 10px; min-height: 80px; color: var(--text-bright); font-size: 0.8rem; outline: none; }
+        .rich-editor:focus { border-color: var(--accent-purple); }
+    </style>
+</head>
+<body>
+
+    <header class="ide-header">
+        <div class="header-left">
+            <button class="btn-back" onclick="goToPlatform()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                НА ПЛАТФОРМУ
+            </button>
+            <div class="logo-text">OMNIFACTORY <span> 𒄦</span> PRO ARCHITECT 𒄦 </span> Design by BONDAREV_E 𒄦</div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-secondary" onclick="switchInspector('auth')">🔑 АВТОРИЗАЦИЯ</button>
+            <button class="btn-secondary" onclick="switchInspector('params')">⚙️ ПАРАМЕТРЫ</button>
+            <button class="btn-secondary" onclick="saveGraph()">💾 SAVE GRAPH</button>
+            <button class="btn-trigger" onclick="deployGraph()">🚀 DEPLOY CODE</button>
+        </div>
+    </header>
+
+    <div class="ide-workspace">
+        <aside class="ide-sidebar">
+            <div class="sidebar-search"><input type="text" placeholder="Поиск интеграции..."></div>
+            <div class="sidebar-scroll" id="library">
+                <div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; margin-top: 50px;">Инициализация модулей...</div>
+            </div>
+        </aside>
+
+        <main class="canvas-wrapper">
+            <div id="drawflow"></div>
+        </main>
+
+        <aside class="ide-inspector">
+            <div id="inspector-ui"><div style="color: var(--text-dim); text-align: center; margin-top: 50px;">Выберите узел для настройки...</div></div>
+            <div id="ide-terminal" class="ide-terminal">>> SYSTEM INITIALIZED</div>
+        </aside>
+    </div>
+
+    <footer class="ide-footer">
+        <div>ENGINE: EVO_CORE v2.6.0 | STATUS: STANDALONE MODE</div>
+        <div>EUGENE BONDAREV © 2026</div>
+    </footer>
+
+<script>
+    // Навигация назад
+    function goToPlatform() {
+        // Если открыто в новой вкладке - закрываем, иначе возвращаемся назад
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = '/'; // Укажите здесь URL вашей главной страницы, если нужно
+        }
+    }
+
+    // === 1. ГЛОБАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ ===
+    let MODULE_SCHEMAS = {};
+    const container = document.getElementById("drawflow");
+    const editor = new Drawflow(container);
+    editor.start();
+
+    // === 2. ФИКСАЦИЯ БЛОКОВ (DRAG & DROP) ===
+    container.addEventListener('dragover', (e) => e.preventDefault());
+
+    container.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const nodeId = e.dataTransfer.getData("nodeId");
+        if (!nodeId) return;
+
+        // Вычисляем координаты с учетом зума Drawflow
+        const rect = container.getBoundingClientRect();
+        const zoom = editor.zoom;
+        const x = (e.clientX - rect.left - editor.precanvas.getBoundingClientRect().left) * (editor.precanvas.clientWidth / (editor.precanvas.clientWidth * zoom));
+        const y = (e.clientY - rect.top - editor.precanvas.getBoundingClientRect().top) * (editor.precanvas.clientHeight / (editor.precanvas.clientHeight * zoom));
+
+        const schema = MODULE_SCHEMAS[nodeId] || { label: nodeId };
+        const title = schema.label;
+
+        let inputs = 1; let outputs = 1;
+        if (nodeId === 'logic_start') { inputs = 0; outputs = 1; }
+        if (nodeId === 'logic_condition') { inputs = 1; outputs = 2; }
+        if (nodeId === 'logic_stop') { inputs = 1; outputs = 0; }
+
+        editor.addNode(nodeId, inputs, outputs, x, y, nodeId, { config: {} },
+            `<div style="font-size:0.6rem; color:var(--accent-purple)">// ${nodeId.toUpperCase()}</div><div style="font-weight:bold">${title}</div>`
+        );
+        logTerminal(`Узел [${title}] развернут.`);
+    });
+
+
+        // === 3. ЗАГРУЗКА БИБЛИОТЕКИ (С ОПИСАНИЯМИ) ===
+    // === 3. ЗАГРУЗКА БИБЛИОТЕКИ (С ОПИСАНИЯМИ) ===
+    async function loadRegistry() {
+        logTerminal("Синхронизация реестра модулей...");
+        const lib = document.getElementById('library');
+        lib.innerHTML = '';
+
+        // Базовые логические узлы (всегда доступны)
+        lib.innerHTML += `<div class="category-title">// 🔄 LOGIC CORE</div>`;
+        const logicNodes = [
+            { id: 'logic_condition', label: '🔀 Decision (If/Else)', desc: 'Разветвление логики на основе условий' },
+            { id: 'logic_stop', label: '🛑 Stop Point', desc: 'Успешное завершение текущего потока' }
+        ];
+        logicNodes.forEach(mod => {
+            MODULE_SCHEMAS[mod.id] = mod;
+            lib.innerHTML += createNodeHtml(mod);
+        });
+
+        // Загрузка полного реестра с сервера
+        try {
+            const response = await fetch('/api/v1/registry');
+            if (!response.ok) throw new Error("HTTP " + response.status);
+
+            const registryData = await response.json();
+            const categoriesDict = registryData.categories || registryData;
+
+            Object.entries(categoriesDict).forEach(([cat, mods]) => {
+                if(cat === 'schemas') return;
+
+                lib.innerHTML += `<div class="category-title">// 🌐 ${cat}</div>`;
+                mods.forEach(mod => {
+                    MODULE_SCHEMAS[mod.id] = mod;
+                    lib.innerHTML += createNodeHtml(mod);
+                });
+            });
+            logTerminal("Модули OMNIFACTORY успешно загружены.");
+        } catch (e) {
+            logTerminal("ВНИМАНИЕ: Ошибка загрузки модулей (" + e.message + ").");
+        }
+    }
+
+    // Вспомогательная функция для генерации HTML карточки модуля с описанием
+    function createNodeHtml(mod) {
+        const desc = mod.desc || "Системный модуль платформы";
+        const label = mod.label || mod.id;
+        return `
+            <div class="node-item" draggable="true" ondragstart="event.dataTransfer.setData('nodeId', '${mod.id}')">
+                <div style="font-weight: bold; color: var(--text-bright); margin-bottom: 4px;">${label}</div>
+                <div style="font-size: 0.65rem; color: var(--text-dim); line-height: 1.3;">${desc}</div>
+            </div>
+        `;
+    }
+
+    // Вспомогательная функция для генерации HTML карточки модуля с описанием
+    function createNodeHtml(mod) {
+        const desc = mod.desc || "Системный модуль платформы";
+        const label = mod.label || mod.id;
+        return `
+            <div class="node-item" draggable="true" ondragstart="event.dataTransfer.setData('nodeId', '${mod.id}')">
+                <div style="font-weight: bold; color: var(--text-bright); margin-bottom: 4px;">${label}</div>
+                <div style="font-size: 0.65rem; color: var(--text-dim); line-height: 1.3;">${desc}</div>
+            </div>
+        `;
+    }
+
+    // === 4. ИНСПЕКТОР ===
+    editor.on('nodeSelected', (id) => {
+        const node = editor.getNodeFromId(id);
+        const inspector = document.getElementById('inspector-ui');
+        const schema = MODULE_SCHEMAS[node.name] || { label: node.name, fields: {} };
+        const nodeData = node.data.config || {};
+
+        let html = `
+            <div style="font-size:0.7rem; color:var(--accent-cyan); margin-bottom:15px;">
+                ID: #${id} | ${schema.label}
+            </div>`;
+
+        const fields = schema.config_fields || schema.fields || {};
+        if (Object.keys(fields).length > 0) {
+            for (const [key, fieldInfo] of Object.entries(fields)) {
+                html += `<div class="prop-field"><label>${key.toUpperCase()}</label>`;
+                const val = nodeData[key] || fieldInfo.default || '';
+
+                if (fieldInfo.type === 'buttons_list') {
+                    html += `<div class="dynamic-container">${(nodeData[key] || []).map((btn, index) => `
+                        <div class="btn-row" style="display:flex; gap:5px; margin-bottom:5px;">
+                            <input type="text" value="${btn.text}" placeholder="Текст" onchange="updateBtnData(${id},'${key}',${index},'text',this.value)">
+                            <button onclick="removeBtn(${id}, '${key}', ${index})">×</button>
+                        </div>`).join('')}
+                        <button class="add-btn" onclick="addBtn(${id}, '${key}')">+ Добавить кнопку</button>
+                    </div>`;
+                } else if (fieldInfo.type === 'textarea' || fieldInfo.type === 'rich_text') {
+                    html += `<div class="rich-editor" contenteditable="true" onblur="updateNodeData(${id}, '${key}', this.innerText)">${val}</div>`;
+                } else if (fieldInfo.type === 'select') {
+                    html += `<select onchange="updateNodeData(${id}, '${key}', this.value)">`;
+                    (fieldInfo.options || []).forEach(opt => {
+                        html += `<option value="${opt}" ${val===opt?'selected':''}>${opt}</option>`;
+                    });
+                    html += `</select>`;
+                } else {
+                    html += `<input type="text" value="${val}" onchange="updateNodeData(${id}, '${key}', this.value)">`;
+                }
+                html += `</div>`;
+            }
+        } else {
+            html += `<div style="color:var(--text-dim); font-size:0.8rem;">Нет параметров для настройки</div>`;
+        }
+
+        inspector.innerHTML = html;
+        logTerminal(`Открыт инспектор узла #${id}`);
+    });
+
+    editor.on('nodeUnselected', () => {
+        document.getElementById('inspector-ui').innerHTML = `<div style="color: var(--text-dim); text-align: center; margin-top: 50px;">Выберите узел для настройки...</div>`;
+    });
+
+    // === 5. ОБНОВЛЕНИЕ ДАННЫХ ===
+    window.updateNodeData = (nodeId, key, value) => {
+        let node = editor.getNodeFromId(nodeId);
+        if (!node.data.config) node.data.config = {};
+        node.data.config[key] = value;
+        editor.updateNodeDataFromId(nodeId, node.data);
+    };
+
+    window.addBtn = (nodeId, key) => {
+        let node = editor.getNodeFromId(nodeId);
+        if (!node.data.config) node.data.config = {};
+        if (!node.data.config[key]) node.data.config[key] = [];
+        node.data.config[key].push({ text: "Новая кнопка" });
+        editor.updateNodeDataFromId(nodeId, node.data);
+        editor.emit('nodeSelected', nodeId);
+    };
+
+    window.removeBtn = (nodeId, key, index) => {
+        let node = editor.getNodeFromId(nodeId);
+        node.data.config[key].splice(index, 1);
+        editor.updateNodeDataFromId(nodeId, node.data);
+        editor.emit('nodeSelected', nodeId);
+    };
+
+    window.updateBtnData = (nodeId, key, index, field, value) => {
+        let node = editor.getNodeFromId(nodeId);
+        node.data.config[key][index][field] = value;
+        editor.updateNodeDataFromId(nodeId, node.data);
+    };
+
+    // === 6. УТИЛИТЫ ===
+    function logTerminal(msg) {
+        const term = document.getElementById('ide-terminal');
+        const time = new Date().toLocaleTimeString('ru-RU', { hour12: false });
+        term.innerHTML += `<br><span style="color:var(--text-dim)">[${time}]</span> ${msg}`;
+        term.scrollTop = term.scrollHeight;
+    }
+
+    function switchInspector(type) {
+        const ui = document.getElementById('inspector-ui');
+        if (type === 'auth') {
+            ui.innerHTML = `<h3 style="color:var(--accent-purple)">// АВТОРИЗАЦИЯ</h3>
+                <div class="prop-field"><label>API TOKEN</label><input type="text" placeholder="Токен"></div>
+                <button class="btn-trigger" style="width:100%; margin-top:10px;" onclick="logTerminal('Токен сохранен.')">SYNC CREDENTIALS</button>`;
+        } else {
+            ui.innerHTML = `<h3 style="color:var(--accent-cyan)">// ПАРАМЕТРЫ</h3>
+                <div class="prop-field"><label>DEBUG MODE</label><select><option>ON</option><option>OFF</option></select></div>`;
+        }
+    }
+
+    function saveGraph() {
+        const data = editor.export();
+        console.log(JSON.stringify(data));
+        logTerminal(`<span style="color:var(--accent-cyan)">Граф сохранен. Узлов: ${Object.keys(data.drawflow.Home.data).length}</span>`);
+    }
+
+    function deployGraph() {
+        logTerminal(`<span style="color:var(--accent-purple)">Инициализация пайплайна...</span>`);
+        setTimeout(() => logTerminal("Код сгенерирован! ✅"), 1000);
+    }
+
+    // === ЗАПУСК ===
+    document.addEventListener('DOMContentLoaded', loadRegistry);
+</script>
+</body>
+</html>

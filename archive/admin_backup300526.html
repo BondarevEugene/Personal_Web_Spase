@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY MASTER // ADMINISTRATIVE_SUPERVISOR_v7.7</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='JetBrains Mono' font-size='45' fill='%23bc13fe' font-weight='bold'>M</text></svg>">
+
+    <style>
+        :root {
+            --bg-black: #050508;
+            --bg-darker: #020204;
+            --panel-bg: rgba(9, 9, 14, 0.85);
+            --panel-border: #1f1f23;
+            --neon-purple: #bc13fe;
+            --neon-glow: rgba(188, 19, 254, 0.3);
+            --neon-blue: #00f0ff;
+            --text-white: #ffffff;
+            --text-muted: #71717a;
+            --text-dim: #4a4a5a;
+            --matrix-green: #22c55e;
+            --neon-orange: #f97316;
+            --border-static: rgba(188, 19, 254, 0.15);
+        }
+
+        body {
+            background-color: #09090b;
+            color: #f4f4f5;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14.5px; /* Укрупненный на 30% премиальный шрифт */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            flex: 1;
+        }
+
+        /* --- ТЯЖЕЛАЯ БОКОВАЯ ПАНЕЛЬ С НОВЫМ БРЕНДИНГОМ --- */
+        .sidebar {
+            width: 325px;
+            background-color: #0f0f12;
+            border-right: 1px solid #1f1f23;
+            display: flex;
+            flex-direction: column;
+            padding: 25px 20px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        /* Логотип Managmant Factory */
+        .factory-logo-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-left: 8px;
+        }
+
+        .factory-logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        /* Блок Жирного Крупного Брендинга Бондарева */
+        .brand-master-container {
+            border-bottom: 1px solid rgba(188, 19, 254, 0.15);
+            padding-bottom: 20px;
+            margin-bottom: 15px;
+            padding-left: 8px;
+        }
+
+        .brand-main-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(188, 19, 254, 0.3);
+        }
+
+        .brand-sub-author {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--neon-purple);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+            text-shadow: 0 0 8px rgba(188, 19, 254, 0.2);
+        }
+
+        .menu-category {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 18px 0 6px 8px;
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #a1a1aa;
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item.active a, .menu-item a:hover {
+            background-color: #1e1b4b;
+            color: #c084fc;
+            border-left-color: var(--neon-purple);
+        }
+
+        .badge {
+            background-color: #3b0764;
+            color: #d8b4fe;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: auto;
+            font-weight: 600;
+        }/* --- РАБОЧИЙ МАКЕТ КОНТЕНТА --- */
+        .main-container {
+            flex: 1;
+            padding: 35px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            max-width: 1500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1f1f23;
+            padding-bottom: 18px;
+        }
+
+        .page-title h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 0 0 6px 0;
+            color: #fff;
+        }
+
+        .page-title p { color: #71717a; margin: 0; font-size: 12px; }
+
+        /* SPA Вкладки */
+        .view-section { display: none; flex-direction: column; gap: 30px; animation: viewFadeIn 0.25s ease forwards; }
+        .view-section.active-view { display: flex; }
+        @keyframes viewFadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Карточки управления */
+        .card { background-color: #141417; border: 1px solid #1f1f23; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        .card::before { content: ''; position: absolute; top: -1px; left: -1px; width: 8px; height: 8px; border-top: 2px solid var(--neon-purple); border-left: 2px solid var(--neon-purple); }
+        .card::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 8px; height: 8px; border-bottom: 2px solid var(--neon-blue); border-right: 2px solid var(--neon-blue); }
+
+        .card-title h2 { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; margin: 0; color: #fff; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .card-title h2::before { content: '◈'; color: var(--neon-purple); }
+
+        /* Сетка метрик */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .metric-card { background-color: #141417; border: 1px solid #1f1f23; border-radius: 12px; padding: 22px; position: relative; }
+        .metric-label { color: #71717a; font-size: 11px; font-weight: 600; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+        .metric-value { font-size: 22px; font-weight: 700; color: #fff; }
+        .metric-sub { font-size: 11px; color: #22c55e; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+        .metric-sub.negative { color: #ef4444; }
+
+        .mini-progress-bar { width: 100%; height: 3px; background: #09090b; margin-top: 10px; border-radius: 2px; overflow: hidden; }
+        .mini-progress-fill { height: 100%; background: var(--neon-purple); width: 0%; transition: width 0.4s ease; }
+
+        .dashboard-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        @media (max-width: 1150px) { .dashboard-layout { grid-template-columns: 1fr; } }
+
+        /* Терминал */
+        .terminal-box { background-color: #09090b; border: 1px solid #1f1f23; border-radius: 8px; padding: 16px; height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .log-row { font-size: 11px; line-height: 1.5; margin: 0; }
+        .log-time { color: #52525b; margin-right: 8px; }
+        .log-tag { font-weight: 600; margin-right: 8px; padding: 2px 6px; border-radius: 4px; font-size: 9px; text-transform: uppercase; }
+        .log-tag.success { background-color: rgba(34, 197, 94, 0.1); color: #4ade80; }
+        .log-tag.info { background-color: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+        .log-tag.error { background-color: rgba(239, 68, 68, 0.1); color: #f87171; }
+        .log-text { color: #e4e4e7; }
+
+        .prompt-manager { display: flex; flex-direction: column; gap: 12px; }
+        .prompt-textarea { background-color: #09090b; border: 1px solid #1f1f23; border-radius: 8px; color: #cbd5e1; font-family: 'JetBrains Mono', monospace; font-size: 12px; padding: 16px; resize: vertical; min-height: 140px; outline: none; }
+        .btn-primary { background-color: #a855f7; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+        #calendar { font-size: 11px; background: #09090b; padding: 12px; border-radius: 8px; border: 1px solid #1f1f23; }
+        .fc .fc-toolbar-title { font-size: 13px !important; color: #fff; font-weight: 600; font-family: 'Orbitron'; }
+        .fc .fc-button-primary { background-color: #27272a !important; border-color: #3f3f46 !important; }
+        .fc-theme-standard td, .fc-theme-standard th { border: 1px solid #1f1f23 !important; }
+
+        .tech-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        .tech-table th { color: #71717a; border-bottom: 1px solid #1f1f23; padding: 10px; font-weight: 600; text-transform: uppercase; font-size: 10px; }
+        .tech-table td { padding: 12px 10px; border-bottom: 1px solid rgba(31, 31, 35, 0.6); color: #e4e4e7; }
+        .status-indicator-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-indicator-dot.active { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .status-indicator-dot.disconnected { background: #f97316; box-shadow: 0 0 8px #f97316; }
+
+        .cyber-footer { margin-top: auto; padding: 50px 35px 25px 35px; border-top: 1px solid rgba(188, 19, 254, 0.15); background: linear-gradient(180deg, #09090b, rgba(188, 19, 254, 0.02)); width: 100%; box-sizing: border-box; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 30px; margin-bottom: 40px; }
+        .footer-column { border-left: 3px solid var(--neon-purple); padding-left: 20px; }
+        .footer-col-title { font-family: 'Orbitron', sans-serif; color: #fff; font-size: 12px; margin-bottom: 18px; letter-spacing: 2.5px; text-transform: uppercase; }
+        .legal-link { text-decoration: none; display: block; margin-bottom: 10px; }
+        .legal-box { background: rgba(188, 19, 254, 0.01); border: 1px solid rgba(188, 19, 254, 0.15); padding: 12px; }
+        .telemetry-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.04); padding: 3px 0; }
+        .compliance-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .tag { background: rgba(0,0,0,0.4); padding: 4px 10px; border: 1px solid rgba(188, 19, 254, 0.2); font-size: 10px; color: #71717a; }
+        .footer-bottom-branding { border-top: 1px solid rgba(255, 255, 255, 0.04); padding-top: 25px; margin-top: 25px; text-align: center; }
+        .footer-brand-title { font-family: 'Orbitron', sans-serif; color: #fff; font-size: 16px; letter-spacing: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="layout-wrapper">
+        <aside class="sidebar">
+
+            <div class="factory-logo-block">
+                <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#bc13fe" stroke-width="6" stroke-dasharray="10, 5"/>
+                    <polygon points="50,20 75,40 65,75 35,75 25,40" fill="none" stroke="#00f0ff" stroke-width="4"/>
+                    <text x="36" y="62" font-family='Orbitron' font-size="36" font-weight="900" fill="#fff">M</text>
+                </svg>
+                <div class="factory-logo-text">Managmant<br><span style="color: var(--neon-blue);">Factory</span></div>
+            </div>
+
+            <div class="brand-master-container">
+                <div class="brand-main-title">OmniFactory Evo</div>
+                <div class="brand-sub-author">powered design by BONDAREV_E</div>
+            </div>
+
+            <div class="menu-category">Контроль Инфраструктуры</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" id="tab-mainnode"><a href="#" onclick="switchView('mainnode')">🌐 [ Главный Узел ]</a></li>
+                <li class="menu-item" id="tab-robotization"><a href="#" onclick="switchView('robotization')">🤖 [ Роботизация ]</a></li>
+            </ul>
+
+            <div class="menu-category">0 // Когнитивный Реестр</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" id="tab-bots"><a href="#" onclick="switchView('bots')">🧬 [ Реестр Модулей ]</a></li>
+                <li class="menu-item" id="tab-metrics"><a href="#" onclick="switchView('metrics')">📊 [ Системные Метрики ]</a></li>
+                <li class="menu-item" id="tab-users"><a href="#" onclick="switchView('users')">👥 [ Контроль Доступов ]</a></li>
+            </ul>
+
+            <div class="menu-category">Телеметрия Ядра</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" id="tab-scheduler"><a href="#" onclick="switchView('scheduler')">📅 [ Планировщик задач ]</a></li>
+            </ul>
+
+            <div class="menu-category">Нейро-Инжиниринг</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" id="tab-prompts"><a href="#" onclick="switchView('prompts')">🧠 [ Промпт-Конструктор ]</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-container"><section id="view-mainnode" class="view-section active-view">
+                <div class="page-header">
+                    <div class="page-title"><h1>► Главный Командный Узел Управления Сайтами</h1><p>Оркестрация трафика, управление внешними шлюзами авторизации и роутингом порталов.</p></div>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="metric-label">GLOBAL PORTAL UPSTREAM</div><div class="metric-value">OMNI_EVO_v7.7</div><div class="metric-sub">STATUS: OPERATIONAL</div></div>
+                    <div class="metric-card"><div class="metric-label">CONNECTED PORTALS</div><div class="metric-value">3 ПОРТАЛА</div><div class="metric-sub info-tag">WEB / ARCHITECT / BOT</div></div>
+                    <div class="metric-card"><div class="metric-label">ACTIVE SECURE SESSIONS</div><div class="metric-value">1,540 Node</div><div class="metric-sub">SSL: ACTIVE (AES_256)</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><h2>Состояние привязанных цифровых контуров и веб-узлов экосистемы</h2></div>
+                    <table class="tech-table">
+                        <thead><tr><th>Имя шлюза / Портала</th><th>Адрес маршрута</th><th>Контроль доступов</th><th>Статус шлюза</th></tr></thead>
+                        <tbody>
+                            <tr><td>Основной веб-сайт (Frontend Node)</td><td><code>/</code></td><td>Публичный контур</td><td><span style="color:#22c55e">● ONLINE</span></td></tr>
+                            <tr><td>Робостроитель (Architect Engine Pro)</td><td><code>/architect</code></td><td>Авторизованные инженеры</td><td><span style="color:#22c55e">● SECURE</span></td></tr>
+                            <tr><td>Контур автоматизации Telegram-ботов</td><td><code>/api/builder/*</code></td><td>Администраторы модулей</td><td><span style="color: #00f0ff">● MONITORING</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="view-robotization" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Роботизация и Компиляция</h1><p>Управление Docker-контейнерами сборщика проектов и автоматизации.</p></div></div>
+                <div class="card">
+                    <div class="card-title"><h2>Реестр активных изолированных сред компилятора ботов</h2></div>
+                    <table class="tech-table">
+                        <thead><tr><th>Контейнер ID</th><th>Целевой Токен бота</th><th>Активные модули сборки</th><th>Нагрузка хоста</th><th>Состояние контура</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>docker_node_84a2</code></td><td>59928...392:AAH</td><td>Бот-Помощник (3 кубика)</td><td>CPU: 1.2% | RAM: 45MB</td><td><span style="color:#22c55e">RUNNING</span></td></tr>
+                            <tr><td><code>docker_node_99f1</code></td><td>74431...001:BBX</td><td>Предиктивный Модуль</td><td>CPU: 0.0% | RAM: 12MB</td><td><span style="color:#71717a">IDLE</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="view-bots" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Когнитивный Реестр ИИ-Модулей</h1><p>Глобальный учет фоновых LLM-инстансов и нейросетевых агентов.</p></div></div>
+                <div class="card">
+                    <div class="card-title"><h2>Активные алгоритмические когнитивные сущности и LLM-потоки</h2></div>
+                    <table class="tech-table">
+                        <thead><tr><th>Идентификатор Агента</th><th>Статус Ядра</th><th>Базовая нейромодель</th><th>Интенсивность</th><th>Инжектированная память</th></tr></thead>
+                        <tbody>
+                            <tr><td>Agent_Core_Supervisor</td><td><span style="color:#22c55e">ONLINE</span></td><td>GPT-4o (Hybrid)</td><td>1.4 req/s</td><td>ChromaDB Vector Node</td></tr>
+                            <tr><td>Flet_UI_Builder_Daemon</td><td><span style="color:#22c55e">ONLINE</span></td><td>Claude 3.5 Sonnet</td><td>0.8 req/s</td><td>Local Context Cache</td></tr>
+                            <tr><td>Data_Analytic_Neural_Echo</td><td><span style="color:#f97316">PROCESSING</span></td><td>Custom PyTorch Weight</td><td>12.4 req/s</td><td>Matrix NumPy Array</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="view-metrics" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Системные Метрики Ноды хоста</h1><p>Оперативный мониторинг аппаратных ресурсов WSL2 распределенного кластера.</p></div></div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="metric-label">ЗАГРУЗКА ЦП ХОСТА</div><div id="metric-cpu-val" class="metric-value">0.0%</div><div class="mini-progress-bar"><div id="progress-cpu" class="mini-progress-fill"></div></div></div>
+                    <div class="metric-card"><div class="metric-label">ОПЕРАТИВНАЯ ПАМЯТЬ RAM</div><div id="metric-ram-val" class="metric-value">0.00 GB</div><div class="mini-progress-bar"><div id="progress-ram" class="mini-progress-fill"></div></div></div>
+                    <div class="metric-card"><div class="metric-label">АКТИВНЫЕ DOCKER КОНТЕЙНЕРЫ</div><div id="metric-containers-val" class="metric-value">0</div></div>
+                    <div class="metric-card"><div class="metric-label">ОБЩЕЕ ЧИСЛО ЗАПРОСОВ К API</div><div id="metric-requests-val" class="metric-value">0</div></div>
+                    <div class="metric-card"><div class="metric-label">NVME DISK SPACE</div><div class="metric-value">244.1 GB Free</div><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 48%; background: var(--neon-blue);"></div></div></div>
+                    <div class="metric-card"><div class="metric-label">CHROMADB VECTORS</div><div class="metric-value">1,402,992</div><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 92%; background: #ef4444;"></div></div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><h2>График нагрузки аппаратных ресурсов хоста (WSL2 Node)</h2></div>
+                    <div style="position: relative; height:240px; width:100%"><canvas id="resourceChart"></canvas></div>
+                </div>
+            </section>
+
+            <section id="view-users" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Контроль Учетных Записей и Доступов</h1><p>Администрирование пользователей, сессии безопасности, хэши и допуск к Робостроителю.</p></div></div>
+                <div class="card">
+                    <div class="card-title"><h2>Реестр прав доступа операторов к ядру и порталам OmniFactory</h2></div>
+                    <table class="tech-table">
+                        <thead><tr><th>Логин</th><th>Пароль (Хэш)</th><th>E-mail почта</th><th>Токен восстановления</th><th>Активная сессия (IP)</th><th>Робостроение (Допуск)</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>Bondarev_E</td>
+                                <td><code>$2b$12$eX9...v2a</code></td>
+                                <td>bondarev.e.1707@gmail.com</td>
+                                <td style="color:#4a4a5a">[SECURE_NULL]</td>
+                                <td><span class="status-indicator-dot active"></span>192.168.1.55 (Active)</td>
+                                <td><span style="color:#22c55e; font-weight:bold;">[ ALLOWED ]</span></td>
+                            </tr>
+                            <tr>
+                                <td>Guest_Developer</td>
+                                <td><code>$2b$12$K8j...91m</code></td>
+                                <td>dev.omni@labs.io</td>
+                                <td style="color:#bc13fe"><code>rst_84a2f991</code></td>
+                                <td><span class="status-indicator-dot disconnected"></span>DISCONNECTED</td>
+                                <td><span style="color:#ef4444; font-weight:bold;">[ DENIED ]</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="view-scheduler" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Интегрированный Системный Планировщик Задач</h1><p>Расписание регламентных процедур автоматизации и резервного копирования баз.</p></div></div>
+                <div class="card"><div id="calendar"></div></div>
+            </section>
+
+            <section id="view-prompts" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Промпт-Конструктор и Настройки контекстных окон</h1><p>Управление инструкциями нейро-инжиниринга и стримом логов хоста.</p></div></div>
+                <div class="dashboard-layout">
+                    <div class="card">
+                        <div class="card-title"><h2>Логи Операционного Супервизора (Real-time Stream)</h2></div>
+                        <div id="terminal-stream" class="terminal-box"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><h2>Нейро-Архитектор: Глобальный Системный Промпт</h2></div>
+                        <div class="prompt-manager">
+                            <textarea id="system-prompt-input" class="prompt-textarea" placeholder="Загрузка контекстного окна ядра..."></textarea>
+                            <div class="action-row">
+                                <span class="sync-status">Синхронизировано: <span id="prompt-sync-time">н/д</span></span>
+                                <button onclick="saveSystemPrompt()" class="btn-primary">Инжектировать Промпт</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section></main>
+    </div>
+
+    <footer class="cyber-footer">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <div class="footer-col-title">SYSTEM_COMPLIANCE</div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a href="/offer" class="legal-link" target="_blank"><div class="legal-box"><div class="legal-meta"><span class="legal-title">ПУБЛІЧНА ОФЕРТА</span><span class="legal-ext">[HTML5]</span></div><div class="legal-ver">DEVELOPMENT_AGREEMENT // CORE_OFFER</div></div></a>
+                    <a href="/privacy" class="legal-link" target="_blank"><div class="legal-box"><div class="legal-meta"><span class="legal-title">ПОЛІТИКА КОНФІДЕНЦІЙНОСТІ</span><span class="legal-ext">[HTML5]</span></div><div class="legal-ver">GDPR_DATA_SAFE // PRIVACY_NODE</div></div></a>
+                    <a href="/nda" class="legal-link" target="_blank"><div class="legal-box"><div class="legal-meta"><span class="legal-title">УГОДА ПРО НЕРОЗГОЛОШЕННЯ</span><span class="legal-ext">[HTML5]</span></div><div class="legal-ver">NDA_PROTOCOL_9942 // CONFIDENTIAL</div></div></a>
+                </div>
+            </div>
+
+            <div class="footer-column">
+                <div class="footer-col-title">SYSTEM_ARCHITECTURE</div>
+                <div class="footer-architecture-text">
+                    <div class="telemetry-row"><span style="color:var(--text-muted)">ARCHITECT:</span><span style="color:var(--text-white)">Bondarev_E</span></div>
+                    <div class="telemetry-row"><span style="color:var(--text-muted)">TIMESTAMP:</span><span id="footer-server-time" style="color:var(--neon-purple); font-weight:bold;">--:--:--</span></div>
+                    <div class="telemetry-row"><span style="color:var(--text-muted)">UPLINK_DELAY:</span><span style="color:var(--text-white)">0.0021ms / 99.9%</span></div>
+                    <div class="telemetry-row"><span style="color:var(--text-muted)">DATA_STATUS:</span><span style="color:#22c55e; text-shadow:0 0 5px #22c55e;">CERTIFIED_SECURE</span></div>
+                </div>
+            </div>
+
+            <div class="footer-column">
+                <div class="footer-col-title">LEGAL_&_COMPLIANCE</div>
+                <div style="font-size: 13.5px; color: var(--text-muted); line-height: 1.8;">
+                    <strong style="color: #fff; letter-spacing: 1px;">OmniFactory LABS®</strong><br>
+                    Все алгоритмические модели автоматизации, модули сборки кода OmniFactory и интерактивные структуры защищены правом интеллектуальной собственности.
+                </div>
+                <div class="compliance-tags">
+                    <span class="tag">GDPR COMPLIANT</span>
+                    <span class="tag">ISO/IEC 27001</span>
+                    <span class="tag">AES-256 SECURE</span>
+                </div>
+            </div>
+
+            <div class="footer-column">
+                <div class="footer-col-title">COMMUNICATION_UPLINK</div>
+                <div style="font-size: 14.5px; line-height: 2; text-align: right;">
+                    Telegram: <a href="https://t.me/Bondarev_e" target="_blank" style="color:var(--neon-purple); text-decoration: none;">@Bondarev_e</a><br>
+                    E-mail: <a href="mailto:bondarev.e.1707@gmail.com" style="color:var(--neon-purple); text-decoration: none;">bondarev.e.1707@gmail.com</a><br>
+                    <span style="font-size: 11px; color: #4a4a5a; display: block; margin-top: 15px; line-height: 1.6; text-align: right;">
+                        DISCLAIMER: Сборка кода полностью автоматизирована.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom-branding">
+            <div class="footer-brand-title" style="font-weight: 900;">OMNIFACTORY — DIGITAL WORLD ENGINE</div>
+            <div class="footer-copyright" style="font-weight: bold; color: var(--neon-purple);">POWERED DESIGN BY BONDAREV_E</div>
+        </div>
+    </footer>
+
+    <script>
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active-view'));
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+
+            const targetView = document.getElementById('view-' + viewName);
+            const targetTab = document.getElementById('tab-' + viewName);
+
+            if(targetView && targetTab) {
+                targetView.classList.add('active-view');
+                targetTab.classList.add('active');
+                pushTerminalLog("INFO", `Интерфейс переключен на внутренний контур: //${viewName.toUpperCase()}_NODE`);
+            }
+        }
+
+        function updateFooterClock() {
+            const timeStr = new Date().toLocaleTimeString();
+            const footerTimeNode = document.getElementById('footer-server-time');
+            if (footerTimeNode) footerTimeNode.innerText = timeStr;
+        }
+        setInterval(updateFooterClock, 1000);
+
+        function pushTerminalLog(tag, text) {
+            const container = document.getElementById('terminal-stream');
+            if(!container) return;
+            const timeStr = new Date().toLocaleTimeString();
+            const tagClass = tag.toLowerCase();
+
+            const row = document.createElement('p');
+            row.className = 'log-row';
+            row.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-tag ${tagClass}">${tag}</span><span class="log-text">${text}</span>`;
+
+            container.appendChild(row);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function startTelemetryPolling() {
+            setInterval(() => {
+                fetch('/api/v1/admin/telemetry')
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('metric-cpu-val').innerText = data.cpu + '%';
+                        document.getElementById('metric-ram-val').innerText = data.ram + ' GB';
+                        document.getElementById('metric-containers-val').innerText = data.containers;
+                        document.getElementById('metric-requests-val').innerText = data.requests;
+
+                        document.getElementById('progress-cpu').style.width = data.cpu + '%';
+                        document.getElementById('progress-ram').style.width = (data.ram / 8 * 100) + '%';
+
+                        if(window.resourceChartInstance) {
+                            const chart = window.resourceChartInstance;
+                            chart.data.labels.push(new Date().toLocaleTimeString());
+                            chart.data.datasets[0].data.push(data.cpu);
+                            chart.data.datasets[1].data.push((data.ram / 8) * 100);
+
+                            if(chart.data.labels.length > 10) {
+                                chart.data.labels.shift();
+                                chart.data.datasets[0].data.shift();
+                                chart.data.datasets[1].data.shift();
+                            }
+                            chart.update('none');
+                        }
+                    })
+                    .catch(() => {
+                        const mockCpu = (Math.random() * 15 + 5).toFixed(1);
+                        const mockRam = (Math.random() * 0.4 + 2.1).toFixed(2);
+                        document.getElementById('metric-cpu-val').innerText = mockCpu + '%';
+                        document.getElementById('metric-ram-val').innerText = mockRam + ' GB';
+                        document.getElementById('progress-cpu').style.width = mockCpu + '%';
+                        document.getElementById('progress-ram').style.width = (mockRam / 8 * 100) + '%';
+
+                        if(window.resourceChartInstance) {
+                            const chart = window.resourceChartInstance;
+                            chart.data.labels.push(new Date().toLocaleTimeString());
+                            chart.data.datasets[0].data.push(mockCpu);
+                            chart.data.datasets[1].data.push((mockRam / 8) * 100);
+
+                            if(chart.data.labels.length > 10) {
+                                chart.data.labels.shift();
+                                chart.data.datasets[0].data.shift();
+                                chart.data.datasets[1].data.shift();
+                            }
+                            chart.update('none');
+                        }
+                    });
+            }, 2000);
+        }
+
+        function initResourceChart() {
+            const ctx = document.getElementById('resourceChart').getContext('2d');
+            window.resourceChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'CPU Load (%)', data: [], borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,0.05)', tension: 0.3, fill: true },
+                        { label: 'RAM Load (%)', data: [], borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.05)', tension: 0.1, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { grid: { color: '#1f1f23' }, ticks: { color: '#64748b', display: false } },
+                        y: { min: 0, max: 100, grid: { color: '#1f1f23' }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+            startTelemetryPolling();
+        }
+
+        function initTaskScheduler() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                themeSystem: 'standard',
+                headerToolbar: { left: 'title', center: '', right: 'prev,next' },
+                editable: true,
+                events: [
+                    { title: 'Резервное копирование БД PostgreSQL', start: new Date().toISOString().split('T')[0], color: '#3b0764' },
+                    { title: 'Очистка логов Docker контейнеров', start: new Date().toISOString().split('T')[0], color: '#1e1b4b' }
+                ]
+            });
+            calendar.render();
+
+            fetch('/api/v1/admin/get-prompt')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('system-prompt-input').value = data.prompt;
+                    document.getElementById('prompt-sync-time').innerText = data.updated_at;
+                })
+                .catch(() => {
+                    document.getElementById('system-prompt-input').value = "You are OMNIFACTORY EVO Superintelligence System. Core engine is fully operational with Flet-Genesys components. Protect all structural assets.";
+                });
+        }
+
+        function saveSystemPrompt() {
+            const prompt = document.getElementById('system-prompt-input').value;
+            fetch('/api/v1/admin/save-prompt', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ prompt: prompt })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('prompt-sync-time').innerText = new Date().toLocaleTimeString();
+                pushTerminalLog("SUCCESS", "Новое когнитивное контекстное окно успешно интегрировано в ChromaDB.");
+            })
+            .catch(() => {
+                pushTerminalLog("ERROR", "Сбой инжекции промпта. Проверьте векторное хранилище.");
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initResourceChart();
+            initTaskScheduler();
+            updateFooterClock();
+            pushTerminalLog("SUCCESS", "Узел супервизора OMNIFACTORY MASTER запущен стабильно.");
+
+            fetch('/api/registry')
+                .then(res => res.json())
+                .then(data => {
+                    const count = data.modules ? Object.keys(data.modules).length : 1;
+                    if(document.getElementById('sidebar-bot-count')) document.getElementById('sidebar-bot-count').innerText = count;
+                }).catch(() => {});
+        });
+    </script>
+</body>
+</html>

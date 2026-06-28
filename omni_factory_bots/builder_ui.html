@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OmniFactory // Architect Light</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* PALETTE: Old Money Light (Clean, Forest Green accents) */
+        :root {
+            --bg-base: #f8fafc;       /* Очень мягкий серый, почти белый */
+            --bg-panel: #f1f5f9;      /* Чуть темнее для панелей */
+            --bg-card: #ffffff;       /* Белые карточки */
+            --text-main: #064e3b;     /* Глубокий темно-зеленый (Forest Green) */
+            --text-dim: #475569;      /* Мягкий серый для описаний */
+            --accent: #15803d;        /* Элегантный зеленый */
+            --border: #cbd5e1;        /* Тонкие границы */
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-base);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Брендинг */
+        .brand-header {
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Canvas */
+        .canvas {
+            flex-grow: 1;
+            position: relative;
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 25px 25px;
+        }
+
+        /* Nodes */
+        .node {
+            position: absolute;
+            width: 190px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: grab;
+        }
+        .node-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 0.85rem;
+        }
+
+        .properties {
+            width: 300px;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border);
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand-header">OMNI_FACTORY</div>
+        <div style="padding: 20px;">
+            <div class="node" style="position: static; margin-bottom: 12px;">
+                <div class="node-title">WELCOME_CORE</div>
+            </div>
+            <div class="node" style="position: static; margin-bottom: 12px;">
+                <div class="node-title">GEO_PICKER</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="canvas" id="canvas">
+        <div class="node" style="left: 100px; top: 100px;">
+            <div class="node-title">WELCOME_CORE</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim);">Стартовая точка бота</div>
+        </div>
+    </div>
+
+    <div class="properties">
+        <h3 style="color: var(--accent);">Properties</h3>
+        <p style="font-size: 0.9rem; opacity: 0.8;">Выберите блок на карте</p>
+    </div>
+
+</body>
+</html>

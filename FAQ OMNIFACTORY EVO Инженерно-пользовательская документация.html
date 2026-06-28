@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniFactory EVO — Архитектура проекта</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            background:#06070d;
+            color:#e6edf3;
+            font-family:Inter,Segoe UI,Arial,sans-serif;
+            overflow-x:hidden;
+            line-height:1.6;
+        }
+
+        body::before{
+            content:"";
+            position:fixed;
+            inset:0;
+            background:
+                radial-gradient(circle at top left,#ff6b0022,transparent 35%),
+                radial-gradient(circle at bottom right,#00d4ff22,transparent 35%),
+                linear-gradient(180deg,#06070d,#0d1117);
+            z-index:-2;
+        }
+
+        .grid{
+            position:fixed;
+            inset:0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size:40px 40px;
+            z-index:-1;
+        }
+
+        .container{
+            width:min(1400px,92%);
+            margin:auto;
+            padding:50px 0;
+        }
+
+        .hero{
+            border:1px solid rgba(255,255,255,0.08);
+            background:rgba(255,255,255,0.03);
+            backdrop-filter:blur(14px);
+            border-radius:28px;
+            padding:50px;
+            margin-bottom:40px;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .hero::after{
+            content:"";
+            position:absolute;
+            width:400px;
+            height:400px;
+            background:#ff7a0014;
+            filter:blur(80px);
+            right:-100px;
+            top:-100px;
+            border-radius:50%;
+        }
+
+        h1{
+            font-size:56px;
+            font-weight:800;
+            margin-bottom:15px;
+            background:linear-gradient(90deg,#ff8a00,#00c6ff);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .subtitle{
+            font-size:20px;
+            color:#9da7b5;
+            max-width:900px;
+        }
+
+        .badge-row{
+            display:flex;
+            flex-wrap:wrap;
+            gap:15px;
+            margin-top:30px;
+        }
+
+        .badge{
+            padding:12px 18px;
+            border-radius:14px;
+            background:#111927;
+            border:1px solid rgba(255,255,255,0.06);
+            font-size:14px;
+            color:#c7d2e0;
+        }
+
+        h2{
+            font-size:34px;
+            margin-bottom:25px;
+            margin-top:60px;
+        }
+
+        .cards{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+            gap:25px;
+        }
+
+        .card{
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:24px;
+            padding:28px;
+            transition:0.3s;
+            position:relative;
+            overflow:hidden;
+        }
+
+        .card:hover{
+            transform:translateY(-5px);
+            border-color:#ff8a00;
+            box-shadow:0 10px 40px rgba(255,138,0,0.15);
+        }
+
+        .card::before{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:linear-gradient(140deg,rgba(255,255,255,0.03),transparent);
+            pointer-events:none;
+        }
+
+        .card-title{
+            font-size:24px;
+            font-weight:700;
+            margin-bottom:12px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .card p{
+            color:#aab6c5;
+        }
+
+        .tree{
+            background:#0b1018;
+            border:1px solid rgba(255,255,255,0.06);
+            border-radius:24px;
+            padding:35px;
+            margin-top:25px;
+            overflow:auto;
+        }
+
+        pre{
+            color:#8ef5ff;
+            font-size:15px;
+            line-height:1.8;
+        }
+
+        .flow{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+            gap:20px;
+            margin-top:30px;
+        }
+
+        .flow-step{
+            background:linear-gradient(180deg,#111927,#0b1018);
+            border:1px solid rgba(255,255,255,0.06);
+            border-radius:22px;
+            padding:25px;
+            position:relative;
+        }
+
+        .flow-step span{
+            display:inline-block;
+            width:42px;
+            height:42px;
+            border-radius:50%;
+            background:#ff8a00;
+            color:black;
+            font-weight:800;
+            text-align:center;
+            line-height:42px;
+            margin-bottom:18px;
+        }
+
+        .flow-step h3{
+            margin-bottom:12px;
+            font-size:22px;
+        }
+
+        .flow-step p{
+            color:#9aa6b5;
+        }
+
+        .table-wrap{
+            overflow:auto;
+            margin-top:25px;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            min-width:900px;
+            background:#0b1018;
+            border-radius:20px;
+            overflow:hidden;
+        }
+
+        th{
+            background:#121b29;
+            color:#fff;
+            text-align:left;
+            padding:18px;
+            font-size:15px;
+        }
+
+        td{
+            padding:18px;
+            border-top:1px solid rgba(255,255,255,0.05);
+            color:#b7c2cf;
+            vertical-align:top;
+        }
+
+        tr:hover td{
+            background:#101827;
+        }
+
+        .highlight{
+            color:#00d9ff;
+            font-weight:700;
+        }
+
+        .architecture{
+            margin-top:40px;
+            padding:40px;
+            border-radius:30px;
+            background:linear-gradient(180deg,#0f1725,#0b1018);
+            border:1px solid rgba(255,255,255,0.08);
+        }
+
+        .arch-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+            gap:25px;
+            margin-top:30px;
+        }
+
+        .arch-block{
+            border-radius:22px;
+            padding:25px;
+            background:#121b29;
+            border:1px solid rgba(255,255,255,0.06);
+        }
+
+        .arch-block h3{
+            margin-bottom:12px;
+            font-size:22px;
+        }
+
+        .arch-block ul{
+            padding-left:18px;
+            color:#b9c5d2;
+        }
+
+        .footer{
+            margin-top:80px;
+            text-align:center;
+            color:#738295;
+            padding-bottom:60px;
+        }
+
+        .tag{
+            display:inline-block;
+            padding:5px 12px;
+            border-radius:10px;
+            background:#ff8a0015;
+            border:1px solid #ff8a0055;
+            color:#ffb15e;
+            margin-top:12px;
+            font-size:13px;
+        }
+
+        @media(max-width:768px){
+
+            h1{
+                font-size:38px;
+            }
+
+            .hero{
+                padding:30px;
+            }
+
+            h2{
+                font-size:28px;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="grid"></div>
+
+<div class="container">
+
+    <section class="hero">
+
+        <h1>OMNIFACTORY EVO</h1>
+
+        <p class="subtitle">
+            Инженерно-пользовательская документация архитектуры платформы генерации Telegram-ботов,
+            AI-модулей, автоматизации и микросервисных конвейеров.
+            Основано на структуре проекта, FastAPI ядре, системе компиляции модулей и runtime-оркестраторе.
+        </p>
+
+        <div class="badge-row">
+            <div class="badge">FastAPI Runtime</div>
+            <div class="badge">Dynamic Builder</div>
+            <div class="badge">AI/RAG Modules</div>
+            <div class="badge">Docker Deployment</div>
+            <div class="badge">Telemetry System</div>
+            <div class="badge">Microservice Architecture</div>
+        </div>
+
+    </section>
+
+    <h2>📦 Новая структура проекта</h2>
+
+    <div class="tree">
+<pre>
+omni_factory_root/
+├── api/
+│   └── main.py
+│
+├── core/
+│   ├── compiler.py
+│   ├── registry.py
+│   └── simulator.py
+│
+├── config/
+│   └── registry.json
+│
+├── db/
+│   └── models.py
+│
+├── services/
+│   └── project_generator.py
+│
+├── ui/
+│   └── builder_pro.html
+│
+└── _ARCHIVE/
+</pre>
+    </div>
+
+    <h2>🧠 Архитектурные слои системы</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <div class="card-title">🖥️ UI Layer</div>
+            <p>
+                Пользовательский визуальный конструктор.
+                Отвечает за интерфейс выбора модулей,
+                визуализацию pipeline,
+                drag-and-drop узлы,
+                отображение телеметрии
+                и взаимодействие с API ядра.
+            </p>
+
+            <div class="tag">builder_pro.html</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">⚙️ Core Layer</div>
+            <p>
+                Главный вычислительный слой системы.
+                Выполняет генерацию кода,
+                обработку графов модулей,
+                orchestration runtime,
+                dry-run тестирование
+                и сборку конечных ботов.
+            </p>
+
+            <div class="tag">compiler.py / simulator.py</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🌐 API Layer</div>
+            <p>
+                FastAPI шлюз платформы.
+                Обрабатывает запросы фронтенда,
+                выдает ZIP-сборки,
+                управляет runtime-ботами,
+                telemetry API,
+                registry endpoints
+                и deployment pipeline.
+            </p>
+
+            <div class="tag">api/main.py</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🧩 Service Layer</div>
+            <p>
+                Инкапсулирует вспомогательные сервисы:
+                упаковку Docker,
+                requirements generation,
+                генерацию deployment package,
+                менеджер модулей
+                и экспорт проектов.
+            </p>
+
+            <div class="tag">project_generator.py</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🗄️ Data Layer</div>
+            <p>
+                Слой моделей данных,
+                telemetry state,
+                Pydantic schemas,
+                runtime metrics,
+                Firestore/Neon интеграция
+                и внутренние сущности системы.
+            </p>
+
+            <div class="tag">models.py</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🤖 AI Layer</div>
+            <p>
+                AI/RAG подсистема.
+                Подключает Gemini/OpenAI,
+                ChromaDB,
+                интеллектуальный поиск,
+                knowledge-base routing
+                и AI-консультантов.
+            </p>
+
+            <div class="tag">RAG / AI Consultant</div>
+        </div>
+
+    </div>
+
+    <h2>🔄 Конвейер работы OmniFactory</h2>
+
+    <div class="flow">
+
+        <div class="flow-step">
+            <span>1</span>
+            <h3>UI Builder</h3>
+            <p>
+                Пользователь выбирает модули,
+                настройки,
+                AI-компоненты
+                и параметры сборки.
+            </p>
+        </div>
+
+        <div class="flow-step">
+            <span>2</span>
+            <h3>FastAPI Gateway</h3>
+            <p>
+                JSON-конфигурация отправляется
+                в backend API ядра.
+            </p>
+        </div>
+
+        <div class="flow-step">
+            <span>3</span>
+            <h3>Compiler Engine</h3>
+            <p>
+                compiler.py собирает Python-код
+                из шаблонов и runtime-модулей.
+            </p>
+        </div>
+
+        <div class="flow-step">
+            <span>4</span>
+            <h3>Project Generator</h3>
+            <p>
+                Создается deployment package:
+                Dockerfile,
+                requirements.txt,
+                main.py,
+                configs.
+            </p>
+        </div>
+
+        <div class="flow-step">
+            <span>5</span>
+            <h3>ZIP Deployment</h3>
+            <p>
+                Пользователь получает
+                готовый production-ready архив.
+            </p>
+        </div>
+
+        <div class="flow-step">
+            <span>6</span>
+            <h3>Runtime Orchestrator</h3>
+            <p>
+                Оркестратор запускает
+                runtime graph,
+                telemetry
+                и monitoring.
+            </p>
+        </div>
+
+    </div>
+
+    <section class="architecture">
+
+        <h2>🏗️ Назначение основных файлов</h2>
+
+        <div class="arch-grid">
+
+            <div class="arch-block">
+                <h3>api/main.py</h3>
+                <ul>
+                    <li>Главный FastAPI сервер</li>
+                    <li>REST API маршруты</li>
+                    <li>Deployment endpoints</li>
+                    <li>Telemetry API</li>
+                    <li>Health monitoring</li>
+                </ul>
+            </div>
+
+            <div class="arch-block">
+                <h3>core/compiler.py</h3>
+                <ul>
+                    <li>Сборка Python-кода</li>
+                    <li>Code blocks injection</li>
+                    <li>Runtime graph compiler</li>
+                    <li>AI module integration</li>
+                </ul>
+            </div>
+
+            <div class="arch-block">
+                <h3>core/simulator.py</h3>
+                <ul>
+                    <li>Dry-run тестирование</li>
+                    <li>Проверка логики</li>
+                    <li>Симуляция workflow</li>
+                    <li>Debug execution</li>
+                </ul>
+            </div>
+
+            <div class="arch-block">
+                <h3>services/project_generator.py</h3>
+                <ul>
+                    <li>Docker packaging</li>
+                    <li>ZIP generation</li>
+                    <li>requirements.txt builder</li>
+                    <li>Deployment export</li>
+                </ul>
+            </div>
+
+            <div class="arch-block">
+                <h3>db/models.py</h3>
+                <ul>
+                    <li>Pydantic schemas</li>
+                    <li>Telemetry models</li>
+                    <li>Runtime metrics</li>
+                    <li>Validation layer</li>
+                </ul>
+            </div>
+
+            <div class="arch-block">
+                <h3>config/registry.json</h3>
+                <ul>
+                    <li>Реестр модулей</li>
+                    <li>Конфигурации builder</li>
+                    <li>Категории модулей</li>
+                    <li>Метаданные UI</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </section>
+
+    <h2>📡 Что уже реализовано в server.py</h2>
+
+    <div class="table-wrap">
+        <table>
+
+            <thead>
+            <tr>
+                <th>Подсистема</th>
+                <th>Описание</th>
+                <th>Статус</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <tr>
+                <td><span class="highlight">FastAPI Runtime</span></td>
+                <td>
+                    Production API сервер с поддержкой deployment pipeline,
+                    telemetry и middleware.
+                </td>
+                <td>✅ Активно</td>
+            </tr>
+
+            <tr>
+                <td><span class="highlight">Bot Builder</span></td>
+                <td>
+                    Генерация Telegram-ботов на базе aiogram и модульной системы.
+                </td>
+                <td>✅ Активно</td>
+            </tr>
+
+            <tr>
+                <td><span class="highlight">Dry Run Simulator</span></td>
+                <td>
+                    Проверка графов без реального деплоя.
+                </td>
+                <td>✅ Активно</td>
+            </tr>
+
+            <tr>
+                <td><span class="highlight">Telemetry Engine</span></td>
+                <td>
+                    Мониторинг CPU/RAM, health checks и runtime metrics.
+                </td>
+                <td>✅ Активно</td>
+            </tr>
+
+            <tr>
+                <td><span class="highlight">Neon PostgreSQL</span></td>
+                <td>
+                    Подключение облачной Postgres базы данных.
+                </td>
+                <td>✅ Подключено</td>
+            </tr>
+
+            <tr>
+                <td><span class="highlight">Firebase</span></td>
+                <td>
+                    Интеграция Firestore и cloud synchronization.
+                </td>
+                <td>✅ Подключено</td>
+            </tr>
+
+            <tr>
+                <td><span class="highlight">Telegram Gateway</span></td>
+                <td>
+                    Runtime интеграция Telegram Bot API.
+                </td>
+                <td>✅ Активно</td>
+            </tr>
+
+            <tr>
+                <td><span class="highlight">Security Middleware</span></td>
+                <td>
+                    CSP, iframe policy и базовая защита runtime.
+                </td>
+                <td>✅ Активно</td>
+            </tr>
+
+            </tbody>
+
+        </table>
+    </div>
+
+    <h2>🚀 Рекомендуемая инженерная стратегия</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <div class="card-title">1️⃣ Разделить ядро</div>
+            <p>
+                Вынести всю бизнес-логику из огромного server.py
+                в отдельные сервисы и ядро compiler/runtime.
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">2️⃣ Создать Registry Engine</div>
+            <p>
+                Все модули должны регистрироваться через registry.json,
+                чтобы UI и backend были синхронизированы автоматически.
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">3️⃣ Ввести Runtime Graph</div>
+            <p>
+                Построить node-based execution graph
+                вместо линейной генерации кода.
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">4️⃣ Добавить Module SDK</div>
+            <p>
+                Каждый модуль должен иметь:
+                manifest,
+                requirements,
+                handlers,
+                permissions
+                и telemetry hooks.
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">5️⃣ Разделить UI</div>
+            <p>
+                Перевести builder на полноценный SPA frontend:
+                React/Vue/Svelte + websocket telemetry.
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">6️⃣ Подготовить Production Runtime</div>
+            <p>
+                Docker swarm,
+                isolated workers,
+                async orchestration,
+                container sandboxing
+                и queue system.
+            </p>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        OMNIFACTORY EVO • USER + ENGINEERING DOCUMENTATION • SYSTEM ARCHITECTURE MAP
+    </div>
+
+    <!-- ===================================================================================== -->
+<!-- ДОПОЛНИТЕЛЬНЫЙ БЛОК ДЛЯ ВСТАВКИ В ТВОЙ HTML ДОКУМЕНТ -->
+<!-- ВСТАВЬ ПЕРЕД <div class="footer"> -->
+<!-- ===================================================================================== -->
+
+<h2>🧬 Детальный инженерный разбор main.py / server.py</h2>
+
+<div class="cards">
+
+    <div class="card">
+        <div class="card-title">🚀 FastAPI Runtime Core</div>
+
+        <p>
+            Главный серверный шлюз системы OmniFactory.
+            Управляет всем жизненным циклом платформы:
+            API,
+            маршрутизацией,
+            генерацией ботов,
+            telemetry engine,
+            background tasks
+            и runtime orchestration.
+        </p>
+
+        <br>
+
+        <p>
+            В текущем состоянии server.py выполняет одновременно:
+        </p>
+
+        <ul style="margin-top:15px;padding-left:20px;color:#aab6c5;">
+            <li>роль API gateway</li>
+            <li>роль orchestrator runtime</li>
+            <li>роль deployment manager</li>
+            <li>роль telemetry сервера</li>
+            <li>роль UI backend</li>
+            <li>роль AI integration layer</li>
+        </ul>
+
+        <div class="tag">FastAPI + Uvicorn + Async Runtime</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🧠 Runtime Orchestrator</div>
+
+        <p>
+            Orchestrator — ядро исполнения runtime-графов.
+            Оно принимает конфигурацию ботов,
+            node pipeline,
+            граф переходов
+            и выполняет orchestration логики.
+        </p>
+
+        <br>
+
+        <p>
+            Основные задачи:
+        </p>
+
+        <ul style="margin-top:15px;padding-left:20px;color:#aab6c5;">
+            <li>загрузка bot graph</li>
+            <li>управление runtime state</li>
+            <li>подключение TelegramConnector</li>
+            <li>динамический запуск узлов</li>
+            <li>поддержка AI flow execution</li>
+        </ul>
+
+        <div class="tag">engine/orchestrator.py</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📦 BotFactory Engine</div>
+
+        <p>
+            BotFactory — это генератор конечного Python-кода бота.
+            Он собирает runtime-модули
+            в единый aiogram/main.py проект.
+        </p>
+
+        <br>
+
+        <p>
+            Внутри реализовано:
+        </p>
+
+        <ul style="margin-top:15px;padding-left:20px;color:#aab6c5;">
+            <li>code block injection</li>
+            <li>module registry</li>
+            <li>handler generation</li>
+            <li>dynamic dependency system</li>
+            <li>AI module attachment</li>
+        </ul>
+
+        <div class="tag">services/bot_factory.py</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🧪 Dry-Run Simulator</div>
+
+        <p>
+            simulator.py нужен для проверки логики
+            без запуска реального Telegram-бота.
+        </p>
+
+        <br>
+
+        <p>
+            Это крайне важный инженерный слой,
+            потому что позволяет:
+        </p>
+
+        <ul style="margin-top:15px;padding-left:20px;color:#aab6c5;">
+            <li>тестировать node-граф</li>
+            <li>отлавливать ошибки до деплоя</li>
+            <li>проверять переходы</li>
+            <li>эмулировать runtime execution</li>
+            <li>строить visual debugger</li>
+        </ul>
+
+        <div class="tag">core/simulator.py</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📡 Telemetry Engine</div>
+
+        <p>
+            Встроенный telemetry pipeline
+            собирает состояние runtime среды:
+        </p>
+
+        <ul style="margin-top:15px;padding-left:20px;color:#aab6c5;">
+            <li>CPU</li>
+            <li>RAM</li>
+            <li>health status</li>
+            <li>pipeline state</li>
+            <li>background task status</li>
+            <li>бот-активность</li>
+        </ul>
+
+        <br>
+
+        <p>
+            Telemetry loop постоянно мониторит систему
+            и обновляет frontend dashboard.
+        </p>
+
+        <div class="tag">telemetry_loop()</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🗄️ Neon + Firebase Layer</div>
+
+        <p>
+            OmniFactory использует две базы:
+        </p>
+
+        <br>
+
+        <ul style="margin-top:15px;padding-left:20px;color:#aab6c5;">
+            <li><b>Neon PostgreSQL</b> — системные задачи, pipeline, CRM events</li>
+            <li><b>Firebase Firestore</b> — realtime cloud synchronization</li>
+        </ul>
+
+        <br>
+
+        <p>
+            Такое разделение позволяет строить
+            гибридную облачную архитектуру.
+        </p>
+
+        <div class="tag">Cloud Hybrid Architecture</div>
+    </div>
+
+</div>
+
+<!-- ===================================================================================== -->
+
+<h2>🧱 Детальный разбор models.py</h2>
+
+<div class="architecture">
+
+    <div class="arch-grid">
+
+        <div class="arch-block">
+
+            <h3>📘 Pydantic Validation Layer</h3>
+
+            <p style="color:#b9c5d2;">
+                models.py внедряет строгую типизацию
+                и валидацию входящих данных.
+            </p>
+
+            <br>
+
+            <ul>
+                <li>BotConfigSchema</li>
+                <li>CRM Events</li>
+                <li>UserProfile</li>
+                <li>CommunicationLog</li>
+                <li>REST payload validation</li>
+            </ul>
+
+        </div>
+
+        <div class="arch-block">
+
+            <h3>📅 CRM Event System</h3>
+
+            <p style="color:#b9c5d2;">
+                FullCalendar backend API
+                для управления задачами автоматизации.
+            </p>
+
+            <br>
+
+            <ul>
+                <li>/api/events</li>
+                <li>Firestore integration</li>
+                <li>event scheduler</li>
+                <li>pipeline queue</li>
+                <li>task orchestration</li>
+            </ul>
+
+        </div>
+
+        <div class="arch-block">
+
+            <h3>🖥️ State Engine</h3>
+
+            <p style="color:#b9c5d2;">
+                Центральное состояние UI
+                и runtime telemetry.
+            </p>
+
+            <br>
+
+            <ul>
+                <li>selected_ids</li>
+                <li>terminal_lines</li>
+                <li>server_cpu</li>
+                <li>server_ram</li>
+                <li>runtime status</li>
+            </ul>
+
+        </div>
+
+        <div class="arch-block">
+
+            <h3>📊 Resource Registry</h3>
+
+            <p style="color:#b9c5d2;">
+                LIBRARY_RESOURCES —
+                внутренний registry модулей платформы.
+            </p>
+
+            <br>
+
+            <ul>
+                <li>AI modules</li>
+                <li>business integrations</li>
+                <li>security layers</li>
+                <li>weights</li>
+                <li>complexity levels</li>
+            </ul>
+
+        </div>
+
+        <div class="arch-block">
+
+            <h3>🌍 Cloud Synchronization</h3>
+
+            <p style="color:#b9c5d2;">
+                Firebase Firestore
+                используется как realtime cloud backend.
+            </p>
+
+            <br>
+
+            <ul>
+                <li>distributed sync</li>
+                <li>shared runtime state</li>
+                <li>cloud event bus</li>
+                <li>shared telemetry</li>
+            </ul>
+
+        </div>
+
+        <div class="arch-block">
+
+            <h3>⚡ Health Monitoring</h3>
+
+            <p style="color:#b9c5d2;">
+                Встроенный monitoring pipeline
+                проверяет доступность runtime среды.
+            </p>
+
+            <br>
+
+            <ul>
+                <li>health endpoint</li>
+                <li>runtime ping</li>
+                <li>telemetry thread</li>
+                <li>status monitoring</li>
+            </ul>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ===================================================================================== -->
+
+<h2>🛠️ Что необходимо улучшить архитектурно</h2>
+
+<div class="table-wrap">
+
+    <table>
+
+        <thead>
+        <tr>
+            <th>Проблема</th>
+            <th>Текущее состояние</th>
+            <th>Рекомендуемое решение</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr>
+            <td><span class="highlight">Монолитный server.py</span></td>
+            <td>
+                Слишком много ответственности в одном файле.
+            </td>
+            <td>
+                Разделить на:
+                routers/,
+                runtime/,
+                telemetry/,
+                deployment/,
+                ai/
+            </td>
+        </tr>
+
+        <tr>
+            <td><span class="highlight">Дублирование логики</span></td>
+            <td>
+                Повторяются routes и deployment handlers.
+            </td>
+            <td>
+                Вынести в service layer
+                и использовать dependency injection.
+            </td>
+        </tr>
+
+        <tr>
+            <td><span class="highlight">State хранится в памяти</span></td>
+            <td>
+                Runtime state теряется при перезапуске.
+            </td>
+            <td>
+                Redis + distributed cache.
+            </td>
+        </tr>
+
+        <tr>
+            <td><span class="highlight">Нет очередей задач</span></td>
+            <td>
+                Все работает внутри FastAPI loop.
+            </td>
+            <td>
+                Celery / RabbitMQ / Redis Queue.
+            </td>
+        </tr>
+
+        <tr>
+            <td><span class="highlight">Нет sandbox isolation</span></td>
+            <td>
+                Боты запускаются в общей среде.
+            </td>
+            <td>
+                Docker containers + isolated workers.
+            </td>
+        </tr>
+
+        <tr>
+            <td><span class="highlight">Нет plugin SDK</span></td>
+            <td>
+                Модули жестко встроены в код.
+            </td>
+            <td>
+                Создать manifest-based plugin system.
+            </td>
+        </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- ===================================================================================== -->
+
+<h2>🧭 Рекомендуемая production-структура OmniFactory EVO</h2>
+
+<div class="tree">
+<pre>
+omni_factory_root/
+│
+├── api/
+│   ├── main.py
+│   ├── routes/
+│   ├── middleware/
+│   └── security/
+│
+├── core/
+│   ├── compiler/
+│   ├── runtime/
+│   ├── simulator/
+│   ├── telemetry/
+│   └── orchestrator/
+│
+├── services/
+│   ├── deployment/
+│   ├── packaging/
+│   ├── ai/
+│   ├── registry/
+│   └── integrations/
+│
+├── plugins/
+│   ├── telegram/
+│   ├── crm/
+│   ├── ai_rag/
+│   ├── payments/
+│   └── analytics/
+│
+├── db/
+│   ├── models/
+│   ├── migrations/
+│   ├── repositories/
+│   └── cache/
+│
+├── ui/
+│   ├── builder/
+│   ├── admin/
+│   ├── telemetry/
+│   └── assets/
+│
+├── runtime/
+│   ├── containers/
+│   ├── workers/
+│   └── sandboxes/
+│
+└── infrastructure/
+    ├── docker/
+    ├── nginx/
+    ├── kubernetes/
+    └── monitoring/
+</pre>
+</div>
+
+</div>
+
+</body>
+</html>

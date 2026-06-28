@@ -1,0 +1,15 @@
+{
+  "hosting": {
+    "public": "public",
+    "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "webfactory",
+          "region": "europe-west3"
+        }
+      }
+    ]
+  }
+}

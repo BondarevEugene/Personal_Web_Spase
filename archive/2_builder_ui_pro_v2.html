@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OMNIFACTORY // EVO_CORE // ENTERPRISE_ARCHITECT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css" rel="stylesheet">
+
+<style>
+    /* ИЗОЛЯЦИЯ: Стили ниже применяются ТОЛЬКО к блоку с ID omni-factory-root */
+    #omni-factory-root {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-main);
+    }
+
+    /* Убираем глобальные стили с body, чтобы они не портили главную */
+    body.is-embedded {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+    /* 1. ПОЛНОЕ УДАЛЕНИЕ ФИКСАЦИИ */
+    /* Убрали html, body { position: fixed }. Теперь IDE занимает столько места, сколько ей дадут. */
+    :root {
+        --bg-main: #121214; --bg-panel: #18181b; --border-dim: #27272a;
+        --accent-purple: #bc13fe; --accent-cyan: #00ffff; --ok-green: #22c55e;
+        --text-bright: #e4e4e7; --text-dim: #a1a1aa;
+    }
+
+    /* 2. БЕЗОПАСНЫЙ КОНТЕЙНЕР */
+    body {
+        margin: 0;
+        height: 100vh; /* Будет стараться занять 100% высоты своего родителя */
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-main);
+        color: var(--text-bright);
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+    }
+
+    /* 3. ХЕДЕР (без position: absolute) */
+    .ide-header { height: 55px; background: var(--bg-panel); border-bottom: 1px solid var(--accent-purple); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; flex-shrink: 0; }
+
+    /* 4. РАБОЧАЯ ОБЛАСТЬ (flex-grow: 1 заставит ее заполнить пустоту, не накладываясь ни на что) */
+    .ide-workspace {
+        display: grid;
+        grid-template-columns: 280px 1fr 380px;
+        flex-grow: 1;
+        overflow: hidden; /* Скрывает то, что вылезает */
+        width: 100%;
+    }
+
+    /* 5. ФУТЕР (компактный и прибитый вниз) */
+    .ide-footer {
+        height: 35px;
+        background: #050508;
+        border-top: 1px solid var(--border-dim);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        flex-shrink: 0;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.65rem;
+        color: var(--text-dim);
+    }
+
+    /* Стили холста */
+    .ide-sidebar { background: var(--bg-panel); border-right: 1px solid var(--border-dim); display: flex; flex-direction: column; overflow: hidden; }
+
+    .canvas-wrapper {
+    min-width: 0; /* КРИТИЧЕСКИ ВАЖНО: позволяет колонке сжиматься */
+    position: relative;
+    overflow: hidden;
+    }
+    #drawflow { width: 100%; height: 100%; position: relative; background-image: radial-gradient(#1e1e24 1.2px, transparent 1.2px); background-size: 24px 24px; cursor: grab; }
+
+    /* Остальные компоненты */
+    .ide-inspector { background: var(--bg-panel); border-left: 1px solid var(--border-dim); display: flex; flex-direction: column; overflow: hidden; }
+    .sidebar-scroll { overflow-y: auto; padding: 15px; flex-grow: 1; }
+    .node-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-dim); padding: 8px 10px; margin-bottom: 6px; cursor: grab; font-size: 0.75rem; font-family: 'JetBrains Mono'; transition: 0.2s; }
+</style>
+</head>
+<body>
+
+<div id="omni-factory-root">
+    <header class="ide-header">
+        <div class="logo-text">OMNIFACTORY // PRO ARCHITECT</div>
+        <div class="header-actions">
+            <button class="btn-secondary" onclick="switchInspector('auth')">🔑 АВТОРИЗАЦИЯ</button>
+            <button class="btn-secondary" onclick="switchInspector('params')">⚙️ ПАРАМЕТРЫ</button>
+            <button class="btn-secondary" onclick="saveGraph()">💾 SAVE</button>
+            <button class="btn-trigger" onclick="deployGraph()">🚀 DEPLOY</button>
+        </div>
+    </header>
+
+    <div class="ide-workspace">
+
+        <aside class="ide-sidebar">
+            <div class="sidebar-search">
+                <input type="text" placeholder="Поиск интеграции...">
+            </div>
+            <div class="sidebar-scroll" id="library">
+
+                <div class="category-title">// 🌐 TRIGGERS (ВХОДНЫЕ ТОЧКИ)</div>
+                <div class="node-item n-trigger" draggable="true" ondragstart="drag(event)" data-node="webhook">🪝 Webhook (GET/POST)</div>
+                <div class="node-item n-trigger" draggable="true" ondragstart="drag(event)" data-node="cron">⏱️ Schedule (Cron)</div>
+                <div class="node-item n-trigger" draggable="true" ondragstart="drag(event)" data-node="tg_trigger">✈️ Telegram Event</div>
+
+                <div class="category-title">// ⚙️ CORE LOGIC (ОБРАБОТКА)</div>
+                <div class="node-item n-core" draggable="true" ondragstart="drag(event)" data-node="http_req">🔗 HTTP Request</div>
+                <div class="node-item n-core" draggable="true" ondragstart="drag(event)" data-node="switch">🔀 Switch (Router)</div>
+                <div class="node-item n-core" draggable="true" ondragstart="drag(event)" data-node="code">💻 Python/JS Code</div>
+
+                <div class="category-title">// 🗄 DATABASES (ХРАНИЛИЩА)</div>
+                <div class="node-item n-db" draggable="true" ondragstart="drag(event)" data-node="postgres">🐘 PostgreSQL</div>
+                <div class="node-item n-db" draggable="true" ondragstart="drag(event)" data-node="redis">🟥 Redis (Cache)</div>
+
+                <div class="category-title">// 🧠 AI & LLM (ИНТЕЛЛЕКТ)</div>
+                <div class="node-item n-ai" draggable="true" ondragstart="drag(event)" data-node="openai">🤖 OpenAI (GPT-4)</div>
+                <div class="node-item n-ai" draggable="true" ondragstart="drag(event)" data-node="chromadb">🔍 ChromaDB (Vector)</div>
+
+            </div>
+        </aside>
+
+        <main div id="drawflow"></div>></main>
+
+        <aside class="ide-inspector">
+            <div class="inspector-tabs">
+                <div class="ins-tab active">ПАРАМЕТРЫ</div>
+                <div class="ins-tab">АВТОРИЗАЦИЯ</div>
+            </div>
+            <div class="inspector-body" id="inspector-ui">
+                <div style="color:var(--text-dim); font-size: 0.7rem; text-align: center; margin-top: 40px;">Выберите узел для настройки параметров интеграции...</div>
+            </div>
+        </aside>
+    </div>
+
+    <footer class="ide-footer">
+        <div class="terminal-stream" id="ide-terminal">
+            > [SYSTEM] Ядро оркестрации загружено. Доступно 51+ интеграций.<br>
+            > [SYSTEM] Ожидание проектирования графа потока данных...
+        </div>
+
+        <div class="author-footer">
+            POWERED BY <span>OMNIFACTORY_CORE</span> // EUGENE BONDAREV © 2026
+        </div>
+    <footer class="author-footer">
+        <div class="footer-content">
+            <div class="footer-brand">OMNIFACTORY_EVO // CORE_ENGINE</div>
+            <div class="footer-divider"></div>
+            <div class="footer-credits">
+                ARCHITECT: <span>EUGENE BONDAREV</span> | SYSTEM_STATUS: <span>ONLINE</span> | VERSION: <span>2.6.0</span>
+            </div>
+            <div class="footer-copyright">
+                © 2026 // ALL_RIGHTS_RESERVED
+            </div>
+        </div>
+    </footer>
+
+<script>
+    // 1. Инициализация глобальных переменных
+    let MODULE_SCHEMAS = {};
+    const container = document.getElementById("drawflow");
+    const editor = new Drawflow(container);
+    editor.start();
+
+    // 2. Глобальные функции для Drag & Drop
+    window.allowDrop = (ev) => ev.preventDefault();
+    window.drag = (ev) => ev.dataTransfer.setData("nodeId", ev.target.getAttribute('data-node'));
+
+    // 3. Обработка Drop (Фиксация нод на холсте)
+    container.addEventListener("dragover", window.allowDrop);
+    container.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        const nodeId = ev.dataTransfer.getData("nodeId");
+        if (!nodeId || !MODULE_SCHEMAS[nodeId]) return;
+
+        const rect = container.getBoundingClientRect();
+        const x = ev.clientX - rect.left;
+        const y = ev.clientY - rect.top;
+        const schema = MODULE_SCHEMAS[nodeId];
+
+        editor.addNode(nodeId, 1, schema.outputs || 1, x, y, nodeId, {config:{}},
+            `<div style="font-size:0.6rem; color:${schema.color}">// ${nodeId.toUpperCase()}</div><div style="font-weight:bold">${schema.title}</div>`
+        );
+        logTerminal(`Узел [${schema.title}] зафиксирован в ${Math.round(x)}:${Math.round(y)}`);
+    });
+
+    // 4. Загрузка реестра модулей
+    async function initRegistry() {
+        try {
+            const response = await fetch('/api/v1/registry');
+            const data = await response.json();
+            // Предполагаем структуру: { "categories": {...}, "schemas": {...} }
+            MODULE_SCHEMAS = data.schemas || {};
+            const lib = document.getElementById('library');
+            lib.innerHTML = '';
+
+            Object.entries(data.categories || data).forEach(([cat, mods]) => {
+                lib.innerHTML += `<div class="category-title">// ${cat.toUpperCase()}</div>`;
+                mods.forEach(mod => {
+                    lib.innerHTML += `<div class="node-item" draggable="true" ondragstart="drag(event)" data-node="${mod.id}">${mod.label}</div>`;
+                });
+            });
+        } catch (e) {
+            logTerminal("Ошибка загрузки реестра: " + e.message);
+        }
+    }
+
+    // 5. Логика Инспектора
+    editor.on('nodeSelected', (id) => {
+        const node = editor.getNodeFromId(id);
+        const inspector = document.getElementById('inspector-ui');
+        const schema = MODULE_SCHEMAS[node.name];
+        if (!schema) return;
+
+        const nodeData = node.data.config || {};
+        let html = `<div style="font-size:0.7rem; color:${schema.color}; margin-bottom:15px;">ID: #${id} | ${schema.title}</div>`;
+
+        for (const [key, fieldInfo] of Object.entries(schema.fields)) {
+            html += `<div class="prop-field"><label>${key.toUpperCase()}</label>`;
+            const val = nodeData[key] || fieldInfo.default || '';
+
+            if (fieldInfo.type === 'buttons_list') {
+                html += `<div class="dynamic-container">${(nodeData[key] || []).map((btn, index) => `
+                    <div style="display:flex; gap:5px; margin-bottom:5px;">
+                        <input type="text" value="${btn.text}" onchange="updateBtn(${id},'${key}',${index},'text',this.value)">
+                        <button onclick="removeBtn(${id}, '${key}', ${index})">×</button>
+                    </div>`).join('')}
+                    <button class="add-btn" onclick="addBtn(${id}, '${key}')">+ Добавить</button>
+                </div>`;
+            } else if (fieldInfo.type === 'rich_text') {
+                html += `<div class="rich-editor" contenteditable="true" onblur="updateNodeData(${id}, '${key}', this.innerHTML)">${val}</div>`;
+            } else {
+                html += `<input type="text" value="${val}" onchange="updateNodeData(${id}, '${key}', this.value)">`;
+            }
+            html += `</div>`;
+        }
+        inspector.innerHTML = html;
+    });
+
+    // 6. Утилиты
+    window.addBtn = (nodeId, key) => {
+        let node = editor.getNodeFromId(nodeId);
+        if (!node.data.config[key]) node.data.config[key] = [];
+        node.data.config[key].push({ text: "Новая кнопка" });
+        editor.updateNodeDataFromId(nodeId, node.data);
+        editor.emit('nodeSelected', nodeId);
+    };
+
+    window.removeBtn = (nodeId, key, index) => {
+        let node = editor.getNodeFromId(nodeId);
+        node.data.config[key].splice(index, 1);
+        editor.updateNodeDataFromId(nodeId, node.data);
+        editor.emit('nodeSelected', nodeId);
+    };
+
+    window.updateNodeData = (nodeId, key, value) => {
+        let node = editor.getNodeFromId(nodeId);
+        node.data.config[key] = value;
+        editor.updateNodeDataFromId(nodeId, node.data);
+    };
+
+    function logTerminal(msg) {
+        const term = document.getElementById('ide-terminal');
+        term.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] ${msg}`;
+        term.scrollTop = term.scrollHeight;
+    }
+
+    // Запуск
+    initRegistry();
+</script>
+</body>
+</html>

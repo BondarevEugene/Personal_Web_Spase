@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --color-deep-space: #030305;
+  --color-neon-purple: #bc13fe;
+  --color-text-bright: #f4f4f5;
+}
+
+body {
+  margin: 0;
+  background-color: #030305;
+  color: #e4e4e7;
+  overflow: hidden;
+}
+
+/* Кастомные тонкие скроллбары для терминала и меню */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #030305;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #27272a;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #bc13fe;
+}
+
+/* Очистка стандартных рамок ReactFlow */
+.react-flow__controls button {
+  background: #09090e !important;
+  border: none !important;
+  border-bottom: 1px solid #27272a !important;
+  color: #a1a1aa !important;
+}
+
+.react-flow__controls button:hover {
+  background: #18181b !important;
+}

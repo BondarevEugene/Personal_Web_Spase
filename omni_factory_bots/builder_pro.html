@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WF_CORE | ARCHITECT_PANEL v5.0</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=JetBrains+Mono&family=Orbitron:wght@600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='Orbitron, sans-serif' font-size='50' fill='%23bc13fe' font-weight='bold'>F</text></svg>">
+
+<style>
+    :root {
+        --deep-space: #030305;
+        --bright-purple: #bc13fe;
+        --soft-blue: #00d2ff;
+        --font-main: 'Share Tech Mono', monospace;
+        --font-header: 'Orbitron', sans-serif;
+        --critical-pink: #ff007f;
+        --ok-green: #00ff88;
+        --glass: rgba(15, 15, 25, 0.9);
+        --border: rgba(94, 10, 126, 0.3);
+        --muted-text: #888;
+        --neon-border: rgba(188, 19, 254, 0.4);
+    }
+
+    body {
+        background-color: var(--deep-space);
+        background-image: radial-gradient(var(--border) 1px, transparent 1px);
+        background-size: 50px 50px;
+        color: #fff;
+        font-family: var(--font-main);
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        line-height: 1.4;
+    }
+
+    /* Контейнер для разделения сайдбара и контента под хедером */
+    .app-container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* Глобальные стили для заголовков и кнопок */
+    h1, h2, h3, h4, .nav-btn, .action-btn, .status-badge {
+        font-family: var(--font-header) !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* [ SIDEBAR: КИБЕРПАНК СТИЛЬ ] */
+    .sidebar {
+        width: 260px;
+        background: rgba(5, 5, 10, 0.95);
+        border-right: 1px solid var(--border);
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        z-index: 10;
+        overflow-y: auto;
+    }
+
+    /* Кнопки навигации: Полигональная форма и неоновый блеск */
+.nav-btn {
+        position: relative;
+        padding: 12px 18px;
+        margin-bottom: 12px;
+        background: rgba(188, 19, 254, 0.02);
+        border: 1px solid var(--border);
+        color: var(--soft-blue);
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(5px);
+        clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0% 30%);
+        overflow: hidden;
+        user-select: none;
+    }
+
+.nav-btn:hover {
+        color: #fff;
+        background: rgba(0, 210, 255, 0.12);
+        border-color: var(--soft-blue);
+        box-shadow: 0 0 25px rgba(0, 210, 255, 0.35), inset 0 0 10px rgba(0, 210, 255, 0.15);
+        transform: translateX(4px); /* Кнопка слегка сдвигается вправо при наведении */
+    }
+
+.nav-btn:active {
+        transform: scale(0.96) translateX(4px);
+    }
+
+    .nav-btn::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -60%;
+        width: 20%;
+        height: 200%;
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: rotate(30deg);
+        transition: all 0.6s;
+    }
+    .nav-btn.active {
+        background: rgba(188, 19, 254, 0.15);
+        border-color: var(--bright-purple);
+        color: #fff;
+        box-shadow: 0 0 20px rgba(188, 19, 254, 0.4), inset 0 0 8px rgba(188, 19, 254, 0.3);
+        text-shadow: 0 0 8px #fff;
+    }
+
+    .nav-btn:hover::after { left: 120%; }
+
+    .panic-btn {
+        background: repeating-linear-gradient(45deg, rgba(255, 0, 127, 0.1), rgba(255, 0, 127, 0.1) 10px, rgba(0, 0, 0, 0.2) 10px, rgba(0, 0, 0, 0.2) 20px);
+        border: 2px solid var(--critical-pink);
+        color: var(--critical-pink);
+        padding: 15px;
+        border-radius: 12px;
+        cursor: pointer;
+        text-align: center;
+        font-weight: bold;
+        margin-top: 20px;
+        animation: alert-blink 2s infinite;
+    }
+
+    /* [ MAIN CONTENT AREA ] */
+    main { flex: 1; padding: 40px; overflow-y: auto; position: relative; display: flex; flex-direction: column;}
+.tab-content {
+        display: none;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        flex-grow: 1;
+    }
+
+    /* Когда вкладка активна — запускаем плавное проявление */
+    .tab-content.active {
+        display: block !important;
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+
+    /* [ ТЕХНОЛОГИЧНЫЕ КАРТОЧКИ: НЕЙРОМОРФИЗМ ] */
+    .tech-card, .component-panel {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+        transition: 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    .tech-card:hover { border-color: var(--bright-purple); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(188, 19, 254, 0.2); }
+
+    /* Grid для нод и компонентов */
+    .project-grid, .component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+
+    .status-badge { background: rgba(0, 255, 136, 0.1); color: var(--ok-green); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; display: inline-block;}
+    .control-btns { display: flex; gap: 10px; margin-top: 15px; }
+
+    /* [ ТЕРМИНАЛ И ЛОГИ ] */
+    .stream-box {
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+        height: 60vh;
+        overflow-y: auto;
+        font-size: 0.85rem;
+        color: #00ff41;
+        font-family: 'JetBrains Mono', monospace;
+        box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.1);
+    }
+
+    /* [ КНОПКИ ДЕЙСТВИЯ (Оркестратор) ] */
+    .action-btn {
+        background: var(--deep-space);
+        border: 1px solid var(--border);
+        color: var(--bright-purple);
+        padding: 8px 15px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: 0.3s;
+        font-size: 0.7rem;
+        min-width: 100px;
+    }
+
+    /* Анимации */
+    @keyframes alert-blink { 0% { opacity: 1; } 50% { opacity: 0.7; border-color: #fff; } 100% { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+</style>
+</head>
+<body>
+
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; background: rgba(10, 10, 15, 0.9); border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); z-index: 100;">
+        <div style="display: flex; align-items: center; gap: 25px;">
+            <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:28px; height:28px; filter: drop-shadow(0 0 4px var(--bright-purple));">
+                    <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" fill="none" stroke="#bc13fe" stroke-width="8"/>
+                    <text x="32" y="68" font-family="Orbitron" font-size="52" fill="#bc13fe" font-weight="bold">F</text>
+                </svg>
+                <span style="font-family: 'Orbitron', sans-serif; font-weight: 600; letter-spacing: 1px; font-size: 0.95rem; color: #fff;">WF_CORE // V5.0</span>
+            </div>
+        </div>
+
+        <div style="
+            color: #FFD700;
+            font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+            font-size: 13pt;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+            user-select: none;
+            padding-right: 5px;
+        ">
+            OMNIFACTORY 𒄦 PRO ARCHITECT 𒄦 Design by BONDAREV_E 𒄦
+        </div>
+    </header>
+
+    <div class="app-container">
+        <nav class="sidebar">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 30px;">
+                <svg width="35" height="35" viewBox="0 0 100 100" style="filter: drop-shadow(0 0 5px #bc13fe);">
+                    <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" fill="none" stroke="#bc13fe" stroke-width="5" />
+                    <text x="35" y="65" font-family="Orbitron" font-size="45" fill="#bc13fe" font-weight="bold">F</text>
+                </svg>
+                <h2 style="font-size: 0.9rem; color: var(--bright-purple); margin: 0;">WF_SYSTEM_v5</h2>
+            </div>
+
+            <button class="nav-btn active" onclick="app.openTab('projects', this)">⌘ ECOSYSTEM_SITES</button>
+            <button class="nav-btn" onclick="app.openTab('components-tab', this)">🧩 ORCHESTRATION</button>
+            <button class="nav-btn" onclick="app.openTab('analytics', this)">⌬ LOGS_ANALYTICS</button>
+            <button class="nav-btn" onclick="app.openTab('crm-tab', this); app.renderCRM()">📅 CRM_SCHEDULER</button>
+            <button class="nav-btn" onclick="app.openTab('ads-tab', this)">🚀 ADS_MANAGER</button>
+            <button class="nav-btn" onclick="app.openTab('seo-tab', this)">🔍 SEO_MONITOR</button>
+            <button class="nav-btn" onclick="app.openTab('server-tab', this)">📡 TELEMETRY</button>
+            <button class="nav-btn" onclick="app.openTab('ai-leads-tab', this)">🤖 AI_CHAT_LEADS</button>
+
+            <div class="health-card" id="api-status" style="margin-top: auto; border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-size: 0.7rem;">
+                <div>CORE_API_UPLINK</div>
+                <div style="margin-top: 5px;"><span class="pulse-dot" style="display:inline-block; width:8px; height:8px; background:var(--ok-green); border-radius:5px;"></span> RUNNING</div>
+            </div>
+            <button class="panic-btn" onclick="app.togglePanic()">🚨 PANIC MODE</button>
+        </nav>
+
+        <main>
+            <div id="projects" class="tab-content active">
+                <h1 style="font-size: 1.5rem; margin-bottom: 30px;">CONNECTED_NODES</h1>
+                <div class="project-grid">
+
+                    <div class="tech-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <strong style="font-size: 1.1rem;">GENESYS_ENGINE</strong><br>
+                                <span style="font-size: 0.7rem; color: #888;">webfactory.ua/genesys</span>
+                            </div>
+                            <span class="status-badge">ONLINE</span>
+                        </div>
+                        <div class="control-btns">
+                            <button class="action-btn" onclick="app.nodeAction('GENESYS', 'console')">CONSOLE</button>
+                            <button class="action-btn" onclick="app.nodeAction('GENESYS', 'restart')">RESTART</button>
+                            <button class="action-btn" style="border-color: var(--critical-pink); color: var(--critical-pink);" onclick="app.nodeAction('GENESYS', 'restrict')">RESTRICT</button>
+                        </div>
+                    </div>
+
+                    <div class="tech-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <strong style="font-size: 1.1rem;">WF_MAIN_PORTAL</strong><br>
+                                <span style="font-size: 0.7rem; color: #888;">webfactory.ua</span>
+                            </div>
+                            <span class="status-badge">ONLINE</span>
+                        </div>
+                        <div class="control-btns">
+                            <button class="action-btn" onclick="app.nodeAction('MAIN', 'console')">CONSOLE</button>
+                            <button class="action-btn" onclick="app.nodeAction('MAIN', 'restart')">RESTART</button>
+                            <button class="action-btn" style="border-color: var(--critical-pink); color: var(--critical-pink);" onclick="app.nodeAction('MAIN', 'restrict')">RESTRICT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="components-tab" class="tab-content">
+                <h1 style="font-size: 1.5rem; margin-bottom: 30px;">DYNAMIC_COMPONENTS_ORCHESTRATOR</h1>
+                <p style="font-size:0.8rem; color:var(--soft-blue);">// Встраивание, запуск и горячее отключение модулей на удаленных нодах</p>
+
+                <div class="component-grid">
+
+                    <div class="component-panel">
+                        <h3 style="color: var(--bright-purple); margin-top:0;">GENESYS_ENGINE NODE</h3>
+                        <div style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom:10px;">
+                            <div>
+                                <b>ai_consultant.py</b><br>
+                                <span style="font-size:0.7rem; color:var(--muted-text);">RAG AI Assistant (Gemini Flash)</span>
+                            </div>
+                            <button class="action-btn active-state" id="btn-toggle-ai" onclick="orchestrator.toggleModule('GENESYS', 'ai_consultant', this)" style="background:rgba(0,255,136,0.1); color:var(--ok-green); border-color: var(--ok-green);">ACTIVE</button>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <b>numerology_calc.py</b><br>
+                                <span style="font-size:0.7rem; color:var(--muted-text);">Pythagorean Matrix Engine</span>
+                            </div>
+                            <button class="action-btn active-state" style="background:rgba(0,255,136,0.1); color:var(--ok-green); border-color: var(--ok-green);">ACTIVE</button>
+                        </div>
+                    </div>
+
+                    <div class="component-panel">
+                        <h3 style="color: var(--soft-blue); margin-top:0;">WF_MAIN_PORTAL NODE</h3>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <b>lead_catcher.py</b><br>
+                                <span style="font-size:0.7rem; color:var(--muted-text);">Telegram Webhook Interceptor</span>
+                            </div>
+                            <button class="action-btn active-state" style="background:rgba(0,255,136,0.1); color:var(--ok-green); border-color: var(--ok-green);">ACTIVE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="crm-tab" class="tab-content">
+                <div class="tech-card" style="height: 100%; display: flex; flex-direction: column;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                        <h3 style="margin:0;">// EVENT_SCHEDULER</h3>
+                        <button class="action-btn" style="background:var(--ok-green); color:#000; font-weight: bold;">+ NEW_EVENT</button>
+                    </div>
+                    <div id="calendar-render" style="color: #fff; flex-grow: 1; overflow:hidden;"></div>
+                </div>
+            </div>
+
+            <div id="ads-tab" class="tab-content">
+                <h1 style="font-size: 1.5rem; margin-bottom: 30px;">ADVERTISING_ORCHESTRATOR</h1>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px;">
+
+                    <div class="tech-card" style="border-left: 4px solid #4285F4;">
+                        <h3 style="color:#4285F4; margin-top:0;">GOOGLE_ADS_STREAM</h3>
+                        <div style="height: 100px; background: rgba(66, 133, 244, 0.05); border: 1px dashed rgba(66, 133, 244, 0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #4285F4;">
+                            [ VISUAL_CHART_WAITING_DATA ]
+                        </div>
+                    </div>
+
+                    <div class="tech-card" style="border-left: 4px solid #1877F2;">
+                        <h3 style="color:#1877F2; margin-top:0;">META_AD_DASHBOARD</h3>
+                        <div style="height: 100px; background: rgba(24, 119, 244, 0.05); border: 1px dashed rgba(24, 119, 244, 0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #1877F2;">
+                            [ PIXEL_TRAFFIC_ACTIVE ]
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="analytics" class="tab-content">
+                <h1 style="font-size: 1.5rem; margin-bottom: 30px;">SYSTEM_LOG_STREAM</h1>
+                <div class="stream-box" id="stream-logs">
+                    &gt; Initializing Analytics Deep Scan...<br>
+                    &gt; Bridge connected to main server CodeBase.<br>
+                    &gt; Synapsing node: GENESYS<br>
+                    &gt; Synapsing node: WF_MAIN<br>
+                    &gt; Status: UNIFIED
+                </div>
+            </div>
+
+            <div id="seo-tab" class="tab-content">
+                <h3 style="margin-bottom:20px;">// SEARCH_ENGINE_INDEX_TRACKER</h3>
+                <div class="tech-card">
+                    <table style="width:100%; font-size:0.8rem; border-collapse:collapse; text-align: left; font-family:'JetBrains Mono'">
+                        <thead>
+                            <tr style="color:var(--soft-blue); border-bottom:1px solid var(--border);">
+                                <th style="padding:10px;">KEYWORD</th>
+                                <th>POSITION</th>
+                                <th>CHANGE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:10px;">Создание сайтов Киев</td>
+                                <td style="color:var(--ok-green);">#3</td>
+                                <td style="color:var(--ok-green);">▲ 2</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px;">python development ua</td>
+                                <td style="color:var(--soft-blue);">#12</td>
+                                <td style="color:var(--critical-pink);">▼ 1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="server-tab" class="tab-content">
+                <h3 style="margin-bottom:20px;">// HARDWARE_TELEMETRY</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
+                    <div class="tech-card" id="cpu-card">
+                        <div style="font-size:0.7rem; margin-bottom:10px;">CPU_UTILIZATION (GENESYS_NODE)</div>
+                        <div style="height:8px; background:#111; border-radius:4px; overflow:hidden;">
+                            <div class="bar" style="width:42%; height:100%; background:var(--bright-purple); transition: 0.5s;"></div>
+                        </div>
+                    </div>
+                    <div class="tech-card" id="ram-card">
+                        <div style="font-size:0.7rem; margin-bottom:10px;">MEMORY_RESERVE (VALKYRIA_SHIELD)</div>
+                        <div style="height:8px; background:#111; border-radius:4px; overflow:hidden;">
+                            <div class="bar" style="width:68%; height:100%; background:var(--soft-blue); transition: 0.5s;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ai-leads-tab" class="tab-content">
+                <h3 style="margin-bottom:20px;">// NEURAL_INTERCEPTOR_LOGS</h3>
+                <div class="tech-card" style="margin-bottom:15px; border-left: 2px solid var(--ok-green);">
+                    <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:var(--muted-text);">
+                        <span>USER_ID: 8821_EXT</span>
+                    </div>
+                    <div style="margin-top:10px; font-size:0.75rem;">
+                        <b style="color:var(--soft-blue);">AI:</b> Чем я могу помочь в разработке вашего проекта?<br>
+                        <b style="color:var(--bright-purple);">USER:</b> Мне нужен аудит безопасности для сайта на FastAPI.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const app = {
+            calendar: null,
+            isLogging: true,
+
+openTab(tabId, btn) {
+                // Прячем и сбрасываем анимацию для всех вкладок
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                    tab.style.display = 'none';
+                });
+
+                // Убираем активность со всех кнопок
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+                const activeTab = document.getElementById(tabId);
+                if (activeTab) {
+                    activeTab.style.display = 'block';
+                    // Запрашиваем repaint браузера, чтобы применился display: block, а затем плавно включилась анимация
+                    requestAnimationFrame(() => {
+                        activeTab.classList.add('active');
+                    });
+                }
+                if (btn) btn.classList.add('active');
+            },
+
+            renderCRM() {
+                const calendarEl = document.getElementById('calendar-render');
+                if (calendarEl && !this.calendar) {
+                    this.calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        editable: true,
+                        selectable: true,
+                        events: '/api/crm/events',
+                        eventClick: function(info) {
+                            app.writeLog('CRM_INFO', `Event: ${info.event.title}`, 'var(--ok-green)');
+                            app.openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
+                        }
+                    });
+                    setTimeout(() => { this.calendar.render(); this.calendar.updateSize(); }, 100);
+                } else if (this.calendar) {
+                    this.calendar.updateSize();
+                }
+            },
+
+            writeLog(node, msg, color = 'var(--bright-purple)') {
+                const log = document.getElementById('stream-logs');
+                if (!log) return;
+                const time = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.style.cssText = `margin-bottom:8px; color:${color}; border-left: 2px solid ${color}; padding-left: 10px; animation: fadeIn 0.4s ease-out;`;
+                logEntry.innerHTML = `<span style="opacity:0.5; font-size:0.7rem;">[${time}]</span> &gt; [${node}] ${msg}`;
+                log.prepend(logEntry);
+            },
+
+            nodeAction(node, actionType) {
+                if (actionType === 'console') {
+                    app.openTab('analytics', document.querySelector('button[onclick*="analytics"]'));
+                    this.writeLog(node, `Terminal link established. Shell ready.`, 'var(--soft-blue)');
+                } else if (actionType === 'restart') {
+                    this.writeLog(node, `Reboot sequence started. Waiting for ping...`, 'var(--critical-pink)');
+                    const card = event.target.closest('.tech-card');
+                    if (card) {
+                        card.style.filter = "hue-rotate(180deg)"; card.style.opacity = "0.5";
+                        setTimeout(() => { card.style.filter = "none"; card.style.opacity = "1"; this.writeLog(node, `Node recovered.`, 'var(--ok-green)');}, 2000);
+                    }
+                } else if (actionType === 'restrict') {
+                    if (confirm(`ALERT: Изолировать узел ${node}?`)) {
+                        this.writeLog(node, `FIREWALL_BLOCK activated. Traffic stopped.`, 'var(--critical-pink)');
+                    }
+                }
+            },
+
+            togglePanic() {
+                const btn = document.querySelector('.panic-btn');
+                if (btn.innerText.includes("MODE")) {
+                    btn.innerText = "🚨 SYSTEM LOCKED"; btn.style.background = "var(--critical-pink)";
+                    document.body.style.filter = "sepia(1) saturate(3) hue-rotate(-50deg)";
+                } else {
+                    btn.innerText = "🚨 PANIC MODE"; btn.style.background = "repeating-linear-gradient(45deg, rgba(255, 0, 127, 0.1)...";
+                    document.body.style.filter = "none";
+                }
+            }
+        };
+
+        const orchestrator = {
+            async toggleModule(node, moduleName, btn) {
+                const isActive = btn.classList.contains('active-state');
+                const targetState = isActive ? 'disable' : 'enable';
+
+                app.writeLog(node, `Sending state alter command for module: [${moduleName}.py]...`, '#aaa');
+
+                try {
+                    const response = await fetch('/api/components/toggle', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ node: node, module: moduleName, action: targetState })
+                    });
+
+                    if (response.ok) {
+                        if (isActive) {
+                            btn.innerText = "DISABLED"; btn.classList.remove('active-state');
+                            btn.style.background = "rgba(255,0,127,0.1)"; btn.style.color = "var(--critical-pink)"; btn.style.borderColor = "var(--critical-pink)";
+                        } else {
+                            btn.innerText = "ACTIVE"; btn.classList.add('active-state');
+                            btn.style.background = "rgba(0,255,136,0.1)"; btn.style.color = "var(--ok-green)"; btn.style.borderColor = "var(--ok-green)";
+                        }
+                        app.writeLog(node, `Module ${moduleName}.py successfully altered to [${targetState.toUpperCase()}]`, 'var(--ok-green)');
+                    }
+                } catch {
+                    if (isActive) {
+                        btn.innerText = "DISABLED"; btn.classList.remove('active-state');
+                        btn.style.background = "rgba(255,0,127,0.1)"; btn.style.color = "var(--critical-pink)"; btn.style.borderColor = "var(--critical-pink)";
+                    } else {
+                        btn.innerText = "ACTIVE"; btn.classList.add('active-state');
+                        btn.style.background = "rgba(0,255,136,0.1)"; btn.style.color = "var(--ok-green)"; btn.style.borderColor = "var(--ok-green)";
+                    }
+                }
+            }
+        };
+
+        setInterval(() => {
+            if(document.getElementById('server-tab').classList.contains('active')) {
+                document.querySelector('#cpu-card .bar').style.width = Math.floor(Math.random() * 60 + 10) + "%";
+                document.querySelector('#ram-card .bar').style.width = Math.floor(Math.random() * 20 + 70) + "%";
+            }
+        }, 2000);
+
+        const dummyActions = ["GET /api/genesys/chat HTTP/1.1", "ChromaDB contextual vector updated", "NumCalc: Pythagore Matrix calculated"];
+        setInterval(() => {
+            if (app.isLogging && Math.random() > 0.6) {
+                const act = dummyActions[Math.floor(Math.random() * dummyActions.length)];
+                app.writeLog(Math.random() > 0.5 ? 'GENESYS' : 'WF_MAIN', act, '#666');
+            }
+        }, 4000);
+    </script>
+</body>
+</html>

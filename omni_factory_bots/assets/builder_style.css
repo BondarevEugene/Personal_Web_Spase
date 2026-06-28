@@ -1,0 +1,32 @@
+/* OmniFactory Visual Identity */
+:root {
+    --bg-main: #050508;
+    --bg-panel: #0a0a0f;
+    --accent-neon: #bc13fe;
+    --border-dim: #27272a;
+    --text-main: #e4e4e7;
+}
+
+/* Элегантный блок */
+.node-block {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: border 0.3s;
+}
+
+.node-block:hover {
+    border-color: var(--accent-neon);
+}
+
+/* Разделитель категорий */
+.category-header {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: #71717a;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #18181b;
+}

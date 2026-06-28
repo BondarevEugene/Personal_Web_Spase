@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OmniFactory // Node Canvas Prototype</title>
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css">
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; background: #050508; color: white; font-family: sans-serif; }
+        #canvas { width: 100%; height: 100vh; background-image: radial-gradient(#1e1e1e 1px, transparent 1px); background-size: 20px 20px; }
+        .sidebar { position: absolute; top: 10px; left: 10px; z-index: 10; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        button { background: #bc13fe; border: none; color: white; padding: 10px; cursor: pointer; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h3 style="margin-top:0;">OmniFactory Builder</h3>
+    <button onclick="addNode()">+ Добавить модуль (Welcome)</button>
+    <button onclick="exportData()" style="background:#00ff41; color:black;">Экспорт JSON</button>
+</div>
+<div id="canvas"></div>
+
+<script>
+    const id = document.getElementById("canvas");
+    const editor = new Drawflow(id);
+    editor.start();
+
+    // Функция добавления блока
+    function addNode() {
+        const nodeId = 'node_' + Date.now();
+        editor.addNode(nodeId, 1, 1, 50, 50, 'box', { name: 'Welcome Core' }, `
+            <div style="background:#1a1a1a; padding:10px; border:1px solid #bc13fe; border-radius:5px;">
+                <strong>Welcome Core</strong><br><small>Стартовый узел</small>
+            </div>
+        `);
+    }
+
+    function exportData() {
+        console.log(JSON.stringify(editor.export(), null, 2));
+        alert("JSON экспортирован в консоль (F12)");
+    }
+</script>
+</body>
+</html>

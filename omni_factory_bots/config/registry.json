@@ -1,0 +1,592 @@
+{
+   "CHANNELS":[
+      {
+         "id":"chan_telegram",
+         "label":"✈️ Telegram Bot API",
+         "cat":"channels",
+         "desc":"Входящее событие из Telegram",
+         "config_fields":{
+            "event_type":{
+               "type":"select",
+               "options":[
+                  "Message",
+                  "Callback Query",
+                  "Payment"
+               ]
+            }
+         }
+      },
+      {
+         "id":"chan_whatsapp",
+         "label":"📞 WhatsApp Business",
+         "cat":"channels",
+         "desc":"Входящее событие из WA",
+         "config_fields":{
+            "event_type":{
+               "type":"select",
+               "options":[
+                  "Message",
+                  "Template Reply"
+               ]
+            }
+         }
+      },
+      {
+         "id":"chan_instagram",
+         "label":"📸 Instagram Direct",
+         "cat":"channels",
+         "desc":"Ответ в Direct или реакция на Story",
+         "config_fields":{
+            "event_type":{
+               "type":"select",
+               "options":[
+                  "Direct Message",
+                  "Story Mention"
+               ]
+            }
+         }
+      },
+      {
+         "id":"chan_viber",
+         "label":"🟣 Viber API",
+         "cat":"channels",
+         "desc":"Входящее из Viber",
+         "config_fields":{
+
+         }
+      },
+      {
+         "id":"chan_fb",
+         "label":"🔵 FB Messenger",
+         "cat":"channels",
+         "desc":"Сообщение из Facebook",
+         "config_fields":{
+
+         }
+      },
+      {
+         "id":"chan_discord",
+         "label":"👾 Discord Bot",
+         "cat":"channels",
+         "desc":"Событие на сервере Discord",
+         "config_fields":{
+
+         }
+      },
+      {
+         "id":"chan_slack",
+         "label":"💼 Slack App",
+         "cat":"channels",
+         "desc":"Команда или сообщение в Slack",
+         "config_fields":{
+
+         }
+      },
+      {
+         "id":"chan_webhook",
+         "label":"🔗 Custom Webhook",
+         "cat":"channels",
+         "desc":"Универсальный HTTP приемник",
+         "config_fields":{
+            "method":{
+               "type":"select",
+               "options":[
+                  "POST",
+                  "GET"
+               ]
+            },
+            "route":{
+               "type":"text",
+               "default":"/api/custom"
+            }
+         }
+      }
+   ],
+   "CORE":[
+      {
+         "id":"welcome",
+         "label":"Welcome Core",
+         "cat":"core",
+         "desc":"Приветствие и инициализация",
+         "config_fields":{
+            "message_text":{
+               "type":"textarea",
+               "default":"Добро пожаловать в OmniFactory!"
+            },
+            "parse_mode":{
+               "type":"select",
+               "options":[
+                  "Markdown",
+                  "HTML"
+               ]
+            }
+         },
+         "code_template":"@dp.message(CommandStart())\nasync def cmd_start(message: Message, state: FSMContext): ..."
+      }
+   ],
+   "COMMUNICATION":[
+      {
+         "id":"tg_message",
+         "label":"Send Message",
+         "cat":"core",
+         "desc":"Отправка сообщения",
+         "config_fields":{
+            "text":{
+               "type":"textarea",
+               "default":"Ваше сообщение..."
+            },
+            "parse_mode":{
+               "type":"select",
+               "options":[
+                  "HTML",
+                  "MarkdownV2",
+                  "None"
+               ]
+            },
+            "buttons":{
+               "type":"buttons_list",
+               "default":[
+
+               ]
+            }
+         }
+      },
+      {
+         "id":"tg_ask_question",
+         "label":"Ask Question",
+         "cat":"core",
+         "desc":"Вопрос с ожиданием ответа",
+         "config_fields":{
+            "question":{
+               "type":"textarea",
+               "default":"Введите данные:"
+            },
+            "save_to_var":{
+               "type":"text",
+               "default":"user_name"
+            },
+            "buttons":{
+               "type":"buttons_list",
+               "default":[
+
+               ]
+            }
+         }
+      }
+   ],
+   "CRM_SALES":[
+      {
+         "id":"cart",
+         "label":"Shopping Cart",
+         "cat":"sales",
+         "config_fields":{
+            "currency":{
+               "type":"select",
+               "options":[
+                  "UAH",
+                  "USD",
+                  "EUR"
+               ]
+            },
+            "show_total":{
+               "type":"select",
+               "options":[
+                  "Yes",
+                  "No"
+               ]
+            }
+         },
+         "code_template":"data = await state.get_data(); items = data.get('cart', [])"
+      }
+   ],
+   "AI_SUPPORT":[
+      {
+         "id":"ai_chat",
+         "label":"AI Consultant",
+         "cat":"ai",
+         "config_fields":{
+            "system_prompt":{
+               "type":"textarea",
+               "default":"Ты полезный ассистент."
+            },
+            "model":{
+               "type":"select",
+               "options":[
+                  "gpt-4o",
+                  "gpt-3.5-turbo"
+               ]
+            }
+         },
+         "code_template":"response = await openai.ChatCompletion.create(...)"
+      }
+   ],
+   "CHANNELS_TRIGGERS":[
+      {
+         "id":"chan_telegram",
+         "label":"✈️ Telegram Bot",
+         "desc":"Входящее событие из Telegram (Сообщение, Callback, Оплата)",
+         "config_fields":{
+            "event_type":{
+               "type":"select",
+               "options":[
+                  "Message",
+                  "Callback Query",
+                  "PreCheckoutQuery"
+               ]
+            },
+            "auto_answer":{
+               "type":"select",
+               "options":[
+                  "Yes",
+                  "No"
+               ]
+            }
+         }
+      },
+      {
+         "id":"chan_whatsapp",
+         "label":"📞 WhatsApp Business",
+         "desc":"Входящее сообщение из WA API",
+         "config_fields":{
+            "event_type":{
+               "type":"select",
+               "options":[
+                  "Text Message",
+                  "Template Reply"
+               ]
+            }
+         }
+      },
+      {
+         "id":"chan_instagram",
+         "label":"📸 Instagram Direct",
+         "desc":"Сообщение в Direct или ответ на Story",
+         "config_fields":{
+            "trigger_word":{
+               "type":"text",
+               "default":""
+            }
+         }
+      },
+      {
+         "id":"chan_webhook",
+         "label":"🔗 Custom Webhook",
+         "desc":"Универсальный HTTP POST/GET приемник",
+         "config_fields":{
+            "route":{
+               "type":"text",
+               "default":"/api/custom_hook"
+            }
+         }
+      }
+   ],
+   "CORE_UI":[
+      {
+         "id":"welcome",
+         "label":"Welcome Core",
+         "desc":"Приветствие и базовая инициализация пользователя",
+         "config_fields":{
+            "message_text":{
+               "type":"textarea",
+               "default":"Добро пожаловать в OmniFactory!"
+            },
+            "parse_mode":{
+               "type":"select",
+               "options":[
+                  "HTML",
+                  "MarkdownV2"
+               ]
+            }
+         }
+      },
+      {
+         "id":"menu",
+         "label":"Main Menu",
+         "desc":"Многоуровневое навигационное меню",
+         "config_fields":{
+            "menu_title":{
+               "type":"text",
+               "default":"Главное меню:"
+            },
+            "buttons":{
+               "type":"buttons_list",
+               "default":[
+
+               ]
+            }
+         }
+      },
+      {
+         "id":"faq",
+         "label":"FAQ System",
+         "desc":"Автоответы на частые вопросы (интерактивный список)",
+         "config_fields":{
+            "data_source":{
+               "type":"select",
+               "options":[
+                  "Static List",
+                  "Database",
+                  "Vector DB"
+               ]
+            }
+         }
+      },
+      {
+         "id":"contact",
+         "label":"Contact Form",
+         "desc":"Сбор контактных данных (Телефон, Email)",
+         "config_fields":{
+            "request_phone":{
+               "type":"select",
+               "options":[
+                  "Yes",
+                  "No"
+               ]
+            },
+            "request_email":{
+               "type":"select",
+               "options":[
+                  "Yes",
+                  "No"
+               ]
+            }
+         }
+      },
+      {
+         "id":"inline_keyboard",
+         "label":"Inline Keyboard",
+         "desc":"Блок кнопок под сообщением",
+         "config_fields":{
+            "buttons":{
+               "type":"buttons_list",
+               "default":[
+
+               ]
+            }
+         }
+      },
+      {
+         "id":"media",
+         "label":"Media Sender",
+         "desc":"Отправка фото, видео, документов",
+         "config_fields":{
+            "media_url":{
+               "type":"text",
+               "default":"https://"
+            },
+            "caption":{
+               "type":"textarea",
+               "default":""
+            }
+         }
+      }
+   ],
+   "AI_ML":[
+      {
+         "id":"chat_gpt",
+         "label":"LLM Router",
+         "desc":"Интеллектуальный ответ через OpenAI/Anthropic",
+         "config_fields":{
+            "model":{
+               "type":"select",
+               "options":[
+                  "gpt-4o",
+                  "gpt-3.5-turbo",
+                  "claude-3-opus"
+               ]
+            },
+            "system_prompt":{
+               "type":"textarea",
+               "default":"Ты полезный ассистент."
+            },
+            "temperature":{
+               "type":"text",
+               "default":"0.7"
+            }
+         }
+      },
+      {
+         "id":"whisper",
+         "label":"Voice to Text",
+         "desc":"Распознавание голосовых сообщений",
+         "config_fields":{
+            "language":{
+               "type":"text",
+               "default":"ru"
+            }
+         }
+      },
+      {
+         "id":"stable_diff",
+         "label":"Image Gen",
+         "desc":"Генерация изображений по тексту",
+         "config_fields":{
+            "default_style":{
+               "type":"text",
+               "default":"cyberpunk, neon, highly detailed"
+            }
+         }
+      },
+      {
+         "id":"vision",
+         "label":"Vision API",
+         "desc":"Анализ присланных пользователем фотографий",
+         "config_fields":{
+            "extract_text":{
+               "type":"select",
+               "options":[
+                  "Yes",
+                  "No"
+               ]
+            }
+         }
+      },
+      {
+         "id":"context_mem",
+         "label":"Vector Memory",
+         "desc":"Долгосрочная память контекста (ChromaDB/Pinecone)",
+         "config_fields":{
+            "namespace":{
+               "type":"text",
+               "default":"user_memory"
+            }
+         }
+      }
+   ],
+   "PAYMENTS":[
+      {
+         "id":"stripe",
+         "label":"Stripe Gateway",
+         "desc":"Оплата картой через Stripe",
+         "config_fields":{
+            "capture_method":{
+               "type":"select",
+               "options":[
+                  "Automatic",
+                  "Manual"
+               ]
+            }
+         }
+      },
+      {
+         "id":"crypto",
+         "label":"Crypto Pay",
+         "desc":"Прием USDT, BTC (CryptoBot API)",
+         "config_fields":{
+            "accepted_coins":{
+               "type":"text",
+               "default":"USDT, TON, BTC"
+            }
+         }
+      }
+   ],
+   "GEO_LOGISTICS":[
+      {
+         "id":"geo_picker",
+         "label":"Geo Picker",
+         "desc":"Автоопределение адреса по геолокации",
+         "config_fields":{
+            "require_live_location":{
+               "type":"select",
+               "options":[
+                  "No",
+                  "Yes"
+               ]
+            }
+         }
+      },
+      {
+         "id":"distance",
+         "label":"Distance Calc",
+         "desc":"Расчет стоимости доставки от склада",
+         "config_fields":{
+            "cost_per_km":{
+               "type":"text",
+               "default":"15"
+            }
+         }
+      },
+      {
+         "id":"tracking",
+         "label":"Order Tracking",
+         "desc":"Проверка статуса доставки",
+         "config_fields":{
+            "api_provider":{
+               "type":"select",
+               "options":[
+                  "NovaPoshta",
+                  "UkrPoshta",
+                  "Custom"
+               ]
+            }
+         }
+      }
+   ],
+   "ADMIN_SECURITY":[
+      {
+         "id":"roles",
+         "label":"Role Access",
+         "desc":"Разграничение прав (User, Admin, VIP)",
+         "config_fields":{
+            "allowed_roles":{
+               "type":"text",
+               "default":"admin, superadmin"
+            }
+         }
+      },
+      {
+         "id":"antispam",
+         "label":"Anti-Flood",
+         "desc":"Защита системы от спам-атак",
+         "config_fields":{
+            "msg_per_second":{
+               "type":"text",
+               "default":"3"
+            },
+            "ban_duration":{
+               "type":"text",
+               "default":"3600"
+            }
+         }
+      },
+      {
+         "id":"logger",
+         "label":"Action Logger",
+         "desc":"Логирование действий в терминал или БД",
+         "config_fields":{
+            "log_level":{
+               "type":"select",
+               "options":[
+                  "INFO",
+                  "DEBUG",
+                  "ERROR"
+               ]
+            }
+         }
+      }
+   ],
+   "UTILITIES":[
+      {
+         "id":"forms",
+         "label":"Data Parser",
+         "desc":"Сбор данных по шагам",
+         "config_fields":{
+            "steps_json":{
+               "type":"textarea",
+               "default":"{\"name\": \"Имя\", \"age\": \"Возраст\"}"
+            }
+         }
+      },
+      {
+         "id":"qr_gen",
+         "label":"QR Generator",
+         "desc":"Генерация QR-кодов для билетов/ссылок",
+         "config_fields":{
+            "color":{
+               "type":"text",
+               "default":"#bc13fe"
+            }
+         }
+      }
+   ]
+}
