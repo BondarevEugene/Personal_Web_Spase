@@ -616,19 +616,13 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 # Монтируем статику (стили, JS, картинки)
 # Это нужно, чтобы браузер мог скачать файл index-B8AxQUDX.js
-dist_assets = FRONTEND_DIST / "assets"
-if dist_assets.exists():
-    app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
+assets_path = FRONTEND_DIST / "assets"
+if assets_path.exists():
+    app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
+    logger.info(f"[SUCCESS] Папка {assets_path} примонтирована")
 else:
-    print(f"ПРЕДУПРЕЖДЕНИЕ: Папка {dist_assets} не найдена. Фронтенд не будет загружен.")
-
-# Импорт Pydantic-моделей из твоего файла models.py для валидации данных
-try:
-    from models import CRMEvent, CommunicationLog, UserProfile
-
-    HAS_MODELS = True
-except ImportError:
-    HAS_MODELS = False
+    logger.warning(f"[WARNING] Папка {assets_path} НЕ НАЙДЕНА!")
 
 # Безопасный импорт кастомного роутера сборщика конвейеров
 try:
@@ -1666,10 +1660,10 @@ async def startup_event():
 
 
 # ==============================================================================
-# ФИНАЛЬНЫЙ СТАБИЛЬНЫЙ ПУСК
+# ФИНАЛЬНЫЙ СТАБИЛЬНЫЙ ПУСК (если через доккер то блок не нужен)
 # ==============================================================================
-if __name__ == "__main__":
+#if __name__ == "__main__":
     # Берем порт из переменной окружения PORT, которую дает Google
-    port = int(os.environ.get("PORT", 8080))
+    #    port = int(os.environ.get("PORT", 8080))
     # СЛУШАЕМ 0.0.0.0 — это критически важно для Docker/Cloud Run
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    #uvicorn.run("main:app", host="0.0.0.0", port=port)
