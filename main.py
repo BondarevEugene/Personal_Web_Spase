@@ -17,6 +17,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from typing import List, Dict, Any
 from fastapi.staticfiles import StaticFiles
+
 # Подключаем модуль ИИ-консультанта
 #from backend.modules.ai_consultant import get_ai_response, set_module_status
 
@@ -552,7 +553,6 @@ try:
 except ImportError:
     from psycopg2 import _psycopg
 
-
 NEON_DATABASE_URL = "postgresql://neondb_owner:npg_PwedkOSD0oL5@ep-sparkling-sea-ap665555-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 db_conn = None
 
@@ -616,19 +616,13 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 # Монтируем статику (стили, JS, картинки)
 # Это нужно, чтобы браузер мог скачать файл index-B8AxQUDX.js
-dist_assets = FRONTEND_DIST / "assets"
-if dist_assets.exists():
-    app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
+assets_path = FRONTEND_DIST / "assets"
+if assets_path.exists():
+    app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
+    logger.info(f"[SUCCESS] Папка {assets_path} примонтирована")
 else:
-    print(f"ПРЕДУПРЕЖДЕНИЕ: Папка {dist_assets} не найдена. Фронтенд не будет загружен.")
-
-# Импорт Pydantic-моделей из твоего файла models.py для валидации данных
-try:
-    from models import CRMEvent, CommunicationLog, UserProfile
-
-    HAS_MODELS = True
-except ImportError:
-    HAS_MODELS = False
+    logger.warning(f"[WARNING] Папка {assets_path} НЕ НАЙДЕНА!")
 
 # Безопасный импорт кастомного роутера сборщика конвейеров
 try:
@@ -660,6 +654,7 @@ except Exception as e:
     print(f"❌ Firebase Init Error: {e}")
 
 # ---- ИСПРАВЛЕННЫЙ БЛОК ИНИЦИАЦИИ СТАТИСТИКИ ----
+
 import os
 from pathlib import Path
 from fastapi.staticfiles import StaticFiles
@@ -684,8 +679,6 @@ if DIST_DIR.exists() and DIST_DIR.is_dir():
     pass
 
 
-# 1. Монтируем папку с ассетами (JS/CSS)
-app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="assets")
 
 # 2. Роут для главной страницы и всех остальных путей (React Router)
 #@app.get("/{full_path:path}")
@@ -1626,32 +1619,32 @@ async def plan_project(request: dict):
 class QueryModel(BaseModel):
     user_query: str
 
-
-#@app.post("/api/ai-consultant/ask")
-#async def ask_ai_consultant(data: QueryModel):
+    #@app.post("/api/ai-consultant/ask")
+    #async def ask_ai_consultant(data: QueryModel):
     """
     Маршрут для отправки вопросов ИИ-консультанту с ChromaDB
     """
     # Путь к вашей векторной базе данных Chroma
-#    vector_db_path = str(BASE_DIR / "backend" / "chroma_db")
+    #    vector_db_path = str(BASE_DIR / "backend" / "chroma_db")
 
     # Вызываем функцию из ai_consultant.py
-#    result = get_ai_response(data.user_query, vector_db_path)
+    #    result = get_ai_response(data.user_query, vector_db_path)
 
-#    if result.get("status") == "restricted":
-#        raise HTTPException(status_code=503, detail=result.get("response"))
+    #    if result.get("status") == "restricted":
+    #        raise HTTPException(status_code=503, detail=result.get("response"))
 
-#    if result.get("status") == "error":
-#        raise HTTPException(status_code=500, detail=result.get("response"))
+    #    if result.get("status") == "error":
+    #        raise HTTPException(status_code=500, detail=result.get("response"))
 
-#    return result
+    #    return result
 
-
-#@app.post("/api/ai-consultant/toggle")
-#async def toggle_ai_status(active: bool):
+    #@app.post("/api/ai-consultant/toggle")
+    #async def toggle_ai_status(active: bool):
     """
     Эндпоинт для админки (переключение флага IS_ACTIVE в ai_consultant.py)
     """
+
+
 #    set_module_status(active)
 #    return {"status": "success", "is_active": active}
 
@@ -1667,10 +1660,10 @@ async def startup_event():
 
 
 # ==============================================================================
-# ФИНАЛЬНЫЙ СТАБИЛЬНЫЙ ПУСК
+# ФИНАЛЬНЫЙ СТАБИЛЬНЫЙ ПУСК (если через доккер то блок не нужен)
 # ==============================================================================
-if __name__ == "__main__":
+#if __name__ == "__main__":
     # Берем порт из переменной окружения PORT, которую дает Google
-    port = int(os.environ.get("PORT", 8080))
+    #    port = int(os.environ.get("PORT", 8080))
     # СЛУШАЕМ 0.0.0.0 — это критически важно для Docker/Cloud Run
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    #uvicorn.run("main:app", host="0.0.0.0", port=port)
