@@ -220,9 +220,6 @@ async def get_registry():
 # CONCEPT: Убийство flet_fastapi. Переход на независимый Native Flet Server.
 # ==============================================================================
 import os
-
-os.chdir(r'C:\Users\bonda\PycharmProjects\Personal_Web_Spase')
-
 import sys
 
 # 1. ОДИН РАЗ настраиваем пути
