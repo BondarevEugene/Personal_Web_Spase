@@ -223,8 +223,6 @@ async def get_registry():
 # ==============================================================================
 import os
 
-# os.chdir(r'C:\Users\bonda\PycharmProjects\Personal_Web_Spase')
-
 import sys
 
 # 1. ОДИН РАЗ настраиваем пути
