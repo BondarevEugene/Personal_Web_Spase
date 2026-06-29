@@ -547,8 +547,11 @@ async def get_robotization_page():
 # =============================================================================
 # ПОДКЛЮЧЕНИЕ К ОБЛАЧНОЙ СУБД NEON.TECH
 # =============================================================================
-import psycopg2
-from psycopg2.extras import RealDictCursor
+try:
+    import psycopg2
+except ImportError:
+    from psycopg2 import _psycopg
+
 
 NEON_DATABASE_URL = "postgresql://neondb_owner:npg_PwedkOSD0oL5@ep-sparkling-sea-ap665555-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 db_conn = None
@@ -656,9 +659,30 @@ try:
 except Exception as e:
     print(f"❌ Firebase Init Error: {e}")
 
-# ---- БЛОК ИНИЦИАЦИИ СТАТИСТИКИ ----
-# Убедитесь, что пути указаны верно относительно BASE_DIR (корень проекта)
+# ---- ИСПРАВЛЕННЫЙ БЛОК ИНИЦИАЦИИ СТАТИСТИКИ ----
+import os
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
+# 1. Определяем базовый путь (корень проекта в Docker — это /app)
+BASE_DIR = Path(__file__).resolve().parent
+
+# 2. Путь к папке с фронтендом
 DIST_DIR = BASE_DIR / "frontend" / "dist"
+assets_dir = DIST_DIR / "assets"
+
+# 3. Подключаем статику ТОЛЬКО если папка существует
+if assets_dir.exists() and assets_dir.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+    print(f"--- [OK] Статика подключена из: {assets_dir}")
+else:
+    print(f"--- [WARNING] Папка {assets_dir} не найдена. Сайт запущен без статики.")
+
+# 4. Аналогично для самой папки dist (если нужно)
+if DIST_DIR.exists() and DIST_DIR.is_dir():
+    # Если вы используете её для других целей
+    pass
+
 
 # 1. Монтируем папку с ассетами (JS/CSS)
 app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="assets")
