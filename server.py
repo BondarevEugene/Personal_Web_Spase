@@ -659,21 +659,30 @@ try:
 except Exception as e:
     print(f"❌ Firebase Init Error: {e}")
 
-# ---- БЛОК ИНИЦИАЦИИ СТАТИСТИКИ ----
-# 1. Определяем базовую директорию (если она еще не определена выше)
+# ---- ИСПРАВЛЕННЫЙ БЛОК ИНИЦИАЦИИ СТАТИСТИКИ ----
+import os
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
+# 1. Определяем базовый путь (корень проекта в Docker — это /app)
 BASE_DIR = Path(__file__).resolve().parent
 
-# 2. Определяем путь к папке dist
+# 2. Путь к папке с фронтендом
 DIST_DIR = BASE_DIR / "frontend" / "dist"
-
-# 3. Настраиваем путь к assets и проверяем его
 assets_dir = DIST_DIR / "assets"
 
-if assets_dir.exists():
+# 3. Подключаем статику ТОЛЬКО если папка существует
+if assets_dir.exists() and assets_dir.is_dir():
     app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+    print(f"--- [OK] Статика подключена из: {assets_dir}")
 else:
-    # Если папки нет, сайт не упадет, а просто выведет это в логи
-    print(f" ПРЕДУПРЕЖДЕНИЕ: Папка {assets_dir} не найдена. Фронтенд не будет стилизован.")
+    print(f"--- [WARNING] Папка {assets_dir} не найдена. Сайт запущен без статики.")
+
+# 4. Аналогично для самой папки dist (если нужно)
+if DIST_DIR.exists() and DIST_DIR.is_dir():
+    # Если вы используете её для других целей
+    pass
+
 
 # 1. Монтируем папку с ассетами (JS/CSS)
 app.mount("/assets", StaticFiles(directory=DIST_DIR / "assets"), name="assets")
