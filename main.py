@@ -33,9 +33,12 @@ sys.path.insert(2, str(BASE_DIR / "omni_factory_bots"))
 # ==============================================================================
 # 3. ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
 # ==============================================================================
+
 app = FastAPI(title="OMNIFACTORY EVO // API_CORE")
 FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
 # app.mount("/", StaticFiles(directory=str(FRONTEND_DIST), html=True), name="static")
+
+
 
 templates = Jinja2Templates(directory="templates")
 logging.basicConfig(level=logging.INFO)
@@ -71,6 +74,7 @@ async def get_modules():
 # ==============================================================================
 # --- ИНИЦИАЛИЗАЦИЯ ФРОНТЕНДА ---
 # ============================ JS, CSS, картинки ================================
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 assets_dir = FRONTEND_DIST / "assets"
 if assets_dir.exists():
@@ -614,15 +618,6 @@ KERNEL_ACCESS_KEY = "0602"
 # Динамическое определение путей для предотвращения сбоев на Windows
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
-# Монтируем статику (стили, JS, картинки)
-# Это нужно, чтобы браузер мог скачать файл index-B8AxQUDX.js
-
-assets_path = FRONTEND_DIST / "assets"
-if assets_path.exists():
-    app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
-    logger.info(f"[SUCCESS] Папка {assets_path} примонтирована")
-else:
-    logger.warning(f"[WARNING] Папка {assets_path} НЕ НАЙДЕНА!")
 
 # Безопасный импорт кастомного роутера сборщика конвейеров
 try:
