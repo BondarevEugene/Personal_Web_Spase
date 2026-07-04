@@ -1,0 +1,18 @@
+{
+  "fastapi": {
+    "title": "FastAPI",
+    "description": "Асинхронный фреймворк для высоконагруженных API.",
+    "install": "pip install fastapi uvicorn",
+    "usage": "from fastapi import FastAPI; app = FastAPI()",
+    "features": "Автоматическая документация Swagger, высокая скорость (на уровне Go/Node.js).",
+    "status": "online"
+  },
+  "pytorch": {
+    "title": "PyTorch",
+    "description": "Библиотека для нейронных сетей и глубокого обучения.",
+    "install": "pip install torch torchvision",
+    "usage": "import torch; x = torch.tensor([1.0, 2.0])",
+    "features": "Динамические графы вычислений, поддержка GPU.",
+    "status": "offline"
+  }
+}

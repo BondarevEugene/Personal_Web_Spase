@@ -560,6 +560,49 @@ openTab(tabId, btn) {
                 app.writeLog(Math.random() > 0.5 ? 'GENESYS' : 'WF_MAIN', act, '#666');
             }
         }, 4000);
+        // === ФУНКЦИЯ КОМПИЛЯЦИИ И ОТПРАВКИ НА PYTHON ===
+async function deployGraph() {
+    logTerminal("<span style='color:var(--accent-purple)'>Инициализация пайплайна компиляции...</span>");
+
+    // 1. Экспортируем данные с холста Drawflow
+    const graphData = editor.export();
+    const nodes = graphData.drawflow.Home.data;
+
+    // 2. Собираем ID всех перетащенных пользователем модулей
+    const selectedIds = Object.keys(nodes).map(key => nodes[key].name);
+
+    if (selectedIds.length === 0) {
+        logTerminal("<span style='color:var(--critical-pink)'>Ошибка: Схема пуста. Добавьте модули на холст.</span>");
+        return;
+    }
+
+    logTerminal(`Связь с Python-ядром установлена. Компиляция модулей: [${selectedIds.join(', ')}]...`);
+
+    try {
+        // 3. Отправляем массив ID на ваш эндпоинт в server.py
+        const response = await fetch('/api/builder/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selected_ids: selectedIds })
+        });
+
+        if (!response.ok) throw new Error(`Ошибка сборщика: ${response.status}`);
+
+        // 4. Получаем ZIP-пакет, собранный вашим ProjectGenerator
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'omnifactory_bot.zip'; // Имя архива
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        logTerminal("<span style='color:var(--ok-green)'>Код успешно сгенерирован бэкендом! Сборка omnifactory_bot.zip скачана. ✅</span>");
+    } catch (e) {
+        logTerminal(`<span style='color:var(--critical-pink)'>КРИТИЧЕСКАЯ ОШИБКА ЯДРА: ${e.message}</span>`);
+    }
+}
     </script>
 </body>
 </html>
