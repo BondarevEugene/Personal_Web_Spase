@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY MASTER // ADMINISTRATIVE_SUPERVISOR_v9.1</title>
+
+    <!-- Сквозные шрифты и графические рантайм-пакеты экосистемы -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='Orbitron, sans-serif' font-size='50' fill='%23bc13fe' font-weight='bold'>M</text></svg>">
+
+    <style>
+        :root {
+            --bg-black: #050508;
+            --bg-darker: #020204;
+            --bg-main: #121214;
+            --bg-panel: #18181b;
+            --border-dim: #27272a;
+            --panel-bg: rgba(9, 9, 14, 0.93);
+            --panel-border: #1f1f23;
+            --neon-purple: #bc13fe;
+            --neon-glow: rgba(188, 19, 254, 0.35);
+            --neon-blue: #00f0ff;
+            --neon-blue-glow: rgba(0, 240, 255, 0.2);
+            --text-white: #ffffff;
+            --text-muted: #71717a;
+            --text-dim: #4a4a5a;
+            --matrix-green: #22c55e;
+            --neon-orange: #f97316;
+            --neon-yellow: #ffff00;
+            --neon-yellow-glow: rgba(255, 255, 0, 0.5);
+            --critical-pink: #ff007f;
+            --ok-green: #00ff88;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333333;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            line-height: 1.5;
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1, h2, h3, h4, .top-nav-btn, .action-btn, .status-badge, .factory-logo-text, .category-title {
+            font-family: 'Orbitron', sans-serif !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        /* Если в админке есть таблицы, код или формы, им тоже нужен правильный шрифт */
+            input, select, textarea, button {
+                font-family: inherit;
+                font-size: inherit;
+            }
+
+        code, pre {
+            /* Идеально для monospace данных, ID, логов */
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.85em;
+            background-color: #f1f3f5;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        /* [ РЕФОРМА: СВЕРХТОНКИЙ ЕДИНЫЙ ТОП-БАР ] */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 10, 15, 0.95);
+            border-bottom: 1px solid var(--panel-border);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            flex-shrink: 0;
+            height: 38px; /* Жестко ограничили высоту всего хедера */
+            padding: 0 16px;
+        }
+
+        .header-left-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .top-menu-cluster {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        /* Кнопки навигации топ-бара: в 3 раза меньше, аккуратный шрифт */
+        .top-nav-btn {
+            position: relative;
+            padding: 4px 10px;
+            background: rgba(188, 19, 254, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--neon-blue);
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            clip-path: polygon(6% 0, 100% 0, 100% 75%, 94% 100%, 0 100%, 0% 25%);
+            user-select: none;
+        }
+
+        .top-nav-btn:hover, .top-nav-btn.active {
+            color: #fff;
+            background: rgba(188, 19, 254, 0.15);
+            border-color: var(--neon-purple);
+        }
+
+        .top-panic-btn {
+            background: rgba(255, 0, 127, 0.1);
+            border: 1px solid var(--critical-pink);
+            color: var(--critical-pink);
+            padding: 3px 10px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-weight: bold;
+            clip-path: polygon(6% 0, 100% 0, 100% 75%, 94% 100%, 0 100%, 0% 25%);
+        }
+
+        /* [ ГЛОБАЛЬНЫЙ ОСНОВНОЙ КОНТЕЙНЕР ] */
+        .main-container {
+            flex: 1;
+            padding: 16px;
+            width: 100%;
+            overflow-y: auto;
+            background: #09090b;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view-section { display: none; flex-direction: column; gap: 16px; animation: viewFadeIn 0.15s ease forwards; flex-grow: 1; }
+        .view-section.active-view { display: flex; }
+        @keyframes viewFadeIn { from { opacity: 0; transform: translateY(1px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* [ МАКСИМИЗИРОВАННАЯ СРЕДА ПРОЕКТИРОВАНИЯ BOT_BUILDER ] */
+        .ide-workspace {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            width: 100%;
+            height: calc(100vh - 105px); /* Высвободили колоссальное пространство */
+            border: 1px solid var(--panel-border);
+            background: var(--bg-main);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .ide-sidebar { background: var(--bg-panel); border-right: 1px solid var(--border-dim); display: flex; flex-direction: column; overflow: hidden; }
+        .sidebar-search input { width: 100%; padding: 10px; background: rgba(0,0,0,0.5); border: none; border-bottom: 1px solid var(--border-dim); color: #fff; font-family: inherit; outline: none; font-size: 13px; }
+        .sidebar-scroll { overflow-y: auto; padding: 12px; flex-grow: 1; }
+
+        .category-title { font-size: 10px; color: var(--neon-blue); margin: 10px 0 5px 0; font-weight: bold; }
+        .node-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-dim); padding: 8px 10px; margin-bottom: 5px; cursor: grab; font-size: 12px; font-family: 'JetBrains Mono', monospace; transition: 0.15s; color: #fff; border-radius: 4px; }
+        .node-item:hover { border-color: var(--neon-purple); background: rgba(188, 19, 254, 0.08); }
+
+        #drawflow { width: 100%; height: 100%; background-color: #121214; background-image: radial-gradient(#1e1e24 1.2px, transparent 1.2px); background-size: 24px 24px; cursor: grab; position: relative; }
+
+        .drawflow .drawflow-node { background: var(--bg-panel) !important; border: 1px solid var(--border-dim) !important; border-radius: 6px !important; color: #fff !important; padding: 10px !important; width: 155px !important; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
+        .drawflow .drawflow-node.selected { border-color: var(--neon-purple) !important; box-shadow: 0 0 10px var(--neon-purple); }
+        .drawflow .connection .main-path { stroke: var(--neon-purple) !important; stroke-width: 2.5px !important; }
+
+        .ide-inspector { background: var(--bg-panel); border-left: 1px solid var(--border-dim); display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
+        .prop-field { margin-bottom: 12px; }
+        .prop-field label { display: block; color: var(--neon-blue); margin-bottom: 4px; font-size: 10px; font-family: 'Orbitron'; font-weight: bold; }
+        .prop-field input { width: 100%; padding: 6px; background: #000; border: 1px solid var(--border-dim); color: #fff; border-radius: 4px; font-size: 12.5px; outline: none; }
+        .prop-field input:focus { border-color: var(--neon-purple); }
+
+        /* [ КАРТОЧКИ И ДАШБОРДЫ МОНИТОРИНГА ] */
+        .card { background-color: #141417; border: 1px solid #1f1f23; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+        .card-title h2 { font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; margin: 0; color: #fff; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .metric-card { background-color: #141417; border: 1px solid #1f1f23; border-radius: 8px; padding: 16px; border-left: 3px solid var(--neon-purple); }
+        .metric-label { color: #71717a; font-size: 10px; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; }
+        .metric-value { font-size: 20px; font-weight: 700; color: #fff; font-family: 'Orbitron', sans-serif; }
+
+        .mini-progress-bar { width: 100%; height: 3px; background: #09090b; margin-top: 8px; border-radius: 2px; overflow: hidden; }
+        .mini-progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue)); width: 0%; transition: width 0.4s ease; }
+
+        .tech-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+        .tech-table th { color: var(--text-muted); border-bottom: 1px solid #1f1f23; padding: 10px 8px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+        .tech-table td { padding: 10px 8px; border-bottom: 1px solid #1f1f23; color: #e4e4e7; }
+
+        .terminal-box { background-color: #050508; border: 1px solid #1f1f23; border-radius: 6px; padding: 12px; height: 140px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #22c55e; line-height: 1.5; }
+
+        .btn-primary { background-color: #a855f7; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; text-transform: uppercase; font-family: inherit; }
+        .btn-primary:hover { background-color: #c084fc; }
+        .btn-table-action { background: rgba(188, 19, 254, 0.05); color: #f4f4f5; border: 1px solid #27272a; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12.5px; }
+
+        .status-indicator-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .status-indicator-dot.active { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+
+        .cyber-footer { margin-top: auto; padding: 16px; border-top: 1px solid rgba(188, 19, 254, 0.15); background: #050508; width: 100%; flex-shrink: 0; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .footer-column { border-left: 2px solid var(--neon-purple); padding-left: 12px; font-size: 12.5px; }
+        .telemetry-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.02); padding: 2px 0; }
+    </style>
+</head>
+<body>
+
+    <!-- ЕДИНЫЙ КОМПАКТНЫЙ ТОП-БАР (УМЕНЬШЕН В 3 РАЗА) -->
+    <header>
+        <div class="header-brand-line" style="padding:0; border:none;">
+            <div class="header-left-cluster">
+                <svg width="16" height="16" viewBox="0 0 100 100" style="margin-top: 2px;">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#bc13fe" stroke-width="10" stroke-dasharray="10, 5"/>
+                    <text x="36" y="62" font-family='Orbitron' font-size="36" font-weight="900" fill="#fff">M</text>
+                </svg>
+                <span class="factory-logo-text" style="font-size: 0.72rem; color: #fff; font-weight:900;">OMNIFACTORY // EVO_CORE</span>
+            </div>
+        </div>
+
+        <div class="top-menu-cluster">
+            <button class="top-nav-btn active" id="tab-builder" onclick="switchView('builder')">🚀 Бот-Строитель[cite: 17]</button>
+            <button class="top-nav-btn" id="tab-mainnode" onclick="switchView('mainnode')">🌐 Маршруты[cite: 16]</button>
+            <button class="top-nav-btn" id="tab-robotization" onclick="switchView('robotization')">🤖 Docker[cite: 16]</button>
+            <button class="top-nav-btn" id="tab-ai-registry" onclick="switchView('ai-registry')">🧠 ИИ-Реестр[cite: 16]</button>
+            <button class="top-nav-btn" id="tab-metrics" onclick="switchView('metrics')">📊 WSL2</button>
+            <button class="top-nav-btn" id="tab-users" onclick="switchView('users')">👥 RBAC[cite: 16]</button>
+            <button class="top-nav-btn" id="tab-scheduler" onclick="switchView('scheduler')">📅 Задачи[cite: 16]</button>
+            <button class="top-nav-btn" id="tab-marketing" onclick="switchView('marketing')">📈 Маркетинг & SEO[cite: 16]</button>
+            <button class="top-panic-btn" onclick="app.togglePanic()">🚨 PANIC</button>
+        </div>
+
+        <div style="color: #FFD700; font-family: 'JetBrains Mono', monospace; font-size: 8.5pt; font-weight: 700;">
+            BONDAREV_E © 2026[cite: 17]
+        </div>
+    </header>
+
+    <main class="main-container">
+
+        <!-- ВКЛАДКА 1: БОТ-БИЛДЕР (МАКСИМАЛЬНОЕ ОКНО РАБОТЫ) -->
+        <section id="view-builder" class="view-section active-view">
+            <div class="ide-workspace">
+                <aside class="ide-sidebar">
+                    <div class="sidebar-search"><input type="text" placeholder="Поиск модулей..."></div>
+                    <div class="sidebar-scroll" id="library">
+                        <div class="category-title">// ВХОДНЫЕ ТОЧКИ</div>
+                        <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="webhook">🪝 Webhook Шлюз[cite: 17]</div>
+                        <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="cron">⏱️ Celery Cron[cite: 16, 17]</div>
+                        <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="tg_trigger">✈️ Telegram Event[cite: 17]</div>
+
+                        <div class="category-title">// ОБРАБОТКА И ИИ</div>
+                        <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="http_req">🔗 HTTP Request[cite: 17]</div>
+                        <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="switch">🔀 Switch Router[cite: 17]</div>
+                        <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="code">💻 Python Скрипт[cite: 17]</div>
+                        <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="openai">🤖 OpenAI Ядро[cite: 17]</div>
+                        <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="chromadb">🔍 ChromaDB Нода[cite: 17]</div>
+                    </div>
+                </aside>
+
+                <div style="flex-grow:1; position:relative; overflow:hidden;">
+                    <div id="drawflow"></div>
+                    <!-- Аккуратная кнопка компиляции прямо на холсте -->
+                    <button class="btn-primary" style="position:absolute; top:12px; right:12px; z-index:99; background:var(--neon-purple);" onclick="deployGraph()">🚀 СКОМПИЛИРОВАТЬ В ZIP[cite: 17]</button>
+                </div>
+
+                <aside class="ide-inspector">
+                    <h3 style="color:var(--neon-blue); font-size:0.75rem; margin-bottom:10px; font-family:'Orbitron'">📋 ИНСПЕКТОР</h3>
+                    <div id="inspector-ui" style="color:var(--text-muted); font-size:12px;">Выберите узел графа...[cite: 17]</div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 2: МАРШРУТИЗАЦИЯ -->
+        <section id="view-mainnode" class="view-section">
+            <div class="card">
+                <table class="tech-table">
+                    <thead><tr><th>Имя шлюза</th><th>Маршрут</th><th>Контур доступов</th><th>Пинг</th><th>Статус</th></tr></thead>
+                    <tbody>
+                        <tr><td>Frontend Node</td><td><code>/</code></td><td>Публичный</td><td>1.2ms</td><td><span class="status-indicator-dot active"></span>ONLINE</td></tr>
+                        <tr><td>Architect Core</td><td><code>/architect</code></td><td>Инженеры</td><td>0.8ms</td><td><span class="status-indicator-dot active"></span>SECURE</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 3: DOCKER РОБОТИЗАЦИЯ -->
+        <section id="view-robotization" class="view-section">
+            <div class="metrics-grid">
+                <div class="metric-card"><div class="metric-label">RAM ХОСТА (WSL2)</div><div class="metric-value">3.45 / 8.00 GB</div><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 43%;"></div></div></div>
+                <div class="metric-card"><div class="metric-label">КОНТЕЙНЕРЫ В ПУЛЕ</div><div class="metric-value">2 RUNNING</div></div>
+            </div>
+            <div class="card">
+                <table class="tech-table">
+                    <thead><tr><th>Контейнер ID</th><th>Целевой токен</th><th>Образ среды</th><th>NVMe Объем</th><th>Состояние</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>docker_node_84a2</code></td><td><span>59928...392:AAH</span></td><td><code>omnifactory-flet-env:latest</code></td><td>412 MB</td><td><span style="color:var(--ok-green); font-weight:bold;">RUNNING</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 4: ИИ РЕЕСТР -->
+        <section id="view-ai-registry" class="view-section">
+            <div class="card">
+                <table class="tech-table">
+                    <thead><tr><th>Идентификатор Агента</th><th>Базовая Нейромодель</th><th>Контекст</th><th>Запросы</th><th>Latency</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Agent_Core_Supervisor</strong></td><td><code>GPT-4o</code></td><td>34,102 / 128k</td><td>1.4 req/s</td><td>180ms</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <div class="card-title"><h2>Инжекция системных промптов</h2></div>
+                <input type="text" style="background:#000; border:1px solid var(--border-dim); padding:8px; color:#fff;" placeholder="Введите новые инструкции весов ядра..." id="prompt-in">
+                <button class="btn-primary" style="margin-top:5px; width:150px;" onclick="pushTerminalLog('SUCCESS', 'Промпт инжектирован.')">Сохранить</button>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 5: МЕТРИКИ WSL2 -->
+        <section id="view-metrics" class="view-section">
+            <div class="metrics-grid">
+                <div class="metric-card"><div class="metric-label">ЦП ХОСТА</div><div id="metric-cpu-val" class="metric-value">0.0%</div><div class="mini-progress-bar"><div id="progress-cpu" class="mini-progress-fill"></div></div></div>
+                <div class="metric-card"><div class="metric-label">RAM RESERVES</div><div id="metric-ram-val" class="metric-value">0.00 GB</div><div class="mini-progress-bar"><div id="progress-ram" class="mini-progress-fill"></div></div></div>
+            </div>
+            <div class="card">
+                <div style="position: relative; height:180px; width:100%"><canvas id="resourceChart"></canvas></div>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 6: RBAC -->
+        <section id="view-users" class="view-section">
+            <div class="card">
+                <table class="tech-table">
+                    <thead><tr><th>Имя Пользователя</th><th>Роль</th><th>Допуск к Модулям</th><th>Токен Статус</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Eugene Bondarev</strong></td><td><span style="color:var(--neon-purple)">Root_Admin</span></td><td><code>ALL_MODULES (*)</code></td><td><span class="status-indicator-dot active"></span>INFINITE</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 7: ПЛАНИРОВЩИК -->
+        <section id="view-scheduler" class="view-section">
+            <div class="dashboard-layout" style="grid-template-columns: 1fr 2fr;">
+                <div class="card">
+                    <div class="prop-field"><label>TASK_NAME:</label><input type="text" id="new-task-name" placeholder="Очистить кеш Redis"></div>
+                    <button class="btn-primary" onclick="injectNewCronTaskToCalendar()">В очередь</button>
+                </div>
+                <div class="card"><div id="calendar"></div></div>
+            </div>
+        </section>
+
+        <!-- ВКЛАДКА 8: МАРКЕТИНГ И SEO -->
+        <section id="view-marketing" class="view-section">
+            <div class="dashboard-layout" style="grid-template-columns: 1fr 1fr;">
+                <div class="card">
+                    <div class="card-title"><h2>SEO Tracker</h2></div>
+                    <table class="tech-table">
+                        <thead><tr><th>KEYWORD</th><th>POSITION</th><th>CHANGE</th></tr></thead>
+                        <tbody><tr><td>Создание сайтов Киев</td><td style="color:var(--ok-green);">#3</td><td style="color:var(--ok-green);">▲ 2</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <div class="card-title"><h2>Перехват лидов (AI Leads)</h2></div>
+                    <div style="font-size:12.5px; color:var(--text-muted)">USER_ID: 8821_EXT — Нужен аудит безопасности FastAPI.</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- СОВМЕЩЕННЫЙ ТЕРМИНАЛ И ФУТЕР ДАННЫХ -->
+    <footer class="cyber-footer">
+        <div style="margin-bottom: 10px;">
+            <div id="terminal-stream" class="terminal-box"></div>
+        </div>
+        <div class="footer-grid">
+            <div class="footer-column">
+                <div class="telemetry-row" style="font-size:12px;"><span>KERNEL_TIME:</span><span id="footer-server-time" style="color:var(--neon-purple)">--:--:--</span></div>
+            </div>
+            <div class="footer-column">
+                <div style="font-size:12px; color:var(--text-muted)">Uplink: Secure Pipeline Node | Authorized Session</div>
+            </div>
+        </div>
+    </footer>
+
+<script>
+    // Инициализация холста Drawflow
+    const container = document.getElementById("drawflow");
+    const editor = new Drawflow(container);
+    editor.start();
+
+    const MODULE_SCHEMAS = {
+        webhook: { title: "Webhook Шлюз", color: "var(--neon-blue)", fields: { path: "URL Path", token: "Security Token" } },
+        cron: { title: "Celery Cron", color: "var(--neon-blue)", fields: { interval: "Интервал (сек)" } },
+        openai: { title: "OpenAI Ядро", color: "var(--neon-purple)", fields: { prompt: "System Context", tokens: "Max Tokens" } },
+        tg_trigger: { title: "Telegram Event", color: "var(--neon-blue)", fields: { bot_token: "Bot Token" } },
+        http_req: { title: "HTTP Request", color: "#fff", fields: { url: "Target URL" } },
+        switch: { title: "Switch Router", color: "#fff", fields: { rules: "Rules" } },
+        code: { title: "Python Скрипт", color: "#fff", fields: { script: "Script Block" } },
+        postgres: { title: "PostgreSQL DB", color: "var(--neon-blue)", fields: { conn: "Connection" } },
+        redis: { title: "Redis Cache", color: "var(--neon-blue)", fields: { ttl: "TTL" } },
+        chromadb: { title: "ChromaDB Нода", color: "var(--neon-purple)", fields: { collection: "Collection Name" } }
+    };
+
+    window.allowDrop = (ev) => ev.preventDefault();
+    window.drag = (ev) => ev.dataTransfer.setData("nodeId", ev.target.getAttribute('data-node'));
+    container.addEventListener("dragover", window.allowDrop);
+    container.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        const nodeId = ev.dataTransfer.getData("nodeId");
+        const schema = MODULE_SCHEMAS[nodeId];
+        if(!schema) return;
+        const rect = container.getBoundingClientRect();
+        editor.addNode(nodeId, 1, 1, ev.clientX - rect.left, ev.clientY - rect.top, nodeId, { config: {} },
+            `<div style="font-size:8px; color:${schema.color}">// ${nodeId.toUpperCase()}</div><div style="font-weight:bold; font-size:10.5px;">${schema.title}</div>`
+        );
+        pushTerminalLog("SUCCESS", `Узел графа [${schema.title}] зафиксирован.[cite: 17]`);
+    });
+
+    editor.on('nodeSelected', (id) => {
+        const node = editor.getNodeFromId(id);
+        const inspector = document.getElementById('inspector-ui');
+        const schema = MODULE_SCHEMAS[node.name];
+        if (!schema) return;
+        let html = `<div style="font-size:11px; color:${schema.color}; margin-bottom:8px; font-weight:bold;">ID: #${id}</div>`;
+        for (const [key, label] of Object.entries(schema.fields)) {
+            const val = (node.data.config && node.data.config[key]) ? node.data.config[key] : '';
+            html += `<div class="prop-field"><label>${label}</label><input type="text" value="${val}" onchange="updateNodeData(${id}, '${key}', this.value)"></div>`;
+        }
+        inspector.innerHTML = html;
+    });
+
+    window.updateNodeData = (nodeId, key, value) => {
+        let node = editor.getNodeFromId(nodeId);
+        if (!node.data.config) node.data.config = {};
+        node.data.config[key] = value;
+        editor.updateNodeDataFromId(nodeId, node.data);
+    };
+
+    // Компиляция и отправка графа в ZIP-архив на бэкенд
+    async function deployGraph() {
+        pushTerminalLog("INFO", "Инициализация пайплайна компиляции...");
+        const graphData = editor.export();
+        const nodes = graphData.drawflow.Home.data;
+        const selectedIds = Object.keys(nodes).map(key => nodes[key].name);
+
+        if(selectedIds.length === 0) {
+            pushTerminalLog("ERROR", "Схема пуста. Добавьте ноды на холст.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/builder/generate', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ selected_ids: selectedIds })
+            });
+            if (!response.ok) throw new Error(`HTTP Status ${response.status}`);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'omnifactory_bot.zip';
+            document.body.appendChild(a); a.click(); a.remove();
+            pushTerminalLog("SUCCESS", "Сборка omnifactory_bot.zip скачана. ✅[cite: 17]");
+        } catch(e) {
+            pushTerminalLog("ERROR", `Ошибка компилятора: ${e.message}`);
+        }
+    }
+
+    // Рантайм навигации по вкладкам топ-бара
+    let globalCalendar = null;
+    function switchView(viewName) {
+        document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active-view'));
+        document.querySelectorAll('.top-nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('view-' + viewName).classList.add('active-view');
+        document.getElementById('tab-' + viewName).classList.add('active');
+
+        if(viewName === 'scheduler' && !globalCalendar) {
+            setTimeout(() => {
+                globalCalendar = new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth' });
+                globalCalendar.render();
+            }, 50);
+        }
+    }
+
+    function pushTerminalLog(tag, text) {
+        const stream = document.getElementById('terminal-stream');
+        if(!stream) return;
+        stream.innerHTML += `<div>[${new Date().toLocaleTimeString()}] [${tag}] &gt; ${text}</div>`;
+        stream.scrollTop = stream.scrollHeight;
+    }
+
+    function injectNewCronTaskToCalendar() {
+        const name = document.getElementById('new-task-name').value;
+        if(!name || !globalCalendar) return;
+        globalCalendar.addEvent({ title: name, start: new Date().toISOString().split('T')[0], color: '#1e1b4b' });
+        pushTerminalLog("SUCCESS", `Задача "${name}" добавлена Celery Beat.[cite: 16]`);
+    }
+
+    const app = {
+        togglePanic() { alert("Инфраструктура изолирована."); }
+    };
+
+    // Фоновая диагностика метрик
+    document.addEventListener("DOMContentLoaded", () => {
+        pushTerminalLog("SUCCESS", "Супервизор OMNIFACTORY v9.1 инициализирован стабильно.");
+        setInterval(() => { document.getElementById('footer-server-time').innerText = new Date().toLocaleTimeString(); }, 1000);
+
+        setInterval(() => {
+            const mockCpu = (Math.random() * 10 + 5).toFixed(1);
+            const mockRam = (Math.random() * 0.2 + 2.4).toFixed(2);
+            if(document.getElementById('metric-cpu-val')) document.getElementById('metric-cpu-val').innerText = mockCpu + '%';
+            if(document.getElementById('metric-ram-val')) document.getElementById('metric-ram-val').innerText = mockRam + ' GB';
+            if(document.getElementById('progress-cpu')) document.getElementById('progress-cpu').style.width = mockCpu + '%';
+            if(document.getElementById('progress-ram')) document.getElementById('progress-ram').style.width = (mockRam / 8 * 100) + '%';
+
+            if(window.chartInstance) {
+                window.chartInstance.data.labels.push(new Date().toLocaleTimeString());
+                window.chartInstance.data.datasets[0].data.push(mockCpu);
+                if(window.chartInstance.data.labels.length > 8) {
+                    window.chartInstance.data.labels.shift();
+                    window.chartInstance.data.datasets[0].data.shift();
+                }
+                window.chartInstance.update('none');
+            }
+        }, 3000);
+
+        const ctx = document.getElementById('resourceChart').getContext('2d');
+        window.chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ['0s'], datasets: [{ label: 'ЦП Хоста (%)', data: [12], borderColor: '#bc13fe', tension: 0.3, fill: true, backgroundColor: 'rgba(188,19,254,0.01)' }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+        });
+    });
+</script>
+</body>
+</html>

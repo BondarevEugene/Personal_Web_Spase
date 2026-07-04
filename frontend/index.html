@@ -1,4 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>OMNIFACTORY MASTER // ARCHITECT_BONDAREV_E</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon-purple: #bc13fe; --bg-black: #050508; --neon-blue: #00f0ff; --text-muted: #71717a; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: var(--bg-black); color: #fff; font-family: 'JetBrains Mono', sans-serif; display: flex; min-height: 100vh; flex-direction: column; }
+
+        /* ATOM LOGO ANIMATION */
+        .atom-container { width: 60px; height: 60px; position: relative; }
+        .atom-orbit { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 2px solid var(--neon-purple); border-radius: 50%; animation: rotate 4s linear infinite; }
+        .atom-orbit:nth-child(2) { transform: rotate(60deg); animation-duration: 6s; }
+        .atom-orbit:nth-child(3) { transform: rotate(-60deg); animation-duration: 5s; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* BANNER TRANSFORMATION */
+        .cyber-banner {
+            height: 400px; border: 1px solid var(--neon-purple); border-radius: 15px;
+            background: radial-gradient(circle at center, #1a0525 0%, #050508 70%);
+            display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
+        }
+        .bio-robot-morph {
+            width: 200px; height: 200px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-blue));
+            filter: blur(40px); animation: morph 5s infinite alternate;
+        }
+        @keyframes morph { 0% { border-radius: 50%; transform: scale(1); } 100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: scale(1.2); } }
+
+        .layout-wrapper { display: flex; flex: 1; }
+        .sidebar { width: 300px; background: #0f0f12; border-right: 1px solid #1f1f23; padding: 30px; }
+        .nav-link { display: block; color: var(--text-muted); padding: 12px 0; text-decoration: none; border-bottom: 1px solid #1f1f23; transition: 0.3s; }
+        .nav-link:hover { color: var(--neon-blue); padding-left: 10px; }
+    </style>
+</head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.tsx"></script>
+<div class="layout-wrapper">
+    <aside class="sidebar">
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:40px;">
+            <div class="atom-container"><div class="atom-orbit"></div><div class="atom-orbit"></div><div class="atom-orbit"></div></div>
+            <div style="font-family:'Orbitron'; font-weight:900;">OMNI<br>FACTORY</div>
+        </div>
+
+<!-- НАВИГАЦИЯ: С явным указанием HTML-файлов для Vite Dev Server -->
+    <a href="/" class="nav-link">🌐 MAIN_NODE</a>
+    <a href="/pages/robotization.html" class="nav-link">🤖 ROBOTIZATION</a>
+    <a href="/pages/builder_pro_final.html" class="nav-link">🛠 BUILDER_PRO</a> <!-- Проверь, тут через дефис или подчеркивание в имени файла -->
+    <a href="/pages/projects.html" class="nav-link">📂 PROJECTS</a>
+    <a href="/pages/techkillers.html" class="nav-link">☠ TECH_KILLERS</a>
+    <a href="/pages/admin.html" class="nav-link">⚙ ADMIN_SUPERVISOR</a> <!-- Если передумал делать через окно, можно тоже ссылкой -->
+</aside>
+
+    <main class="main-container" style="flex:1; padding:40px;">
+        <div class="cyber-banner">
+            <div class="bio-robot-morph"></div>
+            <h1 style="position:absolute; font-family:'Orbitron'; z-index:2; text-shadow:0 0 20px #000;">IDEA_TO_BIOROBOT_MORPH</h1>
+        </div>
+
+        <section class="tech-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; margin-top: 20px;">
+            <div class="card" style="background: #141417; border: 1px solid #1f1f23; padding: 25px; border-radius: 12px; border-left: 3px solid var(--neon-purple);">
+                <h3>FASTAPI // BACKEND</h3>
+                <p style="color: var(--text-muted); margin-top:10px;">Асинхронное ядро для высоконагруженных операций и нейро-инференса.</p>
+            </div>
+            <div class="card" style="background: #141417; border: 1px solid #1f1f23; padding: 25px; border-radius: 12px; border-left: 3px solid var(--neon-blue);">
+                <h3>DOCKER // CONTAINERS</h3>
+                <p style="color: var(--text-muted); margin-top:10px;">Полная изоляция сред компиляции ботов и модулей сборки.</p>
+            </div>
+            <div class="card" style="background: #141417; border: 1px solid #1f1f23; padding: 25px; border-radius: 12px; border-left: 3px solid #22c55e);">
+                <h3>CHROMA // VECTOR_DB</h3>
+                <p style="color: var(--text-muted); margin-top:10px;">Когнитивная память для ваших LLM-агентов и семантического поиска.</p>
+            </div>
+        </section>
+
+        <!-- ТЕЛЕГРАМ БОТ ОКНО (ТЕПЕРЬ С АВТО-ОБНОВЛЕНИЕМ ЛОГОВ) -->
+        <div class="card" style="margin-bottom:40px; border: 1px solid var(--neon-purple); background: #141417; padding: 25px; border-radius: 12px;">
+            <h3 style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
+                <span style="width:10px; height:10px; background:#22c55e; border-radius:50%; box-shadow:0 0 10px #22c55e;"></span>
+                TELEGRAM_ORCHESTRATOR_UPLINK
+            </h3>
+            <div id="terminal-stream" class="terminal-box" style="background:#000; height:200px; padding:15px; font-family:monospace; color:#00ff41; overflow-y:auto; border-radius:8px; line-height: 1.5;">
+                > [SYSTEM] Initializing WebSocket gateway...<br>
+                > [INFO] Connected to Node_Genesys<br>
+                > [SUCCESS] Bot_Token_Interceptor active...
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer class="cyber-footer" style="padding: 60px 35px 25px 35px; border-top: 1px solid rgba(188, 19, 254, 0.15); background: #050508;">
+    <div class="footer-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; margin-bottom: 40px;">
+        <div class="footer-column" style="border-left: 3px solid var(--neon-purple); padding-left: 20px;">
+            <div class="footer-col-title">SYSTEM_ARCHITECTURE</div>
+            <div class="telemetry-row" style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #1f1f23; font-size: 13px;">
+                <span>ARCHITECT:</span> <span>Bondarev_E</span>
+            </div>
+            <div class="telemetry-row" style="display:flex; justify-content:space-between; padding:4px 0; font-size: 13px;">
+                <span>TIMESTAMP:</span> <span id="footer-time" style="color:var(--neon-purple);">--:--:--</span>
+            </div>
+        </div>
+        <div class="footer-column" style="border-left: 3px solid var(--neon-purple); padding-left: 20px;">
+            <div class="footer-col-title">LEGAL_&_COMPLIANCE</div>
+            <p style="font-size: 13px; color: var(--text-muted);">OmniFactory LABS® // Все права защищены. Инженерный узел на базе нейро-математики.</p>
+        </div>
+        <div class="footer-column" style="border-left: 3px solid var(--neon-purple); padding-left: 20px;">
+            <div class="footer-col-title">COMMUNICATION</div>
+            <p style="font-size: 13px;">Telegram: @Bondarev_e</p>
+            <p style="font-size: 13px;">E-mail: bondarev.e.1707@gmail.com</p>
+        </div>
+    </div>
+    <div style="text-align: center; border-top: 1px solid #1f1f23; padding-top: 25px;">
+        <div style="font-family:'Orbitron'; letter-spacing: 6px; font-size:16px;">OMNIFACTORY — DIGITAL WORLD ENGINE</div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">© 2026 KERNEL ACCESS: AUTHORIZED ONLY</div>
+    </div>
+</footer>
+
+<script>
+    // Проверка кода для перехода в админку
+    function openAdmin(e) {
+        e.preventDefault();
+        const p = prompt("ACCESS CODE:");
+        if(p === "170788") {
+            window.location.href = "/admin-panel";
+        } else {
+            alert("Ошибка авторизации. Допуск к ноде заблокирован.");
+        }
+    }
+
+    // Оживление окна логов Telegram-бота
+    const dummyLogs = [
+        "[INFO] Проверка состояний контекста ChromaDB... Успешно.",
+        "[SYSTEM] Пул Celery воркеров активен. Задач в очереди: 0.",
+        "[SUCCESS] Получен входящий вебхук от Telegram API (status 200).",
+        "[INFO] Запрос к нейро-инференсу: Claude 3.5 Sonnet ответил за 240ms.",
+        "[WARNING] Попытка несанкционированного доступа к порту 8082 изолирована.",
+        "[SUCCESS] Новая психоматрица сгенерирована ядром Genesys."
+    ];
+
+    setInterval(() => {
+        const terminal = document.getElementById('terminal-stream');
+        if (terminal) {
+            const timeStr = new Date().toLocaleTimeString();
+            const log = dummyLogs[Math.floor(Math.random() * dummyLogs.length)];
+            terminal.innerHTML += `<br>> [${timeStr}] ${log}`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+    }, 3500);
+
+    setInterval(() => {
+        document.getElementById('footer-time').innerText = new Date().toLocaleTimeString();
+    }, 1000);
+</script>
 </body>
+</html>

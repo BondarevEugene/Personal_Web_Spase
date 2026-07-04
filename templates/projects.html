@@ -1,10 +1,327 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY // PROJECTS_DASHBOARD</title>
+    <!-- Подключаем футуристичный шрифт Orbitron для заголовков -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #0a0b10;
+            --panel-bg: #121420;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #bd00ff;
+            --text-main: #e2e8f0;
+            --text-muted: #718096;
+            --border-color: #1a1d36;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Общий сайдбар (в той же стилистике, что и на главной) */
+        .sidebar {
+            width: 260px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.05);
+            box-shadow: inset 3px 0 0 var(--accent-cyan);
+        }
+
+        /* Контентная зона */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .header-node {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        .header-node h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin: 0;
+            color: transparent;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* Карточка проекта */
+        .project-card {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .project-title h2 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+
+        .project-status {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--accent-cyan);
+            padding: 6px 12px;
+            border: 1px solid var(--accent-cyan);
+            border-radius: 4px;
+        }
+
+        /* Сетка с деталями проекта */
+        .project-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .project-grid { grid-template-columns: 1fr; }
+        }
+
+        .info-section h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: var(--accent-cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+
+        /* Технологические теги */
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .tech-tag {
+            background: #1a1d36;
+            border: 1px solid #2d325a;
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .tech-tag.core {
+            border-color: var(--accent-purple);
+            color: #d685ff;
+        }
+
+        /* Списки функций */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 25px 0;
+        }
+
+        .feature-list li {
+            padding-left: 20px;
+            position: relative;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .feature-list li::before {
+            content: '➔';
+            position: absolute;
+            left: 0;
+            color: var(--accent-purple);
+        }
+
+        /* Блок превью-изображений */
+        .project-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .screenshot-container {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            aspect-ratio: 16/9;
+            position: relative;
+        }
+
+        .screenshot-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .screenshot-container:hover img {
+            opacity: 1;
+        }
+
+        .screenshot-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(18, 20, 32, 0.85);
+            padding: 8px 12px;
+            font-size: 12px;
+            font-family: 'Orbitron', sans-serif;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
 </head>
 <body>
+
+    <!-- НАВИГАЦИОННЫЙ СЛУЖЕБНЫЙ СЛЕЙДБАР -->
+    <aside class="sidebar">
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom:40px;">
+            <div style="font-family:'Orbitron'; font-weight:900; color: var(--accent-cyan);">OMNI<br>FACTORY</div>
+        </div>
+        <a href="/" class="nav-link">🌐 MAIN_NODE</a>
+        <a href="/pages/robotization.html" class="nav-link">🤖 ROBOTIZATION</a>
+        <a href="/pages/builder_pro.html" class="nav-link">🛠 BUILDER_PRO</a>
+        <a href="/pages/projects.html" class="nav-link active">📂 PROJECTS</a>
+        <a href="/pages/techkillers.html" class="nav-link">☠ TECH_KILLERS</a>
+    </aside>
+
+    <!-- ОСНОВНОЙ МОНИТОР -->
+    <main class="main-content">
+        <div class="header-node">
+            <h1>SYSTEM_PROJECTS_REGISTRY</h1>
+            <p style="color: var(--text-muted); margin: 5px 0 0 0;">Реестр активных разработок и программных комплексов экосистемы OmniFactory</p>
+        </div>
+
+        <!-- КАРТОЧКА ПРОЕКТА NUMEROLOGY PROJECT -->
+        <div class="project-card">
+            <div class="project-header">
+                <div class="project-title">
+                    <h2>NUMEROLOGY CORE</h2>
+                    <span style="color: var(--text-muted); font-size: 14px;">ID: prj-genesis-numerology-v2</span>
+                </div>
+                <div class="project-status">CORE ACTIVE</div>
+            </div>
+
+            <div class="project-grid">
+                <!-- ЛЕВАЯ КОЛОНКА: ИНФОРМАЦИЯ -->
+                <div class="info-flow">
+
+                    <!-- ТЕХНОЛОГИЧЕСКИЙ СТЕК -->
+                    <div class="info-section">
+                        <h3>USED_TECHNOLOGIES</h3>
+                        <div class="tech-tags">
+                            <span class="tech-tag core">Python 3.11</span>
+                            <span class="tech-tag core">FastAPI</span>
+                            <span class="tech-tag">Uvicorn</span>
+                            <span class="tech-tag">Pydantic v2</span>
+                            <span class="tech-tag">Asyncio Architecture</span>
+                            <span class="tech-tag">Vite Dev Server</span>
+                            <span class="tech-tag">Vanilla JS / Modern CSS</span>
+                            <span class="tech-tag">Jinja2 Templates</span>
+                        </div>
+                    </div>
+
+                    <!-- ОСНОВНЫЕ ФУНКЦИИ -->
+                    <div class="info-section">
+                        <h3>CORE_FUNCTIONS</h3>
+                        <ul class="feature-list">
+                            <li><strong>Асинхронный расчет матриц:</strong> Мгновенное вычисление нумерологических карт, психоматриц Александрова и жизненных циклов без блокировки основного потока API.</li>
+                            <li><strong>Динамический генератор отчетов:</strong> Потоковое формирование структурированных аналитических данных на основе персональных параметров.</li>
+                            <li><strong>Интегрированный API контракт:</strong> Полная совместимость с экосистемой OmniFactory для оркестрации и вызова расчетных модулей внешними ботами.</li>
+                        </ul>
+                    </div>
+
+                    <!-- ОСОБЕННОСТИ АРХИТЕКТУРЫ -->
+                    <div class="info-section">
+                        <h3>SYSTEM_FEATURES</h3>
+                        <ul class="feature-list">
+                            <li><strong>Изоляция контекстов:</strong> Использование строго типизированных схем Pydantic для полной валидации входных данных на лету.</li>
+                            <li><strong>Модульная масштабируемость:</strong> Расчетные алгоритмы вынесены в обособленный движок (`engine.registry`), что позволяет подключать новые типы матриц за секунды.</li>
+                            <li><strong>Высокая отказоустойчивость:</strong> Асинхронный Lifespan-цикл с защитой от утечек памяти при фоновом сборе телеметрии ядра[cite: 3].</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+                <!-- ПРАВАЯ КОЛОНКА: МЕДИА-КОНТУР (СКРИНШОТЫ) -->
+                <div class="project-gallery">
+                    <div class="info-section">
+                        <h3>MEDIA_VISUALIZATION</h3>
+
+                        <!-- Заглушка под реальный скриншот №1 -->
+                        <div class="screenshot-container">
+                            <img src="/assets/projects/genesys/img/dashboard_preview.png" alt="Dashboard Preview" onerror="this.style.display='none';">
+                            <div class="screenshot-label">NODE_GRAPH_PREVIEW.PNG</div>
+                        </div>
+
+                        <div style="margin-top: 15px;" class="screenshot-container">
+                            <!-- Заглушка под реальный скриншот №2 -->
+                            <img src="/assets/projects/genesys/img/matrix_calc.png" alt="Matrix Calculation" onerror="this.style.display='none';">
+                            <div class="screenshot-label">NUMEROLOGY_MATRIX_ENG.PNG</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
 
 </body>
 </html>
