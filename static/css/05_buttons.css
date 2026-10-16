@@ -1,0 +1,283 @@
+/* ==========================================================
+   OMNIFACTORY PLATFORM
+   BUTTON SYSTEM
+   Version 1.0
+   ========================================================== */
+
+/* ==========================================================
+   BASE
+   ========================================================== */
+
+.btn {
+
+	display: inline-flex;
+
+	align-items: center;
+
+	justify-content: center;
+
+	gap: 10px;
+
+	cursor: pointer;
+
+	user-select: none;
+
+	white-space: nowrap;
+
+	text-decoration: none;
+
+	border: none;
+
+	outline: none;
+
+	font-family: var(--font-main);
+
+	font-size: 15px;
+
+	font-weight: 600;
+
+	padding: 14px 24px;
+
+	border-radius: var(--radius-md);
+
+	transition: all var(--normal);
+
+}
+
+/* ==========================================================
+   PRIMARY
+   ========================================================== */
+
+.btn-primary {
+
+	background: var(--gradient-primary);
+
+	color: #fff;
+
+	box-shadow: var(--shadow-sm);
+
+}
+
+.btn-primary:hover {
+
+	transform: translateY(-2px);
+
+	box-shadow: var(--shadow-lg);
+
+}
+
+/* ==========================================================
+   SECONDARY
+   ========================================================== */
+
+.btn-secondary {
+
+	background: transparent;
+
+	border: 1px solid var(--border-secondary);
+
+	color: var(--text-primary);
+
+}
+
+.btn-secondary:hover {
+
+	background: var(--surface-2);
+
+	border-color: var(--primary);
+
+}
+
+/* ==========================================================
+   GHOST
+   ========================================================== */
+
+.btn-ghost {
+
+	color: var(--text-secondary);
+
+	background: transparent;
+
+}
+
+.btn-ghost:hover {
+
+	color: white;
+
+	background: rgba(255, 255, 255, .04);
+
+}
+
+/* ==========================================================
+   SUCCESS
+   ========================================================== */
+
+.btn-success {
+
+	background: var(--success);
+
+	color: white;
+
+}
+
+.btn-success:hover {
+
+	filter: brightness(110%);
+
+}
+
+/* ==========================================================
+   DANGER
+   ========================================================== */
+
+.btn-danger {
+
+	background: var(--danger);
+
+	color: white;
+
+}
+
+.btn-danger:hover {
+
+	filter: brightness(110%);
+
+}
+
+/* ==========================================================
+   ICON BUTTON
+   ========================================================== */
+
+.btn-icon {
+
+	width: 46px;
+
+	height: 46px;
+
+	padding: 0;
+
+}
+
+/* ==========================================================
+   SIZES
+   ========================================================== */
+
+.btn-sm {
+
+	padding: 10px 18px;
+
+	font-size: 14px;
+
+}
+
+.btn-lg {
+
+	padding: 18px 34px;
+
+	font-size: 17px;
+
+}
+
+/* ==========================================================
+   FULL WIDTH
+   ========================================================== */
+
+.btn-block {
+
+	width: 100%;
+
+}
+
+/* ==========================================================
+   DISABLED
+   ========================================================== */
+
+.btn:disabled {
+
+	opacity: .45;
+
+	cursor: not-allowed;
+
+	pointer-events: none;
+
+}
+
+/* ==========================================================
+   LOADING
+   ========================================================== */
+
+.btn-loading {
+
+	pointer-events: none;
+
+	opacity: .8;
+
+}
+
+.btn-loading::after {
+
+	content: "";
+
+	width: 14px;
+
+	height: 14px;
+
+	margin-left: 10px;
+
+	border-radius: 50%;
+
+	border: 2px solid rgba(255, 255, 255, .3);
+
+	border-top-color: #fff;
+
+	animation: button-spin .8s linear infinite;
+
+}
+
+/* ==========================================================
+   BUTTON GROUP
+   ========================================================== */
+
+.btn-group {
+
+	display: flex;
+
+	gap: 16px;
+
+	flex-wrap: wrap;
+
+}
+
+/* ==========================================================
+   ANIMATION
+   ========================================================== */
+
+@keyframes button-spin {
+
+	to {
+
+		transform: rotate(360deg);
+
+	}
+
+}
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media(max-width:768px) {
+
+	.btn {
+
+		width: 100%;
+
+	}
+
+	.btn-group {
+
+		flex-direction: column;
+
+	}
+
+}

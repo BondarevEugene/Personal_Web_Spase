@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY MASTER // EXECUTIVE CORE CENTER v9.8</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #060709;
+            --bg-surface: #0b0d13;
+            --bg-element: #11141e;
+            --border-soft: #1b1f2f;
+            --accent-purple: #5b21b6;
+            --accent-purple-glow: rgba(91, 33, 182, 0.25);
+            --accent-blue: #1d4ed8;
+            --accent-blue-glow: rgba(29, 78, 216, 0.2);
+            --neon-yellow: #d97706;
+            --text-main: #f1f5f9;
+            --text-muted: #475569;
+            --status-ok: #059669;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Arial Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-stretch: condensed;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(135deg, rgba(30, 17, 69, 0.15) 0%, rgba(6, 7, 9, 0) 60%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(11, 13, 19, 0.85);
+            border-bottom: 1px solid var(--border-soft);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            height: 54px;
+            padding: 0 24px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+        }
+        .brand-block { display: flex; align-items: center; gap: 12px; }
+        .brand-logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .top-menu-tabs { display: flex; gap: 6px; align-items: center; }
+        .nav-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #64748b;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .nav-tab-btn:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.02); }
+        .nav-tab-btn.active { color: #fff; background: var(--accent-purple-glow); border-color: rgba(91, 33, 182, 0.4); }
+
+        .layout-wrapper { display: flex; flex: 1; width: 100%; }
+        .sidebar {
+            width: 280px;
+            background-color: rgba(11, 13, 19, 0.5);
+            border-right: 1px solid var(--border-soft);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            flex-shrink: 0;
+        }
+        .sidebar-category {
+            font-size: 11px;
+            color: #7c3aed;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin: 16px 0 8px 4px;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #64748b;
+            padding: 10px 12px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .nav-link:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.02); padding-left: 16px; }
+
+        .main-container { flex: 1; padding: 32px; display: flex; flex-direction: column; gap: 32px; max-width: 1600px; width: 100%; margin: 0 auto; }
+
+        .manifesto-viewport {
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            background: radial-gradient(circle at 80% 20%, #1e1145 0%, #0b0d13 100%);
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+        }
+        .gif-matrix-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .cyber-badge {
+            display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 11px; color: #a78bfa;
+            background: rgba(124, 58, 237, 0.07); border: 1px solid rgba(124, 58, 237, 0.2); padding: 4px 12px; border-radius: 4px; text-transform: uppercase; margin-bottom: 24px;
+        }
+        .manifesto-title { font-size: 2.2rem; font-weight: 900; color: #fff; line-height: 1.2; margin-bottom: 16px; letter-spacing: -0.5px; }
+        .manifesto-desc { color: #94a3b8; font-size: 1rem; line-height: 1.6; max-width: 900px; margin-bottom: 32px; }
+
+        .quote-block { border-left: 3px solid var(--accent-purple); padding-left: 20px; margin-bottom: 32px; }
+        .quote-block p { font-family: var(--font-mono); font-size: 0.95rem; color: #cbd5e1; font-style: italic; }
+
+        .manifesto-actions { display: flex; gap: 16px; }
+        .btn { font-size: 0.85rem; font-weight: 600; padding: 12px 24px; border-radius: 6px; cursor: pointer; text-decoration: none; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-primary { background: #fff; color: var(--bg-base); }
+        .btn-primary:hover { background: #cbd5e1; }
+        .btn-secondary { background: transparent; color: var(--text-main); border: 1px solid var(--border-soft); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.02); border-color: #64748b; }
+
+        .metrics-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .metric-card { background: var(--bg-surface); border: 1px solid var(--border-soft); padding: 20px; border-radius: 10px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 100%; background: var(--accent-purple); }
+        .metric-label { font-family: var(--font-mono); font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-value { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 900; color: #fff; }
+        .metric-sub { font-size: 11px; color: var(--status-ok); font-family: var(--font-mono); display: flex; align-items: center; gap: 4px; }
+        .metric-sub.alert { color: #ef4444; }
+
+        .dashboard-row { display: grid; grid-template-columns: 1fr 420px; gap: 24px; width: 100%; align-items: start; }
+        @media (max-width: 1200px) { .dashboard-row { grid-template-columns: 1fr; } }
+
+        .diagram-viewport {
+            background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 24px;
+            display: flex; flex-direction: column; gap: 20px; position: relative; min-height: 400px; justify-content: space-between;
+        }
+        .diagram-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); padding-bottom: 12px; }
+        .diagram-header h3 { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; width: 100%; clear: both; }
+        .card { background-color: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 24px; position: relative; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.3s ease; }
+        .card:hover { border-color: rgba(124, 58, 237, 0.4); }
+        .card::after { content: ''; position: absolute; left: 24px; top: 0; width: 30px; height: 3px; background: var(--accent-purple); border-radius: 0 0 2px 2px; }
+        .card.blue::after { background: var(--accent-blue); }
+        .card.yellow::after { background: var(--neon-yellow); }
+        .card.green::after { background: var(--status-ok); }
+        .card.white::after { background: #64748b; }
+        .card.killer::after { background: #ef4444; }
+
+        .card h3 { font-family: 'Orbitron', sans-serif; font-size: 12px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+        .card p { color: #94a3b8; font-size: 13px; line-height: 1.6; }
+
+        .tech-tags-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
+        .tag { font-family: var(--font-mono); font-size: 11px; color: #94a3b8; background: rgba(255,255,255,0.01); border: 1px solid var(--border-soft); padding: 4px 8px; border-radius: 4px; }
+
+        .terminal-container { background-color: #030406; border: 1px solid var(--border-soft); border-radius: 12px; padding: 18px; height: 100%; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #a78bfa; line-height: 1.6; width: 100%; }
+        .terminal-line { margin-bottom: 4px; word-break: break-all; }
+
+        .cyber-footer { margin-top: auto; padding: 48px 24px 32px 24px; border-top: 1px solid var(--border-soft); background: #090b10; width: 100%; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
+        .footer-column { border-left: 2px solid var(--border-soft); padding-left: 20px; }
+        .footer-col-title { font-family: 'Orbitron', sans-serif; color: #475569; font-size: 11px; margin-bottom: 12px; text-transform: uppercase; }
+        .huge-branding-text { font-size: 28px !important; font-weight: 900 !important; color: #fff; font-family: 'Orbitron', sans-serif; }
+        .huge-links-text, .huge-links-text a { font-size: 20px !important; font-weight: 700 !important; color: var(--text-main); text-decoration: none; line-height: 1.6; }
+        .huge-links-text a:hover { color: #a78bfa; }
+        .telemetry-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; color: #64748b; border-bottom: 1px solid rgba(255,255,255,0.02); font-family: var(--font-mono); }
+
+        .atom-wrapper { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; position: relative; }
+        .atom-ring { position: absolute; width: 100%; height: 100%; border: 1.5px solid var(--accent-purple); border-radius: 50%; animation: spinNode 8s linear infinite; opacity: 0.6; }
+        .atom-ring:nth-child(2) { border-color: var(--accent-blue); transform: rotate(45deg); animation-duration: 12s; }
+        .atom-ring:nth-child(3) { border-color: var(--neon-yellow); transform: rotate(-45deg); animation-duration: 16s; }
+        @keyframes spinNode { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .interactive-node {
+            background: var(--bg-base); border: 1px solid var(--border-soft); padding: 10px 16px; border-radius: 6px;
+            display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 11px; color: #94a3b8; position: absolute; z-index: 2; transition: all 0.2s ease;
+        }
+        .interactive-node:hover { border-color: #8b5cf6; color: #fff; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+        .interactive-node.core { border-color: rgba(139, 92, 246, 0.4); background: #0f0d1a; padding: 14px 20px; }
+
+        .dot-pulse { width: 8px; height: 8px; background: var(--status-ok); border-radius: 50%; box-shadow: 0 0 8px var(--status-ok); }
+        .dot-pulse.blue { background: #0ea5e9; box-shadow: 0 0 8px #0ea5e9; }
+        .dot-pulse.purple { background: #a78bfa; box-shadow: 0 0 8px #a78bfa; }
+
+        /* SPA-ARCHITECTURE STYLES */
+        .view-section { display: none; }
+        .view-section.active-view { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #bot-panel { position: fixed; right: -350px; top: 0; width: 350px; height: 100vh; background: var(--bg-surface); border-left: 1px solid var(--border-soft); z-index: 1000; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 24px; box-shadow: -5px 0 20px rgba(0,0,0,0.5); }
+        #bot-panel.open { right: 0; }
+        #bot-input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border-soft); color: #fff; border-radius: 4px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-block">
+            <div class="atom-wrapper"><div class="atom-ring"></div><div class="atom-ring"></div><div class="atom-ring"></div></div>
+            <span class="brand-logo-text">OMNIFACTORY EVO MASTER</span>
+        </div>
+        <div class="top-menu-tabs">
+            <a href="#manifesto" class="nav-tab-btn active" onclick="switchSection(event, 'manifesto')">🌐 Главный Узел</a>
+            <a href="#metrics" class="nav-tab-btn" onclick="switchSection(event, 'metrics')">📊 Телеметрия</a>
+            <a href="#tech-matrix" class="nav-tab-btn" onclick="switchSection(event, 'tech-matrix')">🛠️ Матрица Стека</a>
+        </div>
+    </header>
+
+    <div class="layout-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-category">ЯДРО СИСТЕМЫ</div>
+            <a class="nav-link" href="/">🌐 HOME</a>
+
+            <div class="sidebar-category">БОТОСТРОЕНИЕ</div>
+            <a class="nav-link" href="/architect">🚀 IDE_BUILDER_PRO</a>
+
+            <div class="sidebar-category">УПРАВЛЕНИЕ</div>
+            <a class="nav-link" href="/admin">⚙️ ADMIN_CONTROL</a>
+            <a class="nav-link" href="/dashboard">📊 SUPERVISOR</a>
+        </aside>
+
+        <main class="main-container">
+            <section id="manifesto" class="manifesto-viewport">
+                <div class="gif-matrix-overlay"></div>
+                <span class="cyber-badge">SYSTEM STATUS: OPERATIONAL</span>
+                <h1 class="manifesto-title">Мы можем научить ваши приложения думать, а не только делать</h1>
+                <p class="manifesto-desc">Создаем автономные полу-ИИ экосистемы, способные решать бизнес-задачи любой конфигурации в режиме 24/7. Наш продукт функционирует и эволюционирует.</p>
+                <div class="quote-block"><p>«Наш продукт думает, функционирует и эволюционирует, а не просто имитирует присутствие...».</p></div>
+                <div class="manifesto-actions">
+                    <a href="https://t.me/Bondarev_e" target="_blank" class="btn btn-primary">Запустить проектирование</a>
+                    <a href="#tech-matrix" class="btn btn-secondary">Матрица ядра</a>
+                </div>
+            </section>
+
+            <section id="metrics" class="metrics-bar">
+                <div class="metric-card">
+                    <span class="metric-label">Символы ядра (RAW_CHARS)</span>
+                    <div class="metric-value" id="count-chars">14,240,119</div>
+                    <span class="metric-sub">▲ +85 / сек</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Строки кода (LINES_OF_CODE)</span>
+                    <div class="metric-value" id="count-lines">412,850</div>
+                    <span class="metric-sub">▲ инкремент активен</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Развернуто систем (PROJECTS)</span>
+                    <div class="metric-value">38</div>
+                    <span class="metric-sub">● статус: стабильно</span>
+                </div>
+            </section>
+
+            <div class="dashboard-row">
+                <div class="diagram-viewport">
+                    <div class="diagram-header">
+                        <h3>АРХИТЕКТУРНАЯ СХЕМА ОРКЕСТРАЦИИ НОД // INTERACTIVE DATA GRAPH</h3>
+                        <span id="node-status-badge">STATUS: ACTIVE MASTER</span>
+                    </div>
+
+                    <div style="position: relative; width: 100%; height: 260px; margin: 10px 0;">
+                        <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;">
+                            <line x1="50%" y1="50%" x2="15%" y2="20%" stroke="#1b1f2f" stroke-width="2" />
+                            <line x1="50%" y1="50%" x2="85%" y2="20%" stroke="#1b1f2f" stroke-width="2" />
+                            <line x1="50%" y1="50%" x2="15%" y2="80%" stroke="#1b1f2f" stroke-width="2" />
+                            <line x1="50%" y1="50%" x2="85%" y2="80%" stroke="#1b1f2f" stroke-width="2" />
+                        </svg>
+
+                        <div class="interactive-node core" style="top: 50%; left: 50%; transform: translate(-50%, -50%);" onclick="triggerNodeLog('core')">
+                            <div class="dot-pulse purple"></div><strong>FASTAPI_CORE</strong>
+                        </div>
+                        <div class="interactive-node" style="top: 20%; left: 15%; transform: translate(-50%, -50%);" onclick="triggerNodeLog('tg')">
+                            <div class="dot-pulse blue"></div><span>TELEGRAM_UPLINK</span>
+                        </div>
+                        <div class="interactive-node" style="top: 20%; left: 85%; transform: translate(-50%, -50%);" onclick="triggerNodeLog('ollama')">
+                            <div class="dot-pulse purple"></div><span>OLLAMA_LOCAL_LLM</span>
+                        </div>
+                        <div class="interactive-node" style="top: 80%; left: 15%; transform: translate(-50%, -50%);" onclick="triggerNodeLog('chroma')">
+                            <div class="dot-pulse"></div><span>CHROMA_VECTOR_DB</span>
+                        </div>
+                        <div class="interactive-node" style="top: 80%; left: 85%; transform: translate(-50%, -50%);" onclick="triggerNodeLog('celery')">
+                            <div class="dot-pulse purple"></div><span>CELERY_WORKERS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="height: 400px; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h3 style="font-family: var(--font-mono); font-size: 11px; color: #a78bfa;">&gt;_ AI_SUPERVISOR_STREAM</h3>
+                        <span id="ai-status">WS: DISCONNECTED</span>
+                    </div>
+                    <div id="terminal-stream" class="terminal-container" style="flex: 1;">
+                        <div class="terminal-line">&gt; [SYSTEM] Initializing core WebSocket uplink...</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; border-top: 1px solid var(--border-soft); padding-top: 12px; margin-top: 8px;">
+                        <input type="text" id="ai-input" placeholder="Введите директиву для OmniAgent..." style="flex: 1; background: var(--bg-base); border: 1px solid var(--border-soft); padding: 10px; border-radius: 6px; color: #fff; font-family: var(--font-mono); font-size: 13px; outline: none;">
+                        <button onclick="sendDirectiveToAI()" class="btn btn-primary" style="padding: 10px 20px; font-size: 12px; background: #8b5cf6; color: #fff; border: none; border-radius: 6px; margin: 0;">EXECUTE</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="clear: both; width: 100%; display: block;"></div>
+            <div id="tech-matrix" class="section-header-block"><h2>Матрица технологического стека</h2></div>
+
+            <section class="tech-grid">
+                <div class="card">
+                    <h3>FASTAPI // BACKEND CORE</h3>
+                    <p>Асинхронное распределенное ядро для высоконагруженных операций и оркестрации трафика.</p>
+                    <div class="tech-tags-group"><span class="tag">Python 3.11+</span><span class="tag">FastAPI</span><span class="tag">Asyncio</span></div>
+                </div>
+                <div class="card blue">
+                    <h3>ROBOTIZATION & COGNITIVE SYSTEMS</h3>
+                    <p>Интеллектуальные асинхронные боты, гибридные диалоговые системы взаимодействия на aiogram 3.x.</p>
+                    <div class="tech-tags-group"><span class="tag">aiogram 3.x</span><span class="tag">ChromaDB</span><span class="tag">RAG</span></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="cyber-footer" style="padding: 60px 35px 25px 35px; border-top: 1px solid rgba(188, 19, 254, 0.15); background: #050508;">
+        <div class="footer-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; margin-bottom: 40px;">
+            <div class="footer-column" style="border-left: 3px solid var(--neon-purple); padding-left: 20px;">
+                <div class="footer-col-title">SYSTEM_ARCHITECTURE</div>
+                <div class="telemetry-row" style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #1f1f23; font-size: 13px;">
+                    <span>ARCHITECT:</span> <span>Bondarev_E</span>
+                </div>
+                <div class="telemetry-row" style="display:flex; justify-content:space-between; padding:4px 0; font-size: 13px;">
+                    <span>TIMESTAMP:</span> <span id="footer-time" style="color:var(--neon-purple);">--:--:--</span>
+                </div>
+            </div>
+            <div class="footer-column" style="border-left: 3px solid var(--neon-purple); padding-left: 20px;">
+                <div class="footer-col-title">LEGAL_&_COMPLIANCE</div>
+                <p style="font-size: 13px; color: var(--text-muted);">OmniFactory LABS® // Все права защищены. Инженерный узел на базе нейро-математики.</p>
+            </div>
+            <div class="footer-column" style="border-left: 3px solid var(--neon-purple); padding-left: 20px;">
+                <div class="footer-col-title">COMMUNICATION</div>
+                <p style="font-size: 13px;">Telegram: @Bondarev_e</p>
+                <p style="font-size: 13px;">E-mail: bondarev.e.1707@gmail.com</p>
+            </div>
+        </div>
+        <div style="text-align: center; border-top: 1px solid #1f1f23; padding-top: 25px;">
+            <div style="font-family:'Orbitron'; letter-spacing: 6px; font-size:16px;">OMNIFACTORY — DIGITAL WORLD ENGINE</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">© 2026 KERNEL ACCESS: AUTHORIZED ONLY</div>
+        </div>
+    </footer>
+
+<script>
+    console.log("OmniFactory Runtime v8.1 // Loaded");
+    // Если страница не грузится, мы увидим ошибку здесь
+    window.onerror = function(msg, url, line) {
+        console.error("PAGE_CRITICAL_ERROR:", msg, "at", line);
+    };
+
+    // 1. Функция переключения вкладок
+    function switchView(id) {
+        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
+        document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active-view');
+        event.currentTarget.classList.add('active');
+        }
+    // 2. Управление панелью бота
+    function toggleBot() {
+        document.getElementById('bot-panel').classList.toggle('open');
+        }
+    const nodeMetrics = {
+        core: { badge: "CORE: 0.4ms/req", log: "[TELEMETRY] FastAPI Core Active. Workers: Uvicorn Loop Stable." },
+        tg: { badge: "TG UPLINK: 200 OK", log: "[TELEMETRY] Telegram Interceptor: Long-polling initialized." },
+        ollama: { badge: "OLLAMA: Llama3 Active", log: "[TELEMETRY] Ollama Host: CodeLlama allocation stable." },
+        chroma: { badge: "CHROMA: 12.4k VEC", log: "[TELEMETRY] ChromaDB Client: Persistent context synced." },
+        celery: { badge: "CELERY: IDLE", log: "[TELEMETRY] Celery Workers pool connected via Redis." }
+    };
+
+    function appendLogToTerminal(htmlContent) {
+        const terminal = document.getElementById('terminal-stream');
+        if (!terminal) return;
+        const line = document.createElement('div');
+        line.className = 'terminal-line';
+        line.innerHTML = htmlContent;
+        terminal.appendChild(line);
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function triggerNodeLog(key) {
+        const target = nodeMetrics[key];
+        if (!target) return;
+        document.getElementById('node-status-badge').innerText = `INFO: ${target.badge}`;
+        appendLogToTerminal(`&gt; <span style="color:#fff;">[${new Date().toLocaleTimeString()}] ${target.log}</span>`);
+    }
+
+    function switchSection(e, id) {
+        e.preventDefault();
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+    }
+
+    let socket;
+    function connectWebSocket() {
+        socket = new WebSocket(`ws://${window.location.host}/ws/ai-agent`);
+        socket.onopen = () => {
+            document.getElementById('ai-status').innerText = '● WS: ACTIVE';
+            document.getElementById('ai-status').style.color = 'var(--status-ok)';
+            appendLogToTerminal(`&gt; <span style="color:var(--status-ok)">[SUCCESS] Соединение с OmniAgent установлено.</span>`);
+        };
+        socket.onmessage = (e) => {
+            appendLogToTerminal(`&gt; <span style="color:#fff">[OmniAgent]:</span> ${e.data}`);
+        };
+        socket.onclose = () => {
+            document.getElementById('ai-status').innerText = 'WS: DISCONNECTED';
+            setTimeout(connectWebSocket, 5000);
+        };
+    }
+
+    function sendDirectiveToAI() {
+        const input = document.getElementById('ai-input');
+        if (!input || !input.value.trim()) return;
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            appendLogToTerminal(`&gt; <span style="color:var(--accent-blue)">[USER]:</span> ${input.value}`);
+            socket.send(input.value.trim());
+            input.value = '';
+        }
+    }
+
+    function activateSupervisor(e) {
+        e.preventDefault();
+        const code = prompt("ACCESS CODE:");
+        if(code === "0602") {
+            window.location.href = "/admin";
+        } else {
+            alert("ACCESS DENIED");
+        }
+    }
+
+    let chars = 14240119;
+    setInterval(() => {
+        chars += Math.floor(Math.random() * 85);
+        if(document.getElementById('count-chars')) document.getElementById('count-chars').innerText = chars.toLocaleString();
+        document.getElementById('footer-time').innerText = new Date().toLocaleTimeString();
+    }, 400);
+
+    window.addEventListener('load', () => { connectWebSocket(); });
+</script>
+</body>
+</html>

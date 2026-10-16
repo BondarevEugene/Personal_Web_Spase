@@ -1,0 +1,299 @@
+/* ==========================================================
+   OMNIFACTORY PLATFORM
+   CARD SYSTEM
+   Version 1.0
+   ========================================================== */
+
+/* ==========================================================
+   BASE CARD
+   ========================================================== */
+
+.card {
+
+	position: relative;
+
+	display: flex;
+
+	flex-direction: column;
+
+	background: var(--bg-card);
+
+	border: 1px solid var(--border-primary);
+
+	border-radius: var(--radius-lg);
+
+	padding: 32px;
+
+	overflow: hidden;
+
+	transition:
+		transform var(--normal),
+		border-color var(--normal),
+		box-shadow var(--normal);
+
+}
+
+.card:hover {
+
+	transform: translateY(-4px);
+
+	border-color: var(--primary);
+
+	box-shadow: var(--shadow-lg);
+
+}
+
+/* ==========================================================
+   GLASS CARD
+   ========================================================== */
+
+.card-glass {
+
+	background: rgba(22, 29, 40, .72);
+
+	backdrop-filter: blur(20px);
+
+}
+
+/* ==========================================================
+   FEATURE CARD
+   ========================================================== */
+
+.feature-card {
+
+	display: flex;
+
+	flex-direction: column;
+
+	gap: 20px;
+
+	min-height: 280px;
+
+}
+
+/* ==========================================================
+   PROJECT CARD
+   ========================================================== */
+
+.project-card {
+
+	min-height: 420px;
+
+}
+
+/* ==========================================================
+   METRIC CARD
+   ========================================================== */
+
+.metric-card {
+
+	align-items: center;
+
+	text-align: center;
+
+}
+
+/* ==========================================================
+   DASHBOARD CARD
+   ========================================================== */
+
+.dashboard-card {
+
+	background: var(--surface-2);
+
+}
+
+/* ==========================================================
+   TERMINAL CARD
+   ========================================================== */
+
+.terminal-card {
+
+	background: #090B10;
+
+	font-family: var(--font-code);
+
+}
+
+/* ==========================================================
+   CARD HEADER
+   ========================================================== */
+
+.card-header {
+
+	display: flex;
+
+	align-items: center;
+
+	justify-content: space-between;
+
+	margin-bottom: 24px;
+
+}
+
+/* ==========================================================
+   CARD ICON
+   ========================================================== */
+
+.card-icon {
+
+	width: 64px;
+
+	height: 64px;
+
+	display: flex;
+
+	align-items: center;
+
+	justify-content: center;
+
+	border-radius: 18px;
+
+	background: rgba(59, 130, 246, .12);
+
+	color: var(--primary);
+
+	font-size: 28px;
+
+}
+
+/* ==========================================================
+   CARD TITLE
+   ========================================================== */
+
+.card-title {
+
+	margin-top: 20px;
+
+	margin-bottom: 12px;
+
+	font-size: 1.45rem;
+
+}
+
+/* ==========================================================
+   CARD TEXT
+   ========================================================== */
+
+.card-text {
+
+	color: var(--text-secondary);
+
+	flex: 1;
+
+}
+
+/* ==========================================================
+   CARD FOOTER
+   ========================================================== */
+
+.card-footer {
+
+	display: flex;
+
+	justify-content: space-between;
+
+	align-items: center;
+
+	margin-top: 28px;
+
+}
+
+/* ==========================================================
+   BADGE
+   ========================================================== */
+
+.card-badge {
+
+	display: inline-flex;
+
+	align-items: center;
+
+	gap: 8px;
+
+	padding: 6px 12px;
+
+	border-radius: 999px;
+
+	background: rgba(59, 130, 246, .12);
+
+	color: var(--primary);
+
+	font-size: 13px;
+
+	font-weight: 600;
+
+}
+
+/* ==========================================================
+   IMAGE
+   ========================================================== */
+
+.card-image {
+
+	width: 100%;
+
+	height: 220px;
+
+	object-fit: cover;
+
+	border-radius: 14px;
+
+	margin-bottom: 24px;
+
+}
+
+/* ==========================================================
+   HOVER GLOW
+   ========================================================== */
+
+.card::before {
+
+	content: "";
+
+	position: absolute;
+
+	inset: 0;
+
+	background:
+		radial-gradient(circle at top right,
+			rgba(59, 130, 246, .12),
+			transparent 45%);
+
+	opacity: 0;
+
+	transition: opacity var(--normal);
+
+}
+
+.card:hover::before {
+
+	opacity: 1;
+
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media(max-width:768px) {
+
+	.card {
+
+		padding: 24px;
+
+	}
+
+	.project-card {
+
+		min-height: auto;
+
+	}
+
+	.feature-card {
+
+		min-height: auto;
+
+	}
+
+}

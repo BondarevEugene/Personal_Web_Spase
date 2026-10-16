@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}
+            OMNIFACTORY Platform
+        {% endblock %}
+    </title>
+    <meta
+        name="description"
+        content="{% block description %}Enterprise Automation Platform{% endblock %}">
+
+    <meta
+        name="theme-color"
+        content="#07090D">
+
+    <meta
+        property="og:title"
+        content="{% block og_title %}OMNIFACTORY{% endblock %}">
+
+    <meta
+        property="og:description"
+        content="{% block og_description %}Enterprise Automation Platform{% endblock %}">
+
+    <meta
+        property="og:type"
+        content="website">
+
+    <meta
+        property="og:image"
+        content="/static/img/preview.png">
+
+    <link
+        rel="icon"
+        href="/static/icons/favicon.svg">
+
+    <!-- Fonts -->
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- HTMX -->
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <!-- Alpine -->
+
+    <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js">
+    </script>
+
+    <!-- Lucide -->
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Core CSS -->
+
+    <link rel="stylesheet" href="/static/css/00_design_tokens.css">
+    <link rel="stylesheet" href="/static/css/01_reset.css">
+    <link rel="stylesheet" href="/static/css/02_typography.css">
+    <link rel="stylesheet" href="/static/css/03_layout.css">
+    <link rel="stylesheet" href="/static/css/04_utilities.css">
+
+    <link rel="stylesheet" href="/static/css/05_buttons.css">
+    <link rel="stylesheet" href="/static/css/06_cards.css">
+    <link rel="stylesheet" href="/static/css/07_animations.css">
+    <link rel="stylesheet" href="/static/css/08_navigation.css">
+
+    {% block page_css %}
+    {% endblock %}
+
+</head>
+<body>
+<div id="app">
+
+    {% include "ui/navbar.html" %}
+
+    <main>
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+
+    {% include "ui/footer.html" %}
+
+</div>
+
+<!-- Global Modal -->
+
+<div id="modal-root"></div>
+
+<!-- Toast -->
+
+<div id="toast-root"></div>
+
+<!-- Loader -->
+
+<div id="loader-root"></div>
+
+<!-- Core JS -->
+
+<script src="/static/js/core.js"></script>
+
+<script src="/static/js/navigation.js"></script>
+
+<script src="/static/js/api.js"></script>
+
+<script src="/static/js/animations.js"></script>
+
+{% block page_js %}
+{% endblock %}
+
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    if(window.lucide){
+
+        lucide.createIcons();
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>

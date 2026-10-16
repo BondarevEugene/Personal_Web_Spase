@@ -1,0 +1,109 @@
+/* ==========================================================
+   OMNIFACTORY FOOTER
+   ========================================================== */
+
+.of-footer{
+
+    margin-top:120px;
+
+    padding:80px 0 32px;
+
+    background:var(--surface-1);
+
+    border-top:1px solid var(--border-primary);
+
+}
+
+.of-footer__grid{
+
+    display:grid;
+
+    grid-template-columns:2fr 1fr 1fr 1fr;
+
+    gap:48px;
+
+}
+
+.of-footer__logo{
+
+    font-size:28px;
+
+    font-weight:700;
+
+    margin-bottom:24px;
+
+}
+
+.of-footer__column{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.of-footer__column h4{
+
+    margin-bottom:20px;
+
+}
+
+.of-footer__column a{
+
+    margin-bottom:12px;
+
+    color:var(--text-secondary);
+
+}
+
+.of-footer__column a:hover{
+
+    color:var(--text-primary);
+
+}
+
+.of-footer__column p{
+
+    margin-bottom:14px;
+
+}
+
+.of-footer__bottom{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-top:64px;
+
+    padding-top:32px;
+
+    border-top:1px solid var(--border-primary);
+
+    color:var(--text-muted);
+
+    font-size:14px;
+
+}
+
+@media(max-width:900px){
+
+.of-footer__grid{
+
+grid-template-columns:1fr;
+
+}
+
+.of-footer__bottom{
+
+flex-direction:column;
+
+gap:12px;
+
+text-align:center;
+
+}
+
+}

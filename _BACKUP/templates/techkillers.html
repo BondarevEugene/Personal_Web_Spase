@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY // TECH_KILLERS INTERFACE</title>
+
+    <!-- Подключение шрифтов платформы -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base: #0d0e12;
+            --bg-surface: #181a22;
+            --bg-element: #222531;
+            --border-soft: #2a2e3f;
+            --accent-purple: #7c3aed;
+            --accent-purple-glow: rgba(124, 58, 237, 0.15);
+            --accent-blue: #0ea5e9;
+            --accent-blue-glow: rgba(14, 165, 233, 0.15);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --status-ok: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* ШАПКА ДОСЬЕ */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-soft);
+            padding-bottom: 20px;
+        }
+
+        .page-title h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff, var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .page-title p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .btn-back {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 13.5px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-back:hover {
+            border-color: var(--accent-purple);
+            background: var(--accent-purple-glow);
+        }
+
+        /* ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ НУМЕРОЛОГИИ */
+        .images-showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .img-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .img-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-blue);
+        }
+
+        .img-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-soft);
+            background: #090a0f;
+        }
+
+        .img-card-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .img-card-info h4 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .img-card-info p {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* ПЛАШКИ ТЕХНОЛОГИЙ */
+        .tech-stack-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tech-stack-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .tech-tag {
+            background: var(--bg-element);
+            border: 1px solid var(--border-soft);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s ease;
+        }
+        .tech-tag:hover {
+            border-color: var(--accent-purple);
+            background: var(--accent-purple-glow);
+        }
+        .tech-tag.highlight {
+            border-color: var(--accent-blue);
+            color: #bae6fd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content-wrapper">
+
+        <!-- ТОПБАР С СЫЛКОЙ ВОЗВРАТА -->
+        <div class="page-header">
+            <div class="page-title">
+                <h1>☠ SYSTEM DOSSIER // TECH_KILLERS INFRASTRUCTURE</h1>
+                <p>Паспорт когнитивного контура и стек модулей автоматизации распределенных вычислений.</p>
+            </div>
+            <a href="/" class="btn-back">← На Главный Узел</a>
+        </div>
+
+        <!-- ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ ПРОЕКТА НУМЕРОЛОГИИ С УКАЗАННЫМИ ПУТЯМИ -->
+        <div class="images-showcase-grid">
+            <div class="img-card">
+                <img src="/assets/projects/genesys/img/admin_panel.png" alt="Admin Panel Preview" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23090a0f\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%234a4a5a\' font-family=\'Orbitron\'>ADMIN_PANEL.PNG</text></svg>'">
+                <div class="img-card-info">
+                    <h4>GENESYS MONITORING PANEL</h4>
+                    <p>Интерфейс распределения и оркестрации входящих психоматриц личности.[cite: 10]</p>
+                </div>
+            </div>
+
+            <div class="img-card">
+                <img src="/assets/projects/genesys/img/db_schema.png" alt="Database Schema Preview" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23090a0f\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%234a4a5a\' font-family=\'Orbitron\'>DB_SCHEMA.PNG</text></svg>'">
+                <div class="img-card-info">
+                    <h4>CORE VECTOR ARCHITECTURE</h4>
+                    <p>Связи реляционных таблиц СУБД и весов локальной векторной коллекции памяти ChromaDB.[cite: 10]</p>
+                </div>
+            </div>
+
+            <div class="img-card">
+                <img src="/assets/projects/genesys/img/code_view.png" alt="Code View Preview" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23090a0f\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%234a4a5a\' font-family=\'Orbitron\'>CODE_VIEW.PNG</text></svg>'">
+                <div class="img-card-info">
+                    <h4>TENSOR CALCULUS MODULE</h4>
+                    <p>Математический движок на базе библиотеки NumPy для выполнения преобразований матриц.[cite: 10]</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПОЛЕ С ЗАКРУГЛЕННЫМИ ПЛАШКАМИ ИСПОЛЬЗУЕМЫХ ТЕХНОЛОГИЙ -->
+        <div class="tech-stack-section">
+            <div class="tech-stack-title">// Стек ядра автоматизации OmniFactory</div>
+            <div class="tags-container">
+                <div class="tech-tag highlight">Python 3.11+</div>
+                <div class="tech-tag">FastAPI Framework</div>
+                <div class="tech-tag">Docker Engine API</div>
+                <div class="tech-tag highlight">ChromaDB Node</div>
+                <div class="tech-tag">Flet (Flutter UI Layer)</div>
+                <div class="tech-tag">NumPy Tensor Engine</div>
+                <div class="tech-tag highlight">Celery Async Workers</div>
+                <div class="tech-tag">Redis Cache</div>
+                <div class="tech-tag">Uvicorn Server Process</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

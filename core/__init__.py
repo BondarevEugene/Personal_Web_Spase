@@ -1,0 +1,3 @@
+"""
+OMNIFACTORY Core Package
+"""

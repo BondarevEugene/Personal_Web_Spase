@@ -1,0 +1,176 @@
+/* ==========================================================
+   OMNIFACTORY PLATFORM
+   Design Tokens v1.0
+   ========================================================== */
+
+/* =========================
+   COLORS
+   ========================= */
+
+:root {
+
+    /* Background */
+
+    --bg-primary: #07090D;
+    --bg-secondary: #0D1117;
+    --bg-tertiary: #111827;
+    --bg-panel: #151C26;
+    --bg-card: #1A2330;
+    --bg-hover: #222D3D;
+
+    /* Surface */
+
+    --surface-1: #10151D;
+    --surface-2: #161D28;
+    --surface-3: #1E2734;
+    --surface-overlay: rgba(7, 9, 13, .85);
+
+    /* Borders */
+
+    --border-primary: #2A3648;
+    --border-secondary: #39475C;
+    --border-focus: #3B82F6;
+
+    /* Typography */
+
+    --text-primary: #F9FAFB;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
+    --text-disabled: #64748B;
+
+    /* Brand */
+
+    --primary: #3B82F6;
+    --primary-hover: #2563EB;
+    --secondary: #8B5CF6;
+    --secondary-hover: #7C3AED;
+    --accent: #06B6D4;
+
+    /* Status */
+
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --info: #38BDF8;
+
+    /* Gradient */
+
+    --gradient-primary:
+        linear-gradient(
+            135deg,
+            #3B82F6 0%,
+            #8B5CF6 100%
+        );
+
+    --gradient-dark:
+        linear-gradient(
+            180deg,
+            #0D1117 0%,
+            #07090D 100%
+        );
+
+    /* =========================
+       TYPOGRAPHY
+       ========================= */
+
+    --font-main:
+        "Inter",
+        sans-serif;
+
+    --font-code:
+        "JetBrains Mono",
+        monospace;
+
+    --font-title:
+        "Space Grotesk",
+        sans-serif;
+
+    /* Sizes */
+
+    --text-xs: .75rem;
+    --text-sm: .875rem;
+    --text-md: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 2rem;
+    --text-4xl: 3rem;
+    --text-5xl: 4rem;
+
+    /* =========================
+       SPACING
+       ========================= */
+
+    --space-0:0;
+
+    --space-1:4px;
+    --space-2:8px;
+    --space-3:12px;
+    --space-4:16px;
+    --space-5:20px;
+    --space-6:24px;
+    --space-8:32px;
+    --space-10:40px;
+    --space-12:48px;
+    --space-16:64px;
+    --space-20:80px;
+    --space-24:96px;
+    --space-32:128px;
+
+    /* =========================
+       BORDER RADIUS
+       ========================= */
+
+    --radius-xs:4px;
+    --radius-sm:8px;
+    --radius-md:12px;
+    --radius-lg:16px;
+    --radius-xl:20px;
+    --radius-2xl:28px;
+    --radius-round:999px;
+
+    /* =========================
+       SHADOWS
+       ========================= */
+
+    --shadow-xs:
+        0 2px 4px rgba(0,0,0,.08);
+
+    --shadow-sm:
+        0 4px 12px rgba(0,0,0,.18);
+
+    --shadow-md:
+        0 12px 30px rgba(0,0,0,.28);
+
+    --shadow-lg:
+        0 20px 60px rgba(0,0,0,.45);
+
+    /* =========================
+       LAYOUT
+       ========================= */
+
+    --container:1440px;
+    --content:1320px;
+    --sidebar-width:280px;
+    --header-height:76px;
+    --section-padding:96px;
+
+    /* =========================
+       TRANSITIONS
+       ========================= */
+
+    --fast:.15s ease;
+    --normal:.25s ease;
+    --slow:.4s ease;
+
+    /* =========================
+       Z INDEX
+       ========================= */
+
+    --z-dropdown:100;
+    --z-sticky:500;
+    --z-fixed:1000;
+    --z-modal:5000;
+    --z-toast:8000;
+
+}

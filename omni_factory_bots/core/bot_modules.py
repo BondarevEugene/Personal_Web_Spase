@@ -51,5 +51,13 @@ MODULE_REGISTRY = {
             "dating": {"label": "Знайомства (Дейтинг)", "code_template": "dating_logic"},
             "ai_gen": {"label": "Генерація контенту (AI)", "code_template": "gen_logic"}
         }
+    },
+    "LOGIC_FLOW": {
+        "modules": {
+            "greeting": {"label": "Приветствие", "code_template": "greeting_logic"},
+            "role_def": {"label": "Определение роли", "code_template": "role_logic"},
+            "crm_lookup": {"label": "Поиск клиента", "code_template": "crm_search_logic"},
+            "status_fetch": {"label": "Получение статусов", "code_template": "status_fetch_logic"}
+        }
     }
 }

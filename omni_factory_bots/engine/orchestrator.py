@@ -175,3 +175,9 @@ class Orchestrator:
         }
         self.faults_ledger.append(fault)
         logger.error(f"🚨 [FAULT_RECORDED] Бот: {bot_id} // Узел: {node_id} // Ошибка: {error_msg}")
+
+    import json
+
+    def load_bot_graph(bot_id):
+        with open(f"bots/{bot_id}.json", "r", encoding="utf-8") as f:
+            return json.load(f)

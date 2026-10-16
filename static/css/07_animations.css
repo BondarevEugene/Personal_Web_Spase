@@ -1,0 +1,231 @@
+/* ==========================================================
+   OMNIFACTORY PLATFORM
+   Animation System
+   ========================================================== */
+
+/* ==========================================================
+   GLOBAL TRANSITIONS
+   ========================================================== */
+
+*{
+
+    transition:
+        background-color var(--fast),
+        border-color var(--fast),
+        color var(--fast),
+        transform var(--fast),
+        opacity var(--fast);
+
+}
+
+/* ==========================================================
+   FADE UP
+   ========================================================== */
+
+.of-fade-up{
+
+    opacity:0;
+
+    transform:translateY(24px);
+
+    animation:ofFadeUp .8s forwards;
+
+}
+
+@keyframes ofFadeUp{
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================================
+   FADE LEFT
+   ========================================================== */
+
+.of-fade-left{
+
+    opacity:0;
+
+    transform:translateX(-40px);
+
+    animation:ofFadeLeft .8s forwards;
+
+}
+
+@keyframes ofFadeLeft{
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
+
+/* ==========================================================
+   FADE RIGHT
+   ========================================================== */
+
+.of-fade-right{
+
+    opacity:0;
+
+    transform:translateX(40px);
+
+    animation:ofFadeRight .8s forwards;
+
+}
+
+@keyframes ofFadeRight{
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+
+    }
+
+}
+
+/* ==========================================================
+   SCALE
+   ========================================================== */
+
+.of-scale{
+
+    animation:ofScale .5s ease;
+
+}
+
+@keyframes ofScale{
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.92);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
+
+}
+
+/* ==========================================================
+   FLOAT
+   ========================================================== */
+
+.of-float{
+
+    animation:ofFloat 6s ease-in-out infinite;
+
+}
+
+@keyframes ofFloat{
+
+    0%{
+
+        transform:translateY(0);
+
+    }
+
+    50%{
+
+        transform:translateY(-8px);
+
+    }
+
+    100%{
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================================
+   PULSE
+   ========================================================== */
+
+.of-pulse{
+
+    animation:ofPulse 2s infinite;
+
+}
+
+@keyframes ofPulse{
+
+    50%{
+
+        opacity:.75;
+
+    }
+
+}
+
+/* ==========================================================
+   ROTATE
+   ========================================================== */
+
+.of-rotate{
+
+    animation:ofRotate 12s linear infinite;
+
+}
+
+@keyframes ofRotate{
+
+    to{
+
+        transform:rotate(360deg);
+
+    }
+
+}
+
+/* ==========================================================
+   HOVER LIFT
+   ========================================================== */
+
+.of-hover-lift{
+
+    transition:transform var(--normal);
+
+}
+
+.of-hover-lift:hover{
+
+    transform:translateY(-5px);
+
+}
+
+/* ==========================================================
+   HOVER SCALE
+   ========================================================== */
+
+.of-hover-scale{
+
+    transition:transform var(--normal);
+
+}
+
+.of-hover-scale:hover{
+
+    transform:scale(1.03);
+
+}

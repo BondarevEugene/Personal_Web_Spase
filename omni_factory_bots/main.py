@@ -59,6 +59,31 @@ async def main():
     response = await runner.execute(current_node)
     print(f"\nБот: {response['content']}")
 
+    # Добавьте это в main.py (FastAPI)
+    @app.get("/api/registry/schema/{module_name}")
+    async def get_schema(module_name: str):
+        # Используем ваш Registry класс
+        schema = registry.get_module_schema(module_name)
+        return {"params": schema.get("parameters", {})}
+
+
+# engine/orchestrator.py
+
+async def reload_bot_config(self, bot_id: str):
+    """
+    Метод, который пересобирает бота в памяти,
+    используя обновленный JSON из билдера.
+    """
+    graph = self.active_graphs.get(bot_id)
+    if not graph:
+        logger.error(f"Граф для бота {bot_id} не найден.")
+        return
+
+    # Здесь мы переинициализируем Runner для конкретного бота
+    # Используя данные из нового JSON
+    logger.info(f"🔄 [HOT_RELOAD] Пересборка логики бота {bot_id}...")
+    # ... логика перерегистрации ...
+
 
 if __name__ == "__main__":
     asyncio.run(main())

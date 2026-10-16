@@ -1,0 +1,64 @@
+{
+  "Core": {
+    "fastapi_endpoint": {
+      "title": "FastAPI HTTP Route",
+      "color": "#7c3aed",
+      "fields": {
+        "path": "/api/v1/webhook",
+        "method": "POST"
+      }
+    },
+    "websocket_stream": {
+      "title": "WebSocket Link",
+      "color": "#1d4ed8",
+      "fields": {
+        "endpoint": "/ws/stream"
+      }
+    }
+  },
+  "Artificial Intelligence": {
+    "ollama_llm": {
+      "title": "Ollama Local LLM",
+      "color": "#8b5cf6",
+      "fields": {
+        "model": "codellama",
+        "temperature": "0.7"
+      }
+    },
+    "chromadb_rag": {
+      "title": "ChromaDB Memory",
+      "color": "#059669",
+      "fields": {
+        "collection": "omnifactory_intelligence",
+        "n_results": "3"
+      }
+    }
+  },
+  "Automation & Workers": {
+    "telegram_bot": {
+      "title": "Telegram Bot Interface",
+      "color": "#0ea5e9",
+      "fields": {
+        "token_env": "TELEGRAM_BOT_TOKEN",
+        "polling_mode": "Long-Polling"
+      }
+    },
+    "celery_task": {
+      "title": "Celery Background Worker",
+      "color": "#475569",
+      "fields": {
+        "queue": "default",
+        "countdown": "60"
+      }
+      },
+
+      "binary_router": {
+        "id": "binary_router",
+        "label": "Binary Router",
+        "params": {
+          "variable": "string",
+          "operator": "string",
+          "value": "string"
+        }
+      }
+  }
