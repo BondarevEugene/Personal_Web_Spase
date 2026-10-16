@@ -1,0 +1,138 @@
+<div style="
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: #09090e;
+    overflow-y: auto; /* ВКЛЮЧАЕМ ПРОКРУТКУ */
+    display: flex;
+    flex-direction: column;
+    z-index: 999;
+">
+
+    <div style="
+        background: #050508;
+        border-bottom: 1px solid rgba(188, 19, 254, 0.4);
+        padding: 10px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 50px;
+        box-sizing: border-box;
+    ">
+        <h3 style="font-family: 'Orbitron', sans-serif; margin: 0; color: #00ffff; letter-spacing: 2px; font-size: 1rem;">
+            // OMNIFACTORY_BOT_ORCHESTRATOR_CORE
+        </h3>
+    </div>
+
+    <div style="
+        width: 100%;
+        flex-grow: 1;
+        margin: 0;
+        padding: 0;
+        background: #09090e;
+        overflow: hidden;
+    ">
+        <iframe
+            src="/builder-app/"
+            style="width: 100%; height: 100%; border: none; background: #09090e; display: block;"
+            allow="clipboard-write"
+        ></iframe>
+    </div>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>OMNIFACTORY // ORCHESTRATOR_CORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #050508; --panel: #0d0d12; --accent: #bc13fe; --green: #00ff41; --text: #e0e0e0; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; }
+
+        .grid-container {
+            display: grid; grid-template-columns: 300px 1fr 350px; grid-template-rows: 60px 1fr 200px;
+            height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box;
+        }
+
+        .panel { background: var(--panel); border: 1px solid rgba(188,19,254,0.3); padding: 15px; border-radius: 4px; }
+        header { grid-column: 1 / 4; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--accent); }
+
+        .bot-card { border-left: 4px solid var(--green); margin-bottom: 10px; padding: 10px; background: rgba(0,255,65,0.05); }
+        .terminal { font-size: 0.75rem; color: var(--green); overflow-y: auto; background: #000; padding: 10px; }
+        .meter { height: 10px; background: #222; margin: 5px 0; }
+        .bar { height: 100%; background: var(--accent); width: 45%; }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <header class="panel">
+        <h2 style="margin:0; font-family: 'Orbitron'; color: var(--accent);">// OMNIFACTORY_CENTRAL_CORE</h2>
+        <div id="clock">00:00:00</div>
+    </header>
+
+    <div class="panel" id="sidebar">
+        <h4>// ACTIVE_NODES</h4>
+        <div class="bot-card">[TG] Sales_Bot_v1.2 // ONLINE</div>
+        <div class="bot-card" style="border-left-color: #ff00ff;">[WA] Support_Bot_v0.9 // SYNCING</div>
+        <div class="bot-card" style="border-left-color: #666;">[IG] Analytic_Bot // OFFLINE</div>
+    </div>
+
+    <div class="panel" id="main-view">
+        <h4>// REALTIME_ORCHESTRATION_FLOW</h4>
+        <div style="height: 400px; display: flex; align-items: center; justify-content: center; border: 1px dashed #333;">
+            [ VISUAL_TOPOLOGY_MAP ]
+        </div>
+    </div>
+
+    <div class="panel" id="stats">
+        <h4>// SYSTEM_TELEMETRY</h4>
+        <p>CPU LOAD</p><div class="meter"><div class="bar" style="width: 22%"></div></div>
+        <p>MEMORY</p><div class="meter"><div class="bar" style="width: 78%"></div></div>
+        <p>API_LATENCY</p><div class="meter"><div class="bar" style="width: 12%"></div></div>
+    </div>
+
+    <div class="panel terminal" style="grid-column: 1 / 4;" id="log-terminal">
+        > SYSTEM_INIT... [OK]<br>
+        > CONNECTING TO CLUSTER... [OK]<br>
+        > ORCHESTRATOR READY...
+    </div>
+</div>
+
+<script>
+    async function updateSystemState() {
+        // Запрос к серверу: как там наши боты?
+        const res = await fetch('/api/v1/status');
+        const bots = await res.json();
+
+        const list = document.getElementById('bot-list');
+        list.innerHTML = bots.map(b => `
+            <div class="bot-card">
+                <b>${b.id}</b> | Статус: ${b.status}
+                <button onclick="stopBot('${b.id}')">KILL</button>
+            </div>
+        `).join('');
+    }
+    // Обновляем состояние каждые 3 секунды
+    setInterval(updateSystemState, 3000);
+
+    // Здесь будет логика обновления данных через WebSocket
+    setInterval(() => {
+        document.getElementById('log-terminal').innerHTML += "<br>> PING_NODE_RESPONSE... 12ms";
+        document.getElementById('log-terminal').scrollTop = 9999;
+    }, 3000);
+
+</script>
+</body>
+</html>
+</div>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>

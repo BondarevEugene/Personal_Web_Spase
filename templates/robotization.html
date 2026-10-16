@@ -1,138 +1,442 @@
-<div style="
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-    background: #09090e;
-    overflow-y: auto; /* ВКЛЮЧАЕМ ПРОКРУТКУ */
-    display: flex;
-    flex-direction: column;
-    z-index: 999;
-">
-
-    <div style="
-        background: #050508;
-        border-bottom: 1px solid rgba(188, 19, 254, 0.4);
-        padding: 10px 25px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        height: 50px;
-        box-sizing: border-box;
-    ">
-        <h3 style="font-family: 'Orbitron', sans-serif; margin: 0; color: #00ffff; letter-spacing: 2px; font-size: 1rem;">
-            // OMNIFACTORY_BOT_ORCHESTRATOR_CORE
-        </h3>
-    </div>
-
-    <div style="
-        width: 100%;
-        flex-grow: 1;
-        margin: 0;
-        padding: 0;
-        background: #09090e;
-        overflow: hidden;
-    ">
-        <iframe
-            src="/builder-app/"
-            style="width: 100%; height: 100%; border: none; background: #09090e; display: block;"
-            allow="clipboard-write"
-        ></iframe>
-    </div>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>OMNIFACTORY // ORCHESTRATOR_CORE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #050508; --panel: #0d0d12; --accent: #bc13fe; --green: #00ff41; --text: #e0e0e0; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY MASTER // ADMINISTRATIVE_SUPERVISOR_v8.0</title>
 
-        .grid-container {
-            display: grid; grid-template-columns: 300px 1fr 350px; grid-template-rows: 60px 1fr 200px;
-            height: 100vh; gap: 10px; padding: 10px; box-sizing: border-box;
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;900&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Графические библиотеки среды проектирования -->
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='JetBrains Mono' font-size='45' fill='%23bc13fe' font-weight='bold'>M</text></svg>">
+
+    <style>
+        :root {
+            --bg-black: #050508;
+            --bg-darker: #020204;
+            --bg-main: #121214;
+            --bg-panel: #18181b;
+            --border-dim: #27272a;
+            --panel-bg: rgba(9, 9, 14, 0.93);
+            --panel-border: #1f1f23;
+            --neon-purple: #bc13fe;
+            --neon-glow: rgba(188, 19, 254, 0.35);
+            --neon-blue: #00f0ff;
+            --neon-blue-glow: rgba(0, 240, 255, 0.2);
+            --text-white: #ffffff;
+            --text-muted: #71717a;
+            --text-dim: #4a4a5a;
+            --matrix-green: #22c55e;
+            --neon-orange: #f97316;
+            --neon-yellow: #ffff00;
+            --neon-yellow-glow: rgba(255, 255, 0, 0.5);
+            --border-static: rgba(188, 19, 254, 0.15);
         }
 
-        .panel { background: var(--panel); border: 1px solid rgba(188,19,254,0.3); padding: 15px; border-radius: 4px; }
-        header { grid-column: 1 / 4; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--accent); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .bot-card { border-left: 4px solid var(--green); margin-bottom: 10px; padding: 10px; background: rgba(0,255,65,0.05); }
-        .terminal { font-size: 0.75rem; color: var(--green); overflow-y: auto; background: #000; padding: 10px; }
-        .meter { height: 10px; background: #222; margin: 5px 0; }
-        .bar { height: 100%; background: var(--accent); width: 45%; }
+        body {
+            background-color: #09090b;
+            color: #f4f4f5;
+            font-family: 'Arial Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 15.5px;
+            font-stretch: condensed;
+            letter-spacing: -0.1px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            display: flex; min-height: 100vh; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .layout-wrapper { display: flex; flex: 1; width: 100%; position: relative; overflow: hidden; }
+
+        .sidebar {
+            width: 310px; background-color: #0f0f12; border-right: 1px solid #1f1f23;
+            display: flex; flex-direction: column; padding: 25px 20px; box-sizing: border-box;
+            flex-shrink: 0; user-select: none; overflow-y: auto;
+        }
+
+        .factory-logo-block { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-left: 8px; }
+        .factory-logo-text { font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; line-height: 1.2; color: #fff; letter-spacing: 1px; }
+        .brand-master-container { border-bottom: 1px solid rgba(188, 19, 254, 0.15); padding-bottom: 20px; margin-bottom: 15px; padding-left: 8px; }
+        .brand-main-title { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: 1.5px; color: #fff; text-transform: uppercase; text-shadow: 0 0 15px rgba(188, 19, 254, 0.3); }
+        .brand-sub-author { font-family: 'Orbitron', sans-serif; font-size: 15px; font-weight: 900; color: var(--neon-yellow) !important; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; text-shadow: 0 0 12px var(--neon-yellow-glow); }
+
+        .menu-category { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin: 18px 0 6px 8px; font-weight: 700; }
+        .sidebar-menu { display: flex; flex-direction: column; gap: 5px; list-style: none; padding: 0; margin: 0; }
+        .menu-item a { display: flex; align-items: center; gap: 12px; color: #a1a1aa; text-decoration: none; padding: 10px 14px; border-radius: 6px; font-size: 15px; font-weight: 500; transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .menu-item.active a, .menu-item a:hover { background-color: #1e1b4b; color: #c084fc; border-left-color: var(--neon-purple); }
+
+        .main-container { flex: 1; padding: 30px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; width: 100%; overflow-y: auto; background: #09090b; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f23; padding-bottom: 15px; }
+        .page-title h1 { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 1px; margin: 0 0 6px 0; color: #fff; text-transform: uppercase; }
+        .page-title p { color: #71717a; margin: 0; font-size: 13px; }
+
+        .view-section { display: none; flex-direction: column; gap: 24px; animation: viewFadeIn 0.25s ease forwards; }
+        .view-section.active-view { display: flex; }
+        @keyframes viewFadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Элементы карт */
+        .card { background-color: #141417; border: 1px solid #1f1f23; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 20px; position: relative; }
+        .card::before { content: ''; position: absolute; top: -1px; left: -1px; width: 8px; height: 8px; border-top: 2px solid var(--neon-purple); border-left: 2px solid var(--neon-purple); }
+        .card::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 8px; height: 8px; border-bottom: 2px solid var(--neon-blue); border-right: 2px solid var(--neon-blue); }
+        .card-title h2 { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; margin: 0; color: #fff; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .card-title h2::before { content: '◈'; color: var(--neon-purple); font-size: 14px; }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .metric-card { background-color: #141417; border: 1px solid #1f1f23; border-radius: 12px; padding: 20px; position: relative; border-left: 3px solid var(--neon-purple); }
+        .metric-label { color: #71717a; font-size: 11px; font-weight: 600; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+        .metric-value { font-size: 24px; font-weight: 700; color: #fff; font-family: 'Orbitron', sans-serif; }
+        .metric-sub { font-size: 12px; color: #22c55e; margin-top: 6px; }
+
+        .mini-progress-bar { width: 100%; height: 4px; background: #09090b; margin-top: 10px; border-radius: 2px; overflow: hidden; }
+        .mini-progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue)); width: 0%; transition: width 0.4s ease; }
+
+        .dashboard-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        @media (max-width: 1200px) { .dashboard-layout { grid-template-columns: 1fr; } }
+
+        /* [ ХОЛСТ КОНСТРУКТОРА ВНУТРИ АДМИНКИ ] */
+        .ide-workspace {
+            display: grid;
+            grid-template-columns: 240px 1fr 300px;
+            width: 100%;
+            height: calc(100vh - 180px);
+            border: 1px solid var(--panel-border);
+            background: var(--bg-main);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .ide-sidebar { background: var(--bg-panel); border-right: 1px solid var(--border-dim); display: flex; flex-direction: column; overflow: hidden; }
+        .sidebar-search input { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: none; border-bottom: 1px solid var(--border-dim); color: #fff; font-family: inherit; outline: none; }
+        .sidebar-scroll { overflow-y: auto; padding: 12px; flex-grow: 1; }
+        .category-title { font-size: 10px; color: var(--neon-blue); margin: 12px 0 6px 0; font-family: 'Orbitron'; font-weight: bold; }
+        .node-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-dim); padding: 8px 10px; margin-bottom: 6px; cursor: grab; font-size: 13px; font-family: 'JetBrains Mono', monospace; transition: 0.2s; }
+        .node-item:hover { border-color: var(--neon-purple); background: rgba(188, 19, 254, 0.06); }
+
+        #drawflow { width: 100%; height: 100%; background-color: #121214; background-image: radial-gradient(#1e1e24 1.2px, transparent 1.2px); background-size: 24px 24px; cursor: grab; position: relative; }
+        .drawflow .drawflow-node { background: var(--bg-panel) !important; border: 1px solid var(--border-dim) !important; border-radius: 8px !important; color: #fff !important; padding: 10px !important; width: 150px !important; font-size: 12px; }
+        .drawflow .drawflow-node.selected { border-color: var(--neon-purple) !important; box-shadow: 0 0 12px var(--neon-purple); }
+        .drawflow .connection .main-path { stroke: var(--neon-purple) !important; stroke-width: 2.5px !important; }
+
+        .ide-inspector { background: var(--bg-panel); border-left: 1px solid var(--border-dim); display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
+        .prop-field { margin-bottom: 12px; }
+        .prop-field label { display: block; color: var(--neon-blue); margin-bottom: 4px; font-size: 11px; font-family: 'Orbitron'; }
+        .prop-field input { width: 100%; padding: 8px; background: #000; border: 1px solid var(--border-dim); color: #fff; border-radius: 4px; font-size: 13px; }
+
+        /* Разное */
+        .terminal-box { background-color: #09090b; border: 1px solid #1f1f23; border-radius: 8px; padding: 16px; height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; color: #22c55e; }
+        .tech-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .tech-table th { color: var(--text-muted); border-bottom: 1px solid #1f1f23; padding: 12px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .tech-table td { padding: 12px 10px; border-bottom: 1px solid #1f1f23; color: #e4e4e7; }
+
+        .btn-primary { background-color: #a855f7; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-transform: uppercase; font-family: inherit; }
+        .btn-primary:hover { background-color: #c084fc; box-shadow: 0 0 12px var(--neon-glow); }
+        .btn-table-action { background: rgba(188, 19, 254, 0.05); color: #f4f4f5; border: 1px solid #27272a; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-table-action:hover { border-color: var(--neon-purple); background: rgba(188, 19, 254, 0.15); }
+
+        .status-indicator-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-indicator-dot.active { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+
+        .panic-btn { background: repeating-linear-gradient(45deg, rgba(255, 0, 127, 0.1), rgba(255, 0, 127, 0.1) 10px, rgba(0, 0, 0, 0.2) 10px, rgba(0, 0, 0, 0.2) 20px); border: 2px solid var(--critical-pink); color: var(--critical-pink); padding: 12px; border-radius: 8px; cursor: pointer; text-align: center; font-weight: bold; margin-top: 20px; animation: alert-blink 2s infinite; font-family: 'Orbitron'; font-size: 0.8rem;}
+        @keyframes alert-blink { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        .cyber-footer { margin-top: auto; padding: 40px 20px 20px 20px; border-top: 1px solid rgba(188, 19, 254, 0.15); background: #050508; width: 100%; flex-shrink: 0; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .footer-column { border-left: 3px solid var(--neon-purple); padding-left: 15px; font-size: 13.5px; }
+        .telemetry-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.04); padding: 3px 0; }
     </style>
 </head>
 <body>
 
-<div class="grid-container">
-    <header class="panel">
-        <h2 style="margin:0; font-family: 'Orbitron'; color: var(--accent);">// OMNIFACTORY_CENTRAL_CORE</h2>
-        <div id="clock">00:00:00</div>
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; background: rgba(10, 10, 15, 0.9); border-bottom: 1px solid var(--panel-border); backdrop-filter: blur(8px); z-index: 100; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <svg width="26" height="26" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#bc13fe" stroke-width="6" stroke-dasharray="10, 5"/>
+                <text x="36" y="62" font-family='Orbitron' font-size="36" font-weight="900" fill="#fff">M</text>
+            </svg>
+            <span style="font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.95rem; color: #fff;">OMNIFACTORY // UNIFIED_SUPERVISOR v8.0</span>
+        </div>
+        <div style="color: #FFD700; font-family: 'JetBrains Mono', monospace; font-size: 11pt; font-weight: 700; letter-spacing: 1px;">
+            OMNIFACTORY 救援 CORE SYSTEM SUPERVISOR 救援 Design by BONDAREV_E
+        </div>
     </header>
 
-    <div class="panel" id="sidebar">
-        <h4>// ACTIVE_NODES</h4>
-        <div class="bot-card">[TG] Sales_Bot_v1.2 // ONLINE</div>
-        <div class="bot-card" style="border-left-color: #ff00ff;">[WA] Support_Bot_v0.9 // SYNCING</div>
-        <div class="bot-card" style="border-left-color: #666;">[IG] Analytic_Bot // OFFLINE</div>
+    <div class="layout-wrapper">
+        <!-- ЕДИНЫЙ РЕФОРМИРОВАННЫЙ САЙДБАР -->
+        <aside class="sidebar">
+            <div class="brand-master-container">
+                <div class="brand-main-title">OmniFactory Evo</div>
+                <div class="brand-sub-author">EUGENE BONDAREV © 2026</div>
+            </div>
+
+            <div class="menu-category">Среда Разработки</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" id="tab-builder"><a href="#" onclick="switchView('builder')">🚀 [ Визуальный Конструктор ]</a></li>
+            </ul>
+
+            <div class="menu-category">Оркестрация и Хосты</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" id="tab-mainnode"><a href="#" onclick="switchView('mainnode')">🌐 [ Главные Контуры ]</a></li>
+                <li class="menu-item" id="tab-robotization"><a href="#" onclick="switchView('robotization')">🤖 [ Docker-Роботизация ]</a></li>
+            </ul>
+
+            <div class="menu-category">Телеметрия и Безопасность</div>
+            <ul class="sidebar-menu">
+                <li class="menu-item" id="tab-metrics"><a href="#" onclick="switchView('metrics')">📊 [ Метрики WSL2 ]</a></li>
+                <li class="menu-item" id="tab-users"><a href="#" onclick="switchView('users')">👥 [ Контроль Доступов ]</a></li>
+                <li class="menu-item" id="tab-scheduler"><a href="#" onclick="switchView('scheduler')">📅 [ Регламент задач ]</a></li>
+            </ul>
+
+            <div class="health-card" id="api-status" style="margin-top: auto; border: 1px solid var(--panel-border); padding: 10px; border-radius: 8px; font-size: 0.65rem;">
+                <div>SYSTEM_INTEGRITY: SECURE</div>
+                <div style="margin-top: 5px;"><span class="status-indicator-dot active"></span> CONSOLE ACTIVE</div>
+            </div>
+            <button class="panic-btn" onclick="app.togglePanic()">🚨 PANIC MODE</button>
+        </aside>
+
+        <main class="main-container">
+
+            <!-- ВКЛАДКА 1: ВИЗУАЛЬНЫЙ КОНСТРУКТОР БОТОВ (ИНТЕГРИРОВАН) -->
+            <section id="view-builder" class="view-section active-view">
+                <div class="page-header">
+                    <div class="page-title"><h1>► Visual Blueprint Generation Engine</h1><p>Проектирование логических связей ботов с мгновенной Saas-генерацией рантайм-пакетов[cite: 17].</p></div>
+                    <button class="btn-primary" style="background:var(--neon-purple)" onclick="deployGraph()">🚀 Запустить компиляцию в ZIP[cite: 17]</button>
+                </div>
+
+                <div class="ide-workspace">
+                    <aside class="ide-sidebar">
+                        <div class="sidebar-search"><input type="text" placeholder="Поиск модулей..."></div>
+                        <div class="sidebar-scroll" id="library">
+                            <div class="category-title">// ВХОДНЫЕ ТОЧКИ</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="webhook">🪝 Webhook Шлюз[cite: 17]</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="cron">⏱️ Celery Cron[cite: 16, 17]</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="tg_trigger">✈️ Telegram Event[cite: 17]</div>
+                            <div class="category-title">// ЛОГИКА И ИИ</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="openai">🤖 OpenAI Ядро[cite: 17]</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="chromadb">🔍 ChromaDB Нода[cite: 17]</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="code">💻 Python Скрипт[cite: 17]</div>
+                        </div>
+                    </aside>
+                    <div style="flex-grow:1; position:relative; overflow:hidden;"><div id="drawflow"></div></div>
+                    <aside class="ide-inspector">
+                        <h3 style="color:var(--neon-blue); font-size:0.8rem; margin-bottom:10px; font-family:'Orbitron'">📋 ПАРАМЕТРЫ</h3>
+                        <div id="inspector-ui" style="color:var(--text-muted); font-size: 12px;">Выберите узел графа для тюнинга параметров...[cite: 17]</div>
+                    </aside>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 2: ГЛАВНЫЕ КОНТУРЫ МАРШРУТИЗАЦИИ -->
+            <section id="view-mainnode" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Маршрутизация Шлюзов Экосистемы</h1><p>Контроль распределения сетевых потоков данных между основными узлами.[cite: 16]</p></div></div>
+                <div class="card">
+                    <table class="tech-table">
+                        <thead><tr><th>Имя шлюза</th><th>Маршрут</th><th>Контур доступов</th><th>Статус</th><th>Действие</th></tr></thead>
+                        <tbody>
+                            <tr><td>Основной Frontend</td><td><code>/</code></td><td>Публичный</td><td><span class="status-indicator-dot active"></span>ONLINE</td><td><button class="btn-table-action" onclick="pushTerminalLog('SUCCESS', 'Перезапуск ноды Frontend инициализирован.')">Reboot</button></td></tr>
+                            <tr><td>Робостроитель Core</td><td><code>/architect</code></td><td>Инженеры</td><td><span class="status-indicator-dot active"></span>SECURE</td><td><button class="btn-table-action">Reboot</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 3: DOCKER РОБОТИЗАЦИЯ -->
+            <section id="view-robotization" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► SaaS Docker-Контейнеризация</h1><p>Изолированные среды выполнения сгенерированных ботов.[cite: 16]</p></div></div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="metric-label">RAM ХОСТА (WSL2)</div><div class="metric-value">3.45 / 8.0 GB</div><div class="mini-progress-bar"><div class="mini-progress-fill" style="width: 43%;"></div></div></div>
+                    <div class="metric-card"><div class="metric-label">АКТИВНЫЕ КОНТЕЙНЕРЫ</div><div class="metric-value">2 RUNNING</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><h2>Среды сборщиков (Docker Engine Pools)</h2></div>
+                    <table class="tech-table">
+                        <thead><tr><th>Контейнер ID</th><th>Образ среды</th><th>NVMe Объем</th><th>Состояние</th><th>Инжиниринг</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>docker_node_84a2</code></td><td><code>omnifactory-flet-env:latest</code></td><td>412 MB</td><td><span style="color:var(--matrix-green); font-weight:bold;">RUNNING</span></td><td><button class="btn-table-action" onclick="pushTerminalLog('INFO', 'Контейнер 84a2 отправлен на мягкую перезагрузку.')">Restart</button></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 4: МЕТРИКИ WSL2 -->
+            <section id="view-metrics" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Аппаратная Телеметрия Вычислительного Кластера</h1><p>Мониторинг нагрузок ядер процессора и оперативной памяти в реальном времени.[cite: 16]</p></div></div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="metric-label">ЦП ХОСТА</div><div id="metric-cpu-val" class="metric-value">12.5%</div><div class="mini-progress-bar"><div id="progress-cpu" class="mini-progress-fill" style="width: 12%;"></div></div></div>
+                    <div class="metric-card"><div class="metric-label">RAM RESERVES</div><div id="metric-ram-val" class="metric-value">2.65 GB</div><div class="mini-progress-bar"><div id="progress-ram" class="mini-progress-fill" style="width: 33%;"></div></div></div>
+                </div>
+                <div class="card">
+                    <div style="position: relative; height:200px; width:100%"><canvas id="resourceChart"></canvas></div>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 5: КОНТРОЛЬ ДОСТУПОВ (RBAC) -->
+            <section id="view-users" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Матрица прав доступа RBAC</h1><p>Выдача токенов инженерам безопасности и операторам баз.[cite: 16]</p></div></div>
+                <div class="card">
+                    <table class="tech-table">
+                        <thead><tr><th>Субъект</th><th>Роль</th><th>Векторное Ядро</th><th>WSL2 Среда</th><th>Права</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Eugene Bondarev</strong></td><td><span style="color:var(--neon-purple)">Root_Admin</span></td><td>✓ Full Access</td><td>✓ Root Privilege</td><td><span style="color:var(--neon-yellow)">INFINITE</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 6: РЕГЛАМЕНТ ЗАДАЧ И CELERY -->
+            <section id="view-scheduler" class="view-section">
+                <div class="page-header"><div class="page-title"><h1>► Расписание Фоновых Процедур Автоматизации</h1><p>Celery Beat воркеры и резервное индексирование ChromaDB векторных эмбеддингов.[cite: 16]</p></div></div>
+                <div class="dashboard-layout" style="grid-template-columns: 1fr 2fr;">
+                    <div class="card">
+                        <div class="card-title"><h2>Инжектор Тасков</h2></div>
+                        <input type="text" id="new-task-name" class="prop-field input" style="background:#000; border:1px solid var(--border-dim); padding:10px; color:#fff;" placeholder="Очистить кеш Redis">
+                        <button class="btn-primary" onclick="injectTask()">В очередь</button>
+                    </div>
+                    <div class="card"><div id="calendar"></div></div>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <div class="panel" id="main-view">
-        <h4>// REALTIME_ORCHESTRATION_FLOW</h4>
-        <div style="height: 400px; display: flex; align-items: center; justify-content: center; border: 1px dashed #333;">
-            [ VISUAL_TOPOLOGY_MAP ]
+    <!-- ЕДИНЫЙ УНИФИЦИРОВАННЫЙ ФУТЕР И КОНСОЛЬ ЛОГОВ -->
+    <footer class="cyber-footer">
+        <div style="margin-bottom: 20px;">
+            <div style="font-family:'Orbitron'; font-size:11px; color:var(--neon-blue); margin-bottom:6px;">⚡ LIVE_TERMINAL_STREAM (FASTAPI LOGGING BUFFER)</div>
+            <div id="terminal-stream" class="terminal-box"></div>
         </div>
-    </div>
-
-    <div class="panel" id="stats">
-        <h4>// SYSTEM_TELEMETRY</h4>
-        <p>CPU LOAD</p><div class="meter"><div class="bar" style="width: 22%"></div></div>
-        <p>MEMORY</p><div class="meter"><div class="bar" style="width: 78%"></div></div>
-        <p>API_LATENCY</p><div class="meter"><div class="bar" style="width: 12%"></div></div>
-    </div>
-
-    <div class="panel terminal" style="grid-column: 1 / 4;" id="log-terminal">
-        > SYSTEM_INIT... [OK]<br>
-        > CONNECTING TO CLUSTER... [OK]<br>
-        > ORCHESTRATOR READY...
-    </div>
-</div>
+        <div class="footer-grid">
+            <div class="footer-column">
+                <div style="color:#fff; font-family:'Orbitron'; font-size:11px; margin-bottom:5px;">CORE ARCHITECTURE</div>
+                <div class="telemetry-row"><span>SYSTEM_TIME:</span><span id="footer-server-time" style="color:var(--neon-purple)">--:--:--</span></div>
+            </div>
+            <div class="footer-column">
+                <div style="color:#fff; font-family:'Orbitron'; font-size:11px; margin-bottom:5px;">COMPLIANCE & DATA</div>
+                <div style="font-size:11px; color:var(--text-muted)">AES-256 Encrypted | ISO/IEC 27001 Certified Secure Node.</div>
+            </div>
+        </div>
+    </footer>
 
 <script>
-    async function updateSystemState() {
-        // Запрос к серверу: как там наши боты?
-        const res = await fetch('/api/v1/status');
-        const bots = await res.json();
+    // Инициализация графического движка Drawflow
+    const container = document.getElementById("drawflow");
+    const editor = new Drawflow(container);
+    editor.start();
 
-        const list = document.getElementById('bot-list');
-        list.innerHTML = bots.map(b => `
-            <div class="bot-card">
-                <b>${b.id}</b> | Статус: ${b.status}
-                <button onclick="stopBot('${b.id}')">KILL</button>
-            </div>
-        `).join('');
+    const MODULE_SCHEMAS = {
+        webhook: { title: "Webhook Шлюз", color: "var(--neon-blue)", fields: { path: "Endpoint URL", token: "Security Token" } },
+        cron: { title: "Celery Cron", color: "var(--neon-blue)", fields: { interval: "Интервал (сек)" } },
+        openai: { title: "OpenAI Ядро", color: "var(--neon-purple)", fields: { prompt: "System Context Instructions", tokens: "Max Tokens" } },
+        tg_trigger: { title: "Telegram Event", color: "var(--neon-blue)", fields: { bot_token: "HTTP API Bot Token" } }
+    };
+
+    window.allowDrop = (ev) => ev.preventDefault();
+    window.drag = (ev) => ev.dataTransfer.setData("nodeId", ev.target.getAttribute('data-node'));
+    container.addEventListener("dragover", window.allowDrop);
+    container.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        const nodeId = ev.dataTransfer.getData("nodeId");
+        const schema = MODULE_SCHEMAS[nodeId];
+        if(!schema) return;
+        const rect = container.getBoundingClientRect();
+        editor.addNode(nodeId, 1, 1, ev.clientX - rect.left, ev.clientY - rect.top, nodeId, { config: {} },
+            `<div style="font-size:9px; color:${schema.color}">// ${nodeId.toUpperCase()}</div><div style="font-weight:bold; font-size:11px;">${schema.title}</div>`
+        );
+        pushTerminalLog("SUCCESS", `Узел [${schema.title}] успешно добавлен на холст среды проектирования.[cite: 17]`);
+    });
+
+    editor.on('nodeSelected', (id) => {
+        const node = editor.getNodeFromId(id);
+        const inspector = document.getElementById('inspector-ui');
+        const schema = MODULE_SCHEMAS[node.name];
+        if (!schema) return;
+        let html = `<div style="font-size:12px; color:${schema.color}; margin-bottom:10px; font-weight:bold;">NODE ID: #${id}</div>`;
+        for (const [key, label] of Object.entries(schema.fields)) {
+            const val = (node.data.config && node.data.config[key]) ? node.data.config[key] : '';
+            html += `<div class="prop-field"><label>${label}</label><input type="text" value="${val}" onchange="updateNodeData(${id}, '${key}', this.value)"></div>`;
+        }
+        inspector.innerHTML = html;
+    });
+
+    window.updateNodeData = (nodeId, key, value) => {
+        let node = editor.getNodeFromId(nodeId);
+        if (!node.data.config) node.data.config = {};
+        node.data.config[key] = value;
+        editor.updateNodeDataFromId(nodeId, node.data);
+    };
+
+    // Компиляция графа в ZIP-архив
+    async function deployGraph() {
+        pushTerminalLog("INFO", "Сборка сигнатур модулей для отправки в рантайм-генератор...");
+        const graphData = editor.export();
+        const nodes = graphData.drawflow.Home.data;
+        const selectedIds = Object.keys(nodes).map(key => nodes[key].name);
+
+        if(selectedIds.length === 0) {
+            pushTerminalLog("ERROR", "Сбой: Архитектура пуста. Перетащите модули на сетку холста перед сборкой.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/builder/generate', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ selected_ids: selectedIds })
+            });
+            if (!response.ok) throw new Error(`Status ${response.status}`);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'omnifactory_bot.zip';
+            document.body.appendChild(a); a.click(); a.remove();
+            pushTerminalLog("SUCCESS", "Сборка архива bot.zip завершена. Файл отправлен на загрузку.");
+        } catch(e) {
+            pushTerminalLog("ERROR", `Критическая ошибка компилятора: ${e.message}`);
+        }
     }
-    // Обновляем состояние каждые 3 секунды
-    setInterval(updateSystemState, 3000);
 
-    // Здесь будет логика обновления данных через WebSocket
-    setInterval(() => {
-        document.getElementById('log-terminal').innerHTML += "<br>> PING_NODE_RESPONSE... 12ms";
-        document.getElementById('log-terminal').scrollTop = 9999;
-    }, 3000);
+    // Вкладки, Календарь и Логи
+    let globalCalendar = null;
+    function switchView(viewName) {
+        document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active-view'));
+        document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+        document.getElementById('view-' + viewName).classList.add('active-view');
+        document.getElementById('tab-' + viewName).classList.add('active');
+        if(viewName === 'scheduler' && !globalCalendar) {
+            setTimeout(() => {
+                globalCalendar = new FullCalendar.Calendar(document.getElementById('calendar'), { initialView: 'dayGridMonth' });
+                globalCalendar.render();
+            }, 50);
+        }
+    }
 
+    function pushTerminalLog(tag, text) {
+        const stream = document.getElementById('terminal-stream');
+        if(!stream) return;
+        stream.innerHTML += `<div>[${new Date().toLocaleTimeString()}] [${tag}] ${text}</div>`;
+        stream.scrollTop = stream.scrollHeight;
+    }
+
+    const app = {
+        togglePanic() { alert("ВНИМАНИЕ: Аппаратный комплекс переведен в изолированный защищенный периметр."); }
+    };
+
+    // Инициализация при старте
+    document.addEventListener("DOMContentLoaded", () => {
+        pushTerminalLog("SUCCESS", "Монолитное административное ядро OMNIFACTORY v8.0 запущено штатно.");
+        setInterval(() => { document.getElementById('footer-server-time').innerText = new Date().toLocaleTimeString(); }, 1000);
+
+        // График телеметрии ресурсов
+        const ctx = document.getElementById('resourceChart').getContext('2d');
+        window.chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ['0s','2s','4s','6s','8s'], datasets: [{ label: 'ЦП Хоста (%)', data: [12, 19, 8, 15, 12], borderColor: '#bc13fe', tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+        });
+    });
 </script>
 </body>
 </html>
-</div>
-
-<style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-</style>

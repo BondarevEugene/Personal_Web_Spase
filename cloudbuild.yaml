@@ -21,6 +21,8 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--port' # Добавьте эту строку
+      - '8080'   # И эту строку
 
 options:
   logging: CLOUD_LOGGING_ONLY

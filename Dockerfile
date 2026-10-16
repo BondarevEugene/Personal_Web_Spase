@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt gunicorn uvicorn
 COPY . .
 
 # ЗАПУСК ЧЕРЕЗ GUNICORN (Это стандарт для Google Cloud Run)
-CMD ["gunicorn", "main:app", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "server:app", "-w", "1", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8080"]
