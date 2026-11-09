@@ -67,3 +67,8 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Never commit Google/Firebase service account credentials
+*firebase-adminsdk*.json
+*service-account*.json
+*service_account*.json
