@@ -22,7 +22,7 @@ from portal.models import (Customer, CustomerSettings, Invoice, Organization, Pa
                            PortalSession, RegistrationEvent, Subscription, utcnow)
 from portal.security import (CSRF_COOKIE, SESSION_COOKIE, hash_password, issue_csrf,
                              new_session, password_matches, secure_request,
-                             set_auth_cookie, token_hash, verify_csrf)
+                             set_auth_cookie, token_hash, verify_csrf, new_csrf_token)
 
 router = APIRouter(prefix="/account", tags=["Customer Portal"])
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
@@ -33,7 +33,7 @@ _TZ = re.compile(r"^[A-Za-z0-9_+/-]{1,64}$")
 
 
 def form_page(request: Request, name: str, **context):
-    token = secrets.token_urlsafe(32)
+    token = new_csrf_token()
     response = templates.TemplateResponse(request=request, name=name,
                                           context={"csrf_token": token, **context})
     issue_csrf(response, request, token)

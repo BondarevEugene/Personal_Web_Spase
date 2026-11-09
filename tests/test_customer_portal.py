@@ -165,7 +165,7 @@ def test_registration_accounting_is_not_fake_revenue(db_ready):
     assert summary["registration_events"] == 2
     assert summary["organizations"] == 2
     assert summary["customers"] == 2
-    assert summary["confirmed_revenue_minor"] == 0
+    assert summary["confirmed_revenue_by_currency_minor"] == {}
     assert summary["payment_gateway_connected"] is False
     assert summary["subscriptions_by_plan"] == {"free": 2}
 
@@ -177,3 +177,12 @@ def test_portal_build_fingerprint(db_ready):
     health = client.get("/health").json()
     assert health["platform_ui"] == "studio-v3-platform"
     assert health["customer_portal"] == "accounts-v1"
+
+
+def test_forged_csrf_cannot_be_accepted_even_with_matching_cookie(db_ready):
+    client = TestClient(app)
+    client.get("/account/register")
+    forged = "chosen-by-attacker.forged-signature"
+    client.cookies.set("omni_portal_csrf", forged)
+    response = client.post("/account/register", data={"csrf_token": forged, "username": "hacker"})
+    assert response.status_code == 403

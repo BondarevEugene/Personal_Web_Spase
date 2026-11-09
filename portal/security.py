@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import os
 import secrets
 from datetime import timedelta
 
@@ -18,6 +19,15 @@ SESSION_COOKIE = "omni_portal_session"
 CSRF_COOKIE = "omni_portal_csrf"
 SESSION_LIFETIME = timedelta(hours=12)
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "testserver"}
+# For multi-worker deployments, set OMNI_PORTAL_CSRF_SECRET to the same random
+# secret on every worker. A process-generated key is suitable for local dev only.
+_CSRF_SECRET = (os.environ.get("OMNI_PORTAL_CSRF_SECRET") or "").encode() or secrets.token_bytes(32)
+
+
+def new_csrf_token() -> str:
+    nonce = secrets.token_urlsafe(32)
+    digest = hmac.new(_CSRF_SECRET, nonce.encode(), hashlib.sha256).hexdigest()
+    return nonce + "." + digest
 
 
 def hash_password(value: str) -> str:
@@ -54,7 +64,7 @@ def set_auth_cookie(response: Response, request: Request, token: str) -> None:
 
 def issue_csrf(response: Response, request: Request, token: str | None = None) -> str:
     secure = secure_request(request)
-    token = token or secrets.token_urlsafe(32)
+    token = token or new_csrf_token()
     response.set_cookie(CSRF_COOKIE, token, httponly=True, secure=secure,
                         samesite="lax", path="/", max_age=3600)
     return token
@@ -63,4 +73,11 @@ def issue_csrf(response: Response, request: Request, token: str | None = None) -
 def verify_csrf(request: Request, supplied: str) -> None:
     cookie = request.cookies.get(CSRF_COOKIE, "")
     if not cookie or not supplied or not hmac.compare_digest(cookie, supplied):
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")
+    try:
+        nonce, signature = supplied.rsplit(".", 1)
+    except ValueError:
+        raise HTTPException(status_code=403, detail="Invalid CSRF token")
+    expected = hmac.new(_CSRF_SECRET, nonce.encode(), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(signature, expected):
         raise HTTPException(status_code=403, detail="Invalid CSRF token")

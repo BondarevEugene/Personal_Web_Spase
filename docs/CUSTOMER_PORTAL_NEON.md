@@ -46,7 +46,7 @@ Registration is **not** an automatic purchase. A record is made with source and 
 
 ## Production blockers (must resolve before taking real customers)
 - Email verification, recovery/reset flow, MFA for sensitive operations, distributed login throttling, session cleanup and audit logging.
-- CSRF uses a double-submit cookie; upgrade it to a session-bound signed token for stronger subdomain defense.
+- CSRF uses a signed double-submit cookie. For multi-worker production set a stable random OMNI_PORTAL_CSRF_SECRET on all app instances; stronger session-bound tokens and additional origin checks can be added in hardening.
 - Reconcile shared privileges across legacy /admin and separate OmniBotCRM; do not grant customer login access to legacy admin.
 - Builder graph projects are still saved client-side; real project ownership and tenant-isolated persistence must be added.
 - Introduce secure user-account activation/paid entitlement enforcement before enabling paid functionality.
@@ -71,3 +71,5 @@ The new root sends HTTP header X-Omni-UI: studio-v3-platform.
 GET /health contains platform_ui=studio-v3-platform and
 customer_portal=accounts-v1 on this branch.
 Check the branch and server process before troubleshooting CSS.
+
+Revenue is reported per currency in confirmed_revenue_by_currency_minor; amounts from different currencies are never added together.

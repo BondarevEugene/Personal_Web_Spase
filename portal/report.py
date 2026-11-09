@@ -12,8 +12,11 @@ def summarize(db):
     months = Counter(value.strftime("%Y-%m") for value in events)
     invoice_rows = db.execute(select(Invoice.status, func.count()).group_by(Invoice.status)).all()
     plan_rows = db.execute(select(Subscription.plan_code, func.count()).group_by(Subscription.plan_code)).all()
-    confirmed = db.scalar(select(func.coalesce(func.sum(PaymentRecord.amount_minor), 0))
-                          .where(PaymentRecord.status == "confirmed"))
+    confirmed_rows = db.execute(
+        select(PaymentRecord.currency, func.sum(PaymentRecord.amount_minor))
+        .where(PaymentRecord.status == "confirmed")
+        .group_by(PaymentRecord.currency)
+    ).all()
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "organizations": db.scalar(select(func.count(Organization.id))),
@@ -22,7 +25,7 @@ def summarize(db):
         "registrations_by_month": dict(sorted(months.items())),
         "subscriptions_by_plan": dict(sorted(plan_rows)),
         "invoices_by_status": dict(sorted(invoice_rows)),
-        "confirmed_revenue_minor": int(confirmed or 0),
+        "confirmed_revenue_by_currency_minor": {currency: int(amount) for currency, amount in confirmed_rows},
         "currency_note": "Payment values in minor units, no FX conversions.",
         "payment_gateway_connected": False,
     }
