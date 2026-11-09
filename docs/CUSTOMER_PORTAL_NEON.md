@@ -73,3 +73,42 @@ customer_portal=accounts-v1 on this branch.
 Check the branch and server process before troubleshooting CSS.
 
 Revenue is reported per currency in confirmed_revenue_by_currency_minor; amounts from different currencies are never added together.
+
+## Payment/subscription catalog (staged development)
+The subscription model is **free signup and optional paid monthly subscription**.
+The database is seeded with four monthly plan definitions: Free (0 UAH),
+Start, Growth and Business. Paid prices are deliberately unconfigured and those
+plans are initially disabled. Until a price is set and the owner enables a plan,
+a visitor cannot request a paid invoice.
+
+Apply migration 02 and view the catalog:
+    .\.venv\Scripts\python.exe -m alembic -c portal_alembic.ini upgrade head
+    .\.venv\Scripts\python.exe -m portal.billing_admin plans
+
+An operator may set a future subscription price in **kopiykas**, e.g.:
+    $env:OMNI_BILLING_OPERATOR = "local-operator"
+    .\.venv\Scripts\python.exe -m portal.billing_admin set-price --code start --minor 10000
+
+The example amount (100 UAH) is for local testing **only**, not an approved
+product tariff. Without --enable the plan remains unavailable for invoice requests.
+--enable activates *pending invoice requests*, **not online payment or paid access**.
+
+Account billing page: /account/billing. It displays the catalog, current
+entitlement status and real invoices belonging to that organization.
+
+The invoice amount/currency is frozen at creation and cannot be changed by later
+catalog edits. An idempotency key prevents duplicate invoice requests.
+Payment gateway events are stored by provider/event identifier with database
+uniqueness guarantees. Only verified events may be settled by the internal
+Python service; **there is no public webhook/settlement endpoint and no
+real provider adapter yet**. Do not turn on paid access based on an
+unverified callback or a customer browser redirect.
+
+Server-side entitlements are available at /account/billing/entitlements
+and protected example /account/billing/paid-access (402 unless verified).
+No builder paywall is claimed until per-user projects and the paid feature
+boundary are implemented.
+
+Production follow-up: choose approved pricing; integrate a provider with
+signature verification and callback replay protection; tax/fiscal and refund
+processes; post-payment receipt, cancellation policy, and email verification.
