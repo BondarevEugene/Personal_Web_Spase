@@ -186,3 +186,37 @@ def test_forged_csrf_cannot_be_accepted_even_with_matching_cookie(db_ready):
     client.cookies.set("omni_portal_csrf", forged)
     response = client.post("/account/register", data={"csrf_token": forged, "username": "hacker"})
     assert response.status_code == 403
+
+
+def test_eight_character_password_is_accepted(db_ready):
+    client = TestClient(app)
+    token = csrf(client)
+    result = client.post("/account/register", data={
+        "csrf_token": token,
+        "username": "shortpass",
+        "email": "short-pass@example.test",
+        "display_name": "Test Customer",
+        "organization": "Company Alpha",
+        "password": "safe8Pwd",
+        "password_repeat": "safe8Pwd",
+    }, follow_redirects=False)
+    assert result.status_code == 303
+    assert client.get("/account").status_code == 200
+
+
+def test_seven_character_password_is_rejected(db_ready):
+    client = TestClient(app)
+    token = csrf(client)
+    response = client.post("/account/register", data={
+        "csrf_token": token,
+        "username": "weakpass",
+        "email": "weak-pass@example.test",
+        "display_name": "Test Customer",
+        "organization": "Company Alpha",
+        "password": "1234567",
+        "password_repeat": "1234567",
+    }, follow_redirects=False)
+    assert response.status_code == 200
+    assert "от 8 символов" in response.text
+    with session_factory()() as db:
+        assert db.scalar(select(Customer).where(Customer.username == "weakpass")) is None

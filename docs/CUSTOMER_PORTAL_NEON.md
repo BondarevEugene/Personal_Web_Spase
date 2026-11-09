@@ -112,3 +112,38 @@ boundary are implemented.
 Production follow-up: choose approved pricing; integrate a provider with
 signature verification and callback replay protection; tax/fiscal and refund
 processes; post-payment receipt, cancellation policy, and email verification.
+
+
+## Local onboarding / schema troubleshooting (2026-11-09)
+
+When POST /account/register previously showed 500 and "no such table:
+portal_customers", the *legacy* core.database was initialized while the
+separate portal.db schema was not. Current startup now checks the customer
+portal Alembic revision before announcing readiness.
+
+Behavior:
+- Default local portal_dev.sqlite3 (OMNI_PORTAL_DATABASE_URL absent):
+  auto-upgrade to the latest portal migration on startup.
+- Explicit SQLite connection or Neon/PostgreSQL: **no automatic migrations**.
+  Apply migrations with the correct, reviewed portal migration URL first.
+- A dev-only explicit SQLite URL can opt into auto-migration with
+  OMNI_PORTAL_DEV_AUTO_MIGRATE=1. Never use that setting with Neon.
+- Signup minimum password length is 8 characters, 12+ recommended.
+  Passwords remain Argon2id-hashed; no complexity rules.
+
+Run diagnostic without printing connection credentials:
+    .\.venv\Scripts\python.exe -m portal.doctor
+
+Inspect local index.html:
+    Select-String -Path .\index.html -Pattern 'platform-app','EVO MASTER'
+
+If the new root is served, GET / has an X-Omni-UI header equal to
+studio-v3-platform. GET /health contains platform_ui=studio-v3-platform.
+An old EVO MASTER page or repeated /ws/ai-agent WebSocket 403 requests usually
+mean an old browser tab, old local index.html, or cached old frontend remains
+active. Close old tabs, hard-reload and compare the *response body* and header.
+
+For a manual one-time local migration (after confirming the database URL):
+    .\.venv\Scripts\python.exe -m alembic -c portal_alembic.ini upgrade head
+
+Never send database URLs or account passwords in diagnostic logs/screenshots.
