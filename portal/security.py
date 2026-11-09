@@ -52,9 +52,9 @@ def set_auth_cookie(response: Response, request: Request, token: str) -> None:
                         samesite="lax", path="/", max_age=int(SESSION_LIFETIME.total_seconds()))
 
 
-def issue_csrf(response: Response, request: Request) -> str:
+def issue_csrf(response: Response, request: Request, token: str | None = None) -> str:
     secure = secure_request(request)
-    token = secrets.token_urlsafe(32)
+    token = token or secrets.token_urlsafe(32)
     response.set_cookie(CSRF_COOKIE, token, httponly=True, secure=secure,
                         samesite="lax", path="/", max_age=3600)
     return token
