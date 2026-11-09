@@ -14,7 +14,7 @@ def summarize(db):
     plan_rows = db.execute(select(Subscription.plan_code, func.count()).group_by(Subscription.plan_code)).all()
     confirmed_rows = db.execute(
         select(PaymentRecord.currency, func.sum(PaymentRecord.amount_minor))
-        .where(PaymentRecord.status == "confirmed")
+        .where(PaymentRecord.status == "confirmed", PaymentRecord.verified_at.is_not(None))
         .group_by(PaymentRecord.currency)
     ).all()
     return {
