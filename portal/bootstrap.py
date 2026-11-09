@@ -87,9 +87,9 @@ def ensure_portal_database() -> None:
 
 def ui_source_status() -> tuple[str, bool]:
     """Surface the *real on-disk* HTML used by the root page, without revealing secrets."""
-    index = ROOT / "index.html"
-    if not index.is_file():
-        return (str(index), False)
-    content = index.read_text(encoding="utf-8", errors="replace")
-    return (str(index), "studio-assets/platform.css" in content and
+    platform_home = ROOT / "omni_site" / "templates" / "platform_home.html"
+    if not platform_home.is_file():
+        return (str(platform_home), False)
+    content = platform_home.read_text(encoding="utf-8", errors="replace")
+    return (str(platform_home), "studio-assets/platform.css" in content and
             'class="platform-app"' in content)

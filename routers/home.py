@@ -12,13 +12,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 @router.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    index_file = BASE_DIR / "index.html"
-    if index_file.exists():
-        response = FileResponse(index_file)
-        response.headers["Cache-Control"] = "no-store"
-        response.headers["X-Omni-UI"] = "studio-v3-platform"
-        return response
-    return render(request, "index.html")
+    # Always load dedicated Studio-v3 platform HTML, not legacy root index.
+    platform_file = BASE_DIR / "omni_site" / "templates" / "platform_home.html"
+    if not platform_file.is_file():
+        raise RuntimeError(
+            "OmniFactory platform template is missing: "
+            "omni_site/templates/platform_home.html. Update the Git branch."
+        )
+    response = FileResponse(platform_file, media_type="text/html")
+    response.headers["Cache-Control"] = "no-store, max-age=0"
+    response.headers["X-Omni-UI"] = "studio-v3-platform"
+    return response
 
 
 @router.get("/dashboard", response_class=HTMLResponse)

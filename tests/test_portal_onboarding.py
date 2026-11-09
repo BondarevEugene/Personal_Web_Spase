@@ -51,10 +51,22 @@ def test_explicit_database_never_auto_migrates_unless_development_opt_in(
 
 def test_root_source_is_studio_v3_and_has_build_header():
     html_path, version_ok = ui_source_status()
-    assert html_path.endswith("index.html")
+    assert html_path.endswith("platform_home.html")
     assert version_ok
     r = TestClient(app).get("/?ui=20261109")
     assert r.status_code == 200
     assert r.headers["x-omni-ui"] == "studio-v3-platform"
     assert "platform-app" in r.text
     assert "EVO MASTER" not in r.text
+
+
+def test_home_serves_dedicated_platform_template_not_legacy_root():
+    from routers.home import BASE_DIR
+    expected = BASE_DIR / "omni_site" / "templates" / "platform_home.html"
+    assert expected.is_file()
+    data = expected.read_text(encoding="utf-8")
+    assert "platform-app" in data
+    assert "EVO MASTER" not in data
+    r = TestClient(app).get("/")
+    assert "platform-app" in r.text
+    assert r.headers["cache-control"].startswith("no-store")

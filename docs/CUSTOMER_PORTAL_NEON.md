@@ -147,3 +147,10 @@ For a manual one-time local migration (after confirming the database URL):
     .\.venv\Scripts\python.exe -m alembic -c portal_alembic.ini upgrade head
 
 Never send database URLs or account passwords in diagnostic logs/screenshots.
+
+## Stable platform homepage
+The root path / now loads the canonical file omni_site/templates/platform_home.html
+instead of legacy index.html. This prevents an old locally modified index.html
+from overriding the Studio v3 platform design. The legacy file is retained.
+Old browser tabs repeatedly trying /ws/ai-agent can still emit 403; close them
+and hard-refresh. Do not create an unauthenticated WebSocket to silence logs.
