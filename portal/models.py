@@ -31,6 +31,7 @@ class Customer(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
     org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
     email: Mapped[str] = mapped_column(String(254), nullable=False, unique=True)
+    username: Mapped[str] = mapped_column(String(32), nullable=False, unique=True)
     display_name: Mapped[str] = mapped_column(String(120), nullable=False)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     role: Mapped[str] = mapped_column(String(20), default="owner", nullable=False)
