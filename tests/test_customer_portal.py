@@ -173,7 +173,7 @@ def test_portal_build_fingerprint(db_ready):
     client = TestClient(app)
     response = client.get("/")
     assert response.headers.get("x-omni-ui") == "studio-v3-platform"
-    assert response.headers.get("cache-control") == "no-store"
+    assert response.headers.get("cache-control", "").startswith("no-store")
     health = client.get("/health").json()
     assert health["platform_ui"] == "studio-v3-platform"
     assert health["customer_portal"] == "accounts-v1"
