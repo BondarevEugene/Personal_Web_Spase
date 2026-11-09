@@ -36,12 +36,18 @@ def upgrade():
     op.add_column("portal_subscriptions", sa.Column("current_period_start", sa.DateTime(), nullable=True))
     op.add_column("portal_subscriptions", sa.Column("current_period_end", sa.DateTime(), nullable=True))
     op.add_column("portal_subscriptions", sa.Column("cancel_at_period_end", sa.Boolean(), server_default=sa.false(), nullable=False))
-    op.add_column("portal_invoices", sa.Column("plan_code", sa.String(40), sa.ForeignKey("portal_plans.code"), nullable=True))
-    op.add_column("portal_invoices", sa.Column("subscription_id", sa.String(36), sa.ForeignKey("portal_subscriptions.id"), nullable=True))
-    op.add_column("portal_invoices", sa.Column("period_months", sa.Integer(), server_default="1", nullable=False))
-    op.add_column("portal_invoices", sa.Column("idempotency_key", sa.String(80), nullable=True))
-    op.add_column("portal_invoices", sa.Column("due_at", sa.DateTime(), nullable=True))
-    op.add_column("portal_invoices", sa.Column("paid_at", sa.DateTime(), nullable=True))
+    # SQLite needs recreate/batch mode to add FKs to an existing invoice table.
+    # Alembic uses native ALTERs for PostgreSQL and copy-and-move on SQLite.
+    with op.batch_alter_table("portal_invoices") as batch:
+        batch.add_column(sa.Column("plan_code", sa.String(40), nullable=True))
+        batch.add_column(sa.Column("subscription_id", sa.String(36), nullable=True))
+        batch.add_column(sa.Column("period_months", sa.Integer(), server_default="1", nullable=False))
+        batch.add_column(sa.Column("idempotency_key", sa.String(80), nullable=True))
+        batch.add_column(sa.Column("due_at", sa.DateTime(), nullable=True))
+        batch.add_column(sa.Column("paid_at", sa.DateTime(), nullable=True))
+        batch.create_foreign_key("fk_portal_invoice_plan", "portal_plans", ["plan_code"], ["code"])
+        batch.create_foreign_key("fk_portal_invoice_subscription", "portal_subscriptions",
+                                 ["subscription_id"], ["id"])
     op.create_index("uq_portal_invoice_request", "portal_invoices", ["org_id", "idempotency_key"], unique=True)
     op.add_column("portal_payments", sa.Column("verified_at", sa.DateTime(), nullable=True))
     op.create_table("portal_gateway_events",
@@ -82,9 +88,12 @@ def downgrade():
     op.drop_table("portal_gateway_events")
     op.drop_column("portal_payments", "verified_at")
     op.drop_index("uq_portal_invoice_request", table_name="portal_invoices")
-    for column in ("paid_at", "due_at", "idempotency_key", "period_months",
-                   "subscription_id", "plan_code"):
-        op.drop_column("portal_invoices", column)
+    with op.batch_alter_table("portal_invoices") as batch:
+        batch.drop_constraint("fk_portal_invoice_subscription", type_="foreignkey")
+        batch.drop_constraint("fk_portal_invoice_plan", type_="foreignkey")
+        for column in ("paid_at", "due_at", "idempotency_key", "period_months",
+                       "subscription_id", "plan_code"):
+            batch.drop_column(column)
     for column in ("cancel_at_period_end", "current_period_end", "current_period_start"):
         op.drop_column("portal_subscriptions", column)
     op.drop_table("portal_plan_price_changes")
