@@ -1,6 +1,5 @@
 """Local diagnostic: pinpoint HTML version and portal database without leaking secrets."""
-from pathlib import Path
-from portal.bootstrap import migration_config, portal_schema_status, ui_source_status
+from portal.bootstrap import portal_schema_status, ui_source_status
 from portal.db import database_url
 
 def main():

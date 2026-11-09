@@ -102,8 +102,8 @@ def register(request: Request, csrf_token: str = Form(""), username: str = Form(
         problem = "Укажи корректный адрес электронной почты."
     elif not 2 <= len(display_name) <= 120 or not 2 <= len(organization) <= 160:
         problem = "Укажи имя и название организации (от 2 символов)."
-    elif not 12 <= len(password) <= 128 or password != password_repeat:
-        problem = "Пароль: 12–128 символов. Повтор пароля должен совпадать."
+    elif not 8 <= len(password) <= 128 or password != password_repeat:
+        problem = "Пароль: от 8 символов (рекомендуем 12+). Повтор пароля должен совпадать."
     if problem:
         return form_page(request, "auth.html", mode="register", error=problem)
 
@@ -113,19 +113,19 @@ def register(request: Request, csrf_token: str = Form(""), username: str = Form(
                                                     Customer.username == username))):
             return form_page(request, "auth.html", mode="register",
                              error="Такой логин или email уже используется.")
-        org = Organization(name=organization)
-        db.add(org)
-        db.flush()
-        user = Customer(org_id=org.id, email=email, username=username,
-                        display_name=display_name, password_hash=hash_password(password),
-                        role="owner", email_verified=False)
-        db.add(user)
-        db.flush()
-        db.add(CustomerSettings(customer_id=user.id))
-        db.add(RegistrationEvent(customer_id=user.id, org_id=org.id, source="studio"))
-        db.add(Subscription(org_id=org.id, plan_code="free", status="active",
-                            price_minor=0, currency="UAH"))
         try:
+            org = Organization(name=organization)
+            db.add(org)
+            db.flush()
+            user = Customer(org_id=org.id, email=email, username=username,
+                            display_name=display_name, password_hash=hash_password(password),
+                            role="owner", email_verified=False)
+            db.add(user)
+            db.flush()
+            db.add(CustomerSettings(customer_id=user.id))
+            db.add(RegistrationEvent(customer_id=user.id, org_id=org.id, source="studio"))
+            db.add(Subscription(org_id=org.id, plan_code="free", status="active",
+                                price_minor=0, currency="UAH"))
             db.commit()
         except IntegrityError:
             db.rollback()
