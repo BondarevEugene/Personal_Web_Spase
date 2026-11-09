@@ -1,0 +1,57 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тарифы и подписка — OmniFactory</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3">
+<link rel="stylesheet" href="/studio-assets/account.css?v=1"></head>
+<body class="account-app"><header class="site-header"><div class="header-inner container">
+<a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span>
+<span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / BILLING</small></span></a>
+<nav class="account-header-links"><a href="/account">Кабинет</a><a href="/">Платформа</a><a href="/studio">Studio</a></nav>
+</div></header>
+<main class="container account-dashboard">
+<div class="eyebrow">OMNIFACTORY / SUBSCRIPTIONS</div>
+<h1>Прозрачные тарифы.<br><span class="gradient-text">Под контролем.</span></h1>
+<p class="account-dashboard-lede">Регистрация бесплатна. Платный доступ возникает только после подтверждённой оплаты счёта. Онлайн-эквайринг пока не подключён, автосписаний нет.</p>
+{% if created %}<p role="status" class="account-success">Предварительный счёт создан. Он не является подтверждением оплаты и не активирует платный доступ.</p>{% endif %}
+<div class="account-kpis">
+<article><span>ДОСТУП</span><strong>{{ "Платный" if entitlements.paid_access else "Free" }}</strong><small>Проверка на сервере</small></article>
+<article><span>ТЕКУЩИЙ УРОВЕНЬ</span><strong>{{ entitlements.plan|upper }}</strong><small>{{ entitlements.subscription_status }}</small></article>
+<article><span>ОПЛАЧЕН ДО</span><strong>{{ entitlements.paid_until[:10] if entitlements.paid_until else "—" }}</strong><small>Только по верифицированным операциям</small></article>
+</div>
+<section class="account-panel"><div class="eyebrow">01 / TARIFF CATALOG</div><h2>План подписки</h2>
+<div class="account-kpis">
+{% for plan in plans %}
+<article>
+<span>{{ plan.code|upper }} / {{ plan.period_months }} МЕС.</span>
+<strong>{{ plan.name }}</strong>
+<p>{{ plan.description }}</p>
+{% if plan.price_minor is not none %}
+<p>{{ "%.2f"|format(plan.price_minor / 100) }} {{ plan.currency }} / мес.</p>
+{% else %}
+<p>Стоимость ещё не утверждена</p>
+{% endif %}
+{% if plan.code != "free" and plan.is_enabled and plan.price_minor is not none and plan.price_minor > 0 and user.role == "owner" %}
+<form method="post" action="/account/billing/invoices">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="plan_code" value="{{ plan.code }}">
+<input type="hidden" name="request_id" value="{{ request_id }}_{{ plan.code }}">
+<button class="button button-line" type="submit">Создать предварительный счёт ↗</button>
+</form>
+{% elif plan.code == "free" %}<small>Бесплатно, без банковской карты</small>
+{% else %}<small>Ещё не открыт для оформления</small>{% endif %}
+</article>
+{% endfor %}
+</div>
+<p>Цена фиксируется в момент создания счёта и не меняется при последующем редактировании каталога. Создание счёта не проводит платёж и не меняет права.</p>
+</section>
+<section class="account-panel" style="margin-top:25px"><div class="eyebrow">02 / INVOICES</div><h2>История счетов организации</h2>
+{% if invoices %}<div class="account-ledger">
+{% for invoice in invoices %}
+<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }} · {{ invoice.status }}</span>
+<strong>{{ "%.2f"|format(invoice.amount_minor / 100) }} {{ invoice.currency }}</strong></div>
+{% endfor %}
+</div>{% else %}<div class="account-empty">Счетов ещё нет.</div>{% endif %}
+<p>Платежи не будут считаться полученными без подтверждения платёжного провайдера. История кликов и предварительные счета не являются выручкой.</p>
+</section>
+<div style="padding:30px 0"><a class="button button-line" href="/account">← Вернуться в кабинет</a></div>
+</main></body></html>
