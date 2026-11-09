@@ -1,0 +1,32 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050811"><title>Личный кабинет — OmniFactory</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=1"></head>
+<body class="account-app"><header class="site-header"><div class="header-inner container">
+<a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNT</small></span></a>
+<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/builder_pro_final.html">Конструктор</a><a href="/studio">Студия</a></nav>
+<form method="post" action="/account/logout" class="account-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Выйти ↗</button></form></div></header>
+<main class="container account-dashboard"><div class="eyebrow">PRIVATE CLIENT SPACE / OMNIFACTORY</div>
+<h1>Добро пожаловать,<br><span class="gradient-text">{{ user.display_name }}.</span></h1>
+<p class="account-dashboard-lede">Аккаунт <strong>{{ user.username }}</strong> · Организация <strong>{{ org.name }}</strong> · Роль <strong>{{ user.role }}</strong></p>
+{% if success %}<p class="account-success" role="status">Настройки сохранены.</p>{% endif %}
+<div class="account-kpis"><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
+<article><span>УЧЁТ РЕГИСТРАЦИИ</span><strong>Зарегистрирован</strong><small>{{ user.created_at.strftime("%d.%m.%Y") }}</small></article>
+<article><span>ПОДТВЕРЖДЕНИЕ EMAIL</span><strong>{{ "Подтверждён" if user.email_verified else "Не подтверждён" }}</strong><small>Проверка email будет добавлена</small></article></div>
+<div class="account-dashboard-grid">
+<section class="account-panel"><div class="eyebrow">01 / PROFILE SETTINGS</div><h2>Настройки аккаунта</h2>
+<form method="post" action="/account/settings"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>Имя <input name="display_name" type="text" minlength="2" maxlength="120" value="{{ user.display_name }}" required></label>
+<label>Почта <input type="email" value="{{ user.email }}" disabled></label>
+<label>Язык интерфейса <select name="language"><option value="ru" {% if settings.language == "ru" %}selected{% endif %}>Русский</option><option value="uk" {% if settings.language == "uk" %}selected{% endif %}>Українська</option><option value="en" {% if settings.language == "en" %}selected{% endif %}>English</option></select></label>
+<label>Часовой пояс <input name="timezone" value="{{ settings.timezone }}" maxlength="64" required></label>
+<label class="account-inline-checkbox"><input name="marketing_opt_in" value="yes" type="checkbox" {% if settings.marketing_opt_in %}checked{% endif %}> Получать новости о продуктах</label>
+<button class="button button-primary account-submit" type="submit">Сохранить изменения <span>↗</span></button></form>
+</section>
+<section class="account-panel"><div class="eyebrow">02 / COMMERCIAL ACCOUNTING</div><h2>Подписка и платежи</h2>
+<p>Тариф: <strong>{{ subscription.plan_code if subscription else "не выбран" }}</strong>. Стоимость: <strong>{{ "%.2f"|format((subscription.price_minor if subscription else 0)/100) }} {{ subscription.currency if subscription else "UAH" }}</strong>.</p>
+<p>Платёжные шлюзы ещё не подключены. Регистрация фиксируется в базе, но не считается оплатой и не создаёт выручку.</p>
+<h3>Счета</h3>{% if invoices %}<div class="account-ledger">{% for invoice in invoices %}<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }}</span><strong>{{ "%.2f"|format(invoice.amount_minor/100) }} {{ invoice.currency }} · {{ invoice.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Выставленных счетов пока нет.</div>{% endif %}
+<h3>История платежей</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ payment.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Подтверждённых платежных операций пока нет.</div>{% endif %}
+</section>
+<section class="account-panel account-panel-wide"><div class="eyebrow">03 / PROJECTS AND TOOLS</div><h2>Инструменты разработки</h2><p>Сейчас доступен базовый визуальный конструктор Telegram-бота с экспортом Python ZIP. Привязка проектов и ботов к этому аккаунту будет добавлена на следующем этапе.</p><a class="button button-line" href="/builder_pro_final.html">Открыть конструктор <span>↗</span></a></section>
+</div></main></body></html>
