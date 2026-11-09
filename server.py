@@ -81,5 +81,7 @@ async def health():
     return {
         "status": "ok",
         "platform": "OMNIFACTORY",
-        "version": "2.0.0"
+        "version": "2.0.0",
+        "platform_ui": "studio-v3-platform",
+        "customer_portal": "accounts-v1"
     }

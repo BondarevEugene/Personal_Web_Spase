@@ -11,6 +11,7 @@ from server import app
 from portal.db import engine, session_factory
 from portal.models import Customer, Invoice, Organization, PortalSession, RegistrationEvent, Subscription
 from portal.security import SESSION_COOKIE, token_hash
+from portal.report import summarize
 
 
 @pytest.fixture
@@ -153,3 +154,26 @@ def test_private_account_redirects_unauthenticated(db_ready):
     assert r.headers["location"] == "/account/login"
     post = client.post("/account/settings", data={"display_name": "Hacker"})
     assert post.status_code == 403
+
+
+def test_registration_accounting_is_not_fake_revenue(db_ready):
+    a, b = TestClient(app), TestClient(app)
+    assert register(a, username="accounting_a", email="accountinga@example.test").status_code == 303
+    assert register(b, username="accounting_b", email="accountingb@example.test").status_code == 303
+    with session_factory()() as db:
+        summary = summarize(db)
+    assert summary["registration_events"] == 2
+    assert summary["organizations"] == 2
+    assert summary["customers"] == 2
+    assert summary["confirmed_revenue_minor"] == 0
+    assert summary["payment_gateway_connected"] is False
+    assert summary["subscriptions_by_plan"] == {"free": 2}
+
+def test_portal_build_fingerprint(db_ready):
+    client = TestClient(app)
+    response = client.get("/")
+    assert response.headers.get("x-omni-ui") == "studio-v3-platform"
+    assert response.headers.get("cache-control") == "no-store"
+    health = client.get("/health").json()
+    assert health["platform_ui"] == "studio-v3-platform"
+    assert health["customer_portal"] == "accounts-v1"

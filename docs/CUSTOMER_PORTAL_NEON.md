@@ -57,3 +57,17 @@ Registration is **not** an automatic purchase. A record is made with source and 
     .\.venv\Scripts\python.exe -m pytest -q tests/test_customer_portal.py
 
 Tests run migrations against an isolated temporary SQLite DB and do not connect to Neon.
+
+## Read-only commercial accounting report
+After migrations, run from the repository root:
+    .\.venv\Scripts\python.exe -m portal.report
+
+It lists registration totals, signups by month, plan breakdown, invoice statuses
+and confirmed revenue, without revealing personal user data.
+Payment gateway is not yet connected; signup is not treated as paid revenue.
+
+## Version verification when / still shows EVO MASTER
+The new root sends HTTP header X-Omni-UI: studio-v3-platform.
+GET /health contains platform_ui=studio-v3-platform and
+customer_portal=accounts-v1 on this branch.
+Check the branch and server process before troubleshooting CSS.
