@@ -42,7 +42,7 @@ def upgrade():
     op.add_column("portal_invoices", sa.Column("idempotency_key", sa.String(80), nullable=True))
     op.add_column("portal_invoices", sa.Column("due_at", sa.DateTime(), nullable=True))
     op.add_column("portal_invoices", sa.Column("paid_at", sa.DateTime(), nullable=True))
-    op.create_unique_constraint("uq_portal_invoice_request", "portal_invoices", ["org_id", "idempotency_key"])
+    op.create_index("uq_portal_invoice_request", "portal_invoices", ["org_id", "idempotency_key"], unique=True)
     op.add_column("portal_payments", sa.Column("verified_at", sa.DateTime(), nullable=True))
     op.create_table("portal_gateway_events",
         sa.Column("id", sa.String(36), primary_key=True),
@@ -81,7 +81,7 @@ def upgrade():
 def downgrade():
     op.drop_table("portal_gateway_events")
     op.drop_column("portal_payments", "verified_at")
-    op.drop_constraint("uq_portal_invoice_request", "portal_invoices", type_="unique")
+    op.drop_index("uq_portal_invoice_request", table_name="portal_invoices")
     for column in ("paid_at", "due_at", "idempotency_key", "period_months",
                    "subscription_id", "plan_code"):
         op.drop_column("portal_invoices", column)
