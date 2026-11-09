@@ -30,6 +30,7 @@ from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 from omni_site.router import router as studio_router
 from omni_site.telegram_leads import router as studio_leads_router
+from api.simple_builder import router as simple_builder_router
 
 # ------------------------------------------------------------------------------
 # APP
@@ -68,6 +69,7 @@ app.mount(
 
 app.include_router(studio_router)
 app.include_router(studio_leads_router)
+app.include_router(simple_builder_router)
 
 # ------------------------------------------------------------------------------
 # HEALTH CHECK
