@@ -1,26 +1,36 @@
-# OmniFactory • Studio ↔ Platform, phase 1
+# OmniFactory • unified Studio v3 + Platform (test branch)
 
-## Scope
-- `/studio`: the public Studio v3 site. The existing HTML design and content remain unchanged except for a small link to the platform in the header and footer.
-- `/`: the existing OmniFactory platform landing page, now linking back to Studio and to its **existing** visual builder page.
-- `/builder_pro_final.html`: legacy visual-builder interface. The route already existed; no runtime or permissions have been added in this phase.
-- `/studio/api/lead`: newly connected existing Telegram lead router. The form submits server-side and requires `OMNI_STUDIO_BOT_TOKEN` and `OMNI_STUDIO_CHAT_ID` from the environment. Without credentials it returns HTTP 503; no false success is shown.
+## Pages
+- /studio — public Studio v3, preserved as the visual system reference.
+- / — unified OmniFactory Platform home with the same site.css tokens, header, fonts and visual language, plus platform.css.
+- /builder_pro_final.html, /architect, /builder-pro — working **simple** block editor with the same visual language. Legacy V5 HTML is preserved at templates/legacy_builder_pro_v5.html (not enabled).
+- /dashboard — verified API health, not simulated throughput.
+- /projects, /techkillers, /robotization and legacy /pages/* aliases serve existing legacy pages. Their own internal styling is not fully migrated in this phase.
+- /studio/api/lead — existing form endpoint now registered. Configure OMNI_STUDIO_BOT_TOKEN and OMNI_STUDIO_CHAT_ID in environment for delivery. HTTP 503 without configuration.
 
-## Local checks
-```powershell
-python -m pip install pytest
-python -m pytest -q tests/test_studio_platform_phase1.py
-python run.py
-```
+## What actually works in the simple bot builder
+- Add message/choice/photo/document/end blocks; select start node; configure next transitions and choice-button targets.
+- Reorder cards (drag & drop); **ordering does not imply link connections**. Links are configured in the inspector.
+- Client-side dialogue preview and JSON save/import to the browser; server-side validation of node identifiers, types, targets and maximum sizes.
+- Generate a runnable aiogram 3 project ZIP containing bot.py, scenario.json, requirements.txt and README.md. BOT_TOKEN is supplied only at runtime via environment and is **not** accepted by the builder API.
+- The exported bot can be run independently from Windows PowerShell using the README instructions. The code uses in-memory conversation cursors; they are reset after bot process restart.
 
-Open `http://127.0.0.1:8000/studio` and follow **Платформа** to `/`. In the platform sidebar, use **ВИЗУАЛЬНЫЙ КОНСТРУКТОР** to open the legacy Drawflow UI.
+## What does not work yet
+- Server-side project storage, per-user accounts, tenant isolation, app-level bot deployment, background worker orchestration and CRM synchronization.
+- Studio/Platform legacy admin pages are not authenticated yet and MUST NOT be published as a protected SaaS.
+- The pre-existing advanced builder had references to non-existent JS objects and unregistered endpoints; those fake deploy paths have not been restored.
+- Telegram photo/document upload by local file is not implemented: the generated runtime uses an HTTPS URL or Telegram file_id.
 
-## Security boundary / not completed
-- The platform, legacy builder, dashboard and admin routes currently do not have a confirmed production-grade customer authentication boundary. They MUST NOT be described or exposed as a secure private customer cabinet in production until authentication, authorization and tenant isolation are implemented.
-- The legacy builder interface references backend API endpoints not mounted by `server.py`. This PR restores route discovery only. Bot compilation, saving, deployment and CRM syncing are **not** claimed to work.
-- The lead endpoint's in-process IP throttle is basic and is not a distributed production anti-abuse control.
-- A separate security PR handles the published Firebase service-account JSON. **Rotate/revoke the exposed key** and plan history cleanup; this PR does not remediate historic exposure.
-- Git history contains tracked virtual environments and oversized compiled binaries; clean them in a separate, carefully scoped operation.
+## Test in PyCharm (Windows)
+Run in the repository root and the new Git branch:
+    .\.venv\Scripts\python.exe -m pytest -q tests/test_studio_platform_phase1.py tests/test_platform_routes.py tests/test_simple_builder.py
+    .\.venv\Scripts\python.exe run.py
 
-## Next engineering phase
-Inventory and normalize builder graph schemas and API routes, implement server-side validation and secure per-user project persistence, then integrate tenant-scoped CRM events through authenticated APIs. Keep `/studio` independent of CRM/admin privileges.
+Then open http://127.0.0.1:8000/ and click **Конструктор**.
+1. Edit the starter scenario.
+2. Choose **Проверить** (server must report valid nodes).
+3. Choose **▶ Начать предпросмотр**; click one of the choice buttons.
+4. Choose **Экспорт Python ZIP**; inspect README.md inside the downloaded file.
+
+## Security
+A service-account credential was committed in Git history. PR #16 removes that credential from current tree, but you must revoke/rotate its private key in Google Cloud IAM and coordinate historical cleanup. Never paste passwords, service-account JSON or Telegram tokens into the builder editor.
