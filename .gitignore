@@ -68,7 +68,6 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 
-@'
 /.venv/
 /.venv-cie/
 __pycache__/
@@ -82,4 +81,3 @@ __pycache__/
 /_backups/
 /omni_site_backup_v2/
 /omni_site/omni_site/
-'@ | Add-Content .gitignore
