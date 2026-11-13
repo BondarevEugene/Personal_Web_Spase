@@ -132,3 +132,16 @@
 .graph-node.node-kind-end .graph-node-head{border-radius:22px 22px 0 0}
 .graph-node.selected{outline:2px solid var(--node-accent);outline-offset:3px}
 .graph-node .graph-port{background:var(--node-accent);box-shadow:0 0 0 1px var(--node-accent),0 0 13px var(--node-glow)}
+
+
+/* Canvas legend: color + symbols work together for accessibility. */
+.graph-legend{display:flex;align-items:center;flex-wrap:wrap;gap:7px 12px;padding:10px 16px;border-bottom:1px solid #2f4562;background:#111f32}
+.graph-legend span{padding:5px 9px;border-radius:20px;background:#122137;border:1px solid currentColor;font-size:10px;font-weight:750;white-space:nowrap}
+.legend-message{color:#6bc4ff}.legend-choice{color:#c99cff}.legend-photo{color:#f4c183}.legend-document{color:#7be3bd}.legend-end{color:#ff96a4}
+.graph-kind-icon{display:grid;place-items:center;width:27px;height:27px;border:2px solid currentColor;background:#0a1729;border-radius:8px;box-shadow:0 0 12px var(--node-glow);font-size:16px}
+.node-kind-choice .graph-kind-icon{transform:rotate(45deg);border-radius:4px;font-size:19px}
+.node-kind-photo .graph-kind-icon{border-radius:5px 14px 5px 14px}
+.node-kind-document .graph-kind-icon{border-radius:3px}
+.node-kind-end .graph-kind-icon{border-radius:50%;width:29px;height:29px}
+.graph-node.node-kind-choice .graph-option{border-left:3px solid #c193ff}
+.graph-node.node-kind-end .node-input{background:#ff8a9c}
