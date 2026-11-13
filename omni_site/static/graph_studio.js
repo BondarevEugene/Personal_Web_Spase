@@ -191,19 +191,36 @@ async function post(path){
  return r;
 }
 function download(blob,name){const a=el('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+async function serverDryRun(choices){
+ const trace=$('preview-trace');
+ if(!trace)return;
+ try{
+  const response=await fetch(API+'/simulate',{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({scenario:payload(),choices})});
+  if(!response.ok)throw new Error('Сервер отклонил сценарий: '+response.status);
+  const result=await response.json();
+  trace.replaceChildren();
+  trace.append(el('strong','', 'Серверный dry-run · '+result.steps+' шагов'));
+  for(const step of result.trace||[])
+   trace.append(el('div','preview-trace-line',step.id+' · '+step.kind+(step.text?' · '+step.text.slice(0,75):'')));
+  trace.append(el('div','preview-trace-state','Статус: '+result.status));
+ }catch(err){
+  trace.replaceChildren();
+  trace.append(el('div','preview-trace-error','Серверная проверка недоступна: '+err.message));
+ }
+}
 function preview(){
  const root=$('preview-messages');root.replaceChildren();const map=new Map(data.nodes.map(n=>[n.id,n]));
- let steps=0;
- const trace=$('preview-trace');
- if(trace){trace.replaceChildren();trace.append(el('strong','', 'Трассировка выполнения (браузерная симуляция)'));}
- const log=n=>{
-  steps++;
-  if(trace)trace.append(el('div','preview-trace-line',steps+' · '+n.id+' / '+n.kind));
- };
+ const userChoices={};
+ void serverDryRun(userChoices);
  const bubble=t=>root.append(el('div','preview-bubble',t));
  function step(id){let loops=0;while(id&&loops++<40){const n=map.get(id);if(!n)return bubble('Блок не найден: '+id);
-  log(n);
-  if(n.kind==='choice'){bubble(n.text);n.options.forEach(o=>root.append(btn(o.label,()=>{root.querySelectorAll('.preview-button').forEach(x=>x.remove());step(o.target);},'preview-button')));return;}
+  if(n.kind==='choice'){bubble(n.text);n.options.forEach((o,index)=>root.append(btn(o.label,()=>{
+   userChoices[n.id]=index;
+   void serverDryRun(userChoices);
+   root.querySelectorAll('.preview-button').forEach(x=>x.remove());
+   step(o.target);
+  },'preview-button')));return;}
   if(n.kind==='message'||n.kind==='end')bubble(n.text||'Конец');
   if(n.kind==='photo'||n.kind==='document')bubble('['+names[n.kind]+'] '+(n.media||''));
   if(n.kind==='end')return;id=n.next;
