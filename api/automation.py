@@ -212,6 +212,9 @@ def delete_workflow(workflow_id: str, request: Request):
         if db.scalar(select(AutomationRun.id).where(
             AutomationRun.workflow_id == row.id).limit(1)):
             raise HTTPException(409, "Workflow has run history. Archive it instead of deleting")
+        if db.scalar(select(AutomationSchedule.id).where(
+            AutomationSchedule.workflow_id == row.id).limit(1)):
+            raise HTTPException(409, "Disable and delete the workflow schedule first")
         db.delete(row)
         db.commit()
         return Response(status_code=204)
@@ -348,7 +351,11 @@ async def incoming_webhook(workflow_id: str, request: Request,
     secure_request(request)
     if len(x_omni_webhook_token) < 40 or len(x_omni_webhook_token) > 100:
         raise HTTPException(404, "Webhook unavailable")
-    if int(request.headers.get("content-length", "0") or "0") > 16000:
+    try:
+        declared_length = int(request.headers.get("content-length", "0") or "0")
+    except ValueError:
+        raise HTTPException(400, "Invalid Content-Length")
+    if declared_length < 0 or declared_length > 16000:
         raise HTTPException(413, "Webhook payload too large")
     body = await request.body()
     if len(body) > 16000:
