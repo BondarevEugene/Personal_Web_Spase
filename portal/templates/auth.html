@@ -3,11 +3,11 @@
 <link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=1"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container">
 <a class="brand" href="/studio"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNTS</small></span></a>
-<nav class="account-header-links" aria-label="Навигация"><a href="/studio">Студия</a><a href="/">Платформа</a><a href="/account/login">Вход</a><a href="/account/register">Регистрация</a></nav>
+<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/architect">Конструктор</a><a href="/studio">Студия</a><a href="/account/login">Вход</a><a href="/account/register">Регистрация</a></nav>
 </div></header><main class="container account-auth-main"><section class="account-auth-copy">
 <div class="eyebrow">OMNIFACTORY / PRIVATE WORKSPACE</div><h1>Твоя система.<br><span class="gradient-text">Твой доступ.</span></h1>
 <p>Аккаунт для работы с собственными проектами OmniFactory. Данные клиентов разделяются по организациям, а пароли никогда не сохраняются в открытом виде.</p>
-<div class="account-auth-points"><span>01 / ПЕРСОНАЛЬНЫЕ НАСТРОЙКИ</span><span>02 / ПОДПИСКИ И СЧЕТА</span><span>03 / УПРАВЛЕНИЕ ПРОЕКТАМИ — СЛЕДУЮЩИЙ ЭТАП</span></div>
+<div class="account-auth-points"><span>01 / ПЕРСОНАЛЬНЫЕ НАСТРОЙКИ</span><span>02 / ПОДПИСКИ И СЧЕТА</span><span>03 / СОХРАНЕНИЕ СЦЕНАРИЕВ GRAPH STUDIO</span></div>
 </section><section class="account-auth-card" aria-labelledby="auth-title">
 <div class="eyebrow">CUSTOMER IDENTITY</div><h2 id="auth-title">{{ "Создать аккаунт" if mode == "register" else "Войти в OmniFactory" }}</h2>
 {% if error %}<p role="alert" class="account-error">{{ error }}</p>{% endif %}
