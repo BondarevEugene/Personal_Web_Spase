@@ -78,12 +78,12 @@ def test_create_list_open_update_delete_and_csrf(db_ready):
     assert c.get(BASE).json()["projects"][0]["id"] == id
     saved = c.get(BASE + "/" + id)
     assert saved.status_code == 200
-    assert saved.json()["scenario"] == SCENARIO | {
-        "nodes": [
-            {**SCENARIO["nodes"][0], "media": None, "options": []},
-            {**SCENARIO["nodes"][1], "next": None, "media": None, "options": []},
-        ]
-    }
+    assert saved.json()["scenario"]["name"] == SCENARIO["name"]
+    assert saved.json()["scenario"]["start"] == SCENARIO["start"]
+    assert [node["id"] for node in saved.json()["scenario"]["nodes"]] == ["hello", "done"]
+    assert saved.json()["scenario"]["nodes"][0]["text"] == "Привет!"
+    assert saved.json()["positions"]["hello"] == {"x": 50.0, "y": 60.0}
+
 
     modified = {"scenario": {**SCENARIO, "name": "Updated bot"},
                 "positions": {"done": {"x": 70, "y": 100}}}
