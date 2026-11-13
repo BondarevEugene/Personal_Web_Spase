@@ -243,7 +243,7 @@ async function saveWorkflow(){
    body:JSON.stringify({definition:workflow,revision})
   });
   cloudId=response.id;revision=response.revision;persist();
-  await listWorkflows();status('Сценарий сохранён: версия '+revision);
+  await listWorkflows();void refreshSchedule();status('Сценарий сохранён: версия '+revision);
  }catch(err){status('Ошибка сохранения: '+err.message,true);}
 }
 async function loadWorkflow(){
@@ -256,7 +256,7 @@ async function loadWorkflow(){
   workflow=data.definition;cloudId=data.id;revision=data.revision;
   selected=workflow.start;positions={};counter=1;
   $('auto-name').value=workflow.name;render();inspector();persist();
-  status('Открыт сценарий '+workflow.name+' · версия '+revision);void loadRuns();
+  status('Открыт сценарий '+workflow.name+' · версия '+revision);void loadRuns();void refreshSchedule();
  }catch(err){status('Не удалось открыть: '+err.message,true);}
 }
 async function analyzeWorkflow(){
@@ -304,6 +304,42 @@ async function loadRuns(){
   if(!rows.length)root.textContent='Запусков ещё нет.';
  }catch(err){status(err.message,true);}
 }
+async function refreshSchedule(){
+ if(!cloudId)return;
+ try{
+  const response=await request('/workflows/'+cloudId+'/schedule');
+  const row=response.schedule;
+  if(row){
+   $('auto-schedule-minutes').value=row.interval_minutes;
+   $('auto-schedule-status').textContent=(row.enabled?'Активно':'Отключено')+
+    ' · Следующий запуск '+new Date(row.next_run_at).toLocaleString()+
+    ' · нужен запущенный scheduler worker';
+  }else $('auto-schedule-status').textContent='Расписание не настроено. Выполнение только в dry-run.';
+ }catch(err){$('auto-schedule-status').textContent=err.message;}
+}
+async function configureSchedule(){
+ if(!cloudId)return status('Сначала сохрани workflow.',true);
+ try{
+  const minutes=Number($('auto-schedule-minutes').value);
+  if(!Number.isInteger(minutes)||minutes<5||minutes>10080)
+   return status('Интервал должен быть от 5 до 10080 минут.',true);
+  const result=await request('/workflows/'+cloudId+'/schedule',{
+   method:'PUT',headers:{'Content-Type':'application/json','X-Omni-CSRF':await csrf()},
+   body:JSON.stringify({interval_minutes:minutes,enabled:true})
+  });
+  status('Расписание сохранено. Worker должен быть запущен отдельно; режим: '+result.mode);
+  void refreshSchedule();
+ }catch(err){status('Ошибка расписания: '+err.message,true);}
+}
+async function removeSchedule(){
+ if(!cloudId)return;
+ if(!window.confirm('Отключить расписание этого процесса?'))return;
+ try{
+  await request('/workflows/'+cloudId+'/schedule',{
+   method:'DELETE',headers:{'X-Omni-CSRF':await csrf()}});
+  status('Расписание отключено.');void refreshSchedule();
+ }catch(err){status('Ошибка: '+err.message,true);}
+}
 async function webhook(){
  if(!cloudId)return status('Сначала сохрани workflow.',true);
  if(!window.confirm('Создать или заменить Webhook-токен? Прежний токен перестанет работать.'))return;
@@ -326,6 +362,8 @@ $('auto-analyze').addEventListener('click',analyzeWorkflow);
 $('auto-run').addEventListener('click',runWorkflow);
 $('auto-refresh-runs').addEventListener('click',loadRuns);
 $('auto-webhook').addEventListener('click',webhook);
+$('auto-schedule-save').addEventListener('click',configureSchedule);
+$('auto-schedule-remove').addEventListener('click',removeSchedule);
 $('auto-name').addEventListener('input',e=>{workflow.name=e.target.value;persist();});
 document.querySelectorAll('[data-kind]').forEach(btn=>btn.addEventListener('click',()=>addNode(btn.dataset.kind)));
 try{
