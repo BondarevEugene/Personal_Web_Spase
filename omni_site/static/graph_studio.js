@@ -18,6 +18,60 @@ const sample=()=>({name:'Мой Telegram-бот',start:'welcome',nodes:[
 {id:'finish',kind:'end',text:'До встречи!'}]});
 const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш'};
 let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
+let canvasExpanded=false;
+function setExpanded(value){
+ canvasExpanded=Boolean(value);
+ document.body.classList.toggle('graph-fullscreen',canvasExpanded);
+ const toggle=$('btn-expand-canvas');
+ if(toggle){toggle.textContent=canvasExpanded?'Свернуть поле':'Развернуть поле';toggle.setAttribute('aria-pressed',String(canvasExpanded));}
+}
+function newNodeId(){
+ let id;
+ do{id='node'+counter++;}while(data.nodes.some(n=>n.id===id));
+ return id;
+}
+function duplicateNode(id){
+ const original=data.nodes.find(n=>n.id===id);
+ if(!original||data.nodes.length>=80)return status('Не удалось скопировать: превышен лимит узлов.',true);
+ const clone=JSON.parse(JSON.stringify(original));
+ clone.id=newNodeId();
+ // Duplicating should not silently create a shared branch or change start.
+ if(clone.kind==='choice')clone.options=(clone.options||[]).map(o=>({...o}));
+ data.nodes.push(clone);
+ const p=position(id);
+ positions[clone.id]={x:Math.min(world.width-300,p.x+65),y:Math.min(world.height-190,p.y+170)};
+ selected=clone.id;change();inspector();status('Создана копия узла '+id+'.');
+}
+function removeNode(id){
+ if(data.nodes.length<=1)return status('Нельзя удалить единственный узел.',true);
+ data.nodes=data.nodes.filter(n=>n.id!==id);
+ delete positions[id];
+ for(const n of data.nodes){
+  if(n.next===id)n.next=null;
+  if(n.options)n.options=n.options.filter(o=>o.target!==id);
+ }
+ if(data.start===id)data.start=data.nodes[0].id;
+ selected=data.start;link=null;change();inspector();status('Узел удалён. Проверь незамкнутые переходы.');
+}
+function contextMenu(e,id){
+ e.preventDefault();e.stopPropagation();
+ const m=$('graph-context-menu');
+ if(!m)return;
+ m.replaceChildren();selected=id;render();inspector();
+ const n=data.nodes.find(x=>x.id===id);
+ const actions=[
+  ['Настроить узел',()=>{$('editor-inspector').scrollIntoView({block:'nearest',behavior:'smooth'});}],
+  ['Дублировать узел',()=>duplicateNode(id)],
+  ['Сделать стартовым',()=>{data.start=id;change();inspector();}],
+  ['Удалить узел',()=>removeNode(id)]
+ ];
+ for(const [label,fn] of actions)m.append(btn(label,()=>{m.hidden=true;fn();},'context-action'+(label.startsWith('Удалить')?' danger':'')));
+ m.hidden=false;
+ m.style.left=Math.min(e.clientX,innerWidth-230)+'px';
+ m.style.top=Math.min(e.clientY,innerHeight-195)+'px';
+ m.setAttribute('aria-label','Действия с узлом '+n.id);
+}
+
 const world={width:2200,height:1400};
 function decorateCard(card,n) {
  card.classList.add('node-kind-'+n.kind);
@@ -61,6 +115,7 @@ function render(){
  data.nodes.forEach((n,i)=>{
   const p=position(n.id,i),card=el('section','builder-node graph-node'+(selected===n.id?' selected':''));
   card.dataset.nodeId=n.id;decorateCard(card,n);card.style.left=p.x+'px';card.style.top=p.y+'px';
+  card.addEventListener('contextmenu',e=>contextMenu(e,n.id));
   const head=el('div','builder-node-head graph-node-head');head.append(el('span','',n.id===data.start?'● START':n.id),el('strong','',names[n.kind]));
   head.title='Переместить узел';card.append(head);
   const input=btn('',()=>link?connect(n.id):status('Сначала выбери выход узла'),'graph-port node-input');
@@ -102,12 +157,11 @@ function inspector(){
  const root=$('editor-inspector');root.replaceChildren();const n=data.nodes.find(x=>x.id===selected);if(!n)return;
  root.append(el('h3','',names[n.kind]+' · '+n.id));
  root.append(btn('Сделать стартовым',()=>{data.start=n.id;change();inspector();}));
- root.append(btn('Удалить',()=>{
-  if(data.nodes.length<2)return status('Нельзя удалить единственный узел',true);
-  data.nodes=data.nodes.filter(x=>x.id!==n.id);delete positions[n.id];
-  data.nodes.forEach(x=>{if(x.next===n.id)x.next=null;if(x.options)x.options=x.options.filter(o=>o.target!==n.id);});
-  if(data.start===n.id)data.start=data.nodes[0].id;selected=data.start;change();inspector();
- },'inspector-btn danger'));
+ root.append(btn('Дублировать',()=>duplicateNode(n.id)));
+ root.append(btn('Удалить',()=>removeNode(n.id),'inspector-btn danger'));
+ const details=el('div','inspector-meta');
+ details.append(el('span','', 'ID: '+n.id),el('span','', 'ТИП: '+n.kind),el('span','',n.id===data.start?'● СТАРТОВЫЙ БЛОК':'Промежуточный блок'));
+ root.append(details);
  field(root,n.kind==='photo'||n.kind==='document'?'Подпись':'Текст',n.text||'',v=>{n.text=v;save();},true);
  if(n.kind==='photo'||n.kind==='document')field(root,'HTTPS URL / Telegram file_id',n.media||'',v=>{n.media=v;save();});
  const targets=data.nodes.map(x=>[x.id,x.id+' · '+names[x.kind]]);
@@ -127,7 +181,7 @@ function inspector(){
 }
 function add(kind,pos){
  if(!names[kind]||data.nodes.length>=80)return status('Лимит блоков достигнут',true);
- let id;do{id='node'+counter++;}while(data.nodes.some(n=>n.id===id));
+ const id=newNodeId();
  const n={id,kind,text:kind==='message'?'Новое сообщение':kind==='choice'?'Выберите вариант':'',next:null,media:null,options:kind==='choice'?[{label:'Продолжить',target:data.start}]:[]};
  data.nodes.push(n);if(pos)positions[id]=pos;selected=id;change();inspector();status('Узел добавлен. Перетаскивай за заголовок, соединяй порты.');
 }
@@ -139,14 +193,40 @@ async function post(path){
 function download(blob,name){const a=el('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
 function preview(){
  const root=$('preview-messages');root.replaceChildren();const map=new Map(data.nodes.map(n=>[n.id,n]));
+ let steps=0;
+ const trace=$('preview-trace');
+ if(trace){trace.replaceChildren();trace.append(el('strong','', 'Трассировка выполнения (браузерная симуляция)'));}
+ const log=n=>{
+  steps++;
+  if(trace)trace.append(el('div','preview-trace-line',steps+' · '+n.id+' / '+n.kind));
+ };
  const bubble=t=>root.append(el('div','preview-bubble',t));
  function step(id){let loops=0;while(id&&loops++<40){const n=map.get(id);if(!n)return bubble('Блок не найден: '+id);
+  log(n);
   if(n.kind==='choice'){bubble(n.text);n.options.forEach(o=>root.append(btn(o.label,()=>{root.querySelectorAll('.preview-button').forEach(x=>x.remove());step(o.target);},'preview-button')));return;}
   if(n.kind==='message'||n.kind==='end')bubble(n.text||'Конец');
   if(n.kind==='photo'||n.kind==='document')bubble('['+names[n.kind]+'] '+(n.media||''));
   if(n.kind==='end')return;id=n.next;
  }if(loops>=40)bubble('Обнаружен цикл.');}step(data.start);
 }
+document.addEventListener('pointerdown',e=>{
+ const menu=$('graph-context-menu');
+ if(menu&&!menu.hidden&&!menu.contains(e.target))menu.hidden=true;
+});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){$('graph-context-menu').hidden=true;if(canvasExpanded)setExpanded(false);}
+ const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+ if(!typing&&e.key==='Delete'&&selected)removeNode(selected);
+});
+$('btn-expand-canvas').addEventListener('click',()=>setExpanded(!canvasExpanded));
+$('btn-test-canvas').addEventListener('click',()=>{
+ preview();$('builder-preview').scrollIntoView({behavior:'smooth',block:'start'});
+});
+$('btn-export-info').addEventListener('click',()=>{
+ const n=$('export-explainer');
+ n.hidden=!n.hidden;
+ if(!n.hidden)n.scrollIntoView({behavior:'smooth',block:'center'});
+});
 document.querySelectorAll('[data-integration]').forEach(b=>b.addEventListener('click',()=>{
  const code=b.dataset.integration,info=$('integration-information');
  info.replaceChildren();
@@ -174,7 +254,7 @@ $('import-file').addEventListener('change',async e=>{
   const obj=JSON.parse(await file.text());
   const r=await fetch(API+'/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
   if(!r.ok)throw Error('Схема не прошла серверную проверку');
-  data=obj;positions={};selected=data.start;change();inspector();$('scenario-name').value=data.name;status('Сценарий импортирован.');
+  data=obj;positions={};selected=data.start;counter=1;change();inspector();$('scenario-name').value=data.name;status('Сценарий импортирован.');
  }catch(err){status('Ошибка импорта: '+err.message,true);}e.target.value='';
 });
 $('btn-preview').addEventListener('click',preview);
