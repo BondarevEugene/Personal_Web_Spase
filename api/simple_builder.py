@@ -139,6 +139,60 @@ def list_integrations():
             "statuses": {"export": "Работает экспорт", "planned": "В разработке"}}
 
 
+class SimulationRequest(BaseModel):
+    """Bounded dry-run. No Telegram calls, network, credentials or user code."""
+
+    scenario: Scenario
+    choices: dict[str, int] = Field(default_factory=dict, max_length=80)
+
+
+@router.post("/simulate")
+def simulate_scenario(request: SimulationRequest):
+    """Trace a complete deterministic route, pausing when a choice is missing.
+
+    The selected option index is keyed by the choice node ID. A maximum of
+    50 transitions prevents unbounded execution even for cyclic graphs.
+    """
+    scenario = request.scenario
+    by_id = {node.id: node for node in scenario.nodes}
+    trace: list[dict] = []
+    current = scenario.start
+    for _ in range(50):
+        node = by_id[current]
+        item = {"id": node.id, "kind": node.kind, "text": node.text}
+        if node.kind in {"photo", "document"}:
+            item["media"] = node.media
+        trace.append(item)
+        if node.kind == "end":
+            return {"status": "completed", "trace": trace, "steps": len(trace)}
+        if node.kind == "choice":
+            index = request.choices.get(node.id)
+            if index is None:
+                return {
+                    "status": "awaiting_choice",
+                    "at": node.id,
+                    "options": [
+                        {"index": i, "label": choice.label}
+                        for i, choice in enumerate(node.options)
+                    ],
+                    "trace": trace,
+                    "steps": len(trace),
+                }
+            if index < 0 or index >= len(node.options):
+                return {
+                    "status": "invalid_choice",
+                    "at": node.id,
+                    "trace": trace,
+                    "steps": len(trace),
+                }
+            current = node.options[index].target
+        else:
+            if not node.next:
+                return {"status": "completed", "trace": trace, "steps": len(trace)}
+            current = node.next
+    return {"status": "step_limit", "trace": trace, "steps": len(trace)}
+
+
 @router.post("/validate")
 def validate_scenario(scenario: Scenario):
     reachable = _reachable(scenario)
