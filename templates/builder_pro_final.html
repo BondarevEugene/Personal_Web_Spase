@@ -6,23 +6,25 @@
 <title>OmniFactory — конструктор Telegram-ботов</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
-<link rel="stylesheet" href="/studio-assets/builder.css?v=5">
+<link rel="stylesheet" href="/studio-assets/builder.css?v=6">
 <script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/graph_studio.js?v=5"></script>
+<script defer src="/studio-assets/graph_studio.js?v=6"></script>
 </head>
 <body class="platform-app builder-app">
 <a class="skip-link" href="#main">Перейти к редактору</a><div class="grid-noise" aria-hidden="true"></div>
 <header class="site-header" id="site-header"><div class="header-inner container">
 <a class="brand" href="/" aria-label="OmniFactory — платформа"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 38 38" fill="none"><path d="M19 2 35 19 19 36 3 19Z" stroke="currentColor" stroke-width="1.8"/><path d="m19 9 10 10-10 10L9 19Z" fill="currentColor" opacity=".75"/><path d="M19 9v20M9 19h20" stroke="#08121c" stroke-width="1.5"/></svg></span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / BUILDER</small></span></a>
-<nav id="main-nav" class="nav-links" aria-label="Навигация"><a href="/">Платформа</a><a class="active" href="/builder_pro_final.html">Конструктор</a><a href="/dashboard">Диагностика</a><a href="/studio">Студия</a></nav>
+<nav id="main-nav" class="nav-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a class="active" href="/architect">Конструктор</a><a href="/robotization">Автоматизация</a><a href="/techkillers">Технологии</a><a href="/dashboard">Диагностика</a><a href="/studio">Студия</a></nav>
 <div class="nav-actions"><a class="header-contact" href="/docs">API <span aria-hidden="true">↗</span></a><button class="menu-toggle" type="button" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Открыть меню"><span></span><span></span></button></div>
 </div></header>
 <main id="main" class="container builder-page">
-<div class="builder-intro"><div><div class="builder-hero-kicker">OMNIFACTORY / GRAPH STUDIO</div><h1>Логика становится<br><span class="gradient-text">видимой.</span></h1><p>Визуальный редактор процессов: размещай узлы на свободном поле, соединяй порты, проектируй ветвления диалогов и экспортируй готовый Python-проект.</p><div class="builder-hero-metric"><strong>01</strong> Пространство без ограничений по шаблону <strong>02</strong> Соединения и ветвления <strong>03</strong> Python / aiogram 3</div></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Graph Studio v2</strong><small>Черновик сохраняется в браузере. Серверный деплой и личные кабинеты — отдельный этап.</small></div></div>
+<div class="builder-intro"><div><div class="builder-hero-kicker">OMNIFACTORY / GRAPH STUDIO</div><h1>Логика становится<br><span class="gradient-text">видимой.</span></h1><p>Создай Telegram-сценарий от начала до конца: добавь блоки, соедини выходы со входами, проверь логику, протестируй диалог и скачай исполняемый Python-проект. Для реального запуска понадобится токен BotFather и Python-хостинг.</p><div class="builder-hero-metric"><strong>01</strong> Пространство без ограничений по шаблону <strong>02</strong> Соединения и ветвления <strong>03</strong> Python / aiogram 3</div></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Graph Studio v2</strong><small>Черновик сохраняется в текущем браузере, а ZIP содержит самостоятельный aiogram-проект. Автоматическое развёртывание ещё не реализовано.</small></div></div>
 <div class="builder-toolbar">
 <label for="scenario-name">Название сценария <input id="scenario-name" type="text" maxlength="100" value="Мой Telegram-бот" autocomplete="off"></label>
 <div class="builder-toolbar-actions">
-<button id="btn-save" type="button" class="button button-line">Сохранить</button>
+<button id="btn-new-scenario" type="button" class="button button-line">＋ Новый бот</button>
+<button id="btn-demo-scenario" type="button" class="button button-line">Пример диалога</button>
+<button id="btn-save" type="button" class="button button-line">Сохранить черновик</button>
 <button id="btn-import" type="button" class="button button-line">Импорт JSON</button>
 <button id="btn-download-json" type="button" class="button button-line">Скачать JSON</button>
 <button id="btn-validate" type="button" class="button button-line">Проверить схему</button>
@@ -37,6 +39,7 @@
  <div class="export-file-list"><code>bot.py</code><code>scenario.json</code><code>requirements.txt</code><code>.env.example</code><code>README.md</code></div>
  <p>Для запуска нужен токен от BotFather, установка библиотек и компьютер либо хостинг с Python 3.11+. Платформа сейчас не публикует бота автоматически. Интеграции Google, Meta и пользовательский Python пока не входят в экспорт.</p>
 </section>
+<div class="builder-guide" aria-label="Как создать бота"><span><b>1</b> Новый бот или пример</span><span><b>2</b> Настрой узлы и связи</span><span><b>3</b> Проверь схему</span><span><b>4</b> Тестируй маршрут</span><span><b>5</b> Экспортируй ZIP</span></div>
 <div class="integration-information" id="integration-information" hidden aria-live="polite"></div>
 <div id="project-status" class="builder-feedback" role="status" aria-live="polite">Редактор загружается…</div>
 <div class="builder-layout">
