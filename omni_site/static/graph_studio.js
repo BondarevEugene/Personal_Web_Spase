@@ -93,8 +93,13 @@ const integrationDetails={
 const fresh=()=>({name:'Новый Telegram-бот',start:'welcome',nodes:[
 {id:'welcome',kind:'message',text:'Привет! Это мой новый бот.',next:'finish'},
 {id:'finish',kind:'end',text:'До встречи!'}]});
-const sample=()=>({name:'Мой Telegram-бот',start:'welcome',nodes:[
-{id:'welcome',kind:'message',text:'Добро пожаловать!',next:'question'},
+const sample=()=>({name:'Пример: персональный Telegram-бот',start:'welcome',nodes:[
+{id:'welcome',kind:'message',text:'Добро пожаловать! Давайте познакомимся.',next:'ask'},
+{id:'ask',kind:'input',variable:'name',text:'Как вас зовут?',next:'setname'},
+{id:'setname',kind:'set_variable',variable:'welcome_text',value:'Рады знакомству, {{name}}!',next:'check'},
+{id:'check',kind:'condition',variable:'name',operator:'equals',value:'Алексей',true_target:'vip',false_target:'regular'},
+{id:'vip',kind:'message',text:'{{welcome_text}} Для вас подготовлен особый раздел.',next:'question'},
+{id:'regular',kind:'message',text:'{{welcome_text}}',next:'question'},
 {id:'question',kind:'choice',text:'Чем помочь?',options:[{label:'О нас',target:'about'},{label:'Завершить',target:'finish'}]},
 {id:'about',kind:'message',text:'Мы создаём цифровые решения.',next:'finish'},
 {id:'finish',kind:'end',text:'До встречи!'}]});
