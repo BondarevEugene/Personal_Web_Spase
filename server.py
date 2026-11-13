@@ -31,6 +31,7 @@ from fastapi.staticfiles import StaticFiles
 from omni_site.router import router as studio_router
 from omni_site.telegram_leads import router as studio_leads_router
 from api.simple_builder import router as simple_builder_router
+from api.builder_projects import router as builder_projects_router
 from portal.routes import router as customer_portal_router
 from portal.billing_routes import router as customer_billing_router
 
@@ -72,6 +73,7 @@ app.mount(
 app.include_router(studio_router)
 app.include_router(studio_leads_router)
 app.include_router(simple_builder_router)
+app.include_router(builder_projects_router)
 app.include_router(customer_portal_router)
 app.include_router(customer_billing_router)
 
