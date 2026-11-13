@@ -89,3 +89,9 @@
 .auto-warning{margin:6px 0;padding:6px 9px;background:#3c302c;border-left:3px solid #e5ad79;color:#ffddbf!important}
 .auto-tip{margin:6px 0;padding:6px 9px;background:#163831;border-left:3px solid #73dcc0;color:#bcf4e2!important}
 .auto-review small{color:#a5bed0}
+
+
+.auto-schedule-controls{display:flex;flex-wrap:wrap;align-items:end;gap:8px;background:#1b3045;border:1px solid #4c6782;border-radius:9px;padding:13px;margin:12px 0}
+.auto-schedule-controls label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:#d6ebfa;font-weight:800}
+.auto-schedule-controls input{width:110px;padding:9px 11px;border:1px solid #5a7794;background:#071b2e;color:#fff;border-radius:7px}
+.auto-schedule-controls small{display:block;flex-basis:100%;font-size:11px;color:#bed4e3}
