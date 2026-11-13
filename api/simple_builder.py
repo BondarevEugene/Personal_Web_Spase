@@ -134,8 +134,8 @@ CURSORS: dict[tuple[int, int], str] = {}
 
 
 async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
-    cursor_key = (chat_id, user_id)
     """Send automatic nodes until an interactive choice or the end is reached."""
+    cursor_key = (chat_id, user_id)
     for _ in range(50):
         node = NODES.get(node_id)
         if node is None:
