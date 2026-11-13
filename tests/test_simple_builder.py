@@ -79,3 +79,36 @@ def test_builder_page_loads_new_ui():
     assert "/studio-assets/graph_studio.js?v=5" in response.text
     assert "/studio-assets/builder.js" not in response.text
     assert "/studio-assets/site.css?v=3" in response.text
+
+
+def test_simulation_pauses_then_completes_selected_branch():
+    url = "/api/v1/builder/simple/simulate"
+    first = client.post(url, json={"scenario": SCENARIO})
+    assert first.status_code == 200, first.text
+    data = first.json()
+    assert data["status"] == "awaiting_choice"
+    assert [n["id"] for n in data["trace"]] == ["welcome", "choice"]
+    assert [x["label"] for x in data["options"]] == ["Информация", "Завершить"]
+
+    second = client.post(url, json={"scenario": SCENARIO, "choices": {"choice": 0}})
+    assert second.status_code == 200, second.text
+    assert second.json()["status"] == "completed"
+    assert [n["id"] for n in second.json()["trace"]] == ["welcome", "choice", "info", "finish"]
+
+    other = client.post(url, json={"scenario": SCENARIO, "choices": {"choice": 1}})
+    assert other.status_code == 200
+    assert [n["id"] for n in other.json()["trace"]] == ["welcome", "choice", "finish"]
+
+
+def test_simulation_invalid_selection_and_cycles_are_bounded():
+    url = "/api/v1/builder/simple/simulate"
+    invalid = client.post(url, json={"scenario": SCENARIO, "choices": {"choice": 19}})
+    assert invalid.status_code == 200
+    assert invalid.json()["status"] == "invalid_choice"
+
+    cyclic = {"name": "Cyclic example", "start": "loop",
+              "nodes": [{"id": "loop", "kind": "message", "text": "again", "next": "loop"}]}
+    result = client.post(url, json={"scenario": cyclic})
+    assert result.status_code == 200
+    assert result.json()["status"] == "step_limit"
+    assert result.json()["steps"] == 50
