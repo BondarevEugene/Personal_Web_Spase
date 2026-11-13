@@ -116,11 +116,12 @@ def _reachable(scenario: Scenario) -> set[str]:
 @router.get("/capabilities")
 def capabilities():
     return {
-        "name": "OmniFactory Simple Telegram Builder",
+        "name": "OmniFactory Telegram Workflow Builder",
         "supported_blocks": ["message", "choice", "photo", "document", "end", "input", "condition", "set_variable"],
         "validation": True,
         "export": "aiogram 3 Python project ZIP",
-        "server_persistence": False,
+        "server_persistence": True,
+        "persistence_requires_account": True,
         "live_deployment": False,
     }
 
@@ -444,7 +445,9 @@ Type /start in your Telegram bot to begin the conversation.
 ## Scope / limitations
 - Messages, inline-button choices, photos/documents by HTTPS URL or Telegram
   file_id, and terminal nodes are supported.
-- Dialogue positions are stored only in process memory and reset on restart.
+- Text input, per-user in-memory variables, {{variable}} substitutions,
+  setting values and IF/ELSE comparisons are supported.
+- Dialogue positions and variables are stored only in process memory and reset on restart.
 - Deploy/hosting, persistent user records, media file upload and CRM integration
   are not part of this export.
 - Avoid unconditional message-to-message loops (there is a 50-step guard).
