@@ -98,7 +98,7 @@ const sample=()=>({name:'Мой Telegram-бот',start:'welcome',nodes:[
 {id:'question',kind:'choice',text:'Чем помочь?',options:[{label:'О нас',target:'about'},{label:'Завершить',target:'finish'}]},
 {id:'about',kind:'message',text:'Мы создаём цифровые решения.',next:'finish'},
 {id:'finish',kind:'end',text:'До встречи!'}]});
-const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш'};
+const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш',input:'Ввод пользователя',condition:'Условие IF / ELSE',set_variable:'Переменная'};
 let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
 let canvasExpanded=false;
 function replaceScenario(factory) {
@@ -142,6 +142,8 @@ function removeNode(id){
  delete positions[id];
  for(const n of data.nodes){
   if(n.next===id)n.next=null;
+  if(n.true_target===id)n.true_target=null;
+  if(n.false_target===id)n.false_target=null;
   if(n.options)n.options=n.options.filter(o=>o.target!==id);
  }
  if(data.start===id)data.start=data.nodes[0].id;
@@ -171,7 +173,7 @@ function decorateCard(card,n) {
  card.classList.add('node-kind-'+n.kind);
  card.dataset.kind=n.kind;
  const icon=el('span','graph-kind-icon',
-  {message:'✉',choice:'◇',photo:'▧',document:'▤',end:'■'}[n.kind]||'●');
+  {message:'✉',choice:'◇',photo:'▧',document:'▤',end:'■',input:'⇥',condition:'◇',set_variable:'≔'}[n.kind]||'●');
  card.prepend(icon);
 }
 const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;};
@@ -179,10 +181,10 @@ const btn=(txt,cb,cls='inspector-btn')=>{const e=el('button',cls,txt);e.type='bu
 const status=(msg,bad=false)=>{const n=$('project-status');n.textContent=msg;n.classList.toggle('error',bad);};
 const save=()=>{try{localStorage.setItem(STORE,JSON.stringify({data,positions,cloudProjectId}));}catch(e){status('Локальное сохранение недоступно',true);}};
 function position(id,index=0){if(!positions[id])positions[id]={x:80+(index%5)*335,y:90+Math.floor(index/5)*235};return positions[id];}
-function payload(){return {name:data.name,start:data.start,nodes:data.nodes.map(({id,kind,text='',next=null,media=null,options=[]})=>({id,kind,text,next,media,options}))};}
+function payload(){return {name:data.name,start:data.start,nodes:data.nodes.map(({id,kind,text='',next=null,media=null,options=[],variable=null,value='',operator='equals',true_target=null,false_target=null})=>({id,kind,text,next,media,options,variable,value,operator,true_target,false_target}))};}
 function edges(){
  const svg=$('flow-edges');if(!svg)return;svg.replaceChildren();
- for(const n of data.nodes){const p=position(n.id),targets=n.kind==='choice'?(n.options||[]).map((o,i)=>({id:o.target,i})):n.next?[{id:n.next,i:0}]:[];
+ for(const n of data.nodes){const p=position(n.id),targets=n.kind==='choice'?(n.options||[]).map((o,i)=>({id:o.target,i})):n.kind==='condition'?[{id:n.true_target,i:0},{id:n.false_target,i:1}]:n.next?[{id:n.next,i:0}]:[];
   for(const t of targets){if(!data.nodes.some(x=>x.id===t.id))continue;
    const q=position(t.id),x=p.x+278,y=p.y+114+t.i*43,X=q.x,Y=q.y+65,b=Math.max(70,Math.abs(X-x)*.48);
    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -195,6 +197,7 @@ function connect(target){
  if(!link)return;
  const n=data.nodes.find(x=>x.id===link.id);if(!n)return;
  if(n.kind==='choice'){if(!n.options?.[link.i])return;n.options[link.i].target=target;}
+ else if(n.kind==='condition'){if(link.i===0)n.true_target=target;else if(link.i===1)n.false_target=target;}
  else if(n.kind!=='end')n.next=target;
  status('Соединено: '+n.id+' → '+target);link=null;render();save();
 }
@@ -215,7 +218,7 @@ function render(){
   const input=btn('',()=>link?connect(n.id):status('Сначала выбери выход узла'),'graph-port node-input');
   input.setAttribute('aria-label','Вход '+n.id);card.append(input);
   card.append(el('div','builder-node-text',n.text||n.media||'(настрой содержимое)'));
-  const opts=n.kind==='choice'?(n.options||[]):n.kind==='end'?[]:[{label:'Далее',target:n.next||'—'}];
+  const opts=n.kind==='choice'?(n.options||[]):n.kind==='condition'?[{label:'Да / TRUE',target:n.true_target||'—'},{label:'Нет / FALSE',target:n.false_target||'—'}]:n.kind==='end'?[]:[{label:'Далее',target:n.next||'—'}];
   opts.forEach((o,j)=>{
    const row=el('div','graph-option');row.append(el('span','',o.label+' → '+(o.target||'—')));
    const output=btn('',()=>{link={id:n.id,i:j};status('Выход выбран. Нажми вход другого блока.');},'graph-port node-output');
@@ -276,7 +279,12 @@ function inspector(){
 function add(kind,pos){
  if(!names[kind]||data.nodes.length>=80)return status('Лимит блоков достигнут',true);
  const id=newNodeId();
- const n={id,kind,text:kind==='message'?'Новое сообщение':kind==='choice'?'Выберите вариант':'',next:null,media:null,options:kind==='choice'?[{label:'Продолжить',target:data.start}]:[]};
+ const finish=data.nodes.find(n=>n.kind==='end')?.id||data.start;
+ const n={id,kind,text:kind==='message'?'Новое сообщение':kind==='choice'?'Выберите вариант':kind==='input'?'Как вас зовут?':'',
+ next:kind==='input'||kind==='set_variable'?finish:null,media:null,options:kind==='choice'?[{label:'Продолжить',target:finish}]:[],
+ variable:kind==='input'?'name':kind==='set_variable'?'greeting':kind==='condition'?'name':null,
+ value:kind==='set_variable'?'Привет, {{name}}':kind==='condition'?'Алексей':'',operator:'equals',
+ true_target:kind==='condition'?finish:null,false_target:kind==='condition'?finish:null};
  data.nodes.push(n);if(pos)positions[id]=pos;selected=id;change();inspector();status('Узел добавлен. Перетаскивай за заголовок, соединяй порты.');
 }
 async function post(path){
