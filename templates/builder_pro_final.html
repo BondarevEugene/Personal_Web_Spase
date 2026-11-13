@@ -6,9 +6,9 @@
 <title>OmniFactory — конструктор Telegram-ботов</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
-<link rel="stylesheet" href="/studio-assets/builder.css?v=1">
+<link rel="stylesheet" href="/studio-assets/builder.css?v=2">
 <script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/builder.js?v=1"></script>
+<script defer src="/studio-assets/graph_studio.js?v=2"></script>
 </head>
 <body class="platform-app builder-app">
 <a class="skip-link" href="#main">Перейти к редактору</a><div class="grid-noise" aria-hidden="true"></div>
@@ -18,7 +18,7 @@
 <div class="nav-actions"><a class="header-contact" href="/docs">API <span aria-hidden="true">↗</span></a><button class="menu-toggle" type="button" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Открыть меню"><span></span><span></span></button></div>
 </div></header>
 <main id="main" class="container builder-page">
-<div class="builder-intro"><div><div class="eyebrow">OMNIFACTORY / TELEGRAM SCENARIO ENGINE</div><h1>Создавай диалоги.<br><span class="gradient-text">Без написания обработчиков.</span></h1><p>Сообщения, кнопки, фото и документы — в наглядной схеме. Проверка переходов и экспорт Python-проекта выполняются на сервере.</p></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Simple Builder v1</strong><small>Черновик сохраняется в браузере. Серверный деплой и личные кабинеты — отдельный этап.</small></div></div>
+<div class="builder-intro"><div><div class="builder-hero-kicker">OMNIFACTORY / GRAPH STUDIO</div><h1>Логика становится<br><span class="gradient-text">видимой.</span></h1><p>Визуальный редактор процессов: размещай узлы на свободном поле, соединяй порты, проектируй ветвления диалогов и экспортируй готовый Python-проект.</p><div class="builder-hero-metric"><strong>01</strong> Пространство без ограничений по шаблону <strong>02</strong> Соединения и ветвления <strong>03</strong> Python / aiogram 3</div></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Graph Studio v2</strong><small>Черновик сохраняется в браузере. Серверный деплой и личные кабинеты — отдельный этап.</small></div></div>
 <div class="builder-toolbar">
 <label for="scenario-name">Название сценария <input id="scenario-name" type="text" maxlength="100" value="Мой Telegram-бот" autocomplete="off"></label>
 <div class="builder-toolbar-actions">
@@ -38,12 +38,22 @@
 <button class="palette-node" data-add="photo" type="button" draggable="true"><b>▧</b><span><strong>Фото</strong><small>HTTPS / Telegram file_id</small></span></button>
 <button class="palette-node" data-add="document" type="button" draggable="true"><b>▤</b><span><strong>Документ</strong><small>HTTPS / Telegram file_id</small></span></button>
 <button class="palette-node" data-add="end" type="button" draggable="true"><b>■</b><span><strong>Завершение</strong><small>Конец диалога</small></span></button>
-<p class="builder-tip">Перетаскивание меняет визуальный порядок. Связи задаются в инспекторе. Стартовый блок можно выбрать вручную.</p>
+<p class="builder-tip">Перетащи блок на поле. Двигай его за заголовок. Нажми порт справа, затем порт слева на другом блоке — связь появится автоматически.</p>
 </aside>
-<section class="builder-canvas" aria-label="Сценарий"><div class="builder-pane-head"><span>02 / СЦЕНАРИЙ</span><small id="node-count">0 блоков</small></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
+<section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
 <aside class="builder-inspector" aria-label="Настройка блока"><div class="builder-pane-head"><span>03 / ИНСПЕКТОР</span><small>Параметры</small></div><div id="editor-inspector" class="builder-inspector-body"></div></aside>
 </div>
 <section class="builder-preview" aria-label="Предпросмотр"><div><div class="eyebrow">04 / DIALOGUE PREVIEW</div><h2>Пройди диалог перед экспортом.</h2><p>Это симуляция в браузере. Настоящий Telegram-бот начнёт отвечать после запуска сгенерированного Python-проекта.</p><button id="btn-preview" type="button" class="button button-line">▶ Начать предпросмотр</button></div><div id="preview-messages" class="builder-preview-chat" aria-live="polite"><p>Здесь появятся сообщения.</p></div></section>
 <section class="builder-security-note"><strong>Безопасный экспорт:</strong> секреты не попадают в ZIP. Токен Telegram задаётся только в переменных окружения при запуске бота. Запуск на нашем сервере и синхронизация CRM пока не реализованы.</section>
 </main>
+<footer class="builder-footer" aria-label="OmniFactory footer">
+ <div class="builder-footer-main">
+  <div><div class="builder-footer-brand">OMNI<span>FACTORY</span></div>
+   <p>Инженерия цифровых систем. Превращаем идеи в масштабируемые процессы, интеллектуальных ассистентов и работающие продукты.</p></div>
+  <nav class="builder-footer-links" aria-label="Ссылки платформы">
+   <a href="/">Платформа</a><a href="/studio">Студия</a><a href="/dashboard">Система</a><a href="/docs">Developer API</a>
+  </nav>
+ </div>
+ <div class="builder-footer-bottom"><span>© 2026 OMNIFACTORY · BUILT FOR WHAT'S NEXT.</span><span>GRAPH STUDIO / PYTHON ENGINEERING / HUMAN-CENTERED AUTOMATION</span></div>
+</footer>
 </body></html>
