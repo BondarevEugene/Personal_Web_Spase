@@ -215,3 +215,12 @@ body.graph-fullscreen{overflow:hidden}
 .graph-fullscreen .graph-context-menu{z-index:3010}
 @media(max-width:1250px){.builder-layout{grid-template-columns:210px minmax(0,1fr)}.builder-inspector{grid-column:1/-1}.builder-canvas-scroll{height:620px}.preview-workspace{grid-template-columns:1fr}}
 @media(max-width:790px){.builder-page.container{width:calc(100% - 20px)}.builder-layout{grid-template-columns:1fr}.builder-palette{max-height:340px}.builder-inspector{grid-column:auto}.builder-canvas-scroll{height:540px;min-height:540px}.export-explainer{grid-template-columns:1fr}.builder-intro-note{width:100%}.builder-hero-metric{display:none}.graph-fullscreen .builder-layout{display:grid;grid-template-columns:1fr;overflow:auto}.graph-fullscreen .builder-canvas{height:65vh}.graph-fullscreen .builder-palette,.graph-fullscreen .builder-inspector{height:auto}}
+
+
+/* Guided creation: product workflow, not decorative controls. */
+.builder-guide{display:flex;align-items:stretch;gap:7px;flex-wrap:wrap;padding:10px 0}
+.builder-guide span{display:flex;align-items:center;gap:9px;background:#152b40;border:1px solid #466580;border-radius:8px;padding:9px 12px;color:#e2eefa;font-size:12px;font-weight:700;line-height:1.4;flex:1;min-width:154px}
+.builder-guide b{display:grid;place-items:center;width:23px;height:23px;flex-shrink:0;border-radius:6px;background:#80dbc9;color:#0b2432;font-size:12px}
+.builder-app .builder-toolbar .button{font-weight:750}
+@media(max-width:1050px){.builder-guide span{flex-basis:29%}}
+@media(max-width:600px){.builder-guide span{flex-basis:44%}}
