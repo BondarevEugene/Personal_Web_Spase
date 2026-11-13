@@ -6,9 +6,9 @@
 <title>OmniFactory — конструктор Telegram-ботов</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
-<link rel="stylesheet" href="/studio-assets/builder.css?v=6">
+<link rel="stylesheet" href="/studio-assets/builder.css?v=7">
 <script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/graph_studio.js?v=6"></script>
+<script defer src="/studio-assets/graph_studio.js?v=7"></script>
 </head>
 <body class="platform-app builder-app">
 <a class="skip-link" href="#main">Перейти к редактору</a><div class="grid-noise" aria-hidden="true"></div>
@@ -38,6 +38,15 @@
  <div><strong>Что создаётся при экспорте?</strong><p>Скачивается ZIP-архив самостоятельного Python Telegram-бота. Это исходный код, а не уже запущенный бот.</p></div>
  <div class="export-file-list"><code>bot.py</code><code>scenario.json</code><code>requirements.txt</code><code>.env.example</code><code>README.md</code></div>
  <p>Для запуска нужен токен от BotFather, установка библиотек и компьютер либо хостинг с Python 3.11+. Платформа сейчас не публикует бота автоматически. Интеграции Google, Meta и пользовательский Python пока не входят в экспорт.</p>
+</section>
+<section class="builder-cloud" aria-label="Сохранённые проекты аккаунта">
+ <div class="builder-cloud-title"><strong>МОИ СЦЕНАРИИ</strong><small id="cloud-state" role="status">Проверка входа…</small></div>
+ <label for="cloud-project-list">Проекты аккаунта</label>
+ <select id="cloud-project-list" aria-label="Выбрать сохранённый сценарий"><option value="">Новый проект</option></select>
+ <button id="btn-cloud-save" type="button" class="button button-primary">Сохранить в аккаунте</button>
+ <button id="btn-cloud-load" type="button" class="button button-line">Открыть</button>
+ <button id="btn-cloud-delete" type="button" class="button button-line">Удалить</button>
+ <a href="/account/login" class="cloud-login-link">Войти в кабинет ↗</a>
 </section>
 <div class="builder-guide" aria-label="Как создать бота"><span><b>1</b> Новый бот или пример</span><span><b>2</b> Настрой узлы и связи</span><span><b>3</b> Проверь схему</span><span><b>4</b> Тестируй маршрут</span><span><b>5</b> Экспортируй ZIP</span></div>
 <div class="integration-information" id="integration-information" hidden aria-live="polite"></div>
