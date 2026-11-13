@@ -168,3 +168,34 @@ class BuilderProject(Base):
     layout_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, onupdate=utcnow, nullable=False)
+
+
+class AutomationWorkflow(Base):
+    """Owned workflow definition with immutable revision counter."""
+
+    __tablename__ = "portal_automation_workflows"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    definition_json: Mapped[str] = mapped_column(Text, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationRun(Base):
+    """Bounded execution audit: no credential values or raw response bodies."""
+
+    __tablename__ = "portal_automation_runs"
+    __table_args__ = (UniqueConstraint("customer_id", "idempotency_key",
+                                       name="uq_omni_automation_run_key"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    workflow_id: Mapped[str] = mapped_column(ForeignKey("portal_automation_workflows.id"),
+                                             index=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), index=True, nullable=False)
+    workflow_revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
+    mode: Mapped[str] = mapped_column(String(10), nullable=False)
+    idempotency_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    trace_json: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
