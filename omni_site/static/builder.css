@@ -224,3 +224,16 @@ body.graph-fullscreen{overflow:hidden}
 .builder-app .builder-toolbar .button{font-weight:750}
 @media(max-width:1050px){.builder-guide span{flex-basis:29%}}
 @media(max-width:600px){.builder-guide span{flex-basis:44%}}
+
+
+/* Personal projects: visible ownership, contrast, accessible controls. */
+.builder-cloud{display:flex;flex-wrap:wrap;align-items:end;gap:9px;margin:11px 0 3px;padding:15px 18px;border:1px solid #53758f;border-radius:12px;background:#15283e}
+.builder-cloud-title{display:flex;flex-direction:column;gap:1px;min-width:180px;margin-right:auto}
+.builder-cloud-title strong{font-size:12px;letter-spacing:.12em;color:#eaf5ff}
+.builder-cloud-title small{font-size:11px;color:#bccee0;line-height:1.35}
+.builder-cloud label{font-size:12px;font-weight:750;color:#d6e9f7;display:flex;flex-direction:column;gap:5px}
+.builder-cloud select{min-width:230px;max-width:400px;background:#081b2c;color:#fff;border:1px solid #738fab;border-radius:8px;padding:10px 12px;font-size:13px}
+.builder-cloud .button{min-height:41px;font-size:12px;padding:10px 13px}
+.cloud-login-link{font-size:12px;font-weight:800;color:#adf3e5;text-decoration:none;padding:8px 4px}
+.cloud-login-link:hover{text-decoration:underline}
+@media(max-width:700px){.builder-cloud select{width:100%;max-width:none}.builder-cloud label{flex-basis:100%}.builder-cloud .button{flex:1}}
