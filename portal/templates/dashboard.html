@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=1"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container">
 <a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNT</small></span></a>
-<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/builder_pro_final.html">Конструктор</a><a href="/studio">Студия</a></nav>
+<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/architect">Конструктор</a><a href="/robotization">Автоматизация</a><a href="/studio">Студия</a></nav>
 <form method="post" action="/account/logout" class="account-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Выйти ↗</button></form></div></header>
 <main class="container account-dashboard"><div class="eyebrow">PRIVATE CLIENT SPACE / OMNIFACTORY</div>
 <h1>Добро пожаловать,<br><span class="gradient-text">{{ user.display_name }}.</span></h1>
@@ -29,5 +29,5 @@
 <h3>Счета</h3>{% if invoices %}<div class="account-ledger">{% for invoice in invoices %}<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }}</span><strong>{{ "%.2f"|format(invoice.amount_minor/100) }} {{ invoice.currency }} · {{ invoice.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Выставленных счетов пока нет.</div>{% endif %}
 <h3>История платежей</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ payment.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Подтверждённых платежных операций пока нет.</div>{% endif %}
 </section>
-<section class="account-panel account-panel-wide"><div class="eyebrow">03 / PROJECTS AND TOOLS</div><h2>Инструменты разработки</h2><p>Сейчас доступен базовый визуальный конструктор Telegram-бота с экспортом Python ZIP. Привязка проектов и ботов к этому аккаунту будет добавлена на следующем этапе.</p><a class="button button-line" href="/builder_pro_final.html">Открыть конструктор <span>↗</span></a></section>
+<section class="account-panel account-panel-wide"><div class="eyebrow">03 / PROJECTS AND TOOLS</div><h2>Инструменты разработки</h2><p>Graph Studio позволяет создавать схемы диалогов, тестировать их и сохранять черновики в личном аккаунте. Для запуска скачанного Python-бота потребуется Telegram-токен и хостинг.</p><a class="button button-line" href="/architect">Открыть конструктор <span>↗</span></a></section>
 </div></main></body></html>
