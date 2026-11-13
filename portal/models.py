@@ -179,6 +179,7 @@ class AutomationWorkflow(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     definition_json: Mapped[str] = mapped_column(Text, nullable=False)
     revision: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    webhook_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
 
