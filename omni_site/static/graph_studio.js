@@ -3,6 +3,14 @@
 'use strict';
 const $=id=>document.getElementById(id), API='/api/v1/builder/simple';
 const STORE='omnifactory:graph-studio:v2';
+const integrationDetails={
+ google_docs:'Google Docs: создание, чтение и изменение документов. Для подключения потребуется OAuth Google и серверный исполнитель.',
+ google_sheets:'Google Sheets: чтение строк, добавление и обновление. Нужны OAuth и безопасное хранилище токенов.',
+ facebook:'Facebook Pages: публикации и обработка комментариев через Meta Graph API. Требуются разрешения приложения и авторизация.',
+ instagram:'Instagram Business: публикация медиа и комментарии через Instagram API. Требуется профессиональный аккаунт и авторизация Meta.',
+ http:'HTTP / Webhook: исходящие REST-запросы и входящие события. До запуска необходимы SSRF-защита, ограничения адресов и хранение секретов.',
+ python:'Python Handler: произвольная логика, но только в отдельной sandbox/worker-среде с ограничениями ресурсов.'
+};
 const sample=()=>({name:'Мой Telegram-бот',start:'welcome',nodes:[
 {id:'welcome',kind:'message',text:'Добро пожаловать!',next:'question'},
 {id:'question',kind:'choice',text:'Чем помочь?',options:[{label:'О нас',target:'about'},{label:'Завершить',target:'finish'}]},
@@ -11,6 +19,13 @@ const sample=()=>({name:'Мой Telegram-бот',start:'welcome',nodes:[
 const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш'};
 let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
 const world={width:2200,height:1400};
+function decorateCard(card,n) {
+ card.classList.add('node-kind-'+n.kind);
+ card.dataset.kind=n.kind;
+ const icon=el('span','graph-kind-icon',
+  {message:'✉',choice:'◇',photo:'▧',document:'▤',end:'■'}[n.kind]||'●');
+ card.prepend(icon);
+}
 const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;};
 const btn=(txt,cb,cls='inspector-btn')=>{const e=el('button',cls,txt);e.type='button';e.addEventListener('click',cb);return e;};
 const status=(msg,bad=false)=>{const n=$('project-status');n.textContent=msg;n.classList.toggle('error',bad);};
@@ -45,7 +60,7 @@ function render(){
  $('node-count').textContent=data.nodes.length+' узлов';
  data.nodes.forEach((n,i)=>{
   const p=position(n.id,i),card=el('section','builder-node graph-node'+(selected===n.id?' selected':''));
-  card.dataset.nodeId=n.id;card.style.left=p.x+'px';card.style.top=p.y+'px';
+  card.dataset.nodeId=n.id;decorateCard(card,n);card.style.left=p.x+'px';card.style.top=p.y+'px';
   const head=el('div','builder-node-head graph-node-head');head.append(el('span','',n.id===data.start?'● START':n.id),el('strong','',names[n.kind]));
   head.title='Переместить узел';card.append(head);
   const input=btn('',()=>link?connect(n.id):status('Сначала выбери выход узла'),'graph-port node-input');
@@ -132,6 +147,15 @@ function preview(){
   if(n.kind==='end')return;id=n.next;
  }if(loops>=40)bubble('Обнаружен цикл.');}step(data.start);
 }
+document.querySelectorAll('[data-integration]').forEach(b=>b.addEventListener('click',()=>{
+ const code=b.dataset.integration,info=$('integration-information');
+ info.replaceChildren();
+ info.append(el('strong','',b.querySelector('strong')?.textContent||code));
+ info.append(el('p','',integrationDetails[code]||'Пока недоступно.'));
+ info.append(el('span','integration-tag','ПЛАНИРУЕТСЯ · ПОКА НЕ ИСПОЛНЯЕТСЯ'));
+ info.hidden=false;
+ status('Модуль '+code+' есть в каталоге, но пока недоступен в экспортируемом сценарии.');
+}));
 document.querySelectorAll('[data-add]').forEach(b=>{b.addEventListener('click',()=>add(b.dataset.add));
  b.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain','kind:'+b.dataset.add);});});
 $('flow-canvas').addEventListener('dragover',e=>e.preventDefault());
