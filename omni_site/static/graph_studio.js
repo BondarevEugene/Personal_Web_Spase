@@ -304,40 +304,81 @@ async function post(path){
  return r;
 }
 function download(blob,name){const a=el('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
-async function serverDryRun(choices){
+async function serverDryRun(choices,inputs){
  const trace=$('preview-trace');
  if(!trace)return;
  try{
   const response=await fetch(API+'/simulate',{method:'POST',headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({scenario:payload(),choices})});
+   body:JSON.stringify({scenario:payload(),choices,inputs})});
   if(!response.ok)throw new Error('Сервер отклонил сценарий: '+response.status);
   const result=await response.json();
   trace.replaceChildren();
   trace.append(el('strong','', 'Серверный dry-run · '+result.steps+' шагов'));
   for(const step of result.trace||[])
-   trace.append(el('div','preview-trace-line',step.id+' · '+step.kind+(step.text?' · '+step.text.slice(0,75):'')));
+   trace.append(el('div','preview-trace-line',step.id+' · '+step.kind+(step.result===undefined?'':step.result?' · TRUE':' · FALSE')));
+  if(result.variables)trace.append(el('div','preview-trace-line',
+   'Переменные: '+JSON.stringify(result.variables)));
   trace.append(el('div','preview-trace-state','Статус: '+result.status));
  }catch(err){
-  trace.replaceChildren();
-  trace.append(el('div','preview-trace-error','Серверная проверка недоступна: '+err.message));
+  trace.replaceChildren();trace.append(el('div','preview-trace-error','Серверная проверка недоступна: '+err.message));
  }
 }
 function preview(){
- const root=$('preview-messages');root.replaceChildren();const map=new Map(data.nodes.map(n=>[n.id,n]));
- const userChoices={};
- void serverDryRun(userChoices);
+ const root=$('preview-messages');root.replaceChildren();
+ const map=new Map(data.nodes.map(n=>[n.id,n]));
+ const choices={},inputs={},variables={};
+ const substitute=t=>String(t||'').replace(/\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}/g,(_,key)=>variables[key]||'');
  const bubble=t=>root.append(el('div','preview-bubble',t));
- function step(id){let loops=0;while(id&&loops++<40){const n=map.get(id);if(!n)return bubble('Блок не найден: '+id);
-  if(n.kind==='choice'){bubble(n.text);n.options.forEach((o,index)=>root.append(btn(o.label,()=>{
-   userChoices[n.id]=index;
-   void serverDryRun(userChoices);
-   root.querySelectorAll('.preview-button').forEach(x=>x.remove());
-   step(o.target);
-  },'preview-button')));return;}
-  if(n.kind==='message'||n.kind==='end')bubble(n.text||'Конец');
-  if(n.kind==='photo'||n.kind==='document')bubble('['+names[n.kind]+'] '+(n.media||''));
-  if(n.kind==='end')return;id=n.next;
- }if(loops>=40)bubble('Обнаружен цикл.');}step(data.start);
+ let steps=0;
+ const sync=()=>{void serverDryRun(choices,inputs);};
+ function step(id){
+  while(id&&steps++<50){
+   const n=map.get(id);if(!n){bubble('Блок не найден: '+id);sync();return;}
+   if(n.kind==='set_variable'){
+    variables[n.variable]=substitute(n.value);
+    id=n.next;continue;
+   }
+   if(n.kind==='condition'){
+    const actual=variables[n.variable]||'',expected=substitute(n.value);
+    const yes=n.operator==='equals'?actual===expected:
+      n.operator==='not_equals'?actual!==expected:
+      n.operator==='contains'?actual.includes(expected):
+      n.operator==='not_empty'?Boolean(actual.trim()):false;
+    id=yes?n.true_target:n.false_target;continue;
+   }
+   if(n.kind==='input'){
+    bubble(substitute(n.text));
+    const form=el('form','preview-input-form');
+    const input=el('input','preview-text-input');
+    input.maxLength=300;input.required=true;input.placeholder='Введите ответ…';
+    const submit=el('button','preview-button','Отправить');submit.type='submit';
+    form.append(input,submit);
+    form.addEventListener('submit',e=>{
+     e.preventDefault();const value=input.value.trim();
+     if(!value)return;
+     inputs[n.id]=value;variables[n.variable]=value;
+     form.remove();bubble('Вы: '+value);sync();step(n.next);
+    });
+    root.append(form);input.focus();sync();return;
+   }
+   if(n.kind==='choice'){
+    bubble(substitute(n.text));
+    const actions=el('div','preview-actions');root.append(actions);
+    (n.options||[]).forEach((option,index)=>actions.append(btn(option.label,()=>{
+      choices[n.id]=index;actions.remove();bubble('Выбрано: '+option.label);
+      sync();step(option.target);
+    },'preview-button')));
+    sync();return;
+   }
+   if(n.kind==='message'||n.kind==='end')bubble(substitute(n.text)||'Конец');
+   if(n.kind==='photo'||n.kind==='document')bubble('['+names[n.kind]+'] '+(n.media||'')+' '+substitute(n.text));
+   if(n.kind==='end'){sync();return;}
+   id=n.next;
+  }
+  if(steps>=50)bubble('Лимит 50 переходов: проверьте циклы.');
+  sync();
+ }
+ step(data.start);
 }
 document.addEventListener('pointerdown',e=>{
  const menu=$('graph-context-menu');
