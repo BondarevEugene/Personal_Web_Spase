@@ -5,8 +5,8 @@
 <title>Automation Studio · OMNIFACTORY</title>
 <meta name="theme-color" content="#0c1829">
 <link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
-<link rel="stylesheet" href="/studio-assets/automation_studio.css?v=1">
-<script defer src="/studio-assets/automation_studio.js?v=1"></script>
+<link rel="stylesheet" href="/studio-assets/automation_studio.css?v=2">
+<script defer src="/studio-assets/automation_studio.js?v=2"></script>
 </head>
 <body class="omni-revamp automation-app">
 <a class="skip-link" href="#studio-main">Перейти к редактору</a>
@@ -30,7 +30,7 @@
  <button id="auto-new">＋ Новый</button><button id="auto-demo">Пример</button>
  <button id="auto-save" class="primary">Сохранить в аккаунте</button>
  <label>Сохранённые сценарии<select id="auto-workflows"><option value="">— Выбрать —</option></select></label>
- <button id="auto-load">Открыть</button><button id="auto-run" class="primary">▶ Тестовый запуск</button>
+ <button id="auto-load">Открыть</button><button id="auto-analyze">Проверить архитектуру</button><button id="auto-run" class="primary">▶ Тестовый запуск</button>
  <button id="auto-webhook">Webhook</button>
  <a href="/account/login" class="auto-account">Войти</a>
 </section>
@@ -69,7 +69,7 @@
   <h2>04 · Журнал тестового исполнения</h2>
   <p>Показывает истинный порядок узлов, выбранные ветки и остановки. Содержимое секретов не сохраняется в журнал.</p>
   <label>Тестовые входные значения, JSON<textarea id="auto-input" rows="3">{"customer":"Алексей"}</textarea></label>
-  <div id="auto-trace" class="auto-trace" aria-live="polite">Нажми «Тестовый запуск».</div>
+  <div id="auto-review" class="auto-review" aria-live="polite">Анализ проверит достижимость узлов, возможные риски и незавершённые маршруты.</div><div id="auto-trace" class="auto-trace" aria-live="polite">Нажми «Тестовый запуск».</div>
  </div>
  <div class="auto-history">
   <h2>05 · История и Webhook</h2>
