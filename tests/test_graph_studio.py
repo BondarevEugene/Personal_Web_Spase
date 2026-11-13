@@ -98,6 +98,6 @@ def test_workflow_creation_controls_and_backup_present():
     assert 'id="btn-demo-scenario"' in page
     assert 'class="builder-guide"' in page
     script = client.get("/studio-assets/graph_studio.js").text
-    for name in ("BACKUP_STORE", "replaceScenario", "function fresh()", "btn-new-scenario",
+    for name in ("BACKUP_STORE", "replaceScenario", "const fresh=", "btn-new-scenario",
                  "btn-demo-scenario", "serverDryRun"):
         assert name in script
