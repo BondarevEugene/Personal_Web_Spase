@@ -119,3 +119,18 @@ def test_tenant_isolation_and_csrf(db_ready):
     })
     assert conflict.status_code == 409
     assert len(one.get(URL + "/plans").json()["plans"]) == 1
+
+
+def test_managed_cloud_page_is_accessible_from_home_and_has_real_controls():
+    c = TestClient(app)
+    page = c.get("/cloud/deploy")
+    assert page.status_code == 200, page.text
+    assert 'id="cloud-preview"' in page.text
+    assert 'id="cloud-save"' in page.text
+    assert "создание платных ресурсов Railway пока отключено".lower() in page.text.lower()
+    assert c.get("/studio-assets/cloud_deploy.js").status_code == 200
+    assert 'href="/cloud/deploy"' in c.get("/").text
+    paths = app.openapi()["paths"]
+    for path in ("/api/v1/cloud/capabilities", "/api/v1/cloud/preview",
+                 "/api/v1/cloud/plans", "/api/v1/cloud/plans/{deployment_id}"):
+        assert path in paths
