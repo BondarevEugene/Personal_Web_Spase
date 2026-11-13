@@ -15,8 +15,8 @@ client = TestClient(app)
 def test_graph_studio_page_loads_premium_shell():
     response = client.get("/architect")
     assert response.status_code == 200
-    assert "/studio-assets/graph_studio.js?v=3" in response.text
-    assert "/studio-assets/builder.css?v=4" in response.text
+    assert "/studio-assets/graph_studio.js?v=5" in response.text
+    assert "/studio-assets/builder.css?v=5" in response.text
     assert 'class="builder-footer"' in response.text
     assert "GRAPH CANVAS" in response.text
 
@@ -75,3 +75,18 @@ def test_canvas_has_semantic_node_legend_and_distinct_shapes():
     assert ".graph-legend" in stylesheet
     assert ".node-kind-choice .graph-kind-icon" in stylesheet
     assert ".node-kind-end .graph-kind-icon" in stylesheet
+
+def test_graph_studio_workspace_has_context_menu_fullscreen_and_test_controls():
+    page = client.get("/architect").text
+    for control in ('id="graph-context-menu"', 'id="btn-expand-canvas"',
+                    'id="btn-test-canvas"', 'id="btn-export-info"',
+                    'id="preview-trace"', 'id="export-explainer"'):
+        assert control in page
+    css = client.get("/studio-assets/builder.css").text
+    for selector in (".graph-fullscreen", ".graph-context-menu",
+                     ".preview-trace", ".export-explainer"):
+        assert selector in css
+    js = client.get("/studio-assets/graph_studio.js").text
+    for handler in ("contextmenu", "duplicateNode", "setExpanded",
+                    "preview-trace", "removeNode", "btn-export-info"):
+        assert handler in js
