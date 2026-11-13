@@ -85,3 +85,7 @@ __pycache__/
 # Customer portal local development database
 portal_dev.sqlite3
 portal_dev.sqlite3-*
+
+/.venv-clean/
+
+/.venv-clean/
