@@ -196,8 +196,14 @@ class ConnectorExecutor:
             headers["Authorization"] = "Bearer " + token
         # All responses streamed and capped. Redirects and environment proxies off.
         try:
-            with httpx.Client(timeout=6, follow_redirects=False, trust_env=False) as client:
-                with client.stream(method, url, headers=headers, json=payload) as response:
+            proxy = os.getenv("OMNI_AUTOMATION_EGRESS_PROXY") or None
+            with httpx.Client(timeout=6, follow_redirects=False, trust_env=False,
+                              proxy=proxy) as client:
+                # Meta Graph API expects form fields; Google APIs accept JSON.
+                use_form = urlparse(url).hostname == "graph.facebook.com"
+                with client.stream(method, url, headers=headers,
+                                   data=payload if use_form else None,
+                                   json=payload if not use_form else None) as response:
                     if response.status_code >= 300:
                         raise ValueError("Connector returned HTTP " + str(response.status_code))
                     chunks = bytearray()
@@ -217,10 +223,16 @@ class ConnectorExecutor:
         kind = node.kind
         if kind == "http":
             url = str(conf.get("url", ""))
+            parsed = urlparse(url)
+            if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+                raise ValueError("HTTP node requires an HTTPS destination without credentials")
             hosts = {v.strip().lower() for v in
                      os.getenv("OMNI_AUTOMATION_ALLOWED_HOSTS", "").split(",") if v.strip()}
-            if not hosts:
+            if self.live and not hosts:
                 raise ValueError("No HTTP destination hosts configured")
+            if self.live and (os.getenv("OMNI_AUTOMATION_HTTP_LIVE_ENABLED") != "1" or
+                              not os.getenv("OMNI_AUTOMATION_EGRESS_PROXY")):
+                raise ValueError("Live custom HTTP requires explicit opt-in and a trusted egress proxy")
             method = conf.get("method", "GET")
             if method not in {"GET", "POST"}:
                 raise ValueError("Only GET and POST are supported")
