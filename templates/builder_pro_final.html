@@ -6,9 +6,9 @@
 <title>OmniFactory — конструктор Telegram-ботов</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
-<link rel="stylesheet" href="/studio-assets/builder.css?v=2">
+<link rel="stylesheet" href="/studio-assets/builder.css?v=3">
 <script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/graph_studio.js?v=2"></script>
+<script defer src="/studio-assets/graph_studio.js?v=3"></script>
 </head>
 <body class="platform-app builder-app">
 <a class="skip-link" href="#main">Перейти к редактору</a><div class="grid-noise" aria-hidden="true"></div>
@@ -29,15 +29,25 @@
 <button id="btn-export" type="button" class="button button-primary">Экспорт Python ZIP <span aria-hidden="true">↗</span></button>
 <input type="file" id="import-file" accept=".json,application/json" hidden>
 </div></div>
+<div class="integration-information" id="integration-information" hidden aria-live="polite"></div>
 <div id="project-status" class="builder-feedback" role="status" aria-live="polite">Редактор загружается…</div>
 <div class="builder-layout">
 <aside class="builder-palette" aria-label="Библиотека блоков">
 <div class="builder-pane-head"><span>01 / БЛОКИ</span><small>Клик или перетащи</small></div>
+<div class="palette-group-label">TELEGRAM / ДИАЛОГИ <span>РАБОТАЕТ</span></div>
 <button class="palette-node" data-add="message" type="button" draggable="true"><b>✉</b><span><strong>Сообщение</strong><small>Отправка текста</small></span></button>
 <button class="palette-node" data-add="choice" type="button" draggable="true"><b>◇</b><span><strong>Кнопки</strong><small>Выбор пути</small></span></button>
 <button class="palette-node" data-add="photo" type="button" draggable="true"><b>▧</b><span><strong>Фото</strong><small>HTTPS / Telegram file_id</small></span></button>
 <button class="palette-node" data-add="document" type="button" draggable="true"><b>▤</b><span><strong>Документ</strong><small>HTTPS / Telegram file_id</small></span></button>
 <button class="palette-node" data-add="end" type="button" draggable="true"><b>■</b><span><strong>Завершение</strong><small>Конец диалога</small></span></button>
+<div class="palette-group-label">ИНТЕГРАЦИИ / КОННЕКТОРЫ <span>ROADMAP</span></div>
+<button class="palette-node integration-node" data-integration="google_docs" type="button"><b>G</b><span><strong>Google Docs</strong><small>Документы · OAuth требуется</small></span></button>
+<button class="palette-node integration-node" data-integration="google_sheets" type="button"><b>▦</b><span><strong>Google Sheets</strong><small>Таблицы · OAuth требуется</small></span></button>
+<button class="palette-node integration-node" data-integration="facebook" type="button"><b>f</b><span><strong>Facebook Pages</strong><small>Meta Graph API</small></span></button>
+<button class="palette-node integration-node" data-integration="instagram" type="button"><b>◎</b><span><strong>Instagram Business</strong><small>Meta API</small></span></button>
+<div class="palette-group-label">ЛОГИКА / ОБРАБОТЧИКИ <span>ROADMAP</span></div>
+<button class="palette-node integration-node" data-integration="http" type="button"><b>↗</b><span><strong>HTTP / Webhook</strong><small>REST запросы, события</small></span></button>
+<button class="palette-node integration-node" data-integration="python" type="button"><b>{ }</b><span><strong>Python Handler</strong><small>Изолированный исполнитель</small></span></button>
 <p class="builder-tip">Перетащи блок на поле. Двигай его за заголовок. Нажми порт справа, затем порт слева на другом блоке — связь появится автоматически.</p>
 </aside>
 <section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
