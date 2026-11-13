@@ -52,6 +52,12 @@ async def techkillers(request: Request):
     return render(request, "techkillers.html")
 
 
+@router.get("/cloud/deploy", response_class=HTMLResponse)
+async def cloud_deploy(request: Request):
+    """Safe Managed Cloud plan preview, not a live deployment console."""
+    return render(request, "cloud_deploy.html")
+
+
 @router.get("/automation/studio", response_class=HTMLResponse)
 async def automation_studio(request: Request):
     """Real workflow editor with explicit dry-run execution controls."""
