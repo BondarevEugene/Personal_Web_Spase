@@ -6,9 +6,9 @@
 <title>OmniFactory — конструктор Telegram-ботов</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
-<link rel="stylesheet" href="/studio-assets/builder.css?v=7">
+<link rel="stylesheet" href="/studio-assets/builder.css?v=8">
 <script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/graph_studio.js?v=7"></script>
+<script defer src="/studio-assets/graph_studio.js?v=8"></script>
 </head>
 <body class="platform-app builder-app">
 <a class="skip-link" href="#main">Перейти к редактору</a><div class="grid-noise" aria-hidden="true"></div>
@@ -60,6 +60,10 @@
 <button class="palette-node" data-add="photo" type="button" draggable="true"><b>▧</b><span><strong>Фото</strong><small>HTTPS / Telegram file_id</small></span></button>
 <button class="palette-node" data-add="document" type="button" draggable="true"><b>▤</b><span><strong>Документ</strong><small>HTTPS / Telegram file_id</small></span></button>
 <button class="palette-node" data-add="end" type="button" draggable="true"><b>■</b><span><strong>Завершение</strong><small>Конец диалога</small></span></button>
+<div class="palette-group-label">ЛОГИКА / ДАННЫЕ <span>ИСПОЛНЯЕТСЯ</span></div>
+<button class="palette-node" data-add="input" type="button" draggable="true"><b>⇥</b><span><strong>Ввод пользователя</strong><small>Сохранить ответ в переменной</small></span></button>
+<button class="palette-node" data-add="set_variable" type="button" draggable="true"><b>≔</b><span><strong>Присвоить значение</strong><small>Переменные и шаблоны</small></span></button>
+<button class="palette-node" data-add="condition" type="button" draggable="true"><b>◇</b><span><strong>Условие IF / ELSE</strong><small>Проверка данных · две ветки</small></span></button>
 <div class="palette-group-label">ИНТЕГРАЦИИ / КОННЕКТОРЫ <span>ROADMAP</span></div>
 <button class="palette-node integration-node" data-integration="google_docs" type="button"><b>G</b><span><strong>Google Docs</strong><small>Документы · OAuth требуется</small></span></button>
 <button class="palette-node integration-node" data-integration="google_sheets" type="button"><b>▦</b><span><strong>Google Sheets</strong><small>Таблицы · OAuth требуется</small></span></button>
@@ -70,7 +74,7 @@
 <button class="palette-node integration-node" data-integration="python" type="button"><b>{ }</b><span><strong>Python Handler</strong><small>Изолированный исполнитель</small></span></button>
 <p class="builder-tip">Перетащи блок на поле. Двигай его за заголовок. Нажми порт справа, затем порт слева на другом блоке — связь появится автоматически.</p>
 </aside>
-<section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div class="graph-legend" aria-label="Легенда типов узлов"><span class="legend-message">● Сообщения</span><span class="legend-choice">◆ Ветвления</span><span class="legend-photo">▣ Медиа</span><span class="legend-document">▤ Документы</span><span class="legend-end">■ Завершение</span></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
+<section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div class="graph-legend" aria-label="Легенда типов узлов"><span class="legend-message">● Сообщения</span><span class="legend-choice">◆ Ветвления</span><span class="legend-photo">▣ Медиа</span><span class="legend-document">▤ Документы</span><span class="legend-end">■ Завершение</span><span class="legend-choice">◇ Условия</span><span class="legend-document">⇥ Ввод</span><span class="legend-photo">≔ Переменные</span></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
 <aside class="builder-inspector" aria-label="Настройка блока"><div class="builder-pane-head"><span>03 / ИНСПЕКТОР</span><small>Параметры</small></div><div id="editor-inspector" class="builder-inspector-body"></div></aside>
 </div>
 <section class="builder-preview" id="builder-preview" aria-label="Тестирование сценария"><div><div class="eyebrow">04 / DIALOGUE PREVIEW</div><h2>Тестовый диалог и трассировка.</h2><p>Это симуляция в браузере, а не запуск Telegram-бота. Настоящий Telegram-бот начнёт отвечать после запуска сгенерированного Python-проекта.</p><button id="btn-preview" type="button" class="button button-line">▶ Начать предпросмотр</button></div><div class="preview-workspace"><div id="preview-messages" class="builder-preview-chat" aria-live="polite"><p>Здесь появятся сообщения.</p></div><div class="preview-trace" id="preview-trace" aria-label="Шаги симуляции"></div></div></section>
