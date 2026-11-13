@@ -106,7 +106,8 @@ function replaceScenario(factory) {
  try{localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions}));}
  catch(_err){status('Не удалось сохранить резервную копию. Отмена замены.',true);return;}
  data=factory();
- positions={};counter=1;selected=data.start;link=null;
+ positions={};counter=1;selected=data.start;link=null;cloudProjectId=null;
+ $('cloud-project-list').value='';
  $('scenario-name').value=data.name;
  change();inspector();
  status('Сценарий создан. Настрой стартовый блок, проверь связи и протестируй диалог.');
@@ -358,7 +359,7 @@ $('btn-save').addEventListener('click',()=>{save();status('Черновик со
 $('btn-cloud-save').addEventListener('click',saveCloud);
 $('btn-cloud-load').addEventListener('click',loadCloud);
 $('btn-cloud-delete').addEventListener('click',deleteCloud);
-$('cloud-project-list').addEventListener('change',e=>{cloudProjectId=e.target.value||null;});
+// Selection alone never changes the active project: only Open does.
 $('btn-validate').addEventListener('click',async()=>{try{const result=await(await post('/validate')).json();status('Проверено '+result.nodes+' узлов. '+result.warnings.join('; '));}catch(e){status(e.message,true);}});
 $('btn-export').addEventListener('click',async()=>{try{await post('/validate');const r=await post('/export');download(await r.blob(),'omnifactory_bot.zip');status('Экспорт Python готов.');}catch(e){status(e.message,true);}});
 $('btn-download-json').addEventListener('click',()=>download(new Blob([JSON.stringify(payload(),null,2)],{type:'application/json'}),'scenario.json'));
