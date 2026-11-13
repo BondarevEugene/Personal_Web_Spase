@@ -3,6 +3,7 @@
 'use strict';
 const $=id=>document.getElementById(id), API='/api/v1/builder/simple';
 const STORE='omnifactory:graph-studio:v2';
+const BACKUP_STORE='omnifactory:graph-studio:last-replaced:v2';
 const integrationDetails={
  google_docs:'Google Docs: создание, чтение и изменение документов. Для подключения потребуется OAuth Google и серверный исполнитель.',
  google_sheets:'Google Sheets: чтение строк, добавление и обновление. Нужны OAuth и безопасное хранилище токенов.',
@@ -11,6 +12,9 @@ const integrationDetails={
  http:'HTTP / Webhook: исходящие REST-запросы и входящие события. До запуска необходимы SSRF-защита, ограничения адресов и хранение секретов.',
  python:'Python Handler: произвольная логика, но только в отдельной sandbox/worker-среде с ограничениями ресурсов.'
 };
+const fresh=()=>({name:'Новый Telegram-бот',start:'welcome',nodes:[
+{id:'welcome',kind:'message',text:'Привет! Это мой новый бот.',next:'finish'},
+{id:'finish',kind:'end',text:'До встречи!'}]});
 const sample=()=>({name:'Мой Telegram-бот',start:'welcome',nodes:[
 {id:'welcome',kind:'message',text:'Добро пожаловать!',next:'question'},
 {id:'question',kind:'choice',text:'Чем помочь?',options:[{label:'О нас',target:'about'},{label:'Завершить',target:'finish'}]},
@@ -19,6 +23,17 @@ const sample=()=>({name:'Мой Telegram-бот',start:'welcome',nodes:[
 const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш'};
 let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
 let canvasExpanded=false;
+function replaceScenario(factory) {
+ const ok=window.confirm('Текущий черновик будет заменён. Сохраняем резервную копию в этом браузере. Продолжить?');
+ if(!ok)return;
+ try{localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions}));}
+ catch(_err){status('Не удалось сохранить резервную копию. Отмена замены.',true);return;}
+ data=factory();
+ positions={};counter=1;selected=data.start;link=null;
+ $('scenario-name').value=data.name;
+ change();inspector();
+ status('Сценарий создан. Настрой стартовый блок, проверь связи и протестируй диалог.');
+}
 function setExpanded(value){
  canvasExpanded=Boolean(value);
  document.body.classList.toggle('graph-fullscreen',canvasExpanded);
@@ -236,6 +251,8 @@ document.addEventListener('keydown',e=>{
  if(!typing&&e.key==='Delete'&&selected)removeNode(selected);
 });
 $('btn-expand-canvas').addEventListener('click',()=>setExpanded(!canvasExpanded));
+$('btn-new-scenario').addEventListener('click',()=>replaceScenario(fresh));
+$('btn-demo-scenario').addEventListener('click',()=>replaceScenario(sample));
 $('btn-test-canvas').addEventListener('click',()=>{
  preview();$('builder-preview').scrollIntoView({behavior:'smooth',block:'start'});
 });
@@ -280,6 +297,19 @@ const level=el('span','graph-zoom-label','100%');
 function setZoom(v){zoom=Math.max(.5,Math.min(1.5,v));$('flow-workspace').style.zoom=zoom;level.textContent=Math.round(zoom*100)+'%';}
 controls.append(btn('−',()=>setZoom(zoom-.15),'graph-zoom'),level,btn('+',()=>setZoom(zoom+.15),'graph-zoom'),btn('100%',()=>setZoom(1),'graph-zoom'));
 $('flow-canvas').parentElement.querySelector('.builder-pane-head').append(controls);
-try{const stored=JSON.parse(localStorage.getItem(STORE)||'null');if(stored?.data?.nodes?.length){data=stored.data;positions=stored.positions||{};}}catch(e){}
+try{
+ const stored=JSON.parse(localStorage.getItem(STORE)||'null');
+ if(stored?.data?.nodes?.length&&stored.data.nodes.length<=80&&
+  stored.data.nodes.every(n=>n&&typeof n.id==='string'&&names[n.kind])&&
+  stored.data.nodes.some(n=>n.id===stored.data.start)){
+  data=stored.data;
+  positions={};
+  for(const [id,p] of Object.entries(stored.positions||{})){
+   if(data.nodes.some(n=>n.id===id)&&p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&
+       p.x>=0&&p.y>=0&&p.x<world.width&&p.y<world.height)
+    positions[id]={x:p.x,y:p.y};
+  }
+ }
+}catch(e){status('Старый черновик не удалось открыть. Загружен пример.',true);}
 selected=data.start;$('scenario-name').value=data.name;render();inspector();status('Graph Studio готов: перемещай узлы и соединяй входы с выходами.');
 })();
