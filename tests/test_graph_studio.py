@@ -16,7 +16,7 @@ def test_graph_studio_page_loads_premium_shell():
     response = client.get("/architect")
     assert response.status_code == 200
     assert "/studio-assets/graph_studio.js?v=3" in response.text
-    assert "/studio-assets/builder.css?v=3" in response.text
+    assert "/studio-assets/builder.css?v=4" in response.text
     assert 'class="builder-footer"' in response.text
     assert "GRAPH CANVAS" in response.text
 
@@ -64,3 +64,14 @@ def test_palette_distinguishes_real_and_planned_integrations():
     css = client.get("/studio-assets/builder.css").text
     assert ".node-kind-choice" in css
     assert ".node-kind-end" in css
+
+
+def test_canvas_has_semantic_node_legend_and_distinct_shapes():
+    response = client.get("/architect")
+    assert response.status_code == 200
+    for kind in ("message", "choice", "photo", "document", "end"):
+        assert "legend-" + kind in response.text
+    stylesheet = client.get("/studio-assets/builder.css").text
+    assert ".graph-legend" in stylesheet
+    assert ".node-kind-choice .graph-kind-icon" in stylesheet
+    assert ".node-kind-end .graph-kind-icon" in stylesheet
