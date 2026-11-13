@@ -15,8 +15,8 @@ client = TestClient(app)
 def test_graph_studio_page_loads_premium_shell():
     response = client.get("/architect")
     assert response.status_code == 200
-    assert "/studio-assets/graph_studio.js?v=5" in response.text
-    assert "/studio-assets/builder.css?v=5" in response.text
+    assert "/studio-assets/graph_studio.js?v=6" in response.text
+    assert "/studio-assets/builder.css?v=6" in response.text
     assert 'class="builder-footer"' in response.text
     assert "GRAPH CANVAS" in response.text
 
@@ -90,3 +90,14 @@ def test_graph_studio_workspace_has_context_menu_fullscreen_and_test_controls():
     for handler in ("contextmenu", "duplicateNode", "setExpanded",
                     "preview-trace", "removeNode", "btn-export-info"):
         assert handler in js
+
+
+def test_workflow_creation_controls_and_backup_present():
+    page = client.get("/architect").text
+    assert 'id="btn-new-scenario"' in page
+    assert 'id="btn-demo-scenario"' in page
+    assert 'class="builder-guide"' in page
+    script = client.get("/studio-assets/graph_studio.js").text
+    for name in ("BACKUP_STORE", "replaceScenario", "function fresh()", "btn-new-scenario",
+                 "btn-demo-scenario", "serverDryRun"):
+        assert name in script
