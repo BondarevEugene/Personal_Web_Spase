@@ -39,3 +39,28 @@ def test_graph_export_api_is_unchanged():
     result = client.get("/api/v1/builder/simple/capabilities")
     assert result.status_code == 200
     assert result.json()["export"] == "aiogram 3 Python project ZIP"
+
+
+def test_integration_catalog_does_not_claim_unimplemented_execution():
+    response = client.get("/api/v1/builder/simple/integrations")
+    assert response.status_code == 200
+    integrations = {item["id"]: item for item in response.json()["integrations"]}
+    assert integrations["telegram"]["status"] == "export"
+    for name in ("google_docs", "google_sheets", "facebook", "instagram", "http", "python"):
+        assert integrations[name]["status"] == "planned"
+    capabilities = client.get("/api/v1/builder/simple/capabilities").json()
+    assert "python" not in capabilities["supported_blocks"]
+    assert capabilities["server_persistence"] is False
+
+
+def test_palette_distinguishes_real_and_planned_integrations():
+    page = client.get("/architect").text
+    for name in ("google_docs", "google_sheets", "facebook", "instagram", "http", "python"):
+        assert f'data-integration="{name}"' in page
+    for kind in ("message", "choice", "photo", "document", "end"):
+        assert f'data-add="{kind}"' in page
+    js = client.get("/studio-assets/graph_studio.js").text
+    assert "integrationDetails" in js
+    css = client.get("/studio-assets/builder.css").text
+    assert ".node-kind-choice" in css
+    assert ".node-kind-end" in css
