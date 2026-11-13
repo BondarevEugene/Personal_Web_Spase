@@ -159,6 +159,26 @@ def list_integrations():
             "statuses": {"export": "Работает экспорт", "planned": "В разработке"}}
 
 
+VARIABLE_RE = re.compile(r"\\{\\{([A-Za-z][A-Za-z0-9_-]{0,39})\\}\\}")
+
+
+def substitute(template: str, variables: dict[str, str]) -> str:
+    """Render only explicit variable placeholders, never Python expressions."""
+    return VARIABLE_RE.sub(lambda match: variables.get(match.group(1), ""), template)
+
+
+def match_condition(actual: str, operator: str, expected: str) -> bool:
+    if operator == "equals":
+        return actual == expected
+    if operator == "not_equals":
+        return actual != expected
+    if operator == "contains":
+        return expected in actual
+    if operator == "not_empty":
+        return bool(actual.strip())
+    return False
+
+
 class SimulationRequest(BaseModel):
     """Bounded dry-run. No Telegram calls, network, credentials or user code."""
 
@@ -177,6 +197,7 @@ def simulate_scenario(request: SimulationRequest):
     scenario = request.scenario
     by_id = {node.id: node for node in scenario.nodes}
     trace: list[dict] = []
+    variables: dict[str, str] = {}
     current = scenario.start
     for _ in range(50):
         node = by_id[current]
@@ -185,7 +206,30 @@ def simulate_scenario(request: SimulationRequest):
             item["media"] = node.media
         trace.append(item)
         if node.kind == "end":
-            return {"status": "completed", "trace": trace, "steps": len(trace)}
+            return {"status": "completed", "trace": trace, "steps": len(trace),
+                    "variables": variables}
+        if node.kind == "set_variable":
+            variables[node.variable] = substitute(node.value, variables)
+            current = node.next
+            continue
+        if node.kind == "input":
+            value = request.inputs.get(node.id)
+            if value is None:
+                return {"status": "awaiting_input", "at": node.id, "variable": node.variable,
+                        "trace": trace, "steps": len(trace), "variables": variables}
+            if len(value) > 300:
+                return {"status": "invalid_input", "at": node.id, "trace": trace,
+                        "steps": len(trace), "variables": variables}
+            variables[node.variable] = value
+            current = node.next
+            continue
+        if node.kind == "condition":
+            actual = variables.get(node.variable, "")
+            expected = substitute(node.value, variables)
+            outcome = match_condition(actual, node.operator, expected)
+            item["result"] = outcome
+            current = node.true_target if outcome else node.false_target
+            continue
         if node.kind == "choice":
             index = request.choices.get(node.id)
             if index is None:
@@ -209,9 +253,10 @@ def simulate_scenario(request: SimulationRequest):
             current = node.options[index].target
         else:
             if not node.next:
-                return {"status": "completed", "trace": trace, "steps": len(trace)}
+                return {"status": "completed", "trace": trace, "steps": len(trace),
+                        "variables": variables}
             current = node.next
-    return {"status": "step_limit", "trace": trace, "steps": len(trace)}
+    return {"status": "step_limit", "trace": trace, "steps": len(trace), "variables": variables}
 
 
 @router.post("/validate")
