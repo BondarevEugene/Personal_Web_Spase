@@ -76,6 +76,6 @@ def test_export_rejects_code_injection_as_node_id():
 def test_builder_page_loads_new_ui():
     response = client.get("/builder_pro_final.html")
     assert response.status_code == 200
-    assert "/studio-assets/graph_studio.js?v=3" in response.text
+    assert "/studio-assets/graph_studio.js?v=5" in response.text
     assert "/studio-assets/builder.js" not in response.text
     assert "/studio-assets/site.css?v=3" in response.text
