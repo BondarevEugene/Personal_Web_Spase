@@ -105,6 +105,40 @@ def capabilities():
     }
 
 
+# Discovery catalog. Availability is intentionally explicit: listings do not imply
+# OAuth connections or workflow execution are implemented.
+INTEGRATION_CATALOG = (
+    {"id": "telegram", "name": "Telegram", "category": "messaging",
+     "status": "export", "blocks": ["message", "choice", "photo", "document", "end"],
+     "description": "Генерация Python / aiogram 3 сценария"},
+    {"id": "google_docs", "name": "Google Docs", "category": "documents",
+     "status": "planned", "blocks": ["create_document", "append_text", "read_document"],
+     "description": "Для работы потребуются Google OAuth и серверный исполнитель"},
+    {"id": "google_sheets", "name": "Google Sheets", "category": "documents",
+     "status": "planned", "blocks": ["read_rows", "append_row", "update_row"],
+     "description": "Для работы потребуются Google OAuth и серверный исполнитель"},
+    {"id": "facebook", "name": "Facebook Pages", "category": "social",
+     "status": "planned", "blocks": ["publish_post", "read_comments", "page_message"],
+     "description": "Потребуются Meta Graph API, разрешения и OAuth"},
+    {"id": "instagram", "name": "Instagram Business", "category": "social",
+     "status": "planned", "blocks": ["publish_media", "list_comments", "reply_comment"],
+     "description": "Потребуются Meta Instagram API, разрешения и OAuth"},
+    {"id": "http", "name": "HTTP / REST", "category": "logic",
+     "status": "planned", "blocks": ["request", "webhook"],
+     "description": "Для исполнения нужны ограничения исходящих адресов и контроль секретов"},
+    {"id": "python", "name": "Python обработчик", "category": "logic",
+     "status": "planned", "blocks": ["handler"],
+     "description": "Будет доступен только через изолированный исполнитель"},
+)
+
+
+@router.get("/integrations")
+def list_integrations():
+    """Public, non-secret integration catalog with honest capability flags."""
+    return {"integrations": list(INTEGRATION_CATALOG),
+            "statuses": {"export": "Работает экспорт", "planned": "В разработке"}}
+
+
 @router.post("/validate")
 def validate_scenario(scenario: Scenario):
     reachable = _reachable(scenario)
