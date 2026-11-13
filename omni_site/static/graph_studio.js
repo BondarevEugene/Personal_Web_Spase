@@ -76,7 +76,7 @@ function change(){render();save();}
 function field(parent,title,value,changeFn,textarea=false){
  const label=el('label','inspector-field'),input=el(textarea?'textarea':'input');
  label.append(el('span','',title));input.value=value??'';input.addEventListener('input',()=>changeFn(input.value));
- label.append(input);parent.append(label);
+ input.addEventListener('blur',()=>render());label.append(input);parent.append(label);
 }
 function selector(parent,title,value,options,handler){
  const label=el('label','inspector-field'),sel=el('select');label.append(el('span','',title));
@@ -93,13 +93,13 @@ function inspector(){
   data.nodes.forEach(x=>{if(x.next===n.id)x.next=null;if(x.options)x.options=x.options.filter(o=>o.target!==n.id);});
   if(data.start===n.id)data.start=data.nodes[0].id;selected=data.start;change();inspector();
  },'inspector-btn danger'));
- field(root,n.kind==='photo'||n.kind==='document'?'Подпись':'Текст',n.text||'',v=>{n.text=v;change();},true);
- if(n.kind==='photo'||n.kind==='document')field(root,'HTTPS URL / Telegram file_id',n.media||'',v=>{n.media=v;change();});
+ field(root,n.kind==='photo'||n.kind==='document'?'Подпись':'Текст',n.text||'',v=>{n.text=v;save();},true);
+ if(n.kind==='photo'||n.kind==='document')field(root,'HTTPS URL / Telegram file_id',n.media||'',v=>{n.media=v;save();});
  const targets=data.nodes.map(x=>[x.id,x.id+' · '+names[x.kind]]);
  if(n.kind==='choice'){
   (n.options||[]).forEach((o,i)=>{
    const card=el('div','option-edit');
-   field(card,'Подпись кнопки',o.label,v=>{o.label=v;change();});
+   field(card,'Подпись кнопки',o.label,v=>{o.label=v;save();});
    selector(card,'Целевой узел',o.target,targets,v=>{o.target=v;change();});
    card.append(btn('Удалить кнопку',()=>{n.options.splice(i,1);change();inspector();},'inspector-btn danger'));
    root.append(card);
