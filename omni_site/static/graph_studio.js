@@ -4,6 +4,83 @@
 const $=id=>document.getElementById(id), API='/api/v1/builder/simple';
 const STORE='omnifactory:graph-studio:v2';
 const BACKUP_STORE='omnifactory:graph-studio:last-replaced:v2';
+const CLOUD='/api/v1/builder/projects';
+let cloudActive=false;
+let cloudProjectId=null;
+function cloudStatus(message){$('cloud-state').textContent=message;}
+function cloudError(response){
+ if(response.status===401)return 'Для работы с проектами войди в кабинет OmniFactory.';
+ if(response.status===403)return 'Сессия или CSRF-токен устарели. Обнови страницу.';
+ if(response.status===503)return 'База проектов не готова. Нужно выполнить миграцию портала.';
+ return 'Ошибка сервера: HTTP '+response.status;
+}
+async function cloudRequest(path,options){
+ const response=await fetch(CLOUD+path,{credentials:'same-origin',cache:'no-store',...options});
+ if(!response.ok)throw Error(cloudError(response));
+ return response.status===204?null:response.json();
+}
+async function refreshCloud(selectedId=null){
+ try{
+  const data=await cloudRequest('');
+  cloudActive=true;cloudStatus('Авторизован · '+data.projects.length+' сохранённых');
+  const list=$('cloud-project-list');list.replaceChildren();
+  const empty=el('option','', 'Новый проект');empty.value='';list.append(empty);
+  for(const project of data.projects){
+   const option=el('option','',project.name+' · '+new Date(project.updated_at).toLocaleDateString());
+   option.value=project.id;list.append(option);
+  }
+  list.value=selectedId??cloudProjectId??'';
+ }catch(err){
+  cloudActive=false;cloudStatus(err.message);
+ }
+}
+async function csrfForCloud(){
+ const result=await cloudRequest('/csrf');
+ return result.csrf_token;
+}
+async function saveCloud(){
+ if(!cloudActive){status('Для сохранения войди в кабинет через ссылку справа.',true);return;}
+ try{
+  const token=await csrfForCloud();
+  const id=cloudProjectId;
+  const result=await cloudRequest(id?'/'+encodeURIComponent(id):'',{
+   method:id?'PUT':'POST',
+   headers:{'Content-Type':'application/json','X-Omni-CSRF':token},
+   body:JSON.stringify({scenario:payload(),positions})
+  });
+  cloudProjectId=result.id;
+  save();await refreshCloud(cloudProjectId);
+  status('Сценарий сохранён в аккаунте: '+result.name);
+ }catch(err){status('Не удалось сохранить проект: '+err.message,true);}
+}
+async function loadCloud(){
+ const id=$('cloud-project-list').value;
+ if(!id){status('Сначала выбери сохранённый проект в списке.',true);return;}
+ if(!window.confirm('Открыть сохранённый проект? Текущий черновик останется в резервной копии браузера.'))return;
+ try{
+  localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions}));
+  const project=await cloudRequest('/'+encodeURIComponent(id));
+  data=project.scenario;positions=project.positions||{};
+  cloudProjectId=id;
+  counter=1;selected=data.start;link=null;
+  $('scenario-name').value=data.name;
+  change();inspector();
+  status('Открыт сохранённый проект: '+project.name);
+ }catch(err){status('Не удалось открыть проект: '+err.message,true);}
+}
+async function deleteCloud(){
+ const id=$('cloud-project-list').value;
+ if(!id){status('Выбери проект для удаления.',true);return;}
+ if(!window.confirm('Удалить проект из аккаунта? Это действие нельзя отменить.'))return;
+ try{
+  const token=await csrfForCloud();
+  await cloudRequest('/'+encodeURIComponent(id),{method:'DELETE',
+   headers:{'X-Omni-CSRF':token}});
+  if(cloudProjectId===id)cloudProjectId=null;
+  await refreshCloud('');
+  status('Проект удалён из аккаунта. Локальный черновик не затронут.');
+ }catch(err){status('Не удалось удалить проект: '+err.message,true);}
+}
 const integrationDetails={
  google_docs:'Google Docs: создание, чтение и изменение документов. Для подключения потребуется OAuth Google и серверный исполнитель.',
  google_sheets:'Google Sheets: чтение строк, добавление и обновление. Нужны OAuth и безопасное хранилище токенов.',
@@ -278,6 +355,10 @@ $('flow-canvas').addEventListener('drop',e=>{e.preventDefault();const value=e.da
  add(value.slice(5),{x:Math.max(0,(e.clientX-rect.left)/zoom),y:Math.max(0,(e.clientY-rect.top)/zoom)});});
 $('scenario-name').addEventListener('input',e=>{data.name=e.target.value;save();});
 $('btn-save').addEventListener('click',()=>{save();status('Черновик сохранён в этом браузере.');});
+$('btn-cloud-save').addEventListener('click',saveCloud);
+$('btn-cloud-load').addEventListener('click',loadCloud);
+$('btn-cloud-delete').addEventListener('click',deleteCloud);
+$('cloud-project-list').addEventListener('change',e=>{cloudProjectId=e.target.value||null;});
 $('btn-validate').addEventListener('click',async()=>{try{const result=await(await post('/validate')).json();status('Проверено '+result.nodes+' узлов. '+result.warnings.join('; '));}catch(e){status(e.message,true);}});
 $('btn-export').addEventListener('click',async()=>{try{await post('/validate');const r=await post('/export');download(await r.blob(),'omnifactory_bot.zip');status('Экспорт Python готов.');}catch(e){status(e.message,true);}});
 $('btn-download-json').addEventListener('click',()=>download(new Blob([JSON.stringify(payload(),null,2)],{type:'application/json'}),'scenario.json'));
@@ -312,4 +393,5 @@ try{
  }
 }catch(e){status('Старый черновик не удалось открыть. Загружен пример.',true);}
 selected=data.start;$('scenario-name').value=data.name;render();inspector();status('Graph Studio готов: перемещай узлы и соединяй входы с выходами.');
+void refreshCloud();
 })();
