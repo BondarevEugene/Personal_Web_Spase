@@ -259,8 +259,16 @@ function inspector(){
  const details=el('div','inspector-meta');
  details.append(el('span','', 'ID: '+n.id),el('span','', 'ТИП: '+n.kind),el('span','',n.id===data.start?'● СТАРТОВЫЙ БЛОК':'Промежуточный блок'));
  root.append(details);
- field(root,n.kind==='photo'||n.kind==='document'?'Подпись':'Текст',n.text||'',v=>{n.text=v;save();},true);
+ if(n.kind!=='condition'&&n.kind!=='set_variable')
+  field(root,n.kind==='photo'||n.kind==='document'?'Подпись':n.kind==='input'?'Вопрос пользователю':'Текст (поддерживает {{variable}})',n.text||'',v=>{n.text=v;save();},true);
  if(n.kind==='photo'||n.kind==='document')field(root,'HTTPS URL / Telegram file_id',n.media||'',v=>{n.media=v;save();});
+ if(['input','condition','set_variable'].includes(n.kind)){
+  field(root,'Имя переменной (латиница, без пробелов)',n.variable||'',v=>{n.variable=v;save();});
+ }
+ if(n.kind==='condition'||n.kind==='set_variable')field(root,n.kind==='condition'?'Значение для сравнения':'Установить значение',n.value||'',v=>{n.value=v;save();});
+ if(n.kind==='condition')selector(root,'Сравнение',n.operator||'equals',[
+  ['equals','Равно'],['not_equals','Не равно'],['contains','Содержит'],['not_empty','Не пусто']
+ ],v=>{n.operator=v;change();});
  const targets=data.nodes.map(x=>[x.id,x.id+' · '+names[x.kind]]);
  if(n.kind==='choice'){
   (n.options||[]).forEach((o,i)=>{
@@ -274,6 +282,9 @@ function inspector(){
    n.options=n.options||[];if(n.options.length>=8)return status('Максимум 8 кнопок',true);
    n.options.push({label:'Кнопка',target:data.start});change();inspector();
   }));
+ }else if(n.kind==='condition'){
+  selector(root,'Ветка Да / TRUE',n.true_target||'',[['','Выбрать узел'],...targets],v=>{n.true_target=v||null;change();});
+  selector(root,'Ветка Нет / FALSE',n.false_target||'',[['','Выбрать узел'],...targets],v=>{n.false_target=v||null;change();});
  }else if(n.kind!=='end')selector(root,'Следующий узел',n.next||'',[['','Нет связи'],...targets],v=>{n.next=v||null;change();});
 }
 function add(kind,pos){
