@@ -29,17 +29,22 @@ class ButtonChoice(BaseModel):
 
 class ScenarioNode(BaseModel):
     id: str = Field(min_length=1, max_length=40)
-    kind: Literal["message", "choice", "photo", "document", "end"]
+    kind: Literal["message", "choice", "photo", "document", "end", "input", "condition", "set_variable"]
     text: str = Field(default="", max_length=1500)
     next: str | None = Field(default=None, max_length=40)
     media: str | None = Field(default=None, max_length=300)
     options: list[ButtonChoice] = Field(default_factory=list, max_length=8)
+    variable: str | None = Field(default=None, max_length=40)
+    value: str = Field(default="", max_length=300)
+    operator: Literal["equals", "not_equals", "contains", "not_empty"] = "equals"
+    true_target: str | None = Field(default=None, max_length=40)
+    false_target: str | None = Field(default=None, max_length=40)
 
     @model_validator(mode="after")
     def validate_content(self):
         if not NODE_ID.fullmatch(self.id):
             raise ValueError("ID блока должен начинаться с латинской буквы и содержать только буквы, цифры, - или _")
-        if self.kind in {"message", "choice"} and not self.text.strip():
+        if self.kind in {"message", "choice", "input"} and not self.text.strip():
             raise ValueError("Текст сообщения/вопроса не может быть пустым")
         if self.next and not NODE_ID.fullmatch(self.next):
             raise ValueError("Некорректный ID следующего блока")
@@ -49,6 +54,16 @@ class ScenarioNode(BaseModel):
             media = (self.media or "").strip()
             if not (media.startswith("https://") and " " not in media or FILE_ID.fullmatch(media)):
                 raise ValueError("Для фото/документа нужен HTTPS URL или Telegram file_id")
+        if self.kind in {"input", "condition", "set_variable"}:
+            if not self.variable or not NODE_ID.fullmatch(self.variable):
+                raise ValueError("Invalid variable name")
+        if self.kind == "condition":
+            if not self.true_target or not self.false_target:
+                raise ValueError("Condition requires true and false targets")
+            if self.next:
+                raise ValueError("Condition uses branches instead of next")
+        if self.kind in {"input", "set_variable"} and not self.next:
+            raise ValueError("Input/variable node requires next")
         if self.kind == "end" and self.next:
             raise ValueError("Завершающий блок не может иметь продолжение")
         return self
@@ -70,6 +85,9 @@ class Scenario(BaseModel):
         for node in self.nodes:
             if node.next and node.next not in existing:
                 raise ValueError(f"Блок {node.id}: переход на отсутствующий блок {node.next}")
+            for dest in (node.true_target, node.false_target):
+                if dest and dest not in existing:
+                    raise ValueError(f"Node {node.id}: condition target missing: {dest}")
             for option in node.options:
                 if option.target not in existing:
                     raise ValueError(f"Блок {node.id}: кнопка ведёт в неизвестный блок {option.target}")
@@ -90,6 +108,8 @@ def _reachable(scenario: Scenario) -> set[str]:
             queue.append(node.next)
         if node.kind == "choice":
             queue.extend(option.target for option in node.options)
+        if node.kind == "condition":
+            queue.extend((node.true_target, node.false_target))
     return found
 
 
@@ -97,7 +117,7 @@ def _reachable(scenario: Scenario) -> set[str]:
 def capabilities():
     return {
         "name": "OmniFactory Simple Telegram Builder",
-        "supported_blocks": ["message", "choice", "photo", "document", "end"],
+        "supported_blocks": ["message", "choice", "photo", "document", "end", "input", "condition", "set_variable"],
         "validation": True,
         "export": "aiogram 3 Python project ZIP",
         "server_persistence": False,
@@ -109,7 +129,7 @@ def capabilities():
 # OAuth connections or workflow execution are implemented.
 INTEGRATION_CATALOG = (
     {"id": "telegram", "name": "Telegram", "category": "messaging",
-     "status": "export", "blocks": ["message", "choice", "photo", "document", "end"],
+     "status": "export", "blocks": ["message", "choice", "photo", "document", "end", "input", "condition", "set_variable"],
      "description": "Генерация Python / aiogram 3 сценария"},
     {"id": "google_docs", "name": "Google Docs", "category": "documents",
      "status": "planned", "blocks": ["create_document", "append_text", "read_document"],
@@ -144,6 +164,7 @@ class SimulationRequest(BaseModel):
 
     scenario: Scenario
     choices: dict[str, int] = Field(default_factory=dict, max_length=80)
+    inputs: dict[str, str] = Field(default_factory=dict, max_length=80)
 
 
 @router.post("/simulate")
