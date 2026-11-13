@@ -78,21 +78,36 @@ def run_visible(row: AutomationRun):
 
 def record_run(db, workflow: AutomationWorkflow, *, input_data: dict,
                live: bool, idempotency_key: str | None):
+    """Reserve an execution row BEFORE side effects.
+
+    A duplicate request cannot concurrently publish a second post. A crashed
+    live run remains in 'running' state and requires operator reconciliation,
+    not an automatic retry.
+    """
     bounded(input_data)
-    result = execute(WorkflowDefinition.model_validate_json(workflow.definition_json),
-                     input_data, live=live)
     row = AutomationRun(
         workflow_id=workflow.id, customer_id=workflow.customer_id,
-        workflow_revision=workflow.revision, status=result.status,
+        workflow_revision=workflow.revision, status="running",
         mode="live" if live else "dry_run",
-        idempotency_key=idempotency_key,
-        trace_json=json.dumps(result.trace, ensure_ascii=False),
+        idempotency_key=idempotency_key, trace_json="[]",
         created_at=utcnow())
     db.add(row)
     db.commit()
     db.refresh(row)
+    try:
+        result = execute(WorkflowDefinition.model_validate_json(workflow.definition_json),
+                         input_data, live=live)
+        row.status = result.status
+        row.trace_json = json.dumps(result.trace, ensure_ascii=False)
+        db.commit()
+    except Exception:
+        db.rollback()
+        row.status = "failed"
+        row.trace_json = json.dumps([{"outcome": "failed", "error": "Execution aborted"}])
+        db.add(row)
+        db.commit()
+        raise
     return run_visible(row)
-
 
 @router.get("/catalog")
 def catalog():
@@ -197,6 +212,8 @@ def run_workflow(workflow_id: str, request: Request, body: RunRequest,
         row = row_for(db, user.id, workflow_id)
         if body.live and user.role != "owner":
             raise HTTPException(403, "Only the organization owner may request live execution")
+        if body.live and not idempotency_key:
+            raise HTTPException(422, "Live runs require an Idempotency-Key header")
         if body.approval:
             raise HTTPException(422, "Approval resume requires a future audited resume API")
         if idempotency_key and (len(idempotency_key) > 100 or len(idempotency_key) < 8):
