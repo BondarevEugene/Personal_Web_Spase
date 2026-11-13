@@ -21,6 +21,7 @@ def upgrade():
         sa.Column("name", sa.String(100), nullable=False),
         sa.Column("definition_json", sa.Text(), nullable=False),
         sa.Column("revision", sa.Integer(), nullable=False),
+        sa.Column("webhook_token_hash", sa.String(64), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False))
     op.create_index("ix_portal_automation_workflows_customer_id",
