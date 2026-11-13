@@ -127,7 +127,7 @@ function addNode(kind){
  const n={id,kind,config:structuredClone(defaults[kind])};
  if(kind==='condition'){n.true_target=null;n.false_target=null;}
  else if(kind!=='end')n.next=null;
- if(last&&last.kind!=='end'&&last.kind!=='condition'&&last.next){
+ if(last&&last.kind!=='end'&&last.kind!=='condition'&&last.next&&kind!=='condition'){
   n.next=n.kind==='end'?undefined:last.next;
   last.next=id;
  }
@@ -259,6 +259,24 @@ async function loadWorkflow(){
   status('Открыт сценарий '+workflow.name+' · версия '+revision);void loadRuns();
  }catch(err){status('Не удалось открыть: '+err.message,true);}
 }
+async function analyzeWorkflow(){
+ try{
+  workflow.name=$('auto-name').value.trim();
+  const response=await request('/analyze',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify(workflow)
+  });
+  const root=$('auto-review');root.replaceChildren();
+  root.append(el('strong','', 'Проверено '+response.nodes_reachable+' / '+response.nodes_total+' узлов'));
+  for(const issue of response.warnings){
+   root.append(el('p','auto-warning',issue.node+' · '+issue.message));
+  }
+  for(const recommendation of response.recommendations)
+   root.append(el('p','auto-tip',recommendation));
+  root.append(el('small','',response.limitations));
+  status('Проверка схемы завершена. Это не проверка подключённых API.');
+ }catch(err){status('Не удалось проверить граф: '+err.message,true);}
+}
 async function runWorkflow(){
  if(!cloudId)return status('Для серверного запуска сначала сохрани сценарий.',true);
  try{
@@ -304,6 +322,7 @@ $('auto-new').addEventListener('click',()=>newFlow(fresh));
 $('auto-demo').addEventListener('click',()=>newFlow(demo));
 $('auto-save').addEventListener('click',saveWorkflow);
 $('auto-load').addEventListener('click',loadWorkflow);
+$('auto-analyze').addEventListener('click',analyzeWorkflow);
 $('auto-run').addEventListener('click',runWorkflow);
 $('auto-refresh-runs').addEventListener('click',loadRuns);
 $('auto-webhook').addEventListener('click',webhook);
