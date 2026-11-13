@@ -130,15 +130,16 @@ SCENARIO = json.loads((Path(__file__).parent / "scenario.json").read_text(encodi
 NODES = {item["id"]: item for item in SCENARIO["nodes"]}
 router = Router()
 # A demo-grade, in-memory dialogue cursor. Redis/DB persistence is a later step.
-CURSORS: dict[int, str] = {}
+CURSORS: dict[tuple[int, int], str] = {}
 
 
-async def send_node(bot: Bot, chat_id: int, node_id: str) -> None:
+async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
+    cursor_key = (chat_id, user_id)
     """Send automatic nodes until an interactive choice or the end is reached."""
     for _ in range(50):
         node = NODES.get(node_id)
         if node is None:
-            CURSORS.pop(chat_id, None)
+            CURSORS.pop(cursor_key, None)
             await bot.send_message(chat_id, "Ошибка сценария: блок не найден.")
             return
         kind = node["kind"]
@@ -148,7 +149,7 @@ async def send_node(bot: Bot, chat_id: int, node_id: str) -> None:
                 [InlineKeyboardButton(text=choice["label"], callback_data="omni:" + node_id + ":" + str(i))]
                 for i, choice in enumerate(node["options"])
             ])
-            CURSORS[chat_id] = node_id
+            CURSORS[cursor_key] = node_id
             await bot.send_message(chat_id, text, reply_markup=keyboard)
             return
         if kind == "message":
@@ -160,20 +161,22 @@ async def send_node(bot: Bot, chat_id: int, node_id: str) -> None:
         elif kind == "end":
             if text:
                 await bot.send_message(chat_id, text)
-            CURSORS.pop(chat_id, None)
+            CURSORS.pop(cursor_key, None)
             return
         node_id = node.get("next")
         if not node_id:
-            CURSORS.pop(chat_id, None)
+            CURSORS.pop(cursor_key, None)
             return
-    CURSORS.pop(chat_id, None)
+    CURSORS.pop(cursor_key, None)
     await bot.send_message(chat_id, "Обнаружен слишком длинный автоматический цикл. Проверьте схему.")
 
 
 @router.message(CommandStart())
 async def start(message: Message) -> None:
-    CURSORS.pop(message.chat.id, None)
-    await send_node(message.bot, message.chat.id, SCENARIO["start"])
+    if message.from_user is None:
+        return
+    CURSORS.pop((message.chat.id, message.from_user.id), None)
+    await send_node(message.bot, message.chat.id, message.from_user.id, SCENARIO["start"])
 
 
 @router.callback_query(F.data.startswith("omni:"))
@@ -181,14 +184,22 @@ async def choose(call: CallbackQuery) -> None:
     try:
         _, node_id, number = (call.data or "").split(":", 2)
         node = NODES[node_id]
-        if node["kind"] != "choice" or CURSORS.get(call.message.chat.id) != node_id:
+        if call.message is None or call.from_user is None:
+            raise ValueError("Missing message or user")
+        cursor_key = (call.message.chat.id, call.from_user.id)
+        if node["kind"] != "choice" or CURSORS.get(cursor_key) != node_id:
             raise ValueError("Expired selection")
-        target = node["options"][int(number)]["target"]
+        if not number.isascii() or not number.isdecimal():
+            raise ValueError("Invalid selection index")
+        index = int(number)
+        if index >= len(node["options"]):
+            raise ValueError("Selection out of bounds")
+        target = node["options"][index]["target"]
     except (ValueError, KeyError, IndexError, TypeError, AttributeError):
         await call.answer("Начните сценарий заново командой /start", show_alert=True)
         return
     await call.answer()
-    await send_node(call.bot, call.message.chat.id, target)
+    await send_node(call.bot, call.message.chat.id, call.from_user.id, target)
 
 
 @router.message()
