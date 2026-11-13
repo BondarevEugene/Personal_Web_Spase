@@ -5,8 +5,8 @@
 <title>Automation Studio · OMNIFACTORY</title>
 <meta name="theme-color" content="#0c1829">
 <link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
-<link rel="stylesheet" href="/studio-assets/automation_studio.css?v=2">
-<script defer src="/studio-assets/automation_studio.js?v=2"></script>
+<link rel="stylesheet" href="/studio-assets/automation_studio.css?v=3">
+<script defer src="/studio-assets/automation_studio.js?v=3"></script>
 </head>
 <body class="omni-revamp automation-app">
 <a class="skip-link" href="#studio-main">Перейти к редактору</a>
@@ -73,6 +73,14 @@
  </div>
  <div class="auto-history">
   <h2>05 · История и Webhook</h2>
+  <div class="auto-schedule-controls">
+   <label>Интервал, минут (5–10080)
+    <input id="auto-schedule-minutes" type="number" min="5" max="10080" value="60">
+   </label>
+   <button id="auto-schedule-save">Включить расписание</button>
+   <button id="auto-schedule-remove">Отключить</button>
+   <small id="auto-schedule-status">Требуется отдельный worker. Выполняется только dry-run.</small>
+  </div>
   <button id="auto-refresh-runs">Обновить историю</button>
   <div id="auto-runs" class="auto-runs">Авторизуйся и выбери сохранённый процесс.</div>
   <div id="auto-webhook-info" class="auto-webhook-info" hidden></div>
