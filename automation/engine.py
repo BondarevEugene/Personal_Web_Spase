@@ -40,6 +40,16 @@ class WorkflowNode(BaseModel):
             raise ValueError("Invalid node ID")
         if len(json.dumps(self.config, ensure_ascii=False)) > 6000:
             raise ValueError("Node configuration too large")
+        # Never accept raw connector credentials as a persisted graph property.
+        forbidden = {"access_token", "api_key", "password", "client_secret",
+                     "authorization", "bearer_token", "private_key"}
+        if any(k.casefold() in forbidden for k in self.config):
+            raise ValueError("Secrets must not be embedded in workflow configuration")
+        reference = self.config.get("credential")
+        if reference and (not isinstance(reference, str) or
+                          not TOKEN_NAME.fullmatch(reference) or
+                          not reference.startswith("OMNI_CREDENTIAL_")):
+            raise ValueError("Credential must be an OMNI_CREDENTIAL_... environment reference")
         for key in (self.next, self.true_target, self.false_target):
             if key is not None and not IDENT.fullmatch(key):
                 raise ValueError("Invalid transition ID")
