@@ -10,6 +10,7 @@ import hashlib
 import hmac
 import json
 import secrets
+from datetime import timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Header, HTTPException, Request, Response
@@ -20,12 +21,17 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from automation.engine import RunRequest, WorkflowDefinition, bounded, execute
 from automation.diagnostics import analyze
 from portal.db import session_factory
-from portal.models import AutomationRun, AutomationWorkflow, utcnow
+from portal.models import AutomationRun, AutomationWorkflow, AutomationSchedule, utcnow
 from portal.routes import current_customer
 from portal.security import secure_request, verify_csrf
 
 router = APIRouter(prefix="/api/v1/automation", tags=["Automation Engine"])
 WEBHOOKS = APIRouter(prefix="/hooks/automation", tags=["Automation Webhooks"])
+
+
+class ScheduleRequest(BaseModel):
+    interval_minutes: int = Field(ge=5, le=10080)
+    enabled: bool = True
 
 
 class SaveWorkflow(BaseModel):
@@ -116,6 +122,7 @@ def catalog():
         "trigger", "set", "condition", "transform", "http", "google_docs",
         "google_sheets", "facebook_page", "instagram", "approval", "end"],
         "default_mode": "dry_run",
+        "scheduler": "interval 5–10080 minutes; requires separate worker process",
         "external_calls_require": ["OMNI_AUTOMATION_LIVE_ENABLED=1",
                                    "per-connector operator secrets",
                                    "authenticated owner confirmation"],
@@ -126,7 +133,7 @@ def catalog():
                          "instagram": "publish_image",
                          "http": "operator_allowlisted_https"},
         "not_available": ["hosted Telegram deployment", "interactive OAuth",
-                          "cron scheduler", "arbitrary Python execution"]}
+                          "always-on scheduler hosting", "arbitrary Python execution"]}
 
 
 @router.post("/analyze")
@@ -255,6 +262,58 @@ def workflow_runs(workflow_id: str, request: Request):
                                  AutomationRun.customer_id == user.id)
                           .order_by(AutomationRun.created_at.desc()).limit(50)).all()
         return {"runs": [run_visible(r) for r in runs]}
+
+
+@router.get("/workflows/{workflow_id}/schedule")
+def get_schedule(workflow_id: str, request: Request):
+    with session_factory()() as db:
+        user = require_user(request, db)
+        workflow = row_for(db, user.id, workflow_id)
+        row = db.scalar(select(AutomationSchedule).where(
+            AutomationSchedule.workflow_id == workflow.id,
+            AutomationSchedule.customer_id == user.id))
+        return {"schedule": ({
+            "interval_minutes": row.interval_minutes,
+            "enabled": row.enabled,
+            "next_run_at": row.next_run_at.isoformat() + "Z",
+        } if row else None)}
+
+
+@router.put("/workflows/{workflow_id}/schedule")
+def configure_schedule(workflow_id: str, request: Request, settings: ScheduleRequest):
+    with session_factory()() as db:
+        user = require_user(request, db)
+        csrf(request)
+        workflow = row_for(db, user.id, workflow_id)
+        row = db.scalar(select(AutomationSchedule).where(
+            AutomationSchedule.workflow_id == workflow.id,
+            AutomationSchedule.customer_id == user.id))
+        if row is None:
+            row = AutomationSchedule(workflow_id=workflow.id, customer_id=user.id)
+            db.add(row)
+        row.interval_minutes = settings.interval_minutes
+        row.enabled = settings.enabled
+        row.next_run_at = utcnow() + timedelta(minutes=settings.interval_minutes)
+        row.updated_at = utcnow()
+        db.commit()
+        return {"enabled": row.enabled, "interval_minutes": row.interval_minutes,
+                "next_run_at": row.next_run_at.isoformat() + "Z",
+                "mode": "dry_run_only", "worker_required": True}
+
+
+@router.delete("/workflows/{workflow_id}/schedule", status_code=204)
+def remove_schedule(workflow_id: str, request: Request):
+    with session_factory()() as db:
+        user = require_user(request, db)
+        csrf(request)
+        workflow = row_for(db, user.id, workflow_id)
+        row = db.scalar(select(AutomationSchedule).where(
+            AutomationSchedule.workflow_id == workflow.id,
+            AutomationSchedule.customer_id == user.id))
+        if row:
+            db.delete(row)
+            db.commit()
+    return Response(status_code=204)
 
 
 @router.post("/workflows/{workflow_id}/webhook", status_code=201)
