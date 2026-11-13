@@ -200,3 +200,18 @@ class AutomationRun(Base):
     idempotency_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
     trace_json: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationSchedule(Base):
+    """Opt-in interval schedule; worker acquires due runs using database CAS."""
+
+    __tablename__ = "portal_automation_schedules"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    workflow_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_workflows.id"), unique=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    interval_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    next_run_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
