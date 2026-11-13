@@ -28,6 +28,8 @@ async def dashboard(request: Request):
 
 
 @router.get("/architect", response_class=HTMLResponse)
+@router.get("/builder", response_class=HTMLResponse)
+@router.get("/pages/builder_pro_final.html", response_class=HTMLResponse)
 @router.get("/builder-pro", response_class=HTMLResponse)
 @router.get("/builder_pro_final.html", response_class=HTMLResponse)
 @router.get("/pages/builder_pro.html", response_class=HTMLResponse)
@@ -53,7 +55,7 @@ async def techkillers(request: Request):
 @router.get("/robotization", response_class=HTMLResponse)
 @router.get("/pages/robotization.html", response_class=HTMLResponse)
 async def robotization(request: Request):
-    """Legacy operational overview, separate from the actual visual builder."""
+    """Current public overview; all actions lead to verified platform routes."""
     return render(request, "robotization.html")
 
 
