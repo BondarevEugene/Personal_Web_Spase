@@ -18,6 +18,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from automation.engine import RunRequest, WorkflowDefinition, bounded, execute
+from automation.diagnostics import analyze
 from portal.db import session_factory
 from portal.models import AutomationRun, AutomationWorkflow, utcnow
 from portal.routes import current_customer
@@ -126,6 +127,12 @@ def catalog():
                          "http": "operator_allowlisted_https"},
         "not_available": ["hosted Telegram deployment", "interactive OAuth",
                           "cron scheduler", "arbitrary Python execution"]}
+
+
+@router.post("/analyze")
+def review_workflow(definition: WorkflowDefinition):
+    """Static quality analysis without running or publishing anything."""
+    return analyze(definition)
 
 
 @router.get("/workflows")
