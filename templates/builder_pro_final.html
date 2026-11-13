@@ -6,9 +6,9 @@
 <title>OmniFactory — конструктор Telegram-ботов</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
-<link rel="stylesheet" href="/studio-assets/builder.css?v=4">
+<link rel="stylesheet" href="/studio-assets/builder.css?v=5">
 <script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/graph_studio.js?v=3"></script>
+<script defer src="/studio-assets/graph_studio.js?v=5"></script>
 </head>
 <body class="platform-app builder-app">
 <a class="skip-link" href="#main">Перейти к редактору</a><div class="grid-noise" aria-hidden="true"></div>
@@ -25,10 +25,18 @@
 <button id="btn-save" type="button" class="button button-line">Сохранить</button>
 <button id="btn-import" type="button" class="button button-line">Импорт JSON</button>
 <button id="btn-download-json" type="button" class="button button-line">Скачать JSON</button>
-<button id="btn-validate" type="button" class="button button-line">Проверить</button>
+<button id="btn-validate" type="button" class="button button-line">Проверить схему</button>
+<button id="btn-test-canvas" type="button" class="button button-primary">▶ Тестировать диалог</button>
+<button id="btn-expand-canvas" type="button" class="button button-line" aria-pressed="false">Развернуть поле</button>
+<button id="btn-export-info" type="button" class="button button-line">Как работает экспорт?</button>
 <button id="btn-export" type="button" class="button button-primary">Экспорт Python ZIP <span aria-hidden="true">↗</span></button>
 <input type="file" id="import-file" accept=".json,application/json" hidden>
 </div></div>
+<section class="export-explainer" id="export-explainer" hidden aria-label="Формат экспорта">
+ <div><strong>Что создаётся при экспорте?</strong><p>Скачивается ZIP-архив самостоятельного Python Telegram-бота. Это исходный код, а не уже запущенный бот.</p></div>
+ <div class="export-file-list"><code>bot.py</code><code>scenario.json</code><code>requirements.txt</code><code>.env.example</code><code>README.md</code></div>
+ <p>Для запуска нужен токен от BotFather, установка библиотек и компьютер либо хостинг с Python 3.11+. Платформа сейчас не публикует бота автоматически. Интеграции Google, Meta и пользовательский Python пока не входят в экспорт.</p>
+</section>
 <div class="integration-information" id="integration-information" hidden aria-live="polite"></div>
 <div id="project-status" class="builder-feedback" role="status" aria-live="polite">Редактор загружается…</div>
 <div class="builder-layout">
@@ -53,8 +61,9 @@
 <section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div class="graph-legend" aria-label="Легенда типов узлов"><span class="legend-message">● Сообщения</span><span class="legend-choice">◆ Ветвления</span><span class="legend-photo">▣ Медиа</span><span class="legend-document">▤ Документы</span><span class="legend-end">■ Завершение</span></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
 <aside class="builder-inspector" aria-label="Настройка блока"><div class="builder-pane-head"><span>03 / ИНСПЕКТОР</span><small>Параметры</small></div><div id="editor-inspector" class="builder-inspector-body"></div></aside>
 </div>
-<section class="builder-preview" aria-label="Предпросмотр"><div><div class="eyebrow">04 / DIALOGUE PREVIEW</div><h2>Пройди диалог перед экспортом.</h2><p>Это симуляция в браузере. Настоящий Telegram-бот начнёт отвечать после запуска сгенерированного Python-проекта.</p><button id="btn-preview" type="button" class="button button-line">▶ Начать предпросмотр</button></div><div id="preview-messages" class="builder-preview-chat" aria-live="polite"><p>Здесь появятся сообщения.</p></div></section>
+<section class="builder-preview" id="builder-preview" aria-label="Тестирование сценария"><div><div class="eyebrow">04 / DIALOGUE PREVIEW</div><h2>Тестовый диалог и трассировка.</h2><p>Это симуляция в браузере, а не запуск Telegram-бота. Настоящий Telegram-бот начнёт отвечать после запуска сгенерированного Python-проекта.</p><button id="btn-preview" type="button" class="button button-line">▶ Начать предпросмотр</button></div><div class="preview-workspace"><div id="preview-messages" class="builder-preview-chat" aria-live="polite"><p>Здесь появятся сообщения.</p></div><div class="preview-trace" id="preview-trace" aria-label="Шаги симуляции"></div></div></section>
 <section class="builder-security-note"><strong>Безопасный экспорт:</strong> секреты не попадают в ZIP. Токен Telegram задаётся только в переменных окружения при запуске бота. Запуск на нашем сервере и синхронизация CRM пока не реализованы.</section>
+<div id="graph-context-menu" class="graph-context-menu" role="menu" hidden></div>
 </main>
 <footer class="builder-footer" aria-label="OmniFactory footer">
  <div class="builder-footer-main">
