@@ -45,9 +45,26 @@ def upgrade():
                     "portal_automation_runs", ["customer_id"])
     op.create_index("ix_portal_automation_runs_workflow_id",
                     "portal_automation_runs", ["workflow_id"])
+    op.create_table(
+        "portal_automation_schedules",
+        sa.Column("id", sa.String(36), primary_key=True),
+        sa.Column("workflow_id", sa.String(36),
+                  sa.ForeignKey("portal_automation_workflows.id"),
+                  nullable=False, unique=True),
+        sa.Column("customer_id", sa.String(36),
+                  sa.ForeignKey("portal_customers.id"), nullable=False),
+        sa.Column("interval_minutes", sa.Integer(), nullable=False),
+        sa.Column("next_run_at", sa.DateTime(), nullable=False),
+        sa.Column("enabled", sa.Boolean(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
+    )
+    op.create_index("ix_portal_automation_schedules_customer_id",
+                    "portal_automation_schedules", ["customer_id"])
 
 
 def downgrade():
+    op.drop_index("ix_portal_automation_schedules_customer_id", table_name="portal_automation_schedules")
+    op.drop_table("portal_automation_schedules")
     op.drop_index("ix_portal_automation_runs_workflow_id",
                   table_name="portal_automation_runs")
     op.drop_index("ix_portal_automation_runs_customer_id",
