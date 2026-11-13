@@ -29,6 +29,7 @@ async function refreshCloud(selectedId=null){
    const option=el('option','',project.name+' · '+new Date(project.updated_at).toLocaleDateString());
    option.value=project.id;list.append(option);
   }
+  if(cloudProjectId&&!data.projects.some(project=>project.id===cloudProjectId))cloudProjectId=null;
   list.value=selectedId??cloudProjectId??'';
  }catch(err){
   cloudActive=false;cloudStatus(err.message);
@@ -176,7 +177,7 @@ function decorateCard(card,n) {
 const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;};
 const btn=(txt,cb,cls='inspector-btn')=>{const e=el('button',cls,txt);e.type='button';e.addEventListener('click',cb);return e;};
 const status=(msg,bad=false)=>{const n=$('project-status');n.textContent=msg;n.classList.toggle('error',bad);};
-const save=()=>{try{localStorage.setItem(STORE,JSON.stringify({data,positions}));}catch(e){status('Локальное сохранение недоступно',true);}};
+const save=()=>{try{localStorage.setItem(STORE,JSON.stringify({data,positions,cloudProjectId}));}catch(e){status('Локальное сохранение недоступно',true);}};
 function position(id,index=0){if(!positions[id])positions[id]={x:80+(index%5)*335,y:90+Math.floor(index/5)*235};return positions[id];}
 function payload(){return {name:data.name,start:data.start,nodes:data.nodes.map(({id,kind,text='',next=null,media=null,options=[]})=>({id,kind,text,next,media,options}))};}
 function edges(){
@@ -370,7 +371,7 @@ $('import-file').addEventListener('change',async e=>{
   const obj=JSON.parse(await file.text());
   const r=await fetch(API+'/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
   if(!r.ok)throw Error('Схема не прошла серверную проверку');
-  data=obj;positions={};selected=data.start;counter=1;change();inspector();$('scenario-name').value=data.name;status('Сценарий импортирован.');
+  data=obj;positions={};selected=data.start;counter=1;cloudProjectId=null;change();inspector();$('scenario-name').value=data.name;status('Сценарий импортирован.');
  }catch(err){status('Ошибка импорта: '+err.message,true);}e.target.value='';
 });
 $('btn-preview').addEventListener('click',preview);
@@ -385,6 +386,7 @@ try{
   stored.data.nodes.every(n=>n&&typeof n.id==='string'&&names[n.kind])&&
   stored.data.nodes.some(n=>n.id===stored.data.start)){
   data=stored.data;
+  cloudProjectId=typeof stored.cloudProjectId==='string'&&/^[0-9a-f-]{36}$/i.test(stored.cloudProjectId)?stored.cloudProjectId:null;
   positions={};
   for(const [id,p] of Object.entries(stored.positions||{})){
    if(data.nodes.some(n=>n.id===id)&&p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&
