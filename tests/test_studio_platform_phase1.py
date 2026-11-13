@@ -30,14 +30,14 @@ def test_platform_links_back_to_studio_and_existing_builder():
     response = client.get("/")
     assert response.status_code == 200
     assert 'href="/studio"' in response.text
-    assert 'href="/builder_pro_final.html"' in response.text
+    assert 'href="/architect"' in response.text
 
 
 def test_repaired_builder_ui_and_static_assets_are_accessible():
     response = client.get("/builder_pro_final.html")
     assert response.status_code == 200
     assert "Graph Studio v2" in response.text
-    assert "/studio-assets/graph_studio.js?v=5" in response.text
+    assert "/studio-assets/graph_studio.js?v=6" in response.text
     script = client.get("/studio-assets/graph_studio.js")
     assert script.status_code == 200
     assert "/api/v1/builder/simple" in script.text
