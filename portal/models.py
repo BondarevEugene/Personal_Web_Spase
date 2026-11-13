@@ -153,3 +153,18 @@ class PaymentRecord(Base):
     status: Mapped[str] = mapped_column(String(24), nullable=False)
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=utcnow, nullable=False)
+
+
+class BuilderProject(Base):
+    """Per-customer Telegram workflow draft. No bot tokens or OAuth credentials."""
+
+    __tablename__ = "portal_builder_projects"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    scenario_json: Mapped[str] = mapped_column(Text, nullable=False)
+    layout_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, onupdate=utcnow, nullable=False)
