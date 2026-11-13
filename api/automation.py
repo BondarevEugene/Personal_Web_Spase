@@ -357,11 +357,14 @@ async def incoming_webhook(workflow_id: str, request: Request,
         raise HTTPException(400, "Invalid Content-Length")
     if declared_length < 0 or declared_length > 16000:
         raise HTTPException(413, "Webhook payload too large")
-    body = await request.body()
-    if len(body) > 16000:
-        raise HTTPException(413, "Webhook payload too large")
+    # Limit streaming bytes even if the client omits Content-Length.
+    chunks = bytearray()
+    async for part in request.stream():
+        chunks.extend(part)
+        if len(chunks) > 16000:
+            raise HTTPException(413, "Webhook payload too large")
     try:
-        data = json.loads(body)
+        data = json.loads(chunks)
         if not isinstance(data, dict):
             raise ValueError("Payload must be an object")
         bounded(data)
