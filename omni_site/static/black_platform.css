@@ -59,3 +59,8 @@
 .builder-app .builder-tools-extra{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;padding:12px;border-top:1px solid #345741}
 .builder-app .builder-tools-extra .button{font-size:12px;min-height:39px}
 @media(max-width:790px){.builder-app .builder-toolbar-actions{min-width:0;width:100%}.builder-app .builder-main-controls{justify-content:flex-start}.builder-app .builder-tools-more{align-self:stretch}.builder-app .builder-tools-extra{justify-content:flex-start}}
+
+
+.builder-app .builder-template-choice{display:flex;flex-direction:column;gap:6px;min-width:215px;color:#b8e6cd;font-size:11px}
+.builder-app .builder-template-choice select{width:100%;min-height:40px;background:#101e16;color:#eafff1;border:1px solid #487458;border-radius:7px;padding:8px}
+.builder-app .builder-template-choice select:focus-visible{outline:2px solid #a8f5d3;outline-offset:2px}
