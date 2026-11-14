@@ -120,9 +120,10 @@ def deployment_readiness(plan_id: str, request: Request):
                   "Railway OAuth действителен" if connected else
                   "Подключи Railway или обнови доступ", "/cloud/deploy")
             scopes = set(conn.scopes.split()) if connected else set()
-            check("railway_permissions", "project:member" in scopes,
-                  "Права проекта предоставлены" if "project:member" in scopes else
-                  "Нужна проверка доступа к целевому проекту или workspace",
+            check("railway_permissions", False,
+                  "Общий scope project:member запрошен, но доступ к конкретному проекту ещё не проверен" if
+                  "project:member" in scopes else
+                  "Нужен scope project:member и проверка выбранного Railway-проекта",
                   "/cloud/deploy")
         else:
             check("managed_infrastructure", False,
