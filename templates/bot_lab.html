@@ -2,9 +2,10 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bot Lab · OmniFactory Managed Cloud</title><meta name="theme-color" content="#081828">
 <link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
-<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=6">
+<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=7">
 <script defer src="/studio-assets/bot_lab.js?v=6"></script>
-<script defer src="/studio-assets/bot_lab_release.js?v=1"></script></head>
+<script defer src="/studio-assets/bot_lab_release.js?v=1"></script>
+<script defer src="/studio-assets/bot_lab_runtime.js?v=1"></script></head>
 <body class="omni-revamp lab-body">
 <a class="lab-skip" href="#lab-main">К содержимому</a>
 <header class="omni-top"><div class="omni-top-inner"><a class="omni-brand" href="/" aria-label="OmniFactory">
@@ -80,6 +81,12 @@
       <h3>Ожидают приглашения</h3><div id="lab-pending-invites" class="lab-member-list">Получаем список…</div>
       <details class="lab-audit"><summary>Журнал безопасности</summary><div id="lab-security-audit" class="lab-member-list"></div></details>
     </div>
+  </section>
+  <section id="lab-runtime-panel" class="lab-runtime-panel" hidden aria-label="Telegram Runtime">
+    <div class="lab-release-head"><div><span class="lab-kicker">OMNI LAB / TELEGRAM RUNTIME</span><h3>Среда исполнения бота</h3></div><span class="lab-release-tag">Webhook Runtime v1</span></div>
+    <p class="lab-muted">Проверка совместимости сохранённого сценария с отдельным контейнером. Здесь не создаются Railway-сервисы и не выводятся Telegram-токены.</p>
+    <div class="lab-actions"><button id="lab-runtime-check" type="button" class="lab-button">Проверить сценарий и runtime</button></div>
+    <div id="lab-runtime-report" class="lab-release-results" aria-live="polite">Выбери своего бота.</div>
   </section>
   <section class="lab-release-panel" id="lab-release-panel" hidden aria-label="Подготовка релиза">
     <div class="lab-release-head"><div><span class="lab-kicker">OMNI RELEASE / CONTROLLED DELIVERY</span><h3>Центр подготовки релиза</h3></div><span class="lab-release-tag">Без платных операций</span></div>
