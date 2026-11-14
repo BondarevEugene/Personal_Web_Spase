@@ -237,3 +237,17 @@ body.graph-fullscreen{overflow:hidden}
 .cloud-login-link{font-size:12px;font-weight:800;color:#adf3e5;text-decoration:none;padding:8px 4px}
 .cloud-login-link:hover{text-decoration:underline}
 @media(max-width:700px){.builder-cloud select{width:100%;max-width:none}.builder-cloud label{flex-basis:100%}.builder-cloud .button{flex:1}}
+
+
+/* Executable data-flow nodes: distinct shape and color at a glance. */
+.node-kind-input{--node-accent:#65d6c2;--node-glow:#65d6c244;border:2px solid #65d6c2!important}
+.node-kind-input .graph-kind-icon{color:#65d6c2;border-radius:13px 13px 4px 4px}
+.node-kind-condition{--node-accent:#ddae77;--node-glow:#ddae7744;border:2px solid #ddae77!important}
+.node-kind-condition .graph-kind-icon{color:#ffd08b;transform:rotate(45deg);border-radius:3px}
+.node-kind-condition .graph-option:first-of-type{border-left:3px solid #8ae0a0}
+.node-kind-condition .graph-option:last-of-type{border-left:3px solid #ed9aa9}
+.node-kind-set_variable{--node-accent:#a7a5fa;--node-glow:#a7a5fa44;border:2px solid #a7a5fa!important}
+.node-kind-set_variable .graph-kind-icon{color:#a7a5fa;border-radius:4px 11px 4px 11px}
+.preview-input-form{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.preview-text-input{flex:1;min-width:180px;padding:10px 14px;background:#13263b;border:1px solid #7194b3;border-radius:8px;color:#fff;font-size:14px}
+.preview-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
