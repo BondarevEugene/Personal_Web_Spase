@@ -18,8 +18,8 @@
 <label>Имя <input name="display_name" type="text" minlength="2" maxlength="120" autocomplete="name" required placeholder="Как к вам обращаться"></label>
 <label>Email <input name="email" type="email" maxlength="254" autocomplete="email" required placeholder="name@company.com"></label>
 <label>Организация <input name="organization" type="text" minlength="2" maxlength="160" required placeholder="Название организации"></label>
-<label>Пароль <input name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required placeholder="Не менее 12 символов"></label>
-<label>Повтори пароль <input name="password_repeat" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
+<label>Пароль <input name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required placeholder="От 8 символов; лучше 12+"></label>
+<label>Повтори пароль <input name="password_repeat" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
 {% else %}
 <label>Логин или email <input name="login" type="text" autocomplete="username" maxlength="254" required></label>
 <label>Пароль <input name="password" type="password" autocomplete="current-password" required></label>

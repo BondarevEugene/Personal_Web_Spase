@@ -60,6 +60,7 @@ from fastapi import FastAPI
 
 from core.logging import logger
 from core.database import initialize_database
+from portal.bootstrap import ensure_portal_database, ui_source_status
 
 
 @asynccontextmanager
@@ -84,7 +85,17 @@ async def lifespan(app: FastAPI):
 
     initialize_database()
 
-    logger.info("Database ready.")
+    logger.info("Legacy platform database ready (not the customer portal).")
+    ensure_portal_database()
+    home_path, studio_v3 = ui_source_status()
+    logger.info("Root HTML source: %s", home_path)
+    if not studio_v3:
+        logger.error(
+            "Root HTML is not Studio v3. The on-disk index.html is outdated or "
+            "modified locally. Do NOT trust HTTP 200 as proof of the correct UI."
+        )
+    else:
+        logger.info("Root HTML Studio v3 fingerprint: OK.")
 
     # ------------------------------------------------------------------
     # Registry
