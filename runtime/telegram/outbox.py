@@ -36,6 +36,10 @@ async def claim_one(store: PostgresStateStore) -> Command | None:
                 "SELECT bot_instance_id,update_id,seq,chat_id,method,payload_json "
                 "FROM omni_telegram_outbox "
                 "WHERE bot_instance_id=$1 AND status='pending' "
+                "AND NOT EXISTS (SELECT 1 FROM omni_telegram_outbox earlier "
+                "WHERE earlier.bot_instance_id=omni_telegram_outbox.bot_instance_id "
+                "AND earlier.update_id=omni_telegram_outbox.update_id "
+                "AND earlier.seq<omni_telegram_outbox.seq AND earlier.status<>'sent') "
                 "ORDER BY update_id,seq FOR UPDATE SKIP LOCKED LIMIT 1",
                 store.bot_instance_id)
             if row is None:
