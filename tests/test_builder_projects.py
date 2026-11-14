@@ -121,3 +121,47 @@ def test_invalid_graph_and_layout_cannot_be_saved(db_ready):
     assert c.post(BASE, headers=token, json={
         "scenario": SCENARIO, "positions": {"unknown": {"x": 1, "y": 2}}
     }).status_code == 422
+
+
+def test_duplicate_project_preserves_graph_and_layout_and_requires_csrf(db_ready):
+    owner = register("dup_owner", "dup-owner@builder.test")
+    other = register("dup_other", "dup-other@builder.test")
+    original = owner.post(BASE, headers=csrf(owner), json={
+        "scenario": SCENARIO,
+        "positions": {"hello": {"x": 120, "y": 185}},
+    })
+    assert original.status_code == 201, original.text
+    original_id = original.json()["id"]
+    path = BASE + "/" + original_id + "/duplicate"
+
+    assert owner.post(path).status_code == 403
+    assert other.post(path, headers=csrf(other)).status_code == 404
+
+    created = owner.post(path, headers=csrf(owner))
+    assert created.status_code == 201, created.text
+    copy_id = created.json()["id"]
+    assert copy_id != original_id
+    assert created.json()["name"] == "Welcome bot (копия)"
+
+    copy = owner.get(BASE + "/" + copy_id)
+    assert copy.status_code == 200
+    assert copy.json()["scenario"]["name"] == "Welcome bot (копия)"
+    assert copy.json()["scenario"]["nodes"] == SCENARIO["nodes"]
+    assert copy.json()["positions"]["hello"] == {"x": 120.0, "y": 185.0}
+    assert other.get(BASE + "/" + copy_id).status_code == 404
+
+    # The original remains unchanged when a duplicate is made.
+    saved_original = owner.get(BASE + "/" + original_id).json()
+    assert saved_original["scenario"]["name"] == "Welcome bot"
+    assert len(owner.get(BASE).json()["projects"]) == 2
+
+
+def test_duplicate_control_is_wired_into_graph_studio():
+    client = TestClient(app)
+    page = client.get("/architect")
+    assert page.status_code == 200
+    assert 'id="btn-cloud-duplicate"' in page.text
+    script = client.get("/studio-assets/graph_studio.js")
+    assert script.status_code == 200
+    assert "async function duplicateCloud()" in script.text
+    assert "/duplicate" in script.text
