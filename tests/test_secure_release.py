@@ -169,3 +169,31 @@ def test_bad_confirmation_and_unknown_plan(database):
         "cloud_plan_id":plan,"confirmation":"DEPLOY AND CHARGE"})
     assert response.status_code == 422
     assert TestClient(app).get(API+"/capabilities").json()["live_railway_mutations_enabled"] is False
+
+
+def test_editing_bot_scenario_invalidates_immutable_release(database, monkeypatch):
+    owner = user("release_owner")
+    bot = create_bot(owner)
+    plan = create_plan(owner)
+    make_ready(owner, bot, plan, monkeypatch)
+    created = review(owner, bot, plan, key="scenario-review-key-01")
+    assert created.status_code == 201, created.text
+    rid = created.json()["id"]
+    assert owner.get(API + "/reviews/" + rid).json()["still_valid"] is True
+    changed = {
+        "scenario": {
+            "name": "Secure Telegram", "start": "start",
+            "nodes": [
+                {"id": "start", "kind": "message", "text": "New content", "next": "end"},
+                {"id": "end", "kind": "end", "text": "Bye"},
+            ],
+        }
+    }
+    update = owner.put("/api/v1/builder/projects/" + bot, headers=csrf(owner),
+                       json=changed)
+    assert update.status_code == 200, update.text
+    assert owner.get(API + "/reviews/" + rid).json()["still_valid"] is False
+    assert owner.post(API + "/reviews", headers={
+        **csrf(owner), "Idempotency-Key": "scenario-review-key-01"},
+        json={"bot_project_id": bot, "cloud_plan_id": plan,
+              "confirmation": "REQUEST RELEASE REVIEW"}).status_code == 409
