@@ -23,7 +23,7 @@ def test_read_only_inventory_sanitizes_output(monkeypatch):
                           "services": {"edges": [
                               {"node": {"id": "svc-1", "name": "Worker"}}]},
                           "environments": {"edges": [
-                              {"node": {"id": "env-1", "name": "production"}}]}}
+                              {"node": {"id": "env-1", "name": "production"}}]}}}
             ]}}}
     class Client:
         def __init__(self, **kwargs):
