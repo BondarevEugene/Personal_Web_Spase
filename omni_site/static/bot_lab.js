@@ -54,7 +54,7 @@ function fact(root,title,value){
 function renderDetail(){
  const info=records().find(i=>selected&&i.id===selected.id&&i.entity===selected.entity);
  const facts=$('lab-selected-facts'),acts=$('lab-actions');
- facts.replaceChildren();acts.replaceChildren();
+ facts.replaceChildren();acts.replaceChildren();$('lab-readiness').replaceChildren();
  if(!info){
   selected=null;$('lab-selected-name').textContent='Выбери бота слева';
   $('lab-selected-status').textContent='Нет выбора';
@@ -78,6 +78,9 @@ function renderDetail(){
   fact(facts,'Состояние',info.status);
   acts.append(action('Открыть Cloud Deploy','/cloud/deploy',true),
               action('Проверить Railway','/cloud/deploy'));
+  const check=el('button','lab-button','Проверить готовность к запуску');
+  check.type='button';check.addEventListener('click',()=>reviewPlan(info.id));
+  acts.append(check);
  }else{
   $('lab-selected-status').textContent='Workflow';
   $('lab-selected-summary').textContent='Сценарий автоматизации доступен для редактирования, анализа и dry-run. Это не признак публичного запуска.';
@@ -116,6 +119,28 @@ async function refresh(){
   $('lab-railway-flag').textContent='—';$('lab-cloud-status').textContent='Нужна авторизация или проверка базы.';
   $('lab-check-railway').disabled=true;
   $('lab-actions').replaceChildren(action('Войти в аккаунт','/account/login',true));
+ }
+}
+async function reviewPlan(id){
+ const root=$('lab-readiness');root.replaceChildren();
+ root.append(el('p','lab-muted','Проверяем обязательные условия публикации…'));
+ try{
+  const body=await fetchJson('/deploy-readiness/'+encodeURIComponent(id));
+  if(!selected||selected.id!==id)return;
+  root.replaceChildren();
+  root.append(el('strong','lab-readiness-title',body.ready?'Все проверки пройдены':'Публикация пока недоступна'));
+  for(const item of body.checks){
+   const line=el('div','lab-readiness-item '+(item.ok?'ok':'blocked'));
+   const mark=el('b','',item.ok?'✓':'!');
+   const content=el('span','',item.message);
+   const a=el('a','',item.ok?'Подробнее':'Исправить / настроить');
+   a.href=item.action;
+   line.append(mark,content,a);root.append(line);
+  }
+  say('Проверка завершена: '+body.checks.filter(x=>x.ok).length+' из '+body.checks.length+' условий выполнены.');
+ }catch(err){
+  root.replaceChildren(el('p','lab-muted','Не удалось проверить план: '+err.message));
+  say('Ошибка проверки готовности: '+err.message,true);
  }
 }
 async function railwayProjects(){
