@@ -81,8 +81,14 @@ def test_exact_update_id_concurrency_and_bot_namespace_isolation():
             state.values["counter"] = str(int(state.values.get("counter", "0")) + 1)
         first = asyncio.create_task(store.process(200, 123, 456, send))
         await asyncio.sleep(.02)
-        with pytest.raises(AmbiguousDelivery):
-            await store.process(200, 123, 456, send)
+        # Depending on scheduling, the retry sees either processing
+        # (quarantine) or already processed (duplicate). It must never send.
+        try:
+            retry_status, _ = await store.process(200, 123, 456, send)
+        except AmbiguousDelivery:
+            pass
+        else:
+            assert retry_status == "duplicate"
         assert (await first)[0] == "processed"
         assert seen == 1
         assert (await other.process(200, 123, 456, send))[0] == "processed"
