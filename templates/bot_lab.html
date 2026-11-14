@@ -2,8 +2,8 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bot Lab · OmniFactory Managed Cloud</title><meta name="theme-color" content="#081828">
 <link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
-<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=3">
-<script defer src="/studio-assets/bot_lab.js?v=3"></script></head>
+<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=4">
+<script defer src="/studio-assets/bot_lab.js?v=4"></script></head>
 <body class="omni-revamp lab-body">
 <a class="lab-skip" href="#lab-main">К содержимому</a>
 <header class="omni-top"><div class="omni-top-inner"><a class="omni-brand" href="/" aria-label="OmniFactory">
@@ -41,6 +41,22 @@
   <h3>Управление проектом</h3>
   <div id="lab-actions" class="lab-actions"><span class="lab-muted">Выбери проект, чтобы открыть доступные операции.</span></div>
   <div id="lab-readiness" class="lab-readiness" aria-live="polite"></div>
+  <section class="lab-resource-workbench" aria-label="Подключение существующего Railway-сервиса">
+    <h3>Инфраструктура проекта · Railway BYOC</h3>
+    <p class="lab-muted">Для выбранного BYOC-плана можно связать существующий сервис из подключённого Railway. Список проверяется через Railway API — чужие ресурсы подключить нельзя.</p>
+    <div class="lab-resource-fields">
+      <label>Проект<select id="lab-resource-project"><option value="">Получить проекты Railway</option></select></label>
+      <label>Сервис<select id="lab-resource-service"><option value="">Выбрать сервис</option></select></label>
+      <label>Окружение<select id="lab-resource-environment"><option value="">Выбрать окружение</option></select></label>
+    </div>
+    <div class="lab-actions">
+      <button id="lab-resources-load" type="button" class="lab-button">Загрузить ресурсы</button>
+      <button id="lab-resources-bind" type="button" class="lab-button" disabled>Привязать сервис</button>
+      <button id="lab-resources-inspect" type="button" class="lab-button" disabled>Проверить статус</button>
+      <button id="lab-resources-unlink" type="button" class="lab-button" disabled>Отвязать</button>
+    </div>
+    <div id="lab-resource-report" class="lab-resource-report" aria-live="polite">Выбери план Railway BYOC слева.</div>
+  </section>
   <h3>Очередь публикаций</h3>
   <p class="lab-muted">Создай dry-run задачу для выбранного плана: реальная публикация пока заблокирована. История сохраняется в БД.</p>
   <div class="lab-actions"><button id="lab-enqueue" class="lab-button" type="button" disabled>Добавить проверку в очередь</button><button id="lab-jobs-refresh" class="lab-button" type="button">Обновить задачи</button></div>
