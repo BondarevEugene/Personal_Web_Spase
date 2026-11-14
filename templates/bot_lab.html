@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bot Lab · OmniFactory Managed Cloud</title><meta name="theme-color" content="#081828">
+<link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
+<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=1">
+<script defer src="/studio-assets/bot_lab.js?v=1"></script></head>
+<body class="omni-revamp lab-body">
+<a class="lab-skip" href="#lab-main">К содержимому</a>
+<header class="omni-top"><div class="omni-top-inner"><a class="omni-brand" href="/" aria-label="OmniFactory">
+<span class="omni-brand-logo"><i>◇</i></span><span><strong>OMNI<span>FACTORY</span></strong><small>BOT LAB / CONTROL CENTER</small></span></a>
+<nav class="omni-nav" aria-label="Навигация"><a href="/">Платформа</a><a href="/bots/lab" aria-current="page">Лаборатория</a>
+<a href="/architect">Конструктор</a><a href="/automation/studio">Автоматизация</a><a href="/cloud/deploy">Cloud Deploy</a>
+<a href="/account">Кабинет</a></nav></div></header>
+<main class="lab-main" id="lab-main">
+<div class="lab-intro">
+ <div><p class="lab-kicker">OMNIFACTORY / BOT OPERATIONS / LABORATORY</p>
+ <h1>Лаборатория <span>ботов.</span></h1>
+ <p>Один центр управления жизненным циклом бота: сценарий, проверка, подготовка публикации, инфраструктура и наблюдение за результатом. Здесь показываются только данные твоего аккаунта.</p></div>
+ <div class="lab-heading-actions"><a class="lab-button primary" href="/architect">＋ Создать бота</a><a class="lab-button" href="/cloud/deploy">Подготовить деплой</a></div>
+</div>
+<p class="lab-notice" id="lab-notice" role="status" aria-live="polite">Загружаем данные лаборатории…</p>
+<section class="lab-stats" aria-label="Сводка по аккаунту">
+ <article><span>Черновики ботов</span><strong id="lab-count-bots">—</strong><small>Graph Studio</small></article>
+ <article><span>Автоматизации</span><strong id="lab-count-flows">—</strong><small>Automation Studio</small></article>
+ <article><span>Планы публикации</span><strong id="lab-count-plans">—</strong><small>Не равно работающим сервисам</small></article>
+ <article><span>Railway</span><strong id="lab-railway-flag">—</strong><small id="lab-railway-desc">Подключение аккаунта</small></article>
+</section>
+<div class="lab-workspace">
+ <aside class="lab-sidebar" aria-label="Мои проекты">
+  <div class="lab-panel-heading"><h2>Мои боты</h2><button id="lab-refresh" class="lab-small">Обновить</button></div>
+  <label class="lab-search-label" for="lab-search">Поиск по названию</label>
+  <input id="lab-search" class="lab-search" type="search" placeholder="Найти бота или план…">
+  <div class="lab-sidebar-group"><span>Сценарии ботов</span><div id="lab-bots-list" class="lab-items">Загрузка…</div></div>
+  <div class="lab-sidebar-group"><span>Планы Cloud Deploy</span><div id="lab-plans-list" class="lab-items">Загрузка…</div></div>
+  <div class="lab-sidebar-group"><span>Автоматизации</span><div id="lab-flows-list" class="lab-items">Загрузка…</div></div>
+ </aside>
+ <section class="lab-detail" aria-label="Карточка выбранного проекта">
+  <div class="lab-panel-heading"><div><span class="lab-kicker">PROJECT WORKBENCH</span><h2 id="lab-selected-name">Выбери бота слева</h2></div><span class="lab-state" id="lab-selected-status">Нет выбора</span></div>
+  <p id="lab-selected-summary" class="lab-muted">Здесь появятся действия, соответствующие фактическому состоянию выбранного проекта.</p>
+  <div id="lab-selected-facts" class="lab-facts"></div>
+  <h3>Управление проектом</h3>
+  <div id="lab-actions" class="lab-actions"><span class="lab-muted">Выбери проект, чтобы открыть доступные операции.</span></div>
+  <h3>Жизненный цикл</h3>
+  <div class="lab-timeline" id="lab-timeline">
+   <div><b>01</b><span>Создание схемы</span></div>
+   <div><b>02</b><span>Тестирование</span></div>
+   <div><b>03</b><span>Подготовка релиза</span></div>
+   <div><b>04</b><span>Публикация и мониторинг</span></div>
+  </div>
+  <div class="lab-safety"><strong>Прозрачный статус</strong><p>Сохранённый проект или план развёртывания ещё не означает, что Telegram-бот работает. Настоящий статус «Запущен» должен подтверждаться ответом Railway и проверкой приложения.</p></div>
+ </section>
+ <aside class="lab-cloud" aria-label="Инфраструктура">
+  <div class="lab-panel-heading"><h2>Cloud Control</h2><span class="lab-kicker">RAILWAY</span></div>
+  <div class="lab-cloud-status" id="lab-cloud-status">Проверяем подключение…</div>
+  <div class="lab-actions"><a class="lab-button" href="/cloud/deploy">Управлять Railway</a><button id="lab-check-railway" class="lab-button" type="button">Проверить проекты</button></div>
+  <p class="lab-muted">Список ресурсов запрашивается у Railway через разрешённое подключение, без изменения или создания сервисов.</p>
+  <div id="lab-provider-projects" class="lab-provider-list"><span class="lab-muted">Проекты Railway ещё не загружены.</span></div>
+  <h3>Операции сервиса</h3>
+  <div class="lab-disabled-list"><span>Запустить / Перезапустить <em>В разработке</em></span>
+  <span>Логи и ошибки <em>В разработке</em></span><span>Откат версии <em>В разработке</em></span>
+  <span>Затраты и лимиты <em>В разработке</em></span></div>
+  <a class="lab-doc-link" href="/docs">Текущий API OmniFactory</a>
+ </aside>
+</div>
+<section class="lab-next"><div><span class="lab-kicker">DEPLOYMENT CONTROL PLANE</span><h2>От сценария до работающего продукта</h2><p>В текущей версии доступны создание, тестирование, хранение проектов и подготовка размещения. Автоматическое создание платных Railway-сервисов будет включено только после проверки интеграции, разрешений и бюджета.</p></div><a class="lab-button primary" href="/cloud/deploy">Перейти в Cloud Deploy</a></section>
+</main>
+<footer class="omni-footer"><div class="omni-footer-inner"><div><strong>OMNIFACTORY</strong><p>Bot Lab · управление ботами и инфраструктурой на базе проверенных данных</p></div><nav class="omni-footer-links"><a href="/">Платформа</a><a href="/architect">Bot Builder</a><a href="/automation/studio">Automation Studio</a><a href="/cloud/deploy">Cloud Deploy</a></nav></div></footer>
+</body></html>
