@@ -116,3 +116,11 @@ body{background:radial-gradient(ellipse 58rem 43rem at 89% 12%,rgba(55,65,126,.1
 .platform-link:hover{border-color:#7de9da;color:#e9fffa;background:#172637}
 .platform-link span{color:var(--cyan);font-size:16px}
 @media(max-width:590px){.platform-link{padding:9px 10px;font-size:11px;gap:5px}.platform-link span{display:none}}
+
+
+/* Studio credits are separate from the workspace dark-theme bridge. */
+.studio-mentor-credit{display:flex;gap:16px 32px;flex-wrap:wrap;justify-content:space-between;margin:32px 0 22px;padding:21px 0;border-block:1px solid #395043}
+.studio-mentor-credit span{font-size:12px;color:#b8c9be;line-height:1.8}
+.studio-mentor-credit strong{color:#f4fff7}
+.studio-mentor-credit a{color:#90eccb;text-decoration:none;border-bottom:1px solid #609f84}
+.studio-mentor-credit a:hover{color:#fff}
