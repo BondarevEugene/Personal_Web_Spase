@@ -96,6 +96,35 @@ async function deleteCloud(){
   status('Проект удалён из аккаунта. Локальный черновик не затронут.');
  }catch(err){status('Не удалось удалить проект: '+err.message,true);}
 }
+async function loadTemplateCatalog(){
+ const list=$('builder-template'),button=$('btn-use-template');
+ button.disabled=true;
+ try{
+  const response=await fetch(API+'/templates',{cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const result=await response.json();
+  list.replaceChildren();
+  const choose=el('option','','Выбери готовую основу');choose.value='';list.append(choose);
+  for(const item of result.templates){
+   const option=el('option','',item.label);option.value=item.id;list.append(option);
+  }
+  button.disabled=false;
+ }catch(err){
+  list.replaceChildren();
+  const failed=el('option','','Шаблоны сейчас недоступны');failed.value='';list.append(failed);
+  status('Не удалось загрузить каталог шаблонов: '+err.message,true);
+ }
+}
+async function applyStarterTemplate(){
+ const id=$('builder-template').value;
+ if(!id){status('Сначала выбери шаблон из списка.',true);return;}
+ try{
+  const response=await fetch(API+'/templates/'+encodeURIComponent(id),{cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const result=await response.json();
+  replaceScenario(()=>result.scenario);
+ }catch(err){status('Не удалось открыть шаблон: '+err.message,true);}
+}
 const integrationDetails={
  google_docs:'Google Docs: создание, чтение и изменение документов. Для подключения потребуется OAuth Google и серверный исполнитель.',
  google_sheets:'Google Sheets: чтение строк, добавление и обновление. Нужны OAuth и безопасное хранилище токенов.',
@@ -410,6 +439,7 @@ document.addEventListener('keydown',e=>{
 });
 $('btn-expand-canvas').addEventListener('click',()=>setExpanded(!canvasExpanded));
 $('btn-new-scenario').addEventListener('click',()=>replaceScenario(fresh));
+$('btn-use-template').addEventListener('click',applyStarterTemplate);
 $('btn-demo-scenario').addEventListener('click',()=>replaceScenario(sample));
 $('btn-test-canvas').addEventListener('click',()=>{
  preview();$('builder-preview').scrollIntoView({behavior:'smooth',block:'start'});
@@ -494,5 +524,6 @@ async function openLinkedProject(){
  window.history.replaceState(null,'',window.location.pathname+window.location.hash);
  await loadCloud();
 }
+void loadTemplateCatalog();
 void openLinkedProject();
 })();
