@@ -40,13 +40,11 @@ def test_atomic_commit_and_no_duplicate_send():
             assert await dispatch_once(store, sender) == "empty"
             assert sent == [(0, "Hello user"), (1, "Second message")]
             assert (await counters(store)).get("sent") == 2
-            await store.close()
             again = await PostgresStateStore.connect(DSN, store.bot_instance_id)
             assert (await counters(again)).get("sent") == 2
             await again.close()
         finally:
-            if not store.pool._closed:
-                await store.close()
+            await store.close()
     run(check())
 
 
