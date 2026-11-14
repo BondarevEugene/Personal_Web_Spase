@@ -111,7 +111,10 @@ class RailwayProvider(DeploymentProvider):
     name = "railway"
 
     def readiness(self) -> dict:
-        return {"provider": self.name, "oauth_connect": "planned",
+        from automation.railway_oauth import readiness
+        configuration = readiness()
+        return {"provider": self.name,
+                "oauth_connect": configuration["connection"],
                 "graphql_provision": "planned", "deploy": "disabled",
                 "mode": "plan_only", "requires_manual_approval": True}
 
