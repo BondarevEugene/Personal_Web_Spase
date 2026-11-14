@@ -136,8 +136,9 @@ def request_review(request: Request, body: ReviewRequest):
             CloudReleaseReview.owner_id == user.id,
             CloudReleaseReview.request_key == key))
         if prev:
-            if prev.review_hash != review_hash or prev.cancelled_at:
-                raise HTTPException(409, "Idempotency key reused or review cancelled")
+            if (prev.review_hash != review_hash or prev.cancelled_at
+                    or prev.expires_at <= utcnow()):
+                raise HTTPException(409, "Idempotency key reused, expired or review cancelled")
             return serialize(prev, True)
         now = utcnow()
         row = CloudReleaseReview(
