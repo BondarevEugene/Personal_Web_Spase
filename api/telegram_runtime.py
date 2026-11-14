@@ -17,7 +17,7 @@ from portal.db import session_factory
 from portal.models import BuilderProject
 from portal.routes import current_customer
 from portal.security import secure_request
-from runtime.telegram.app import read_scenario
+from runtime.telegram.scenario import read_scenario
 
 router = APIRouter(prefix="/api/v1/cloud/runtime", tags=["Telegram Runtime"])
 
