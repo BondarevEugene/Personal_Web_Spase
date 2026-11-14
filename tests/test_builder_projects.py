@@ -146,7 +146,8 @@ def test_duplicate_project_preserves_graph_and_layout_and_requires_csrf(db_ready
     copy = owner.get(BASE + "/" + copy_id)
     assert copy.status_code == 200
     assert copy.json()["scenario"]["name"] == "Welcome bot (копия)"
-    assert copy.json()["scenario"]["nodes"] == SCENARIO["nodes"]
+    original_nodes = owner.get(BASE + "/" + original_id).json()["scenario"]["nodes"]
+    assert copy.json()["scenario"]["nodes"] == original_nodes
     assert copy.json()["positions"]["hello"] == {"x": 120.0, "y": 185.0}
     assert other.get(BASE + "/" + copy_id).status_code == 404
 
