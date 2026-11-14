@@ -180,6 +180,28 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str, *,
                 "state": "postgresql" if require_state else "volatile_test_only",
                 "telegram_delivery_verified": False}
 
+    @app.get("/internal/state")
+    async def internal_state(request: Request):
+        # Private operator metrics only; never return chat IDs or conversations.
+        expected = os.getenv("OMNI_RUNTIME_OBSERVABILITY_TOKEN", "")
+        if not re.fullmatch(r"[A-Za-z0-9_-]{32,128}", expected):
+            raise HTTPException(404, "Not found")
+        supplied = request.headers.get("X-Omni-Operator-Token", "")
+        if not secrets.compare_digest(expected, supplied):
+            raise HTTPException(403, "Forbidden")
+        store = storage["store"]
+        if store is None:
+            raise HTTPException(503, "Durable storage not active")
+        try:
+            counts = await store.counts()
+        except Exception:
+            raise HTTPException(503, "Runtime counters unavailable")
+        return {"service": "omni-telegram-runtime", "storage": "postgresql",
+                "processed": counts.get("processed", 0),
+                "in_progress": counts.get("processing", 0),
+                "needs_reconciliation": counts.get("needs_reconciliation", 0),
+                "telegram_delivery_verified": False}
+
     @app.post("/telegram/webhook")
     async def webhook(request: Request):
         supplied = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
