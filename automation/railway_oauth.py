@@ -6,6 +6,7 @@ must be injected by the deployment operator; no default production keys.
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import os
 import secrets
@@ -55,7 +56,7 @@ def cipher() -> Fernet:
         raise OAuthConfigurationError("Set OMNI_CLOUD_OAUTH_FERNET_KEY on all web workers")
     try:
         return Fernet(key.encode("ascii"))
-    except (ValueError, UnicodeError) as exc:
+    except (ValueError, UnicodeError, binascii.Error) as exc:
         raise OAuthConfigurationError("Invalid Fernet key") from exc
 
 
