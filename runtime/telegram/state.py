@@ -4,7 +4,7 @@ Designed for a dedicated Telegram bot runtime (not OmniFactory's portal DB).
 An update is claimed *before* any outbound Telegram call. On failure its
 outcome is uncertain and is quarantined instead of blindly replayed.
 This prevents automatic duplicate sends but is NOT guaranteed exactly-once
-delivery. A future persistent outbox is needed for true recovery.
+delivery. An outbox can now atomically stage commands; outbound delivery still needs reconciliation.
 """
 from __future__ import annotations
 
