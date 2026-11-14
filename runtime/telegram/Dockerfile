@@ -7,4 +7,4 @@ RUN python -m pip install --no-cache-dir -r /tmp/requirements.txt
 COPY runtime/telegram/app.py /app/app.py
 USER 10001
 EXPOSE 8000
-CMD ["sh", "-c", "exec uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers=false"]
+CMD ["sh", "-c", "exec uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000} --no-proxy-headers"]
