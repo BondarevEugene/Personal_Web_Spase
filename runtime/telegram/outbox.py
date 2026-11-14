@@ -16,7 +16,11 @@ from typing import Awaitable, Callable
 
 import asyncpg
 
-from state import INSTANCE_ID, PostgresStateStore
+try:
+    from runtime.telegram.state import PostgresStateStore
+except ModuleNotFoundError:
+    # Standalone container copies modules to /app.
+    from state import PostgresStateStore
 
 
 @dataclass(frozen=True)
