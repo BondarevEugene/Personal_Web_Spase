@@ -148,3 +148,30 @@ def test_lab_assets_and_navigation():
                  "lab-check-railway", "railwayProjects"):
         assert name in script.text
     assert 'href="/bots/lab"' in c.get("/").text
+
+
+def test_deploy_readiness_is_customer_scoped_and_never_claims_live(db_ready):
+    c = register("lab_plan_owner")
+    other = register("lab_plan_other")
+    spec = {
+        "name": "customer-bot", "runtime": "telegram_aiogram",
+        "mode": "byoc", "provider": "railway", "transport": "webhook",
+        "version": "runtime-1.0.0", "max_monthly_usd": 10,
+        "secret_refs": ["BOT_TOKEN"],
+    }
+    created = c.post("/api/v1/cloud/plans", json={"spec": spec},
+        headers={**csrf(c), "Idempotency-Key": "lab-plan-key-001"})
+    assert created.status_code == 201, created.text
+    id = created.json()["id"]
+    response = c.get(BASE + "/deploy-readiness/" + id)
+    assert response.status_code == 200, response.text
+    report = response.json()
+    assert report["ready"] is False
+    assert report["creates_resources"] is False
+    assert report["deployment_status"] == "planned"
+    codes = {x["code"] for x in report["checks"]}
+    assert {"railway_connection", "budget_estimate", "secret_vault",
+            "runtime_release", "provider_provisioning"}.issubset(codes)
+    assert not all(x["ok"] for x in report["checks"])
+    assert other.get(BASE + "/deploy-readiness/" + id).status_code == 404
+    assert c.get(BASE + "/deploy-readiness/not-a-uuid").status_code == 404
