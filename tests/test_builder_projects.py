@@ -200,3 +200,19 @@ def test_bot_lab_editor_deep_link_and_export_buttons_exist():
     assert "openLinkedProject" in graph_script.text
     assert "await loadCloud()" in graph_script.text
     assert "window.history.replaceState" in graph_script.text
+
+
+def test_editor_main_actions_have_clear_priority():
+    page = TestClient(app).get("/architect")
+    assert page.status_code == 200
+    html = page.text
+    assert 'class="builder-main-controls"' in html
+    assert 'class="builder-tools-more"' in html
+    assert 'class="builder-tools-extra"' in html
+    primary = html.split('class="builder-main-controls"', 1)[1].split("</div>", 1)[0]
+    advanced = html.split('class="builder-tools-extra"', 1)[1].split("</div>", 1)[0]
+    for identifier in ("btn-new-scenario", "btn-validate", "btn-test-canvas", "btn-export"):
+        assert f'id="{identifier}"' in primary
+        assert f'id="{identifier}"' not in advanced
+    for identifier in ("btn-import", "btn-download-json", "btn-save", "btn-expand-canvas"):
+        assert f'id="{identifier}"' in advanced
