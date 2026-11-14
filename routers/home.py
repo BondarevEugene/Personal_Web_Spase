@@ -14,7 +14,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 async def home(request: Request):
     index_file = BASE_DIR / "index.html"
     if index_file.exists():
-        return FileResponse(index_file)
+        response = FileResponse(index_file)
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Omni-UI"] = "studio-v3-platform"
+        return response
     return render(request, "index.html")
 
 

@@ -81,3 +81,7 @@ __pycache__/
 /_backups/
 /omni_site_backup_v2/
 /omni_site/omni_site/
+
+# Customer portal local development database
+portal_dev.sqlite3
+portal_dev.sqlite3-*

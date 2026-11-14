@@ -1,0 +1,29 @@
+/* OmniFactory customer pages use Studio v3 site.css tokens and typography. */
+.account-app{background:radial-gradient(circle at 85% 15%,#29365e35,transparent 40%),#050811}
+.account-header-links{display:flex;gap:24px;margin-left:auto;flex-wrap:wrap}.account-header-links a{font:600 12px var(--font);color:#bac9dc}.account-header-links a:hover{color:var(--cyan)}
+.account-auth-main{display:grid;grid-template-columns:1.07fr .93fr;gap:clamp(45px,8vw,140px);padding-top:clamp(80px,10vw,170px);padding-bottom:150px;align-items:start}
+.account-auth-copy h1,.account-dashboard h1{font:600 clamp(44px,5.4vw,80px)/1.07 var(--display);letter-spacing:-.07em;margin:30px 0}
+.account-auth-copy p,.account-dashboard-lede{color:#b2c2d6;max-width:610px;font-size:15px;line-height:1.85}
+.account-auth-points{display:grid;gap:18px;margin-top:50px;font:700 10px monospace;color:#8ce5d9;letter-spacing:.12em}
+.account-auth-card,.account-panel{border:1px solid #384c68;border-radius:16px;background:linear-gradient(145deg,#152136,#0e1727);padding:clamp(24px,3vw,42px);box-shadow:0 20px 80px #0004}
+.account-auth-card h2,.account-panel h2{font:600 clamp(27px,3vw,42px)/1.15 var(--display);letter-spacing:-.045em;margin:20px 0 29px}
+.account-auth-card form,.account-panel form{display:grid;gap:16px}
+.account-auth-card label,.account-panel label{display:grid;gap:7px;font-size:12px;font-weight:600;color:#c6d7eb}
+.account-auth-card input,.account-panel input:not([type=checkbox]),.account-panel select{min-height:46px;background:#081422;color:#ecf7ff;border:1px solid #455b79;border-radius:6px;padding:11px 13px;font:500 13px var(--font);width:100%}
+.account-auth-card input:focus,.account-panel input:focus,.account-panel select:focus{outline:2px solid #8be2db;outline-offset:1px}
+.account-submit{justify-content:space-between;margin-top:12px;width:100%}
+.account-auth-foot{padding-top:22px;margin-top:22px;border-top:1px solid #344760;font-size:13px;color:#a6bad0}.account-auth-foot a{color:#88ebe0;text-decoration:underline;text-underline-offset:4px}
+.account-smallprint{color:#879ab3;font-size:11px;line-height:1.6;margin-top:20px}
+.account-error{padding:12px;border:1px solid #a85664;background:#45233165;color:#ffbfca;border-radius:8px;font-size:12px}
+.account-success{padding:12px;color:#95eedb;background:#183e3b;border-radius:8px}
+.account-dashboard{padding-top:85px;padding-bottom:120px}.account-dashboard-lede strong{color:#e7f1ff}
+.account-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:44px 0}
+.account-kpis article{border:1px solid #344763;background:#111c2d;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:11px}
+.account-kpis span{font:700 10px monospace;letter-spacing:.12em;color:#8cded3}.account-kpis strong{font:600 23px var(--display)}.account-kpis small{color:#a7b8cc}
+.account-dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px}.account-panel p{color:#a8b9cd;font-size:13px;line-height:1.75}.account-panel h3{margin:29px 0 15px;font:600 18px var(--display)}
+.account-panel-wide{grid-column:1/-1}.account-inline-checkbox{display:flex!important;flex-direction:row;align-items:center;gap:10px}.account-inline-checkbox input{width:17px;height:17px;accent-color:#88e5db}
+.account-ledger{display:grid;gap:10px}.account-ledger>div{display:flex;justify-content:space-between;gap:15px;border-bottom:1px solid #3d4d66;padding:12px 0;font-size:12px;color:#b6c7dd}.account-ledger strong{color:#e4edfb;text-align:right}
+.account-empty{border:1px dashed #3a506b;border-radius:8px;padding:22px;color:#90a4be;font-size:12px}
+.account-logout{margin-left:20px}.account-logout button{border:1px solid #48627a;border-radius:6px;background:#17263b;color:#c4d6e8;padding:10px 15px;cursor:pointer;font-size:12px}
+@media(max-width:850px){.account-auth-main{grid-template-columns:1fr}.account-dashboard-grid{grid-template-columns:1fr}.account-panel-wide{grid-column:auto}}
+@media(max-width:590px){.account-header-links{gap:10px}.account-header-links a{font-size:10px}.account-kpis{grid-template-columns:1fr}.account-logout{margin-left:0}.account-logout button{padding:7px}}
