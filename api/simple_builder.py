@@ -160,7 +160,7 @@ def list_integrations():
             "statuses": {"export": "Работает экспорт", "planned": "В разработке"}}
 
 
-VARIABLE_RE = re.compile(r"\\{\\{([A-Za-z][A-Za-z0-9_-]{0,39})\\}\\}")
+VARIABLE_RE = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
 
 
 def substitute(template: str, variables: dict[str, str]) -> str:
