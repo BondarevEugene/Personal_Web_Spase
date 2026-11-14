@@ -23,6 +23,7 @@ from fastapi.responses import JSONResponse
 
 TOKEN_PATTERN = re.compile(r"^[0-9]{5,15}:[A-Za-z0-9_-]{30,100}$")
 from scenario import read_scenario
+PLACEHOLDER = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
 
 def substitute(value: str, variables: dict[str, str]) -> str:
     return PLACEHOLDER.sub(lambda match: variables.get(match.group(1), ""), value)
