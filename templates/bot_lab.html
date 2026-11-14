@@ -2,8 +2,8 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bot Lab · OmniFactory Managed Cloud</title><meta name="theme-color" content="#081828">
 <link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
-<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=4">
-<script defer src="/studio-assets/bot_lab.js?v=4"></script></head>
+<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=5">
+<script defer src="/studio-assets/bot_lab.js?v=5"></script></head>
 <body class="omni-revamp lab-body">
 <a class="lab-skip" href="#lab-main">К содержимому</a>
 <header class="omni-top"><div class="omni-top-inner"><a class="omni-brand" href="/" aria-label="OmniFactory">
@@ -31,6 +31,7 @@
   <label class="lab-search-label" for="lab-search">Поиск по названию</label>
   <input id="lab-search" class="lab-search" type="search" placeholder="Найти бота или план…">
   <div class="lab-sidebar-group"><span>Сценарии ботов</span><div id="lab-bots-list" class="lab-items">Загрузка…</div></div>
+  <div class="lab-sidebar-group"><span>Доступ предоставлен мне</span><div id="lab-shared-list" class="lab-items">Загрузка…</div></div>
   <div class="lab-sidebar-group"><span>Планы Cloud Deploy</span><div id="lab-plans-list" class="lab-items">Загрузка…</div></div>
   <div class="lab-sidebar-group"><span>Автоматизации</span><div id="lab-flows-list" class="lab-items">Загрузка…</div></div>
  </aside>
@@ -41,6 +42,39 @@
   <h3>Управление проектом</h3>
   <div id="lab-actions" class="lab-actions"><span class="lab-muted">Выбери проект, чтобы открыть доступные операции.</span></div>
   <div id="lab-readiness" class="lab-readiness" aria-live="polite"></div>
+  <section class="lab-security-workbench" id="lab-security-workbench" hidden aria-label="Безопасность и доступ к боту">
+    <div class="lab-security-heading">
+      <div><span class="lab-kicker">OMNI SECURITY / BOT ACCESS</span><h3>Безопасность и доступ</h3></div>
+      <span id="lab-secret-indicator" class="lab-security-indicator">Не подключён</span>
+    </div>
+    <p class="lab-muted">Токен Telegram хранится в зашифрованном виде на сервере и никогда не возвращается в интерфейс. Доступ выдаётся только выбранным пользователям.</p>
+    <div id="lab-secret-owner">
+      <label class="lab-security-label" for="lab-telegram-token">Токен из BotFather</label>
+      <div class="lab-secret-entry"><input id="lab-telegram-token" type="password" autocomplete="off" spellcheck="false" placeholder="Вставить Telegram BotFather token" maxlength="116"><button id="lab-token-save" type="button" class="lab-button primary">Сохранить</button></div>
+      <div class="lab-actions">
+        <button id="lab-token-verify" type="button" class="lab-button">Проверить через Telegram</button>
+        <button id="lab-token-revoke" type="button" class="lab-button">Удалить токен</button>
+      </div>
+      <p id="lab-token-status" class="lab-muted" role="status">Выбери принадлежащий тебе бот.</p>
+      <div class="lab-access-divider"></div>
+      <h3>Пригласить пользователя</h3>
+      <p class="lab-muted">Приглашение привязывается к существующему аккаунту OMNIFACTORY. Подтверждение требуется от самого приглашённого пользователя.</p>
+      <div class="lab-access-invite">
+        <label>Логин пользователя<input id="lab-invite-username" type="text" maxlength="32" autocomplete="off" placeholder="username"></label>
+        <label>Роль<select id="lab-invite-role"><option value="viewer">Наблюдатель</option><option value="operator">Оператор (доступ к действиям позже)</option></select></label>
+        <button id="lab-invite-create" type="button" class="lab-button primary">Создать приглашение</button>
+      </div>
+      <div id="lab-invite-once" class="lab-once" hidden>
+        <strong>Одноразовый код приглашения</strong>
+        <p>Показывается только сейчас. Передай его выбранному пользователю безопасным способом.</p>
+        <div class="lab-once-token"><code id="lab-invite-token"></code><button id="lab-invite-copy" type="button" class="lab-small">Скопировать</button></div>
+      </div>
+      <h3>Пользователи с доступом</h3>
+      <div id="lab-members" class="lab-member-list">Получаем список…</div>
+      <h3>Ожидают приглашения</h3><div id="lab-pending-invites" class="lab-member-list">Получаем список…</div>
+      <details class="lab-audit"><summary>Журнал безопасности</summary><div id="lab-security-audit" class="lab-member-list"></div></details>
+    </div>
+  </section>
   <section class="lab-resource-workbench" aria-label="Подключение существующего Railway-сервиса">
     <h3>Инфраструктура проекта · Railway BYOC</h3>
     <p class="lab-muted">Для выбранного BYOC-плана можно связать существующий сервис из подключённого Railway. Список проверяется через Railway API — чужие ресурсы подключить нельзя.</p>
