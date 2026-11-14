@@ -273,3 +273,42 @@ class CloudOAuthConnection(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudProvisionJob(Base):
+    """Durable plan-to-deploy attempt; immutable snapshot and no secrets."""
+
+    __tablename__ = "portal_cloud_provision_jobs"
+    __table_args__ = (
+        UniqueConstraint("customer_id", "request_key",
+                         name="uq_cloud_provision_customer_key"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    deployment_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_cloud_deployments.id"), nullable=False, index=True)
+    request_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    manifest_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    manifest_snapshot: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), default="awaiting_review", nullable=False)
+    mode: Mapped[str] = mapped_column(String(12), default="dry_run", nullable=False)
+    approval_note: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    provider_project_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    provider_service_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    provider_deployment_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudProvisionEvent(Base):
+    """Append-only lifecycle log, no raw OAuth/Telegram credentials."""
+
+    __tablename__ = "portal_cloud_provision_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    job_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_cloud_provision_jobs.id"), nullable=False, index=True)
+    code: Mapped[str] = mapped_column(String(70), nullable=False)
+    message: Mapped[str] = mapped_column(String(300), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
