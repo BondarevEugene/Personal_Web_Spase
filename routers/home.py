@@ -52,6 +52,12 @@ async def techkillers(request: Request):
     return render(request, "techkillers.html")
 
 
+@router.get("/automation/studio", response_class=HTMLResponse)
+async def automation_studio(request: Request):
+    """Real workflow editor with explicit dry-run execution controls."""
+    return render(request, "automation_studio.html")
+
+
 @router.get("/robotization", response_class=HTMLResponse)
 @router.get("/pages/robotization.html", response_class=HTMLResponse)
 async def robotization(request: Request):

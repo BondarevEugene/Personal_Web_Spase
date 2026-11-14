@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Automation Studio · OMNIFACTORY</title>
+<meta name="theme-color" content="#0c1829">
+<link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
+<link rel="stylesheet" href="/studio-assets/automation_studio.css?v=3">
+<script defer src="/studio-assets/automation_studio.js?v=3"></script>
+</head>
+<body class="omni-revamp automation-app">
+<a class="skip-link" href="#studio-main">Перейти к редактору</a>
+<header class="omni-top"><div class="omni-top-inner">
+<a class="omni-brand" href="/"><span class="omni-brand-logo" aria-hidden="true"><i>◇</i></span>
+<span><strong>OMNI<span>FACTORY</span></strong><small>AUTOMATION / PYTHON ENGINE</small></span></a>
+<nav class="omni-nav" aria-label="Навигация">
+<a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/architect">Telegram Builder</a>
+<a href="/automation/studio" aria-current="page">Automation Studio</a><a href="/dashboard">Диагностика</a>
+<a href="/account">Кабинет</a><a href="/docs">API</a>
+</nav></div></header>
+<main id="studio-main" class="auto-shell">
+<div class="auto-heading">
+ <div><p class="omni-eyebrow">AUTOMATION STUDIO / GRAPH RUNTIME</p>
+ <h1>Создай процесс. <span>Проверь каждый шаг.</span></h1>
+ <p>Python-first движок с проверяемой логикой, контролем внешних операций и журналом исполнений. По умолчанию работа в безопасном режиме симуляции.</p></div>
+ <a class="auto-guide" href="/robotization">Возможности и ограничения ↗</a>
+</div>
+<section class="auto-toolbar" aria-label="Управление workflow">
+ <label>Название сценария<input id="auto-name" maxlength="100" value="Новая автоматизация"></label>
+ <button id="auto-new">＋ Новый</button><button id="auto-demo">Пример</button>
+ <button id="auto-save" class="primary">Сохранить в аккаунте</button>
+ <label>Сохранённые сценарии<select id="auto-workflows"><option value="">— Выбрать —</option></select></label>
+ <button id="auto-load">Открыть</button><button id="auto-analyze">Проверить архитектуру</button><button id="auto-run" class="primary">▶ Тестовый запуск</button>
+ <button id="auto-webhook">Webhook</button>
+ <a href="/account/login" class="auto-account">Войти</a>
+</section>
+<p id="auto-status" class="auto-status" role="status" aria-live="polite">Загрузка редактора…</p>
+<section class="auto-layout">
+ <aside class="auto-palette">
+ <h2>01 · Библиотека узлов</h2><p>Добавляй действия по нажатию. Соединяй выход одного блока с входом другого.</p>
+ <div id="auto-library">
+  <div class="auto-group">Триггеры и управление</div>
+  <button data-kind="trigger">◉ <span>Событие / Trigger<small>Начало выполнения</small></span></button>
+  <button data-kind="approval">⏸ <span>Согласование<small>Пауза до ручного решения</small></span></button>
+  <button data-kind="end">■ <span>Завершить<small>Остановить выполнение</small></span></button>
+  <div class="auto-group">Данные и логика</div>
+  <button data-kind="set">≔ <span>Переменная<small>Данные и шаблоны</small></span></button>
+  <button data-kind="condition">◇ <span>IF / ELSE<small>Ветвление маршрута</small></span></button>
+  <button data-kind="transform">↔ <span>Преобразование<small>Очистка и регистр</small></span></button>
+  <div class="auto-group">Интеграции</div>
+  <button data-kind="http">⇄ <span>HTTPS / REST<small>Разрешённые домены</small></span></button>
+  <button data-kind="google_docs">▤ <span>Google Docs<small>Создать документ</small></span></button>
+  <button data-kind="google_sheets">▦ <span>Google Sheets<small>Добавить строки</small></span></button>
+  <button data-kind="facebook_page">f <span>Facebook Page<small>Публиковать пост</small></span></button>
+  <button data-kind="instagram">◎ <span>Instagram<small>Публиковать изображение</small></span></button>
+ </div>
+ <p class="auto-hint">Google/Meta требуют токенов с разрешениями в настройках оператора. В dry-run никакие публикации не создаются.</p>
+ </aside>
+ <section class="auto-canvas-panel">
+ <div class="auto-panel-head"><h2>02 · Граф</h2><span id="auto-node-count">0 узлов</span><span>● Логика ◇ &nbsp; ■ Конец</span></div>
+ <div id="auto-canvas" class="auto-canvas" aria-label="Рабочее поле графа"></div>
+ </section>
+ <aside class="auto-inspector">
+ <h2>03 · Параметры</h2><div id="auto-inspector-body"></div>
+ </aside>
+</section>
+<section class="auto-bottom">
+ <div class="auto-result">
+  <h2>04 · Журнал тестового исполнения</h2>
+  <p>Показывает истинный порядок узлов, выбранные ветки и остановки. Содержимое секретов не сохраняется в журнал.</p>
+  <label>Тестовые входные значения, JSON<textarea id="auto-input" rows="3">{"customer":"Алексей"}</textarea></label>
+  <div id="auto-review" class="auto-review" aria-live="polite">Анализ проверит достижимость узлов, возможные риски и незавершённые маршруты.</div><div id="auto-trace" class="auto-trace" aria-live="polite">Нажми «Тестовый запуск».</div>
+ </div>
+ <div class="auto-history">
+  <h2>05 · История и Webhook</h2>
+  <div class="auto-schedule-controls">
+   <label>Интервал, минут (5–10080)
+    <input id="auto-schedule-minutes" type="number" min="5" max="10080" value="60">
+   </label>
+   <button id="auto-schedule-save">Включить расписание</button>
+   <button id="auto-schedule-remove">Отключить</button>
+   <small id="auto-schedule-status">Требуется отдельный worker. Выполняется только dry-run.</small>
+  </div>
+  <button id="auto-refresh-runs">Обновить историю</button>
+  <div id="auto-runs" class="auto-runs">Авторизуйся и выбери сохранённый процесс.</div>
+  <div id="auto-webhook-info" class="auto-webhook-info" hidden></div>
+  <p>Webhook активируется вручную и работает только как dry-run. Публикация в социальные сети и запись в Google возможны лишь после отдельного включения live-режима через API с ключом идемпотентности.</p>
+ </div>
+</section>
+</main>
+<footer class="omni-footer"><div class="omni-footer-inner">
+<div><strong>OMNIFACTORY</strong><p>Сценарии, которые можно объяснить и проверить. Без скрытого запуска кода или фоновых действий.</p></div>
+<nav class="omni-footer-links"><a href="/">Платформа</a><a href="/architect">Telegram Builder</a><a href="/projects">Проекты</a><a href="/docs">API</a></nav></div>
+<div class="omni-footnote">© 2026 OMNIFACTORY · AUTOMATION ENGINE V1</div></footer>
+</body></html>
