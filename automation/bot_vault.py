@@ -6,7 +6,6 @@ worker may resolve credentials after checking the resource owner.
 from __future__ import annotations
 
 import hashlib
-import hmac
 import os
 import re
 
@@ -41,7 +40,7 @@ def encrypt_token(owner_id: str, project_id: str, token: str) -> tuple[str, str]
     # Including the tenant/resource IDs prevents accidental ciphertext swapping.
     payload = f"{owner_id}:{project_id}:{token}"
     encrypted = fernet.encrypt(payload.encode()).decode("ascii")
-    fingerprint = hmac.new(fernet._signing_key, token.encode(), hashlib.sha256).hexdigest()
+    fingerprint = hashlib.sha256(encrypted.encode('ascii')).hexdigest()
     return encrypted, fingerprint
 
 
