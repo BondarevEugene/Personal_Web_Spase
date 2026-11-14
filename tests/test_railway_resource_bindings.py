@@ -168,7 +168,7 @@ def test_railway_graphql_inspection_checks_project_membership(monkeypatch):
     calls = []
     def fake_query(token, query, variables):
         calls.append(variables)
-        if "project" in variables:
+        if "id" in variables:
             return {"project": {
                 "id": PROJECT, "name": "Selected",
                 "services": {"edges": [{"node": {"id": SERVICE}}]},
