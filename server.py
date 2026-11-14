@@ -34,6 +34,7 @@ from api.simple_builder import router as simple_builder_router
 from api.builder_projects import router as builder_projects_router
 from api.automation import router as automation_router, WEBHOOKS as automation_webhook_router
 from api.cloud_deploy import router as cloud_deploy_router
+from api.railway_connections import router as railway_connections_router
 from portal.routes import router as customer_portal_router
 from portal.billing_routes import router as customer_billing_router
 
@@ -79,6 +80,7 @@ app.include_router(builder_projects_router)
 app.include_router(automation_router)
 app.include_router(automation_webhook_router)
 app.include_router(cloud_deploy_router)
+app.include_router(railway_connections_router)
 app.include_router(customer_portal_router)
 app.include_router(customer_billing_router)
 

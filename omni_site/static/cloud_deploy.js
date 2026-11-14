@@ -92,6 +92,58 @@ for(const id of ['cloud-name','cloud-runtime','cloud-mode','cloud-provider',
                  'cloud-transport','cloud-version','cloud-budget']){
  $(id).addEventListener('change',()=>{lastPlan=null;status('Конфигурация изменена. Проверь план ещё раз.');});
 }
+const RAIL='/api/v1/cloud/railway';
+async function railwayStatus(){
+ try{
+  const r=await api(RAIL+'/status');
+  $('railway-connection-status').textContent=r.connected?
+   'Подключён аккаунт: '+(r.account_name||r.subject)+' · права: '+r.scopes.join(', ')+
+   (r.refresh_available?' · обновление доступа доступно':' · обновление недоступно'):
+   (r.configuration.configured?'Railway не подключён. Можно авторизоваться.':
+    'Railway OAuth не настроен администратором OMNIFACTORY.');
+  $('railway-connect').disabled=!r.configuration.configured;
+  $('railway-refresh').disabled=!r.connected||!r.refresh_available;
+  $('railway-disconnect').disabled=!r.connected;
+ }catch(err){
+  $('railway-connection-status').textContent='Статус Railway недоступен: '+err.message;
+  $('railway-connect').disabled=true;
+  $('railway-refresh').disabled=true;
+  $('railway-disconnect').disabled=true;
+ }
+}
+async function railwayConnect(){
+ try{
+  const r=await api(RAIL+'/authorize',{method:'POST',headers:{'X-Omni-CSRF':await csrf()}});
+  const url=new URL(r.authorization_url);
+  if(url.protocol!=='https:'||url.hostname!=='backboard.railway.com'||
+     url.pathname!=='/oauth/auth')throw Error('Неожиданный адрес Railway OAuth');
+  window.location.assign(url.href);
+ }catch(err){status('Не удалось подключить Railway: '+err.message,true);}
+}
+async function railwayRefresh(){
+ try{
+  await api(RAIL+'/refresh',{method:'POST',headers:{'X-Omni-CSRF':await csrf()}});
+  status('Доступ Railway обновлён.');await railwayStatus();
+ }catch(err){status('Ошибка обновления доступа: '+err.message,true);}
+}
+async function railwayDisconnect(){
+ if(!window.confirm('Удалить доступ Railway из OMNIFACTORY? Это не отзывает согласие на сайте Railway.'))return;
+ try{
+  const res=await fetch(RAIL+'/disconnect',{method:'DELETE',credentials:'same-origin',
+    headers:{'X-Omni-CSRF':await csrf()}});
+  if(!res.ok)throw Error('HTTP '+res.status);
+  status('Локальные токены Railway удалены. Для полного отзыва доступа открой Railway → Account Settings → Apps.');
+  await railwayStatus();
+ }catch(err){status('Не удалось отключить Railway: '+err.message,true);}
+}
+$('railway-connect').addEventListener('click',railwayConnect);
+$('railway-refresh').addEventListener('click',railwayRefresh);
+$('railway-disconnect').addEventListener('click',railwayDisconnect);
+const returnState=new URLSearchParams(window.location.search).get('railway');
+if(returnState==='connected')status('Railway подключён. Развёртывание пока выключено.');
+else if(returnState==='denied')status('Подключение Railway отклонено.');
+else if(returnState==='failed')status('Подключение Railway не завершилось. Проверь разрешения и настройки.',true);
+void railwayStatus();
 $('cloud-preview').addEventListener('click',preview);
 $('cloud-save').addEventListener('click',save);
 transportLock();void list();
