@@ -215,3 +215,24 @@ class AutomationSchedule(Base):
     next_run_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudDeployment(Base):
+    """Customer-owned, plan-only deployment intent; contains no secrets."""
+
+    __tablename__ = "portal_cloud_deployments"
+    __table_args__ = (
+        UniqueConstraint("customer_id", "request_key", name="uq_cloud_customer_request"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(40), nullable=False)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    mode: Mapped[str] = mapped_column(String(16), nullable=False)
+    manifest_json: Mapped[str] = mapped_column(Text, nullable=False)
+    manifest_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    request_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="planned")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
