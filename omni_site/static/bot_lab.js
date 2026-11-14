@@ -444,7 +444,7 @@ async function createInvitation(){
  if(!username)return say('Введи точный логин зарегистрированного пользователя.',true);
  try{
   const response=await secureWrite('/bots/'+bot.id+'/invitations','POST',{username,role});
-  // Never persist invitation tokens in localStorage or location.
+  // One-time invitation codes remain only in the current page's memory.
   $('lab-invite-token').textContent=response.one_time_token;
   $('lab-invite-once').hidden=false;
   $('lab-invite-username').value='';
