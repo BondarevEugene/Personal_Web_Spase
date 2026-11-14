@@ -4,6 +4,7 @@ No deployment mutation is exposed. Browser never receives provider tokens.
 """
 from __future__ import annotations
 
+import hashlib
 import hmac
 from datetime import timedelta
 
@@ -16,7 +17,7 @@ from automation import railway_oauth as oauth
 from portal.db import session_factory
 from portal.models import CloudOAuthAttempt, CloudOAuthConnection, utcnow
 from portal.routes import current_customer
-from portal.security import secure_request, verify_csrf
+from portal.security import SESSION_COOKIE, secure_request, verify_csrf
 
 router = APIRouter(prefix="/api/v1/cloud/railway", tags=["Railway Connections"])
 UI = "/cloud/deploy"
@@ -67,6 +68,7 @@ def authorize(request: Request):
             row = CloudOAuthAttempt(
                 customer_id=user.id, provider="railway",
                 state_hash=oauth.state_hash(state),
+                session_hash=hashlib.sha256(request.cookies.get(SESSION_COOKIE, "").encode()).hexdigest(),
                 verifier_ciphertext=oauth.encrypt(verifier),
                 expires_at=utcnow() + timedelta(minutes=10),
                 created_at=utcnow(),
@@ -100,6 +102,10 @@ def callback(request: Request, code: str | None = None, state: str | None = None
             CloudOAuthAttempt.customer_id == user.id,
             CloudOAuthAttempt.provider == "railway",
             CloudOAuthAttempt.state_hash == digest))
+        current_session_hash = hashlib.sha256(
+            request.cookies.get(SESSION_COOKIE, "").encode()).hexdigest()
+        if attempt and not hmac.compare_digest(attempt.session_hash, current_session_hash):
+            raise HTTPException(400, "OAuth authorization belongs to another session")
         if not attempt or attempt.expires_at <= utcnow():
             raise HTTPException(400, "OAuth state expired or not found")
         # Consume state BEFORE exchanging short-lived code; atomic claim blocks
