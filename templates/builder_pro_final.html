@@ -19,20 +19,26 @@
 <div class="nav-actions"><a class="header-contact" href="/docs">API <span aria-hidden="true">↗</span></a><button class="menu-toggle" type="button" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Открыть меню"><span></span><span></span></button></div>
 </div></header>
 <main id="main" class="container builder-page">
-<div class="builder-intro"><div><div class="builder-hero-kicker">OMNIFACTORY / GRAPH STUDIO</div><h1>Логика становится<br><span class="gradient-text">видимой.</span></h1><p>Создай Telegram-сценарий от начала до конца: добавь блоки, соедини выходы со входами, проверь логику, протестируй диалог и скачай исполняемый Python-проект. Для реального запуска понадобится токен BotFather и Python-хостинг.</p><div class="builder-hero-metric"><strong>01</strong> Пространство без ограничений по шаблону <strong>02</strong> Соединения и ветвления <strong>03</strong> Python / aiogram 3</div></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Graph Studio v2</strong><small>Черновик сохраняется в текущем браузере, а ZIP содержит самостоятельный aiogram-проект. Автоматическое развёртывание ещё не реализовано.</small></div></div>
+<div class="builder-intro"><div><div class="builder-hero-kicker">OMNIFACTORY / GRAPH STUDIO</div><h1>Логика становится<br><span class="gradient-text">видимой.</span></h1><p>Создай Telegram-сценарий от начала до конца: добавь блоки, соедини выходы со входами, проверь логику, протестируй диалог и скачай исполняемый Python-проект. Для реального запуска понадобится токен BotFather и Python-хостинг.</p><div class="builder-hero-metric"><strong>01</strong> Пространство без ограничений по шаблону <strong>02</strong> Соединения и ветвления <strong>03</strong> Python / aiogram 3</div></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Graph Studio</strong><small>Черновики сохраняются в браузере или в аккаунте. Для запуска на собственном Python-хостинге скачай ZIP. Управляемая публикация пока проходит отдельную разработку.</small></div></div>
 <div class="builder-toolbar">
 <label for="scenario-name">Название сценария <input id="scenario-name" type="text" maxlength="100" value="Мой Telegram-бот" autocomplete="off"></label>
-<div class="builder-toolbar-actions">
-<button id="btn-new-scenario" type="button" class="button button-line">＋ Новый бот</button>
-<button id="btn-demo-scenario" type="button" class="button button-line">Пример диалога</button>
-<button id="btn-save" type="button" class="button button-line">Сохранить черновик</button>
-<button id="btn-import" type="button" class="button button-line">Импорт JSON</button>
-<button id="btn-download-json" type="button" class="button button-line">Скачать JSON</button>
-<button id="btn-validate" type="button" class="button button-line">Проверить схему</button>
-<button id="btn-test-canvas" type="button" class="button button-primary">▶ Тестировать диалог</button>
-<button id="btn-expand-canvas" type="button" class="button button-line" aria-pressed="false">Развернуть поле</button>
-<button id="btn-export-info" type="button" class="button button-line">Как работает экспорт?</button>
-<button id="btn-export" type="button" class="button button-primary">Экспорт Python ZIP <span aria-hidden="true">↗</span></button>
+<div class="builder-toolbar-actions" aria-label="Основные действия с ботом">
+<div class="builder-main-controls">
+ <button id="btn-new-scenario" type="button" class="button button-line">＋ Новый бот</button>
+ <button id="btn-validate" type="button" class="button button-line">✓ Проверить</button>
+ <button id="btn-test-canvas" type="button" class="button button-primary">▶ Тестировать</button>
+ <button id="btn-export" type="button" class="button button-primary">Скачать Python ZIP <span aria-hidden="true">↗</span></button>
+</div>
+<details class="builder-tools-more"><summary>Дополнительные инструменты</summary>
+ <div class="builder-tools-extra">
+  <button id="btn-demo-scenario" type="button" class="button button-line">Пример диалога</button>
+  <button id="btn-save" type="button" class="button button-line">Сохранить в браузере</button>
+  <button id="btn-import" type="button" class="button button-line">Импорт JSON</button>
+  <button id="btn-download-json" type="button" class="button button-line">Скачать JSON</button>
+  <button id="btn-expand-canvas" type="button" class="button button-line" aria-pressed="false">Развернуть поле</button>
+  <button id="btn-export-info" type="button" class="button button-line">Как работает экспорт?</button>
+ </div>
+</details>
 <input type="file" id="import-file" accept=".json,application/json" hidden>
 </div></div>
 <section class="export-explainer" id="export-explainer" hidden aria-label="Формат экспорта">
