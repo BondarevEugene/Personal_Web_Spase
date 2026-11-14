@@ -129,3 +129,13 @@ body.omni-revamp{background:var(--black);color:var(--ink);font:15px/1.6 Inter,sy
 @media(max-width:980px){.omni-visual-hero{grid-template-columns:1fr}.omni-hero-art{min-height:300px}.omni-project.featured{grid-template-columns:1fr}.omni-project.featured img{height:290px}.omni-showcase{grid-template-columns:1fr}.omni-showcase img{min-height:0;max-height:320px}.omni-visual-strip{grid-template-columns:1fr 1fr}}
 @media(max-width:720px){.omni-project-grid{grid-template-columns:1fr}.omni-project.featured{grid-column:auto}.omni-visual-strip{grid-template-columns:1fr}.omni-hero-art{min-height:250px}.omni-visual-hero{min-height:0}.omni-section{margin-top:45px}}
 @media(prefers-reduced-motion:reduce){.omni-card,.omni-button{transition:none}.omni-card:hover,.omni-button:hover{transform:none}}
+
+
+.omni-credits{display:grid;grid-template-columns:1fr 1fr;gap:30px;padding:25px 0;margin:28px auto 8px;max-width:1410px;border-top:1px solid #335144;border-bottom:1px solid #335144}
+.omni-credits>div{display:flex;flex-direction:column;gap:6px}
+.omni-credits-label{color:#90bba9;font:700 10px/1.4 system-ui;letter-spacing:.15em}
+.omni-credits strong{color:#effbf3;font-size:17px}
+.omni-credits p{margin:0;color:#a6b8ae}
+.omni-credits a{color:#93f3cc;text-decoration:none;border-bottom:1px solid #5e947c}
+.omni-credits a:hover{color:#fff}
+@media(max-width:650px){.omni-credits{grid-template-columns:1fr;gap:20px}}
