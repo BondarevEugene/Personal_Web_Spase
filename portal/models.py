@@ -332,3 +332,73 @@ class CloudRailwayBinding(Base):
     last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class BotCredential(Base):
+    """Per-bot encrypted Telegram token, only owner can replace or revoke."""
+
+    __tablename__ = "portal_bot_credentials"
+    __table_args__ = (UniqueConstraint("project_id", name="uq_bot_credential_project"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    verified_bot_id: Mapped[str | None] = mapped_column(String(32))
+    verified_username: Mapped[str | None] = mapped_column(String(80))
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime())
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    rotated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class BotAccessGrant(Base):
+    """Explicit per-project grant. No implicit organization-wide access."""
+
+    __tablename__ = "portal_bot_access_grants"
+    __table_args__ = (UniqueConstraint("project_id", "grantee_id",
+                                       name="uq_bot_grant_project_customer"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    grantee_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(12), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class BotAccessInvitation(Base):
+    """Single-use capability to invite a specifically named registered customer."""
+
+    __tablename__ = "portal_bot_access_invitations"
+    __table_args__ = (UniqueConstraint("token_hash", name="uq_bot_invitation_hash"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    invited_customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(12), nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime())
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime())
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class BotSecurityAudit(Base):
+    """Structured, non-sensitive audit trail for owner actions and access changes."""
+
+    __tablename__ = "portal_bot_security_audit"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    actor_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False)
+    event: Mapped[str] = mapped_column(String(48), nullable=False)
+    target_customer_id: Mapped[str | None] = mapped_column(String(36))
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
