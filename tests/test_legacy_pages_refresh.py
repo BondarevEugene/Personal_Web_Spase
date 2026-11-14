@@ -58,3 +58,21 @@ def test_tech_page_replaces_old_genesys_dossier():
     assert "Docker Engine API" not in response.text
     assert "SYSTEM DOSSIER" not in response.text
     assert "NumPy Tensor Engine" not in response.text
+
+def test_black_edition_visual_assets_are_served():
+    for asset in ("black_platform.css", "visual_graph.svg", "visual_food.svg",
+                  "visual_crm.svg", "visual_portal.svg", "visual_automation.svg",
+                  "visual_engineering.svg"):
+        response = client.get("/studio-assets/" + asset)
+        assert response.status_code == 200, asset
+        assert response.content, asset
+        if asset.endswith(".svg"):
+            assert b"<svg" in response.content
+            assert b"</svg>" in response.content
+
+
+def test_platform_and_builder_share_black_edition():
+    for route in ("/", "/architect"):
+        response = client.get(route)
+        assert response.status_code == 200
+        assert "/studio-assets/black_platform.css?v=1" in response.text
