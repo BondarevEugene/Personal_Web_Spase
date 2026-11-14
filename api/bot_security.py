@@ -38,6 +38,10 @@ class InvitationRequest(BaseModel):
     role: str = Field(pattern=r"^(viewer|operator)$")
 
 
+class InvitationAccept(BaseModel):
+    token: str = Field(min_length=32, max_length=200)
+
+
 def current(request: Request, db):
     secure_request(request)
     user = current_customer(request, db)
@@ -236,16 +240,16 @@ def create_invitation(project_id: str, body: InvitationRequest, request: Request
 
 
 @router.post("/invitations/accept")
-def accept_invitation(request: Request, token: str = ""):
+def accept_invitation(request: Request, body: InvitationAccept):
     with session_factory()() as db:
         user = current(request, db)
         csrf(request)
-        if not 32 <= len(token) <= 200:
+        if not 32 <= len(body.token) <= 200:
             raise HTTPException(422, "Invalid invitation token")
         now = utcnow()
         # Compare-and-swap for one-time acceptance; target bound to login.
         row = db.scalar(select(BotAccessInvitation).where(
-            BotAccessInvitation.token_hash == token_hash(token),
+            BotAccessInvitation.token_hash == token_hash(body.token),
             BotAccessInvitation.invited_customer_id == user.id,
             BotAccessInvitation.consumed_at.is_(None),
             BotAccessInvitation.revoked_at.is_(None),
@@ -278,6 +282,47 @@ def accept_invitation(request: Request, token: str = ""):
             db.rollback()
             raise HTTPException(409, "Invitation already accepted")
         return {"project_id": row.project_id, "role": row.role, "accepted": True}
+
+
+@router.get("/bots/{project_id}/invitations")
+def list_invitations(project_id: str, request: Request):
+    with session_factory()() as db:
+        user = current(request, db)
+        project = owned(db, user.id, project_id)
+        rows = db.execute(select(BotAccessInvitation, Customer).join(
+            Customer, Customer.id == BotAccessInvitation.invited_customer_id
+        ).where(
+            BotAccessInvitation.project_id == project.id,
+            BotAccessInvitation.owner_id == user.id,
+            BotAccessInvitation.consumed_at.is_(None),
+            BotAccessInvitation.revoked_at.is_(None),
+            BotAccessInvitation.expires_at > utcnow(),
+        ).limit(30)).all()
+        return {"invitations": [
+            {"id": invite.id, "username": target.username, "role": invite.role,
+             "expires_at": invite.expires_at.isoformat() + "Z"}
+            for invite, target in rows]}
+
+
+@router.delete("/bots/{project_id}/invitations/{invitation_id}", status_code=204)
+def cancel_invitation(project_id: str, invitation_id: UUID, request: Request):
+    with session_factory()() as db:
+        user = current(request, db)
+        csrf(request)
+        project = owned(db, user.id, project_id)
+        row = db.scalar(select(BotAccessInvitation).where(
+            BotAccessInvitation.id == str(invitation_id),
+            BotAccessInvitation.project_id == project.id,
+            BotAccessInvitation.owner_id == user.id,
+            BotAccessInvitation.consumed_at.is_(None),
+            BotAccessInvitation.revoked_at.is_(None),
+        ))
+        if not row:
+            raise HTTPException(404, "Invitation not found")
+        row.revoked_at = utcnow()
+        audit(db, project.id, user.id, "invitation_cancelled", row.invited_customer_id)
+        db.commit()
+    return Response(status_code=204)
 
 
 @router.get("/bots/{project_id}/access")
