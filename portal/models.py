@@ -236,3 +236,39 @@ class CloudDeployment(Base):
     status: Mapped[str] = mapped_column(String(24), nullable=False, default="planned")
     created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class CloudOAuthAttempt(Base):
+    """Short-lived PKCE state; never store raw state or verifier in plaintext."""
+
+    __tablename__ = "portal_cloud_oauth_attempts"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    state_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    verifier_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudOAuthConnection(Base):
+    """Encrypted OAuth credentials, customer-scoped and never returned from API."""
+
+    __tablename__ = "portal_cloud_oauth_connections"
+    __table_args__ = (
+        UniqueConstraint("customer_id", "provider", name="uq_cloud_oauth_customer_provider"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    remote_subject: Mapped[str] = mapped_column(String(200), nullable=False)
+    remote_name: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    scopes: Mapped[str] = mapped_column(Text, nullable=False)
+    access_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    refresh_ciphertext: Mapped[str | None] = mapped_column(Text, nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
