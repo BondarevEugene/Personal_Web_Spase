@@ -112,6 +112,47 @@ def create_project(request: Request, data: ProjectData):
         return serialize(row)
 
 
+
+
+@router.post("/{id}/duplicate", status_code=201)
+def duplicate_project(id: str, request: Request):
+    """Copy a saved graph with its layout, never crossing account boundaries."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
+        try:
+            source = db.scalar(select(BuilderProject).where(
+                BuilderProject.id == project_id(id),
+                BuilderProject.customer_id == user.id,
+            ))
+            if source is None:
+                raise HTTPException(404, "Project not found")
+            count = db.scalar(
+                select(func.count()).select_from(BuilderProject)
+                .where(BuilderProject.customer_id == user.id)
+            ) or 0
+            if count >= 50:
+                raise HTTPException(409, "Maximum 50 saved projects per account")
+            copy_name = source.name[:92].rstrip() + " (копия)"
+            scenario = Scenario.model_validate_json(source.scenario_json)
+            scenario.name = copy_name
+            now = utcnow()
+            copied = BuilderProject(
+                customer_id=user.id,
+                name=copy_name,
+                scenario_json=scenario.model_dump_json(),
+                layout_json=source.layout_json,
+                created_at=now,
+                updated_at=now,
+            )
+            db.add(copied)
+            db.commit()
+            db.refresh(copied)
+        except OperationalError:
+            db.rollback()
+            raise HTTPException(503, "Apply portal Alembic migrations before saving")
+        return serialize(copied)
+
 @router.get("/{id}")
 def get_project(id: str, request: Request):
     with session_factory()() as db:
