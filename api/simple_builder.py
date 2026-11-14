@@ -120,8 +120,7 @@ def capabilities():
         "supported_blocks": ["message", "choice", "photo", "document", "end", "input", "condition", "set_variable"],
         "validation": True,
         "export": "aiogram 3 Python project ZIP",
-        "server_persistence": True,
-        "persistence_requires_account": True,
+        "server_persistence": False,
         "live_deployment": False,
     }
 
@@ -160,7 +159,7 @@ def list_integrations():
             "statuses": {"export": "Работает экспорт", "planned": "В разработке"}}
 
 
-VARIABLE_RE = re.compile(r"\\{\\{([A-Za-z][A-Za-z0-9_-]{0,39})\\}\\}")
+VARIABLE_RE = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
 
 
 def substitute(template: str, variables: dict[str, str]) -> str:
