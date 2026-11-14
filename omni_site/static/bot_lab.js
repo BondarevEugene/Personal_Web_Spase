@@ -22,6 +22,7 @@ function records(){
  if(!store)return [];
  return [
   ...store.bot_projects.map(p=>({...p,entity:'bot',search:p.name.toLowerCase()})),
+  ...(store.shared_bots||[]).map(p=>({...p,entity:'shared',search:p.name.toLowerCase()})),
   ...store.deployments.map(p=>({...p,entity:'plan',search:p.name.toLowerCase()})),
   ...store.automations.map(p=>({...p,entity:'flow',search:p.name.toLowerCase()}))
  ];
@@ -35,7 +36,8 @@ function showList(id,kind,empty){
   b.type='button';b.setAttribute('aria-pressed',String(Boolean(selected&&selected.entity===kind&&selected.id===item.id)));
   b.append(el('strong','',item.name));
   b.append(el('small','',kind==='bot'?'Черновик · Graph Studio':
-    kind==='plan'?item.mode+' / '+item.provider+' · '+item.status:'Ревизия '+item.revision));
+    kind==='plan'?item.mode+' / '+item.provider+' · '+item.status:
+    kind==='shared'?'Доступ: '+item.role:'Ревизия '+item.revision));
   b.addEventListener('click',()=>{selected={entity:kind,id:item.id};renderDetail();renderLists();});
   root.append(b);
  }
@@ -43,6 +45,7 @@ function showList(id,kind,empty){
 function renderLists(){
  if(!store)return;
  showList('lab-bots-list','bot','Сохранённых ботов нет.');
+ showList('lab-shared-list','shared','Другие пользователи не открывали доступ.');
  showList('lab-plans-list','plan','Планов размещения нет.');
  showList('lab-flows-list','flow','Автоматизаций нет.');
 }
@@ -55,6 +58,8 @@ function renderDetail(){
  const info=records().find(i=>selected&&i.id===selected.id&&i.entity===selected.entity);
  const facts=$('lab-selected-facts'),acts=$('lab-actions');
  facts.replaceChildren();acts.replaceChildren();$('lab-readiness').replaceChildren();
+ $('lab-security-workbench').hidden=!info||info.entity!=='bot';
+ clearSecretInput();
  $('lab-enqueue').disabled=!selected||selected.entity!=='plan';
  if(!info){
   selected=null;$('lab-selected-name').textContent='Выбери бота слева';
@@ -73,6 +78,13 @@ function renderDetail(){
   fact(facts,'Последнее изменение',prettyDate(info.updated_at));fact(facts,'Источник','Graph Studio');
   acts.append(action('Открыть конструктор','/architect',true),
               action('Подготовить деплой','/cloud/deploy'));
+  void refreshSecurity(info.id);
+ }else if(info.entity==='shared'){
+  $('lab-selected-status').textContent=info.role==='viewer'?'Наблюдатель':'Оператор';
+  $('lab-selected-summary').textContent='Владелец предоставил доступ только к карточке этого бота. Конструктор, токены и облачные ресурсы не доступны через этот доступ.';
+  fact(facts,'Роль',info.role);fact(facts,'Владелец',info.owner_id);
+  fact(facts,'Изменено',prettyDate(info.updated_at));
+  acts.append(el('span','lab-muted','Для изменения сценария потребуется отдельное разрешение владельца и проверенный механизм доступа.'));
  }else if(info.entity==='plan'){
   $('lab-selected-status').textContent=info.status;
   $('lab-selected-summary').textContent='Это сохранённый план Cloud Deploy. Он не подтверждает создание сервиса и не списывает деньги.';
@@ -111,6 +123,7 @@ async function refresh(){
  try{
   say('Обновляем данные аккаунта…');
   store=await fetchJson('/overview');
+  try{store.shared_bots=(await secretApi('/shared')).bots;}catch{store.shared_bots=[];}
   renderOverview();
   say('Данные загружены из клиентской базы OMNIFACTORY. Планы не считаются работающими ботами.');
  }catch(err){
@@ -319,6 +332,137 @@ async function unlinkResource(){
   bindingReport({binding:null});say('Привязка удалена. Railway-сервис не затронут.');
  }catch(err){say('Ошибка отвязки: '+err.message,true);}
 }
+
+const SEC='/api/v1/bot-security';
+function clearSecretInput(){const input=$('lab-telegram-token');if(input)input.value='';}
+async function secretApi(path,options={}){
+ const response=await fetch(SEC+path,{credentials:'same-origin',cache:'no-store',...options});
+ if(!response.ok){
+  const result=await response.json().catch(()=>({}));
+  const detail=typeof result.detail==='string'?result.detail:'HTTP '+response.status;
+  throw Error(detail);
+ }
+ return response.status===204?null:response.json();
+}
+function currentOwnedBot(){
+ const item=records().find(x=>selected&&x.id===selected.id&&x.entity==='bot');
+ return item||null;
+}
+async function secureWrite(path,method,payload){
+ const headers={'X-Omni-CSRF':await csrf()};
+ if(payload!==undefined)headers['Content-Type']='application/json';
+ return secretApi(path,{method,headers,
+   ...(payload!==undefined?{body:JSON.stringify(payload)}:{})});
+}
+function renderMembers(id,items,kind){
+ const root=$(id);root.replaceChildren();
+ if(!items.length){root.append(el('p','lab-muted','Пока никого нет.'));return;}
+ for(const member of items){
+  const entry=el('div','lab-member');
+  entry.append(el('div','',member.username+' · '+(member.role==='viewer'?'Наблюдатель':'Оператор')));
+  const button=el('button','lab-small',kind==='invite'?'Отозвать приглашение':'Закрыть доступ');
+  button.type='button';
+  button.addEventListener('click',async()=>{
+   if(!window.confirm('Подтверди отзыв доступа для '+member.username))return;
+   const bot=currentOwnedBot();if(!bot)return;
+   try{
+    const path=kind==='invite'
+     ?'/bots/'+bot.id+'/invitations/'+member.id
+     :'/bots/'+bot.id+'/access/'+member.id;
+    await secureWrite(path,'DELETE');
+    say('Доступ или приглашение отозваны.');await refreshSecurity(bot.id);
+   }catch(error){say('Не удалось отозвать: '+error.message,true);}
+  });
+  entry.append(button);root.append(entry);
+ }
+}
+async function refreshSecurity(id){
+ if(!currentOwnedBot()||currentOwnedBot().id!==id)return;
+ $('lab-invite-once').hidden=true;
+ $('lab-invite-token').textContent='';
+ try{
+  const [credential,access,invitations,audit]=await Promise.all([
+   secretApi('/bots/'+id+'/credential'),
+   secretApi('/bots/'+id+'/access'),
+   secretApi('/bots/'+id+'/invitations'),
+   secretApi('/bots/'+id+'/audit')
+  ]);
+  if(!currentOwnedBot()||currentOwnedBot().id!==id)return;
+  $('lab-secret-indicator').textContent=credential.verified?'Проверен в Telegram':
+   credential.configured?'Сохранён, не проверен':'Не подключён';
+  $('lab-token-status').textContent=credential.configured
+   ?'Токен скрыт · '+(credential.verified
+     ?'@'+credential.username+' · ID '+credential.bot_id
+     :'требуется проверка через Telegram')
+   :'Бот не подключён. Для создания секрета нужен BotFather.';
+  $('lab-token-save').disabled=!credential.vault_configured;
+  $('lab-token-verify').disabled=!credential.configured;
+  $('lab-token-revoke').disabled=!credential.configured;
+  renderMembers('lab-members',access.members,'grant');
+  renderMembers('lab-pending-invites',invitations.invitations,'invite');
+  const auditRoot=$('lab-security-audit');auditRoot.replaceChildren();
+  for(const entry of audit.events){
+   auditRoot.append(el('p','lab-audit-event',entry.event+' · '+prettyDate(entry.created_at)));
+  }
+  if(!audit.events.length)auditRoot.append(el('p','lab-muted','Событий ещё нет.'));
+ }catch(error){$('lab-token-status').textContent='Модуль безопасности недоступен: '+error.message;
+  say('Ошибка безопасности: '+error.message,true);}
+}
+async function storeBotToken(){
+ const bot=currentOwnedBot();if(!bot)return;
+ const token=$('lab-telegram-token').value.trim();
+ if(!token)return say('Укажи токен Telegram BotFather.',true);
+ if(!window.confirm('Зашифровать токен для выбранного бота? Старый токен будет заменён.'))return;
+ try{
+  await secureWrite('/bots/'+bot.id+'/credential','PUT',{token});
+  clearSecretInput();
+  say('Токен сохранён в защищённом хранилище. Проверка Telegram выполняется отдельно.');
+  await refreshSecurity(bot.id);
+ }catch(error){say('Ошибка сохранения токена: '+error.message,true);}
+ finally{clearSecretInput();}
+}
+async function verifyBotToken(){
+ const bot=currentOwnedBot();if(!bot)return;
+ try{
+  await secureWrite('/bots/'+bot.id+'/credential/verify','POST');
+  say('Telegram подтвердил идентификатор бота.');await refreshSecurity(bot.id);
+ }catch(error){say('Telegram не подтвердил токен: '+error.message,true);}
+}
+async function deleteBotToken(){
+ const bot=currentOwnedBot();if(!bot)return;
+ if(!window.confirm('Безвозвратно удалить секрет из OMNIFACTORY? При необходимости также отзови токен у BotFather.'))return;
+ try{
+  await secureWrite('/bots/'+bot.id+'/credential','DELETE');
+  clearSecretInput();say('Секрет удалён из OMNIFACTORY.');
+  await refreshSecurity(bot.id);
+ }catch(error){say('Ошибка удаления: '+error.message,true);}
+}
+async function createInvitation(){
+ const bot=currentOwnedBot();if(!bot)return;
+ const username=$('lab-invite-username').value.trim().toLowerCase();
+ const role=$('lab-invite-role').value;
+ if(!username)return say('Введи точный логин зарегистрированного пользователя.',true);
+ try{
+  const response=await secureWrite('/bots/'+bot.id+'/invitations','POST',{username,role});
+  // One-time invitation codes remain only in the current page's memory.
+  $('lab-invite-token').textContent=response.one_time_token;
+  $('lab-invite-once').hidden=false;
+  $('lab-invite-username').value='';
+  say('Приглашение готово. Код виден один раз и действует 24 часа.');
+  const invites=await secretApi('/bots/'+bot.id+'/invitations');
+  renderMembers('lab-pending-invites',invites.invitations,'invite');
+ }catch(error){say('Не удалось создать приглашение: '+error.message,true);}
+}
+async function acceptInvitation(){
+ const code=$('lab-accept-token').value.trim();
+ if(!code)return say('Вставь одноразовый код приглашения.',true);
+ try{
+  const result=await secureWrite('/invitations/accept','POST',{token:code});
+  $('lab-accept-token').value='';
+  say('Доступ подтверждён: '+result.role+'. Открой карточку в «Доступ предоставлен мне».');
+  await refresh();
+ }catch(error){$('lab-accept-token').value='';say('Приглашение не принято: '+error.message,true);}
+}
 async function railwayProjects(){
  const root=$('lab-provider-projects');root.replaceChildren();
  root.append(el('p','lab-muted','Получаем разрешённые проекты Railway…'));
@@ -343,6 +487,16 @@ $('lab-search').addEventListener('input',value=>{filter=value.target.value.trim(
 $('lab-check-railway').addEventListener('click',railwayProjects);
 $('lab-enqueue').addEventListener('click',enqueueSimulation);
 $('lab-jobs-refresh').addEventListener('click',refreshJobs);
+$('lab-token-save').addEventListener('click',storeBotToken);
+$('lab-token-verify').addEventListener('click',verifyBotToken);
+$('lab-token-revoke').addEventListener('click',deleteBotToken);
+$('lab-invite-create').addEventListener('click',createInvitation);
+$('lab-accept-button').addEventListener('click',acceptInvitation);
+$('lab-invite-copy').addEventListener('click',()=>{
+ const token=$('lab-invite-token').textContent;
+ if(token&&navigator.clipboard)void navigator.clipboard.writeText(token);
+});
+
 $('lab-resources-load').addEventListener('click',loadResourceOptions);
 $('lab-resource-project').addEventListener('change',projectChanged);
 $('lab-resource-service').addEventListener('change',syncResourceControls);
