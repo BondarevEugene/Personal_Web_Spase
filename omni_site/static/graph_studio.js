@@ -476,5 +476,23 @@ try{
  }
 }catch(e){status('Старый черновик не удалось открыть. Загружен пример.',true);}
 selected=data.start;$('scenario-name').value=data.name;render();inspector();status('Graph Studio готов: перемещай узлы и соединяй входы с выходами.');
-void refreshCloud();
+// Bot Lab links to an owned saved graph. Keep local work safe: the existing
+// loadCloud confirmation and browser backup apply to the deep-link too.
+async function openLinkedProject(){
+ const linkedId=new URLSearchParams(window.location.search).get('project');
+ if(!linkedId){await refreshCloud();return;}
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkedId)){
+  status('Некорректный идентификатор проекта в ссылке.',true);
+  await refreshCloud();return;
+ }
+ await refreshCloud(linkedId);
+ const choice=$('cloud-project-list');
+ if(!cloudActive||choice.value!==linkedId){
+  status('Проект из ссылки недоступен текущему аккаунту.',true);return;
+ }
+ // Remove the query before prompting, preventing repeated prompts on reload.
+ window.history.replaceState(null,'',window.location.pathname+window.location.hash);
+ await loadCloud();
+}
+void openLinkedProject();
 })();
