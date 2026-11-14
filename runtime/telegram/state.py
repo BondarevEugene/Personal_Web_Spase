@@ -12,7 +12,7 @@ import asyncio
 import hashlib
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Awaitable, Callable, TypeVar
 
 import asyncpg
@@ -41,6 +41,25 @@ CREATE TABLE IF NOT EXISTS omni_telegram_update_receipts (
 );
 CREATE INDEX IF NOT EXISTS ix_omni_telegram_update_receipts_status
     ON omni_telegram_update_receipts(bot_instance_id, status, received_at);
+CREATE TABLE IF NOT EXISTS omni_telegram_outbox (
+    bot_instance_id varchar(80) NOT NULL,
+    update_id bigint NOT NULL,
+    seq smallint NOT NULL,
+    chat_id bigint NOT NULL,
+    method varchar(30) NOT NULL CHECK (method IN ('send_message')),
+    payload_json jsonb NOT NULL,
+    status varchar(32) NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending','claimed','sent','needs_reconciliation')),
+    claimed_at timestamptz,
+    sent_at timestamptz,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY(bot_instance_id, update_id, seq),
+    FOREIGN KEY(bot_instance_id, update_id)
+        REFERENCES omni_telegram_update_receipts(bot_instance_id, update_id),
+    CHECK (seq BETWEEN 0 AND 49)
+);
+CREATE INDEX IF NOT EXISTS ix_omni_telegram_outbox_pending
+    ON omni_telegram_outbox (bot_instance_id, status, update_id, seq);
 """
 
 
@@ -56,6 +75,14 @@ class AmbiguousDelivery(RuntimeError):
 class Conversation:
     cursor: str | None
     values: dict[str, str]
+    outbox: list[dict] = field(default_factory=list)
+
+    def queue_message(self, chat_id: int, text: str) -> None:
+        if not isinstance(chat_id, int) or not isinstance(text, str) or not 1 <= len(text) <= 4000:
+            raise ValueError("Invalid outgoing Telegram text")
+        if len(self.outbox) >= 50:
+            raise ValueError("Too many outbound operations in one update")
+        self.outbox.append({"chat_id": chat_id, "method": "send_message", "text": text})
 
 
 class PostgresStateStore:
@@ -81,6 +108,7 @@ class PostgresStateStore:
                 else:
                     await conn.fetchval("SELECT count(*) FROM omni_telegram_dialogues")
                     await conn.fetchval("SELECT count(*) FROM omni_telegram_update_receipts")
+                    await conn.fetchval("SELECT count(*) FROM omni_telegram_outbox")
             return cls(pool, bot_instance_id)
         except Exception as exc:
             if "pool" in locals():
@@ -157,6 +185,13 @@ class PostgresStateStore:
                         "updated_at=now()",
                         self.bot_instance_id, chat_id, user_id, state.cursor,
                         json.dumps(state.values, separators=(",", ":")))
+                    for seq, action in enumerate(state.outbox):
+                        await conn.execute(
+                            "INSERT INTO omni_telegram_outbox "
+                            "(bot_instance_id,update_id,seq,chat_id,method,payload_json,status) "
+                            "VALUES ($1,$2,$3,$4,$5,$6::jsonb,'pending')",
+                            self.bot_instance_id, update_id, seq, action["chat_id"],
+                            action["method"], json.dumps({"text": action["text"]}))
                     await conn.execute(
                         "UPDATE omni_telegram_update_receipts "
                         "SET status='processed',updated_at=now() "
