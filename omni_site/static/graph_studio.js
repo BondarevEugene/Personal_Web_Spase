@@ -69,6 +69,20 @@ async function loadCloud(){
   status('Открыт сохранённый проект: '+project.name);
  }catch(err){status('Не удалось открыть проект: '+err.message,true);}
 }
+
+async function duplicateCloud(){
+ const id=$('cloud-project-list').value;
+ if(!id){status('Выбери сохранённый проект для копирования.',true);return;}
+ if(!cloudActive){status('Войди в кабинет для копирования проекта.',true);return;}
+ try{
+  const token=await csrfForCloud();
+  const result=await cloudRequest('/'+encodeURIComponent(id)+'/duplicate',{
+   method:'POST',headers:{'X-Omni-CSRF':token}
+  });
+  await refreshCloud(result.id);
+  status('Создана копия «'+result.name+'». Выбери «Открыть», чтобы редактировать её.');
+ }catch(err){status('Не удалось создать копию: '+err.message,true);}
+}
 async function deleteCloud(){
  const id=$('cloud-project-list').value;
  if(!id){status('Выбери проект для удаления.',true);return;}
@@ -425,6 +439,7 @@ $('btn-save').addEventListener('click',()=>{save();status('Черновик со
 $('btn-cloud-save').addEventListener('click',saveCloud);
 $('btn-cloud-load').addEventListener('click',loadCloud);
 $('btn-cloud-delete').addEventListener('click',deleteCloud);
+$('btn-cloud-duplicate').addEventListener('click',duplicateCloud);
 // Selection alone never changes the active project: only Open does.
 $('btn-validate').addEventListener('click',async()=>{try{const result=await(await post('/validate')).json();status('Проверено '+result.nodes+' узлов. '+result.warnings.join('; '));}catch(e){status(e.message,true);}});
 $('btn-export').addEventListener('click',async()=>{try{await post('/validate');const r=await post('/export');download(await r.blob(),'omnifactory_bot.zip');status('Экспорт Python готов.');}catch(e){status(e.message,true);}});
