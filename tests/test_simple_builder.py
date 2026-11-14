@@ -112,3 +112,36 @@ def test_simulation_invalid_selection_and_cycles_are_bounded():
     assert result.status_code == 200
     assert result.json()["status"] == "step_limit"
     assert result.json()["steps"] == 50
+
+
+def test_starter_template_catalog_generates_valid_graphs():
+    root = "/api/v1/builder/simple"
+    response = client.get(root + "/templates")
+    assert response.status_code == 200
+    templates = response.json()["templates"]
+    assert {entry["id"] for entry in templates} == {"info", "faq", "survey"}
+    for entry in templates:
+        template = client.get(root + "/templates/" + entry["id"])
+        assert template.status_code == 200, template.text
+        scenario = template.json()["scenario"]
+        assert len(scenario["nodes"]) >= 3
+        verified = client.post(root + "/validate", json=scenario)
+        assert verified.status_code == 200, verified.text
+        assert verified.json()["warnings"] == []
+        archive = client.post(root + "/export", json=scenario)
+        assert archive.status_code == 200, archive.text
+        with ZipFile(BytesIO(archive.content)) as packed:
+            assert "bot.py" in packed.namelist()
+    assert client.get(root + "/templates/not-found").status_code == 404
+
+
+def test_template_selector_is_wired_to_builder():
+    page = client.get("/architect")
+    assert page.status_code == 200
+    assert 'id="builder-template"' in page.text
+    assert 'id="btn-use-template"' in page.text
+    script = client.get("/studio-assets/graph_studio.js")
+    assert script.status_code == 200
+    assert "loadTemplateCatalog" in script.text
+    assert "applyStarterTemplate" in script.text
+    assert "replaceScenario(()=>result.scenario)" in script.text
