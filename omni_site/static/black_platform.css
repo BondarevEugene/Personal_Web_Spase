@@ -1,0 +1,48 @@
+/* OMNIFACTORY Black Edition, platform & Graph Studio theme bridge.
+   Scoped to platform-app to preserve public Studio branding and node semantics. */
+.platform-app{--bg:#050708;--bg-raised:#0c1010;--panel:#101616;--panel-light:#17201e;--line:#34453e;--text:#f3faf5;--muted:#b5c6bc;--dim:#82998d;--accent:#8cf4cf;--blue:#8cf4cf;--cyan:#8cf4cf;--violet:#a9a8bc;background:#050708;color:#f3faf5}
+.platform-app .site-header{background:#080c0bed;border-color:#2c443a;box-shadow:0 8px 40px #0008}
+.platform-app .brand-word>span{color:#f3faf5}.platform-app .brand-word small{color:#b8c5bf}
+.platform-app .nav-links>a{color:#c6d2cb}.platform-app .nav-links>a.active,.platform-app .nav-links>a:hover{color:#97f8d8}
+.platform-app .gradient-text{background:linear-gradient(110deg,#f8fffb,#8cf4cf 72%,#b2fcdf);-webkit-background-clip:text;background-clip:text}
+.platform-app .button-primary{background:#94f3cf;color:#06140f;box-shadow:0 6px 26px #72f4c726}.platform-app .button-primary:hover{background:#bdffe5}
+.platform-app .button-line{border-color:#526b5c;background:#111d19;color:#ecfff7}.platform-app .button-line:hover{background:#193026;border-color:#9bf5d6}
+.platform-app .header-contact{background:#121c18;border-color:#3c5f4d}.platform-app .header-contact:hover{border-color:#8cf4cf}
+.platform-app .grid-noise{opacity:.10}
+.platform-app .pf-hero{background:radial-gradient(ellipse at 72% 33%,#1a40312c,transparent 53%)}
+.platform-app .pf-stage{background:linear-gradient(90deg,#0d1514cf,#0a1312d9),url('/studio-assets/visual_graph.svg') center/cover;border:1px solid #3f6755;box-shadow:0 30px 100px #0009,0 0 65px #68d9ae14}
+.platform-app .pf-flow-node{background:#12221ddf;border-color:#4b8269}.platform-app .pf-flow-main{background:linear-gradient(135deg,#1a4030ef,#15241ef2);border-color:#73ba91}
+.platform-app .pf-flow-node>span{color:#9effd7}.platform-app .pf-flow-node>small{color:#b6d1c1}
+.platform-app .pf-module{background:linear-gradient(155deg,#121b18,#090e0d);border-color:#314c3c;box-shadow:0 10px 30px #0002}
+.platform-app .pf-module:hover{border-color:#85ecc5;box-shadow:0 24px 60px #0007}
+.platform-app .pf-module-primary{background:linear-gradient(145deg,#1c3428,#0c1512)}
+.platform-app .pf-module-icon{background:#1b3529;color:#a6ffe0}
+.platform-app .pf-module p,.platform-app .pf-note p,.platform-app .pf-status-panel p{color:#b6c7bd}
+.platform-app .pf-module-footer{border-color:#33483b;color:#afffdf}
+.platform-app .pf-status-section{background:#0b1110;border-color:#2f4a3c}
+.platform-app .pf-status-data{background:#121e18;border-color:#3d6450}
+.platform-app .pf-note{background:linear-gradient(125deg,#111c16,#080e0b);border-color:#315342}
+.platform-app .site-footer{background:#080b0a;border-color:#2f4237}
+.builder-app{background:radial-gradient(ellipse at 82% 9%,#24564126,transparent 37%),#050708!important;color:#f4f9f5}
+.builder-app .builder-intro-note,.builder-app .builder-toolbar,.builder-app .builder-cloud,.builder-app .builder-preview,.builder-app .export-explainer{background:#101916!important;border-color:#355846!important;box-shadow:0 12px 40px #0006}
+.builder-app .builder-palette,.builder-app .builder-canvas,.builder-app .builder-inspector{background:#0c1411!important;border-color:#365342!important}
+.builder-app .builder-canvas-scroll{background-color:#08100d!important;background-image:radial-gradient(circle,#49685866 1px,transparent 1px)!important;scrollbar-color:#4c7861 transparent}
+.builder-app .palette-node{background:#17241d!important;border-color:#3b5d48!important;color:#f3fff7}
+.builder-app .palette-node:hover{background:#213f2c!important;border-color:#a5f8d3!important}
+.builder-app .graph-node{box-shadow:0 17px 42px #000a}
+.builder-app .builder-inspector input,.builder-app .builder-inspector textarea,.builder-app .builder-inspector select,.builder-app .builder-toolbar input{background:#090f0d!important;color:#e9fff2!important;border-color:#44694e!important}
+.builder-app .builder-footer{background:linear-gradient(140deg,#090e0b,#14281d 75%,#070b08)!important;border-color:#30543d!important}
+.builder-app .builder-intro{background:radial-gradient(ellipse at 93% 45%,#214c3028,transparent 44%)}
+.builder-app .builder-intro-note{position:relative;overflow:hidden}
+.builder-app .builder-intro-note:after{content:"";display:block;height:92px;margin-top:2px;border-radius:8px;background:url('/studio-assets/visual_graph.svg') center/cover;border:1px solid #345a46}
+@media(prefers-reduced-motion:reduce){.platform-app .pf-module{transition:none}}
+
+
+/* Shared credit section across the public platform and Graph Studio. */
+.omni-author-line{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:32px 0 26px;padding:23px 0;border-top:1px solid #335144;border-bottom:1px solid #335144}
+.omni-author-line>div{display:flex;flex-direction:column;gap:5px}
+.omni-author-line span{color:#91b7a6;font:700 10px/1.6 var(--font,system-ui);letter-spacing:.13em}
+.omni-author-line strong{color:#effcf4;font:700 17px/1.4 var(--display,system-ui)}
+.omni-author-line a{width:max-content;color:#91f4cd;font-size:13px;text-decoration:none;border-bottom:1px solid #5b9f7f}
+.omni-author-line a:hover{color:white}
+@media(max-width:650px){.omni-author-line{grid-template-columns:1fr;gap:18px}}
