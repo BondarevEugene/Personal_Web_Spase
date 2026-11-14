@@ -1,5 +1,7 @@
 """Account-backed builder drafts must remain private and CSRF protected."""
 from pathlib import Path
+from io import BytesIO
+from zipfile import ZipFile
 
 import pytest
 from alembic import command
@@ -166,3 +168,35 @@ def test_duplicate_control_is_wired_into_graph_studio():
     assert script.status_code == 200
     assert "async function duplicateCloud()" in script.text
     assert "/duplicate" in script.text
+
+
+def test_saved_project_export_is_owned_and_returns_runnable_zip(db_ready):
+    owner = register("export_owner", "export-owner@builder.test")
+    outsider = register("export_other", "export-other@builder.test")
+    created = owner.post(BASE, headers=csrf(owner), json={"scenario": SCENARIO})
+    assert created.status_code == 201, created.text
+    export_url = BASE + "/" + created.json()["id"] + "/export"
+
+    assert TestClient(app).get(export_url).status_code == 401
+    assert outsider.get(export_url).status_code == 404
+    result = owner.get(export_url)
+    assert result.status_code == 200, result.text
+    assert result.headers["content-type"] == "application/zip"
+    with ZipFile(BytesIO(result.content)) as archive:
+        assert {"bot.py", "scenario.json", "requirements.txt"}.issubset(archive.namelist())
+        scenario = __import__("json").loads(archive.read("scenario.json"))
+        assert scenario["name"] == SCENARIO["name"]
+        assert [node["id"] for node in scenario["nodes"]] == ["hello", "done"]
+
+
+def test_bot_lab_editor_deep_link_and_export_buttons_exist():
+    client = TestClient(app)
+    script = client.get("/studio-assets/bot_lab.js")
+    assert script.status_code == 200
+    assert "/architect?project=" in script.text
+    assert "/export" in script.text
+    graph_script = client.get("/studio-assets/graph_studio.js")
+    assert graph_script.status_code == 200
+    assert "openLinkedProject" in graph_script.text
+    assert "await loadCloud()" in graph_script.text
+    assert "window.history.replaceState" in graph_script.text
