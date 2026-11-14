@@ -96,3 +96,38 @@
 .lab-resource-report strong{color:#95ead9;display:block;margin-bottom:5px}
 .lab-resource-report p{margin:5px 0;line-height:1.6}
 @media(max-width:1100px){.lab-resource-fields{grid-template-columns:1fr}}
+
+
+/* OMNI Security: distinct, measured visual hierarchy within Bot Lab */
+.lab-security-workbench{margin:20px 0 24px;padding:20px;border:1px solid #628e9a;border-radius:13px;background:linear-gradient(145deg,#133447,#12283c 72%);box-shadow:0 10px 38px rgba(0,0,0,.12)}
+.lab-security-workbench[hidden]{display:none!important}
+.lab-security-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:9px}
+.lab-security-heading h3{margin:6px 0;font-size:21px;letter-spacing:-.03em}
+.lab-security-indicator{border-radius:999px;background:#254d51;color:#bcf5e6;border:1px solid #6ba69f;padding:6px 10px;white-space:nowrap;font-weight:800;font-size:11px}
+.lab-security-label{display:block;font-size:11px;font-weight:800;color:#c0dfeb;margin:17px 0 7px}
+.lab-secret-entry{display:flex;gap:9px;align-items:stretch}
+.lab-secret-entry input,.lab-access-invite input,.lab-access-invite select,.lab-accept-invitation input{background:#091d31;color:#f6fbff;border:1px solid #6286a0;padding:11px 12px;border-radius:8px;font-size:12px;min-width:0;min-height:40px}
+.lab-secret-entry input{flex:1}
+.lab-secret-entry .lab-button{flex-shrink:0}
+.lab-security-workbench .lab-actions{margin:12px 0}
+.lab-security-workbench .lab-button:disabled{opacity:.45;cursor:not-allowed}
+.lab-access-divider{height:1px;background:#4b7782;margin:21px 0}
+.lab-access-invite{display:grid;grid-template-columns:minmax(120px,1fr) minmax(150px,1fr) auto;gap:10px;align-items:end;margin:14px 0}
+.lab-access-invite label{display:grid;gap:6px;font-weight:800;font-size:11px;color:#c0dfeb;min-width:0}
+.lab-once{margin:14px 0;background:#123e39;border:1px solid #70bca4;border-radius:10px;padding:13px;color:#d4f3e6}
+.lab-once[hidden]{display:none!important}
+.lab-once strong{font-size:12px}
+.lab-once p{font-size:12px;line-height:1.5}
+.lab-once-token{display:flex;align-items:center;gap:8px;min-width:0}
+.lab-once-token code{overflow-wrap:anywhere;min-width:0;flex:1;padding:9px;background:#071e1e;border-radius:6px;font-size:12px;color:#fff}
+.lab-member-list{display:grid;gap:7px;margin:8px 0}
+.lab-member{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#152f40;border:1px solid #476b81;border-radius:9px;padding:9px 11px;color:#e6f5fc;font-size:12px;overflow-wrap:anywhere}
+.lab-member .lab-small{flex-shrink:0}
+.lab-audit{border-top:1px solid #426674;padding-top:13px;margin-top:16px}
+.lab-audit summary{font-weight:800;font-size:12px;color:#9be5d8;cursor:pointer}
+.lab-audit-event{color:#bed9e5;font-size:11px;border-bottom:1px solid #315268;padding:7px 0;margin:0}
+.lab-accept-invitation{background:#173747;border:1px solid #557d8c;border-radius:10px;padding:12px;display:grid;gap:8px}
+.lab-accept-invitation label{font-size:12px;font-weight:800;color:#d9f2f3}
+.lab-accept-invitation .lab-small{justify-self:start}
+@media(max-width:1050px){.lab-access-invite{grid-template-columns:1fr 1fr}.lab-access-invite button{grid-column:1/-1}}
+@media(max-width:600px){.lab-secret-entry{flex-direction:column}.lab-access-invite{grid-template-columns:1fr}.lab-access-invite button{grid-column:auto}.lab-security-heading{align-items:flex-start;flex-direction:column}.lab-once-token{flex-direction:column;align-items:stretch}}
