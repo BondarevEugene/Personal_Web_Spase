@@ -39,6 +39,7 @@ from api.bot_lab import router as bot_lab_router
 from api.cloud_provision import router as provision_router
 from api.railway_resources import router as railway_resources_router
 from api.bot_security import router as bot_security_router
+from api.cloud_releases import router as cloud_releases_router
 from portal.routes import router as customer_portal_router
 from portal.billing_routes import router as customer_billing_router
 
@@ -89,6 +90,7 @@ app.include_router(bot_lab_router)
 app.include_router(provision_router)
 app.include_router(railway_resources_router)
 app.include_router(bot_security_router)
+app.include_router(cloud_releases_router)
 app.include_router(customer_portal_router)
 app.include_router(customer_billing_router)
 
