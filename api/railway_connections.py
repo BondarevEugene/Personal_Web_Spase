@@ -5,7 +5,7 @@ No deployment mutation is exposed. Browser never receives provider tokens.
 from __future__ import annotations
 
 import hmac
-from uuid import UUID
+from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -68,7 +68,7 @@ def authorize(request: Request):
                 customer_id=user.id, provider="railway",
                 state_hash=oauth.state_hash(state),
                 verifier_ciphertext=oauth.encrypt(verifier),
-                expires_at=utcnow() + __import__("datetime").timedelta(minutes=10),
+                expires_at=utcnow() + timedelta(minutes=10),
                 created_at=utcnow(),
             )
             db.add(row)
