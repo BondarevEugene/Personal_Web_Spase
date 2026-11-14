@@ -20,6 +20,7 @@ def upgrade():
                   sa.ForeignKey("portal_customers.id"), nullable=False),
         sa.Column("provider", sa.String(32), nullable=False),
         sa.Column("state_hash", sa.String(64), nullable=False, unique=True),
+        sa.Column("session_hash", sa.String(64), nullable=False),
         sa.Column("verifier_ciphertext", sa.Text(), nullable=False),
         sa.Column("expires_at", sa.DateTime(), nullable=False),
         sa.Column("consumed_at", sa.DateTime(), nullable=True),
