@@ -74,3 +74,12 @@
 .lab-readiness-item span{color:#e1eff9;line-height:1.45}
 .lab-readiness-item a{color:#8be4d7;font-weight:800;white-space:nowrap;text-decoration:underline}
 @media(max-width:600px){.lab-readiness-item{grid-template-columns:21px 1fr}.lab-readiness-item a{grid-column:2}}
+
+
+.lab-jobs{display:grid;gap:7px;margin-top:13px}
+.lab-job{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px solid #47647e;border-radius:8px;background:#1b344b;padding:10px}
+.lab-job strong{font-size:12px;color:#dbf8ec}
+.lab-job small{font-size:11px;color:#aac9dc}
+.lab-job .lab-small{margin-left:auto}
+.lab-job-log{flex-basis:100%;border-top:1px solid #426079;padding:8px 3px;color:#d6e7f5;font-size:11px}
+.lab-job-log p{margin:5px 0}
