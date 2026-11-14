@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 
-from api.simple_builder import Scenario
+from api.simple_builder import Scenario, export_scenario
 from portal.db import session_factory
 from portal.models import BuilderProject, utcnow
 from portal.routes import current_customer
@@ -152,6 +152,26 @@ def duplicate_project(id: str, request: Request):
             db.rollback()
             raise HTTPException(503, "Apply portal Alembic migrations before saving")
         return serialize(copied)
+
+@router.get("/{id}/export")
+def export_saved_project(id: str, request: Request):
+    """Download a validated, owned saved graph as a runnable aiogram ZIP."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        try:
+            row = db.scalar(select(BuilderProject).where(
+                BuilderProject.id == project_id(id),
+                BuilderProject.customer_id == user.id,
+            ))
+        except OperationalError:
+            raise HTTPException(503, "Apply portal Alembic migrations before exporting")
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        # Exports are generated from the saved, validated scenario, not from
+        # untrusted query parameters or the user's current browser draft.
+        scenario = Scenario.model_validate_json(row.scenario_json)
+        return export_scenario(scenario)
+
 
 @router.get("/{id}")
 def get_project(id: str, request: Request):
