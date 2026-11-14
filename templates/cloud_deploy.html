@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OmniFactory Cloud Deploy — планирование</title>
+<link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
+<style>
+.cloud-grid{display:grid;grid-template-columns:minmax(310px,.8fr) minmax(400px,1.2fr);gap:15px;margin-top:24px}
+.cloud-form,.cloud-output{padding:24px;border:1px solid #4e6a87;border-radius:14px;background:#162b43}
+.cloud-form label{display:flex;flex-direction:column;gap:5px;font-weight:750;font-size:12px;color:#dcecff;margin:12px 0}
+.cloud-form input,.cloud-form select{font-size:14px;color:white;background:#0c1c30;border-radius:7px;border:1px solid #64809b;padding:12px;width:100%}
+.cloud-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.cloud-actions button{border:1px solid #6e96ae;background:#233f5c;color:#fff;border-radius:9px;padding:12px 18px;font-weight:750;cursor:pointer}
+.cloud-actions .primary{background:#8de6d3;color:#072431;border-color:#8de6d3}
+.cloud-output pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.7 Consolas,monospace;color:#dcf4e8;background:#091b2d;padding:17px;border-radius:9px;max-height:500px;overflow:auto}
+.cloud-output h2{font-size:22px;margin:0 0 10px}.cloud-note{color:#bed6ea;font-size:13px;line-height:1.7}
+.cloud-status{min-height:32px;color:#b1eedf;font-size:13px}
+.cloud-warning{border-left:3px solid #eab877;padding:12px 16px;background:#302b26;color:#ffe3c0;margin-top:18px}
+@media(max-width:850px){.cloud-grid{grid-template-columns:1fr}}
+</style>
+<script defer src="/studio-assets/cloud_deploy.js?v=2"></script>
+</head>
+<body class="omni-revamp">
+<header class="omni-top"><div class="omni-top-inner">
+<a class="omni-brand" href="/"><span class="omni-brand-logo" aria-hidden="true"><i>◇</i></span>
+<span><strong>OMNI<span>FACTORY</span></strong><small>MANAGED CLOUD / DEPLOYMENT</small></span></a>
+<nav class="omni-nav" aria-label="Навигация">
+<a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/bots/lab">Bot Lab</a><a href="/architect">Bot Builder</a>
+<a href="/automation/studio">Automation Studio</a><a href="/cloud/deploy" aria-current="page">Cloud Deploy</a>
+<a href="/account">Кабинет</a><a href="/docs">API</a></nav></div></header>
+<main class="omni-main">
+<section class="omni-hero"><div>
+<p class="omni-eyebrow">OMNIFACTORY / MANAGED CLOUD / STAGE 1</p>
+<h1>Опубликовать бота.<br><em>Без ручной настройки серверов.</em></h1>
+<p class="omni-lead">На первом этапе здесь можно безопасно подготовить конфигурацию, проверить ограничения и сохранить план развёртывания. Создание платных ресурсов Railway пока отключено.</p>
+<div class="omni-actions"><a class="omni-button primary" href="/bots/lab">Открыть лабораторию</a><a class="omni-button" href="/architect">Вернуться в Bot Builder</a>
+<a class="omni-button" href="/automation/studio">Automation Studio</a></div>
+</div><aside class="omni-hero-aside"><strong>Режим планирования</strong>
+<span class="omni-pill muted">Без реального деплоя</span>
+<p>Текущий этап не требует токена Telegram или доступа к Railway.</p></aside></section>
+<section class="cloud-output" aria-label="Подключение Railway" style="margin-top:18px">
+ <h2>Railway · Подключение аккаунта</h2>
+ <p class="cloud-note">Клиент входит на стороне Railway и разрешает OMNIFACTORY доступ к выбранным ресурсам. Логин, пароль и токены на этой странице не вводятся.</p>
+ <p id="railway-connection-status" class="cloud-status" role="status">Проверка подключения…</p>
+ <div class="cloud-actions">
+  <button id="railway-connect" class="primary" type="button">Подключить Railway</button>
+  <button id="railway-refresh" type="button">Обновить доступ</button>
+  <button id="railway-disconnect" type="button">Отключить</button>
+ </div>
+ <p class="cloud-note">Отключение удаляет сохранённые в OMNIFACTORY токены. Для отзыва согласия у Railway также открой Account Settings → Apps → Revoke Access.</p>
+</section>
+<div class="cloud-grid">
+<section class="cloud-form" aria-label="Конфигурация развёртывания">
+<h2>01 · Новый план</h2>
+<label>Имя проекта<input id="cloud-name" value="client-bot" maxlength="40" required></label>
+<label>Что разворачиваем?
+<select id="cloud-runtime"><option value="telegram_aiogram">Telegram / aiogram</option><option value="automation">Automation workflow</option></select></label>
+<label>Режим размещения
+<select id="cloud-mode"><option value="managed">OmniFactory Managed Cloud</option><option value="byoc">Свой Railway (BYOC)</option></select></label>
+<label>Провайдер<select id="cloud-provider"><option value="railway">Railway</option></select></label>
+<label>Способ исполнения<select id="cloud-transport"><option value="webhook">Webhook</option><option value="worker">Отдельный worker (Telegram)</option></select></label>
+<label>Версия runtime<input id="cloud-version" value="runtime-1.0.0" maxlength="100"></label>
+<label>Максимальный месячный бюджет, USD<input id="cloud-budget" type="number" min="5" max="10000" step="1" value="10"></label>
+<div class="cloud-actions"><button id="cloud-preview" class="primary">Проверить план</button>
+<button id="cloud-save">Сохранить в аккаунте</button></div>
+<p class="cloud-note">Пароли Railway и токены Telegram сюда не вводятся. Подключение провайдера через OAuth и защищённое хранилище секретов появятся на следующем этапе.</p>
+</section>
+<section class="cloud-output" aria-label="Предпросмотр плана">
+<h2>02 · План развёртывания</h2>
+<p id="cloud-status" class="cloud-status" role="status">Заполни параметры и нажми «Проверить план».</p>
+<pre id="cloud-result">План пока не сформирован.</pre>
+<div class="cloud-warning"><strong>Важно:</strong> бюджетный лимит — это не прогноз стоимости. Пока не получена оценка от провайдера и не настроены квоты, автоматическое создание платных сервисов запрещено.</div>
+<h3>Мои сохранённые планы</h3><div id="cloud-plans" class="cloud-note">Для просмотра нужен вход в OMNIFACTORY.</div>
+<a class="omni-button" href="/account/login">Войти в аккаунт</a>
+</section>
+</div>
+</main>
+<footer class="omni-footer"><div class="omni-footer-inner"><div><strong>OMNIFACTORY</strong><p>Managed Cloud и Bring Your Own Cloud. Клиент контролирует свои данные, стоимость и разрешения.</p></div>
+<nav class="omni-footer-links"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/automation/studio">Автоматизация</a><a href="/docs">API</a></nav></div></footer>
+</body></html>

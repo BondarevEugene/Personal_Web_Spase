@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=1"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container">
 <a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNT</small></span></a>
-<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/architect">Конструктор</a><a href="/robotization">Автоматизация</a><a href="/studio">Студия</a></nav>
+<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/bots/lab">Конструктор</a><a href="/robotization">Автоматизация</a><a href="/studio">Студия</a></nav>
 <form method="post" action="/account/logout" class="account-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Выйти ↗</button></form></div></header>
 <main class="container account-dashboard"><div class="eyebrow">PRIVATE CLIENT SPACE / OMNIFACTORY</div>
 <h1>Добро пожаловать,<br><span class="gradient-text">{{ user.display_name }}.</span></h1>

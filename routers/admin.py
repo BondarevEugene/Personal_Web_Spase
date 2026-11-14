@@ -1,114 +1,27 @@
-# ==============================================================================
-# PROJECT: OMNIFACTORY PLATFORM
-# MODULE: Administration Router
-# FILE: routers/admin.py
-#
-# PURPOSE
-# ------------------------------------------------------------------------------
-# Маршруты административного интерфейса.
-#
-# ВАЖНО:
-# Этот Router НЕ содержит бизнес-логику.
-# Он только отображает административные страницы.
-#
-# Бизнес-логика находится:
-#
-#   routers/api.py
-#   routers/deployment.py
-#   routers/monitoring.py
-#   routers/dashboard.py
-#
-# ==============================================================================
+"""Legacy administration URLs redirect to current, protected OmniFactory tools.
 
-from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+The old templates contained hardcoded uptime, CPU, and imaginary bot states.
+They are intentionally not served as real administrative dashboards.
+"""
+from fastapi import APIRouter
+from fastapi.responses import RedirectResponse
 
-from core.templates import render
+router = APIRouter(prefix="/admin", tags=["Administration legacy aliases"])
 
-router = APIRouter(
-    prefix="/admin",
-    tags=["Administration"]
-)
-
-# ==============================================================================
-# ADMIN HOME
-# ==============================================================================
-
-@router.get("/", response_class=HTMLResponse)
-async def admin_home(request: Request):
-
-    return render(
-        request,
-        "admin.html",
-        title="OMNIFACTORY Admin"
-    )
+DESTINATIONS = {
+    "/": "/bots/lab",
+    "/dashboard": "/bots/lab",
+    "/projects": "/projects",
+    "/builder": "/architect",
+    "/robotization": "/automation/studio",
+    "/techkillers": "/techkillers",
+}
 
 
-# ==============================================================================
-# DASHBOARD
-# ==============================================================================
-
-@router.get("/dashboard", response_class=HTMLResponse)
-async def dashboard(request: Request):
-
-    return render(
-        request,
-        "dashboard.html",
-        title="Dashboard"
-    )
-
-
-# ==============================================================================
-# PROJECTS
-# ==============================================================================
-
-@router.get("/projects", response_class=HTMLResponse)
-async def projects(request: Request):
-
-    return render(
-        request,
-        "projects.html",
-        title="Projects"
-    )
-
-
-# ==============================================================================
-# BUILDER
-# ==============================================================================
-
-@router.get("/builder", response_class=HTMLResponse)
-async def builder(request: Request):
-
-    return render(
-        request,
-        "builder_pro_final.html",
-        title="Bot Builder"
-    )
-
-
-# ==============================================================================
-# ROBOTIZATION
-# ==============================================================================
-
-@router.get("/robotization", response_class=HTMLResponse)
-async def robotization(request: Request):
-
-    return render(
-        request,
-        "robotization.html",
-        title="Robotization"
-    )
-
-
-# ==============================================================================
-# TECHKILLERS
-# ==============================================================================
-
-@router.get("/techkillers", response_class=HTMLResponse)
-async def techkillers(request: Request):
-
-    return render(
-        request,
-        "techkillers.html",
-        title="Technology Stack"
-    )
+@router.get("/{path:path}", include_in_schema=False)
+async def legacy_admin_alias(path: str):
+    path = "/" + path.strip("/") if path else "/"
+    target = DESTINATIONS.get(path)
+    if target is None:
+        return RedirectResponse("/bots/lab", status_code=307)
+    return RedirectResponse(target, status_code=307)

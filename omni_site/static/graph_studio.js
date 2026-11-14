@@ -93,12 +93,17 @@ const integrationDetails={
 const fresh=()=>({name:'Новый Telegram-бот',start:'welcome',nodes:[
 {id:'welcome',kind:'message',text:'Привет! Это мой новый бот.',next:'finish'},
 {id:'finish',kind:'end',text:'До встречи!'}]});
-const sample=()=>({name:'Мой Telegram-бот',start:'welcome',nodes:[
-{id:'welcome',kind:'message',text:'Добро пожаловать!',next:'question'},
+const sample=()=>({name:'Пример: персональный Telegram-бот',start:'welcome',nodes:[
+{id:'welcome',kind:'message',text:'Добро пожаловать! Давайте познакомимся.',next:'ask'},
+{id:'ask',kind:'input',variable:'name',text:'Как вас зовут?',next:'setname'},
+{id:'setname',kind:'set_variable',variable:'welcome_text',value:'Рады знакомству, {{name}}!',next:'check'},
+{id:'check',kind:'condition',variable:'name',operator:'equals',value:'Алексей',true_target:'vip',false_target:'regular'},
+{id:'vip',kind:'message',text:'{{welcome_text}} Для вас подготовлен особый раздел.',next:'question'},
+{id:'regular',kind:'message',text:'{{welcome_text}}',next:'question'},
 {id:'question',kind:'choice',text:'Чем помочь?',options:[{label:'О нас',target:'about'},{label:'Завершить',target:'finish'}]},
 {id:'about',kind:'message',text:'Мы создаём цифровые решения.',next:'finish'},
 {id:'finish',kind:'end',text:'До встречи!'}]});
-const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш'};
+const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш',input:'Ввод пользователя',condition:'Условие IF / ELSE',set_variable:'Переменная'};
 let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
 let canvasExpanded=false;
 function replaceScenario(factory) {
@@ -142,6 +147,8 @@ function removeNode(id){
  delete positions[id];
  for(const n of data.nodes){
   if(n.next===id)n.next=null;
+  if(n.true_target===id)n.true_target=null;
+  if(n.false_target===id)n.false_target=null;
   if(n.options)n.options=n.options.filter(o=>o.target!==id);
  }
  if(data.start===id)data.start=data.nodes[0].id;
@@ -171,7 +178,7 @@ function decorateCard(card,n) {
  card.classList.add('node-kind-'+n.kind);
  card.dataset.kind=n.kind;
  const icon=el('span','graph-kind-icon',
-  {message:'✉',choice:'◇',photo:'▧',document:'▤',end:'■'}[n.kind]||'●');
+  {message:'✉',choice:'◇',photo:'▧',document:'▤',end:'■',input:'⇥',condition:'◇',set_variable:'≔'}[n.kind]||'●');
  card.prepend(icon);
 }
 const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;};
@@ -179,10 +186,10 @@ const btn=(txt,cb,cls='inspector-btn')=>{const e=el('button',cls,txt);e.type='bu
 const status=(msg,bad=false)=>{const n=$('project-status');n.textContent=msg;n.classList.toggle('error',bad);};
 const save=()=>{try{localStorage.setItem(STORE,JSON.stringify({data,positions,cloudProjectId}));}catch(e){status('Локальное сохранение недоступно',true);}};
 function position(id,index=0){if(!positions[id])positions[id]={x:80+(index%5)*335,y:90+Math.floor(index/5)*235};return positions[id];}
-function payload(){return {name:data.name,start:data.start,nodes:data.nodes.map(({id,kind,text='',next=null,media=null,options=[]})=>({id,kind,text,next,media,options}))};}
+function payload(){return {name:data.name,start:data.start,nodes:data.nodes.map(({id,kind,text='',next=null,media=null,options=[],variable=null,value='',operator='equals',true_target=null,false_target=null})=>({id,kind,text,next,media,options,variable,value,operator,true_target,false_target}))};}
 function edges(){
  const svg=$('flow-edges');if(!svg)return;svg.replaceChildren();
- for(const n of data.nodes){const p=position(n.id),targets=n.kind==='choice'?(n.options||[]).map((o,i)=>({id:o.target,i})):n.next?[{id:n.next,i:0}]:[];
+ for(const n of data.nodes){const p=position(n.id),targets=n.kind==='choice'?(n.options||[]).map((o,i)=>({id:o.target,i})):n.kind==='condition'?[{id:n.true_target,i:0},{id:n.false_target,i:1}]:n.next?[{id:n.next,i:0}]:[];
   for(const t of targets){if(!data.nodes.some(x=>x.id===t.id))continue;
    const q=position(t.id),x=p.x+278,y=p.y+114+t.i*43,X=q.x,Y=q.y+65,b=Math.max(70,Math.abs(X-x)*.48);
    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
@@ -195,6 +202,7 @@ function connect(target){
  if(!link)return;
  const n=data.nodes.find(x=>x.id===link.id);if(!n)return;
  if(n.kind==='choice'){if(!n.options?.[link.i])return;n.options[link.i].target=target;}
+ else if(n.kind==='condition'){if(link.i===0)n.true_target=target;else if(link.i===1)n.false_target=target;}
  else if(n.kind!=='end')n.next=target;
  status('Соединено: '+n.id+' → '+target);link=null;render();save();
 }
@@ -215,7 +223,7 @@ function render(){
   const input=btn('',()=>link?connect(n.id):status('Сначала выбери выход узла'),'graph-port node-input');
   input.setAttribute('aria-label','Вход '+n.id);card.append(input);
   card.append(el('div','builder-node-text',n.text||n.media||'(настрой содержимое)'));
-  const opts=n.kind==='choice'?(n.options||[]):n.kind==='end'?[]:[{label:'Далее',target:n.next||'—'}];
+  const opts=n.kind==='choice'?(n.options||[]):n.kind==='condition'?[{label:'Да / TRUE',target:n.true_target||'—'},{label:'Нет / FALSE',target:n.false_target||'—'}]:n.kind==='end'?[]:[{label:'Далее',target:n.next||'—'}];
   opts.forEach((o,j)=>{
    const row=el('div','graph-option');row.append(el('span','',o.label+' → '+(o.target||'—')));
    const output=btn('',()=>{link={id:n.id,i:j};status('Выход выбран. Нажми вход другого блока.');},'graph-port node-output');
@@ -256,8 +264,16 @@ function inspector(){
  const details=el('div','inspector-meta');
  details.append(el('span','', 'ID: '+n.id),el('span','', 'ТИП: '+n.kind),el('span','',n.id===data.start?'● СТАРТОВЫЙ БЛОК':'Промежуточный блок'));
  root.append(details);
- field(root,n.kind==='photo'||n.kind==='document'?'Подпись':'Текст',n.text||'',v=>{n.text=v;save();},true);
+ if(n.kind!=='condition'&&n.kind!=='set_variable')
+  field(root,n.kind==='photo'||n.kind==='document'?'Подпись':n.kind==='input'?'Вопрос пользователю':'Текст (поддерживает {{variable}})',n.text||'',v=>{n.text=v;save();},true);
  if(n.kind==='photo'||n.kind==='document')field(root,'HTTPS URL / Telegram file_id',n.media||'',v=>{n.media=v;save();});
+ if(['input','condition','set_variable'].includes(n.kind)){
+  field(root,'Имя переменной (латиница, без пробелов)',n.variable||'',v=>{n.variable=v;save();});
+ }
+ if(n.kind==='condition'||n.kind==='set_variable')field(root,n.kind==='condition'?'Значение для сравнения':'Установить значение',n.value||'',v=>{n.value=v;save();});
+ if(n.kind==='condition')selector(root,'Сравнение',n.operator||'equals',[
+  ['equals','Равно'],['not_equals','Не равно'],['contains','Содержит'],['not_empty','Не пусто']
+ ],v=>{n.operator=v;change();});
  const targets=data.nodes.map(x=>[x.id,x.id+' · '+names[x.kind]]);
  if(n.kind==='choice'){
   (n.options||[]).forEach((o,i)=>{
@@ -271,12 +287,20 @@ function inspector(){
    n.options=n.options||[];if(n.options.length>=8)return status('Максимум 8 кнопок',true);
    n.options.push({label:'Кнопка',target:data.start});change();inspector();
   }));
+ }else if(n.kind==='condition'){
+  selector(root,'Ветка Да / TRUE',n.true_target||'',[['','Выбрать узел'],...targets],v=>{n.true_target=v||null;change();});
+  selector(root,'Ветка Нет / FALSE',n.false_target||'',[['','Выбрать узел'],...targets],v=>{n.false_target=v||null;change();});
  }else if(n.kind!=='end')selector(root,'Следующий узел',n.next||'',[['','Нет связи'],...targets],v=>{n.next=v||null;change();});
 }
 function add(kind,pos){
  if(!names[kind]||data.nodes.length>=80)return status('Лимит блоков достигнут',true);
  const id=newNodeId();
- const n={id,kind,text:kind==='message'?'Новое сообщение':kind==='choice'?'Выберите вариант':'',next:null,media:null,options:kind==='choice'?[{label:'Продолжить',target:data.start}]:[]};
+ const finish=data.nodes.find(n=>n.kind==='end')?.id||data.start;
+ const n={id,kind,text:kind==='message'?'Новое сообщение':kind==='choice'?'Выберите вариант':kind==='input'?'Как вас зовут?':'',
+ next:kind==='input'||kind==='set_variable'?finish:null,media:null,options:kind==='choice'?[{label:'Продолжить',target:finish}]:[],
+ variable:kind==='input'?'name':kind==='set_variable'?'greeting':kind==='condition'?'name':null,
+ value:kind==='set_variable'?'Привет, {{name}}':kind==='condition'?'Алексей':'',operator:'equals',
+ true_target:kind==='condition'?finish:null,false_target:kind==='condition'?finish:null};
  data.nodes.push(n);if(pos)positions[id]=pos;selected=id;change();inspector();status('Узел добавлен. Перетаскивай за заголовок, соединяй порты.');
 }
 async function post(path){
@@ -285,40 +309,81 @@ async function post(path){
  return r;
 }
 function download(blob,name){const a=el('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
-async function serverDryRun(choices){
+async function serverDryRun(choices,inputs){
  const trace=$('preview-trace');
  if(!trace)return;
  try{
   const response=await fetch(API+'/simulate',{method:'POST',headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({scenario:payload(),choices})});
+   body:JSON.stringify({scenario:payload(),choices,inputs})});
   if(!response.ok)throw new Error('Сервер отклонил сценарий: '+response.status);
   const result=await response.json();
   trace.replaceChildren();
   trace.append(el('strong','', 'Серверный dry-run · '+result.steps+' шагов'));
   for(const step of result.trace||[])
-   trace.append(el('div','preview-trace-line',step.id+' · '+step.kind+(step.text?' · '+step.text.slice(0,75):'')));
+   trace.append(el('div','preview-trace-line',step.id+' · '+step.kind+(step.result===undefined?'':step.result?' · TRUE':' · FALSE')));
+  if(result.variables)trace.append(el('div','preview-trace-line',
+   'Переменные: '+JSON.stringify(result.variables)));
   trace.append(el('div','preview-trace-state','Статус: '+result.status));
  }catch(err){
-  trace.replaceChildren();
-  trace.append(el('div','preview-trace-error','Серверная проверка недоступна: '+err.message));
+  trace.replaceChildren();trace.append(el('div','preview-trace-error','Серверная проверка недоступна: '+err.message));
  }
 }
 function preview(){
- const root=$('preview-messages');root.replaceChildren();const map=new Map(data.nodes.map(n=>[n.id,n]));
- const userChoices={};
- void serverDryRun(userChoices);
+ const root=$('preview-messages');root.replaceChildren();
+ const map=new Map(data.nodes.map(n=>[n.id,n]));
+ const choices={},inputs={},variables={};
+ const substitute=t=>String(t||'').replace(/\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}/g,(_,key)=>variables[key]||'');
  const bubble=t=>root.append(el('div','preview-bubble',t));
- function step(id){let loops=0;while(id&&loops++<40){const n=map.get(id);if(!n)return bubble('Блок не найден: '+id);
-  if(n.kind==='choice'){bubble(n.text);n.options.forEach((o,index)=>root.append(btn(o.label,()=>{
-   userChoices[n.id]=index;
-   void serverDryRun(userChoices);
-   root.querySelectorAll('.preview-button').forEach(x=>x.remove());
-   step(o.target);
-  },'preview-button')));return;}
-  if(n.kind==='message'||n.kind==='end')bubble(n.text||'Конец');
-  if(n.kind==='photo'||n.kind==='document')bubble('['+names[n.kind]+'] '+(n.media||''));
-  if(n.kind==='end')return;id=n.next;
- }if(loops>=40)bubble('Обнаружен цикл.');}step(data.start);
+ let steps=0;
+ const sync=()=>{void serverDryRun(choices,inputs);};
+ function step(id){
+  while(id&&steps++<50){
+   const n=map.get(id);if(!n){bubble('Блок не найден: '+id);sync();return;}
+   if(n.kind==='set_variable'){
+    variables[n.variable]=substitute(n.value);
+    id=n.next;continue;
+   }
+   if(n.kind==='condition'){
+    const actual=variables[n.variable]||'',expected=substitute(n.value);
+    const yes=n.operator==='equals'?actual===expected:
+      n.operator==='not_equals'?actual!==expected:
+      n.operator==='contains'?actual.includes(expected):
+      n.operator==='not_empty'?Boolean(actual.trim()):false;
+    id=yes?n.true_target:n.false_target;continue;
+   }
+   if(n.kind==='input'){
+    bubble(substitute(n.text));
+    const form=el('form','preview-input-form');
+    const input=el('input','preview-text-input');
+    input.maxLength=300;input.required=true;input.placeholder='Введите ответ…';
+    const submit=el('button','preview-button','Отправить');submit.type='submit';
+    form.append(input,submit);
+    form.addEventListener('submit',e=>{
+     e.preventDefault();const value=input.value.trim();
+     if(!value)return;
+     inputs[n.id]=value;variables[n.variable]=value;
+     form.remove();bubble('Вы: '+value);sync();step(n.next);
+    });
+    root.append(form);input.focus();sync();return;
+   }
+   if(n.kind==='choice'){
+    bubble(substitute(n.text));
+    const actions=el('div','preview-actions');root.append(actions);
+    (n.options||[]).forEach((option,index)=>actions.append(btn(option.label,()=>{
+      choices[n.id]=index;actions.remove();bubble('Выбрано: '+option.label);
+      sync();step(option.target);
+    },'preview-button')));
+    sync();return;
+   }
+   if(n.kind==='message'||n.kind==='end')bubble(substitute(n.text)||'Конец');
+   if(n.kind==='photo'||n.kind==='document')bubble('['+names[n.kind]+'] '+(n.media||'')+' '+substitute(n.text));
+   if(n.kind==='end'){sync();return;}
+   id=n.next;
+  }
+  if(steps>=50)bubble('Лимит 50 переходов: проверьте циклы.');
+  sync();
+ }
+ step(data.start);
 }
 document.addEventListener('pointerdown',e=>{
  const menu=$('graph-context-menu');

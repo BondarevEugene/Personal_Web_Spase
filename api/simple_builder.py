@@ -29,17 +29,22 @@ class ButtonChoice(BaseModel):
 
 class ScenarioNode(BaseModel):
     id: str = Field(min_length=1, max_length=40)
-    kind: Literal["message", "choice", "photo", "document", "end"]
+    kind: Literal["message", "choice", "photo", "document", "end", "input", "condition", "set_variable"]
     text: str = Field(default="", max_length=1500)
     next: str | None = Field(default=None, max_length=40)
     media: str | None = Field(default=None, max_length=300)
     options: list[ButtonChoice] = Field(default_factory=list, max_length=8)
+    variable: str | None = Field(default=None, max_length=40)
+    value: str = Field(default="", max_length=300)
+    operator: Literal["equals", "not_equals", "contains", "not_empty"] = "equals"
+    true_target: str | None = Field(default=None, max_length=40)
+    false_target: str | None = Field(default=None, max_length=40)
 
     @model_validator(mode="after")
     def validate_content(self):
         if not NODE_ID.fullmatch(self.id):
             raise ValueError("ID блока должен начинаться с латинской буквы и содержать только буквы, цифры, - или _")
-        if self.kind in {"message", "choice"} and not self.text.strip():
+        if self.kind in {"message", "choice", "input"} and not self.text.strip():
             raise ValueError("Текст сообщения/вопроса не может быть пустым")
         if self.next and not NODE_ID.fullmatch(self.next):
             raise ValueError("Некорректный ID следующего блока")
@@ -49,6 +54,16 @@ class ScenarioNode(BaseModel):
             media = (self.media or "").strip()
             if not (media.startswith("https://") and " " not in media or FILE_ID.fullmatch(media)):
                 raise ValueError("Для фото/документа нужен HTTPS URL или Telegram file_id")
+        if self.kind in {"input", "condition", "set_variable"}:
+            if not self.variable or not NODE_ID.fullmatch(self.variable):
+                raise ValueError("Invalid variable name")
+        if self.kind == "condition":
+            if not self.true_target or not self.false_target:
+                raise ValueError("Condition requires true and false targets")
+            if self.next:
+                raise ValueError("Condition uses branches instead of next")
+        if self.kind in {"input", "set_variable"} and not self.next:
+            raise ValueError("Input/variable node requires next")
         if self.kind == "end" and self.next:
             raise ValueError("Завершающий блок не может иметь продолжение")
         return self
@@ -70,6 +85,9 @@ class Scenario(BaseModel):
         for node in self.nodes:
             if node.next and node.next not in existing:
                 raise ValueError(f"Блок {node.id}: переход на отсутствующий блок {node.next}")
+            for dest in (node.true_target, node.false_target):
+                if dest and dest not in existing:
+                    raise ValueError(f"Node {node.id}: condition target missing: {dest}")
             for option in node.options:
                 if option.target not in existing:
                     raise ValueError(f"Блок {node.id}: кнопка ведёт в неизвестный блок {option.target}")
@@ -90,17 +108,20 @@ def _reachable(scenario: Scenario) -> set[str]:
             queue.append(node.next)
         if node.kind == "choice":
             queue.extend(option.target for option in node.options)
+        if node.kind == "condition":
+            queue.extend((node.true_target, node.false_target))
     return found
 
 
 @router.get("/capabilities")
 def capabilities():
     return {
-        "name": "OmniFactory Simple Telegram Builder",
-        "supported_blocks": ["message", "choice", "photo", "document", "end"],
+        "name": "OmniFactory Telegram Workflow Builder",
+        "supported_blocks": ["message", "choice", "photo", "document", "end", "input", "condition", "set_variable"],
         "validation": True,
         "export": "aiogram 3 Python project ZIP",
-        "server_persistence": False,
+        "server_persistence": True,
+        "persistence_requires_account": True,
         "live_deployment": False,
     }
 
@@ -109,7 +130,7 @@ def capabilities():
 # OAuth connections or workflow execution are implemented.
 INTEGRATION_CATALOG = (
     {"id": "telegram", "name": "Telegram", "category": "messaging",
-     "status": "export", "blocks": ["message", "choice", "photo", "document", "end"],
+     "status": "export", "blocks": ["message", "choice", "photo", "document", "end", "input", "condition", "set_variable"],
      "description": "Генерация Python / aiogram 3 сценария"},
     {"id": "google_docs", "name": "Google Docs", "category": "documents",
      "status": "planned", "blocks": ["create_document", "append_text", "read_document"],
@@ -139,11 +160,32 @@ def list_integrations():
             "statuses": {"export": "Работает экспорт", "planned": "В разработке"}}
 
 
+VARIABLE_RE = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
+
+
+def substitute(template: str, variables: dict[str, str]) -> str:
+    """Render only explicit variable placeholders, never Python expressions."""
+    return VARIABLE_RE.sub(lambda match: variables.get(match.group(1), ""), template)
+
+
+def match_condition(actual: str, operator: str, expected: str) -> bool:
+    if operator == "equals":
+        return actual == expected
+    if operator == "not_equals":
+        return actual != expected
+    if operator == "contains":
+        return expected in actual
+    if operator == "not_empty":
+        return bool(actual.strip())
+    return False
+
+
 class SimulationRequest(BaseModel):
     """Bounded dry-run. No Telegram calls, network, credentials or user code."""
 
     scenario: Scenario
     choices: dict[str, int] = Field(default_factory=dict, max_length=80)
+    inputs: dict[str, str] = Field(default_factory=dict, max_length=80)
 
 
 @router.post("/simulate")
@@ -156,6 +198,7 @@ def simulate_scenario(request: SimulationRequest):
     scenario = request.scenario
     by_id = {node.id: node for node in scenario.nodes}
     trace: list[dict] = []
+    variables: dict[str, str] = {}
     current = scenario.start
     for _ in range(50):
         node = by_id[current]
@@ -164,7 +207,30 @@ def simulate_scenario(request: SimulationRequest):
             item["media"] = node.media
         trace.append(item)
         if node.kind == "end":
-            return {"status": "completed", "trace": trace, "steps": len(trace)}
+            return {"status": "completed", "trace": trace, "steps": len(trace),
+                    "variables": variables}
+        if node.kind == "set_variable":
+            variables[node.variable] = substitute(node.value, variables)
+            current = node.next
+            continue
+        if node.kind == "input":
+            value = request.inputs.get(node.id)
+            if value is None:
+                return {"status": "awaiting_input", "at": node.id, "variable": node.variable,
+                        "trace": trace, "steps": len(trace), "variables": variables}
+            if len(value) > 300:
+                return {"status": "invalid_input", "at": node.id, "trace": trace,
+                        "steps": len(trace), "variables": variables}
+            variables[node.variable] = value
+            current = node.next
+            continue
+        if node.kind == "condition":
+            actual = variables.get(node.variable, "")
+            expected = substitute(node.value, variables)
+            outcome = match_condition(actual, node.operator, expected)
+            item["result"] = outcome
+            current = node.true_target if outcome else node.false_target
+            continue
         if node.kind == "choice":
             index = request.choices.get(node.id)
             if index is None:
@@ -188,9 +254,10 @@ def simulate_scenario(request: SimulationRequest):
             current = node.options[index].target
         else:
             if not node.next:
-                return {"status": "completed", "trace": trace, "steps": len(trace)}
+                return {"status": "completed", "trace": trace, "steps": len(trace),
+                        "variables": variables}
             current = node.next
-    return {"status": "step_limit", "trace": trace, "steps": len(trace)}
+    return {"status": "step_limit", "trace": trace, "steps": len(trace), "variables": variables}
 
 
 @router.post("/validate")
@@ -208,6 +275,7 @@ _RUNTIME_SOURCE = r'''"""Generated by OmniFactory Simple Builder. Python 3.11+, 
 import asyncio
 import json
 import os
+import re
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F, Router
@@ -219,11 +287,31 @@ NODES = {item["id"]: item for item in SCENARIO["nodes"]}
 router = Router()
 # A demo-grade, in-memory dialogue cursor. Redis/DB persistence is a later step.
 CURSORS: dict[tuple[int, int], str] = {}
+VALUES: dict[tuple[int, int], dict[str, str]] = {}
+PLACEHOLDER = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
+
+
+def render_text(template: str, values: dict[str, str]) -> str:
+    return PLACEHOLDER.sub(lambda match: values.get(match.group(1), ""), template)
+
+
+def condition_matches(actual: str, operator: str, expected: str) -> bool:
+    if operator == "equals":
+        return actual == expected
+    if operator == "not_equals":
+        return actual != expected
+    if operator == "contains":
+        return expected in actual
+    if operator == "not_empty":
+        return bool(actual.strip())
+    return False
+
 
 
 async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
     """Send automatic nodes until an interactive choice or the end is reached."""
     cursor_key = (chat_id, user_id)
+    values = VALUES.setdefault(cursor_key, {})
     for _ in range(50):
         node = NODES.get(node_id)
         if node is None:
@@ -231,7 +319,21 @@ async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
             await bot.send_message(chat_id, "Ошибка сценария: блок не найден.")
             return
         kind = node["kind"]
-        text = node.get("text") or ""
+        text = render_text(node.get("text") or "", values)
+        if kind == "set_variable":
+            values[node["variable"]] = render_text(node.get("value", ""), values)
+            node_id = node["next"]
+            continue
+        if kind == "condition":
+            actual = values.get(node["variable"], "")
+            expected = render_text(node.get("value", ""), values)
+            result = condition_matches(actual, node["operator"], expected)
+            node_id = node["true_target"] if result else node["false_target"]
+            continue
+        if kind == "input":
+            CURSORS[cursor_key] = node_id
+            await bot.send_message(chat_id, text)
+            return
         if kind == "choice":
             keyboard = InlineKeyboardMarkup(inline_keyboard=[
                 [InlineKeyboardButton(text=choice["label"], callback_data="omni:" + node_id + ":" + str(i))]
@@ -264,6 +366,7 @@ async def start(message: Message) -> None:
     if message.from_user is None:
         return
     CURSORS.pop((message.chat.id, message.from_user.id), None)
+    VALUES.pop((message.chat.id, message.from_user.id), None)
     await send_node(message.bot, message.chat.id, message.from_user.id, SCENARIO["start"])
 
 
@@ -292,6 +395,20 @@ async def choose(call: CallbackQuery) -> None:
 
 @router.message()
 async def text_not_expected(message: Message) -> None:
+    if message.from_user is None:
+        return
+    key = (message.chat.id, message.from_user.id)
+    current = CURSORS.get(key)
+    node = NODES.get(current) if current else None
+    if node and node["kind"] == "input":
+        value = message.text
+        if value is None or not value.strip() or len(value) > 300:
+            await message.answer("Отправьте текст до 300 символов.")
+            return
+        VALUES.setdefault(key, {})[node["variable"]] = value
+        CURSORS.pop(key, None)
+        await send_node(message.bot, message.chat.id, message.from_user.id, node["next"])
+        return
     await message.answer("Для выбора используйте кнопки выше либо отправьте /start.")
 
 
@@ -328,7 +445,9 @@ Type /start in your Telegram bot to begin the conversation.
 ## Scope / limitations
 - Messages, inline-button choices, photos/documents by HTTPS URL or Telegram
   file_id, and terminal nodes are supported.
-- Dialogue positions are stored only in process memory and reset on restart.
+- Text input, per-user in-memory variables, {{variable}} substitutions,
+  setting values and IF/ELSE comparisons are supported.
+- Dialogue positions and variables are stored only in process memory and reset on restart.
 - Deploy/hosting, persistent user records, media file upload and CRM integration
   are not part of this export.
 - Avoid unconditional message-to-message loops (there is a 50-step guard).
