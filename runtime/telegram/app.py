@@ -166,8 +166,18 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str, *,
 
     @app.get("/health")
     async def health():
-        # This proves the local runtime process is serving, NOT Telegram delivery.
+        # DB health is checked; Telegram delivery still needs an E2E probe.
+        if require_state:
+            active = storage["store"]
+            if active is None:
+                raise HTTPException(503, "Runtime state unavailable")
+            try:
+                async with active.pool.acquire() as conn:
+                    await conn.fetchval("SELECT 1")
+            except Exception:
+                raise HTTPException(503, "Runtime state unavailable")
         return {"service": "omni-telegram-runtime", "status": "process_ready",
+                "state": "postgresql" if require_state else "volatile_test_only",
                 "telegram_delivery_verified": False}
 
     @app.post("/telegram/webhook")
