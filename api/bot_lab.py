@@ -14,7 +14,7 @@ from automation.deployment import DeploymentSpec, build_plan
 from automation.railway_oauth import OAuthConfigurationError, decrypt
 from portal.db import session_factory
 from portal.models import (AutomationWorkflow, BuilderProject,
-                           CloudDeployment, CloudOAuthConnection, utcnow)
+                           CloudDeployment, CloudOAuthConnection, CloudRailwayBinding, utcnow)
 from portal.routes import current_customer
 from portal.security import secure_request
 
@@ -132,6 +132,17 @@ def deployment_readiness(plan_id: str, request: Request):
         check("secret_vault", False,
               "Токены Telegram и внешних сервисов пока нельзя безопасно подключить к запуску",
               "/cloud/deploy")
+        binding = db.scalar(select(CloudRailwayBinding).where(
+            CloudRailwayBinding.deployment_id == row.id,
+            CloudRailwayBinding.customer_id == user.id))
+        if spec.mode == "byoc":
+            check("verified_service", bool(binding),
+                  ("Выбран и проверен существующий сервис Railway" if binding else
+                   "Нужно выбрать проект, окружение и сервис Railway и проверить доступ"),
+                  "/bots/lab")
+            check("application_health", False,
+                  "Статус Railway ещё не подтверждает успешную проверку /health и Telegram Webhook",
+                  "/bots/lab")
         check("runtime_release", False,
               "Указана версия runtime, но опубликованный и проверенный образ ещё не привязан",
               "/architect")

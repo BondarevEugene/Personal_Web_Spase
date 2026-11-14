@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const $=id=>document.getElementById(id),BASE='/api/v1/bot-lab';
-let store=null,selected=null,filter='';
+let store=null,selected=null,filter='',railwayResources=[];
 const say=(msg,bad=false)=>{$('lab-notice').textContent=msg;$('lab-notice').classList.toggle('error',bad);};
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 function action(text,url,primary=false){
@@ -64,6 +64,7 @@ function renderDetail(){
   return;
  }
  $('lab-enqueue').disabled=info.entity!=='plan';
+ syncResourceControls();
  $('lab-selected-name').textContent=info.name;
  if(info.entity==='bot'){
   $('lab-selected-status').textContent='Черновик';
@@ -198,6 +199,126 @@ async function refreshJobs(){
    }
  }catch(err){root.append(el('p','lab-muted','История задач недоступна: '+err.message));}
 }
+const RESOURCES='/api/v1/cloud/resources';
+function currentByocPlan(){
+ const i=records().find(x=>selected&&x.entity==='plan'&&x.id===selected.id);
+ return i&&i.mode==='byoc'?i:null;
+}
+function selectedResourceProject(){
+ return railwayResources.find(p=>p.id===$('lab-resource-project').value);
+}
+function setOptions(id,items,emptyLabel){
+ const select=$(id);select.replaceChildren();
+ const empty=el('option','',emptyLabel);empty.value='';select.append(empty);
+ items.forEach(item=>{const option=el('option','',item.name||item.id);option.value=item.id;select.append(option)});
+}
+function syncResourceControls(){
+ const enabled=Boolean(currentByocPlan());
+ ['lab-resources-load','lab-resource-project','lab-resource-service','lab-resource-environment']
+ .forEach(id=>$(id).disabled=!enabled);
+ $('lab-resources-bind').disabled=!enabled||!$('lab-resource-project').value||
+   !$('lab-resource-service').value||!$('lab-resource-environment').value;
+ $('lab-resources-inspect').disabled=!enabled;
+ $('lab-resources-unlink').disabled=!enabled;
+ if(!enabled){
+  $('lab-resource-report').textContent='Выбери сохранённый план BYOC для просмотра инфраструктуры.';
+  $('lab-resources-inspect').disabled=true;$('lab-resources-unlink').disabled=true;
+ }else void loadBinding();
+}
+async function resourceApi(url,options={}){
+ const response=await fetch(RESOURCES+url,{cache:'no-store',credentials:'same-origin',...options});
+ if(!response.ok){
+  const info=await response.json().catch(()=>({}));
+  throw Error(typeof info.detail==='string'?info.detail:'HTTP '+response.status);
+ }
+ return response.status===204?null:response.json();
+}
+async function loadResourceOptions(){
+ if(!currentByocPlan())return say('Выбери план BYOC.',true);
+ try{
+  const data=await fetchJson('/railway/projects');
+  railwayResources=data.projects;
+  setOptions('lab-resource-project',railwayResources,'Выбери проект');
+  setOptions('lab-resource-service',[],'Выбери сервис');
+  setOptions('lab-resource-environment',[],'Выбери окружение');
+  $('lab-resource-report').textContent='Railway вернул '+railwayResources.length+' доступных проектов. Выбери проект, сервис и окружение.';
+  syncResourceControls();
+ }catch(err){say('Не удалось получить ресурсы: '+err.message,true);}
+}
+function projectChanged(){
+ const project=selectedResourceProject();
+ setOptions('lab-resource-service',project?.services||[],'Выбери сервис');
+ setOptions('lab-resource-environment',project?.environments||[],'Выбери окружение');
+ $('lab-resources-bind').disabled=true;
+}
+function bindingReport(data){
+ const root=$('lab-resource-report');root.replaceChildren();
+ if(!data?.binding){
+  root.append(el('p','lab-muted','Привязанный Railway-сервис не найден.'));
+  return;
+ }
+ const binding=data.binding;
+ root.append(el('strong','', 'Привязан сервис: '+binding.service_id));
+ root.append(el('p','','Проект: '+binding.project_id+' · окружение: '+binding.environment_id));
+ root.append(el('p','','Последняя проверка: '+prettyDate(binding.last_checked_at)));
+ if(data.provider){
+  const deployment=data.provider.deployment;
+  root.append(el('p','', 'Railway deployment: '+(deployment?deployment.status:'отсутствует')));
+  if(deployment)root.append(el('p','', 'ID деплоя: '+deployment.id));
+  root.append(el('p','lab-muted','Статус Railway не подтверждает работоспособность Telegram-бота. Нужна проверка /health и Webhook.'));
+ }
+}
+async function loadBinding(){
+ const plan=currentByocPlan();
+ if(!plan)return;
+ const requested=plan.id;
+ try{
+  const result=await resourceApi('/bindings/'+encodeURIComponent(requested));
+  if(!currentByocPlan()||currentByocPlan().id!==requested)return;
+  $('lab-resources-inspect').disabled=!result.binding;
+  $('lab-resources-unlink').disabled=!result.binding;
+  bindingReport(result);
+ }catch(err){
+  $('lab-resources-inspect').disabled=true;
+  $('lab-resources-unlink').disabled=true;
+  $('lab-resource-report').textContent='Не удалось получить привязку: '+err.message;
+ }
+}
+async function bindResource(){
+ const plan=currentByocPlan();
+ if(!plan)return;
+ const project_id=$('lab-resource-project').value,
+       service_id=$('lab-resource-service').value,
+       environment_id=$('lab-resource-environment').value;
+ if(!project_id||!service_id||!environment_id)return;
+ if(!window.confirm('Привязать существующий Railway-сервис? Это только чтение и не создаёт инфраструктуру.'))return;
+ try{
+  const report=await resourceApi('/bindings',{method:'POST',headers:{
+    'Content-Type':'application/json','X-Omni-CSRF':await csrf()},
+    body:JSON.stringify({plan_id:plan.id,project_id,service_id,environment_id})});
+  if(!currentByocPlan()||currentByocPlan().id!==plan.id)return;
+  bindingReport(report);$('lab-resources-inspect').disabled=false;$('lab-resources-unlink').disabled=false;
+  say('Сервис подтверждён через Railway GraphQL и привязан к плану.');void reviewPlan(plan.id);
+ }catch(err){say('Ошибка привязки: '+err.message,true);}
+}
+async function inspectResource(){
+ const plan=currentByocPlan();if(!plan)return;
+ try{
+  const report=await resourceApi('/bindings/'+encodeURIComponent(plan.id)+'/inspect');
+  if(!currentByocPlan()||currentByocPlan().id!==plan.id)return;
+  bindingReport(report);say('Получен настоящий статус сервиса Railway. Healthcheck бота ещё не подтверждён.');
+ }catch(err){say('Ошибка проверки Railway: '+err.message,true);}
+}
+async function unlinkResource(){
+ const plan=currentByocPlan();if(!plan)return;
+ if(!window.confirm('Отвязать сервис от плана? Сам сервис Railway НЕ удаляется.'))return;
+ try{
+  await resourceApi('/bindings/'+encodeURIComponent(plan.id),{
+   method:'DELETE',headers:{'X-Omni-CSRF':await csrf()}});
+  $('lab-resources-inspect').disabled=true;$('lab-resources-unlink').disabled=true;
+  bindingReport({binding:null});say('Привязка удалена. Railway-сервис не затронут.');
+ }catch(err){say('Ошибка отвязки: '+err.message,true);}
+}
 async function railwayProjects(){
  const root=$('lab-provider-projects');root.replaceChildren();
  root.append(el('p','lab-muted','Получаем разрешённые проекты Railway…'));
@@ -222,5 +343,12 @@ $('lab-search').addEventListener('input',value=>{filter=value.target.value.trim(
 $('lab-check-railway').addEventListener('click',railwayProjects);
 $('lab-enqueue').addEventListener('click',enqueueSimulation);
 $('lab-jobs-refresh').addEventListener('click',refreshJobs);
+$('lab-resources-load').addEventListener('click',loadResourceOptions);
+$('lab-resource-project').addEventListener('change',projectChanged);
+$('lab-resource-service').addEventListener('change',syncResourceControls);
+$('lab-resource-environment').addEventListener('change',syncResourceControls);
+$('lab-resources-bind').addEventListener('click',bindResource);
+$('lab-resources-inspect').addEventListener('click',inspectResource);
+$('lab-resources-unlink').addEventListener('click',unlinkResource);
 void refresh();void refreshJobs();
 })();

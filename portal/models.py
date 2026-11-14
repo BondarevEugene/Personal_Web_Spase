@@ -312,3 +312,23 @@ class CloudProvisionEvent(Base):
     code: Mapped[str] = mapped_column(String(70), nullable=False)
     message: Mapped[str] = mapped_column(String(300), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudRailwayBinding(Base):
+    """Verified BYOC resource mapping. Provider IDs, no access tokens."""
+
+    __tablename__ = "portal_cloud_railway_bindings"
+    __table_args__ = (UniqueConstraint("deployment_id", name="uq_cloud_railway_deployment"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    deployment_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_cloud_deployments.id"), nullable=False, index=True)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    service_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    environment_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    verified_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    last_provider_status: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
