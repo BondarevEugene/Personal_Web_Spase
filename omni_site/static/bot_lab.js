@@ -55,6 +55,7 @@ function renderDetail(){
  const info=records().find(i=>selected&&i.id===selected.id&&i.entity===selected.entity);
  const facts=$('lab-selected-facts'),acts=$('lab-actions');
  facts.replaceChildren();acts.replaceChildren();$('lab-readiness').replaceChildren();
+ $('lab-enqueue').disabled=!selected||selected.entity!=='plan';
  if(!info){
   selected=null;$('lab-selected-name').textContent='Выбери бота слева';
   $('lab-selected-status').textContent='Нет выбора';
@@ -62,6 +63,7 @@ function renderDetail(){
   acts.append(action('＋ Создать бота','/architect',true));
   return;
  }
+ $('lab-enqueue').disabled=info.entity!=='plan';
  $('lab-selected-name').textContent=info.name;
  if(info.entity==='bot'){
   $('lab-selected-status').textContent='Черновик';
@@ -143,6 +145,59 @@ async function reviewPlan(id){
   say('Ошибка проверки готовности: '+err.message,true);
  }
 }
+async function provisionRequest(path,options={}){
+ const response=await fetch('/api/v1/cloud/provision'+path,{
+   cache:'no-store',credentials:'same-origin',...options});
+ if(!response.ok){
+   const error=await response.json().catch(()=>({}));
+   throw Error(typeof error.detail==='string'?error.detail:'HTTP '+response.status);
+ }
+ return response.json();
+}
+async function csrf(){
+ const response=await fetch('/api/v1/builder/projects/csrf',{credentials:'same-origin'});
+ if(!response.ok)throw Error('Войди в аккаунт для создания задач.');
+ return (await response.json()).csrf_token;
+}
+async function enqueueSimulation(){
+ if(!selected||selected.entity!=='plan')return say('Выбери план Cloud Deploy.',true);
+ if(!window.confirm('Создать только тестовую задачу? Railway-сервисы НЕ будут созданы и деньги НЕ спишутся.'))return;
+ try{
+   const id=selected.id;
+   const key='lab-dry-'+id;
+   const job=await provisionRequest('/jobs',{method:'POST',headers:{
+     'Content-Type':'application/json','X-Omni-CSRF':await csrf(),
+     'Idempotency-Key':key},
+     body:JSON.stringify({plan_id:id,confirmation:'SIMULATE DEPLOYMENT'})});
+   say('Задача '+job.id+' сохранена. Для обработки необходим отдельный worker.');
+   await refreshJobs();
+ }catch(err){say('Ошибка очереди: '+err.message,true);}
+}
+async function refreshJobs(){
+ const root=$('lab-provision-jobs');root.replaceChildren();
+ try{
+   const response=await provisionRequest('/jobs');
+   const rows=response.jobs.filter(j=>!selected||selected.entity!=='plan'||j.plan_id===selected.id);
+   if(!rows.length){root.append(el('p','lab-muted','Пока нет задач.'));return;}
+   for(const job of rows.slice(0,20)){
+     const container=el('div','lab-job');
+     const title=el('strong','',job.status+' · '+job.mode);
+     const date=el('small','',prettyDate(job.created_at));
+     const details=el('button','lab-small','События');
+     details.type='button';
+     details.addEventListener('click',async()=>{
+       try{
+         const entry=await provisionRequest('/jobs/'+encodeURIComponent(job.id));
+         const log=el('div','lab-job-log');
+         entry.events.forEach(event=>log.append(el('p','',event.code+' · '+event.message)));
+         container.querySelector('.lab-job-log')?.remove();
+         container.append(log);
+       }catch(err){say(err.message,true);}
+     });
+     container.append(title,date,details);root.append(container);
+   }
+ }catch(err){root.append(el('p','lab-muted','История задач недоступна: '+err.message));}
+}
 async function railwayProjects(){
  const root=$('lab-provider-projects');root.replaceChildren();
  root.append(el('p','lab-muted','Получаем разрешённые проекты Railway…'));
@@ -165,5 +220,7 @@ async function railwayProjects(){
 $('lab-refresh').addEventListener('click',refresh);
 $('lab-search').addEventListener('input',value=>{filter=value.target.value.trim().toLowerCase();renderLists();});
 $('lab-check-railway').addEventListener('click',railwayProjects);
-void refresh();
+$('lab-enqueue').addEventListener('click',enqueueSimulation);
+$('lab-jobs-refresh').addEventListener('click',refreshJobs);
+void refresh();void refreshJobs();
 })();
