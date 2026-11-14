@@ -36,3 +36,13 @@
 .builder-app .builder-intro-note{position:relative;overflow:hidden}
 .builder-app .builder-intro-note:after{content:"";display:block;height:92px;margin-top:2px;border-radius:8px;background:url('/studio-assets/visual_graph.svg') center/cover;border:1px solid #345a46}
 @media(prefers-reduced-motion:reduce){.platform-app .pf-module{transition:none}}
+
+
+/* Shared credit section across the public platform and Graph Studio. */
+.omni-author-line{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:32px 0 26px;padding:23px 0;border-top:1px solid #335144;border-bottom:1px solid #335144}
+.omni-author-line>div{display:flex;flex-direction:column;gap:5px}
+.omni-author-line span{color:#91b7a6;font:700 10px/1.6 var(--font,system-ui);letter-spacing:.13em}
+.omni-author-line strong{color:#effcf4;font:700 17px/1.4 var(--display,system-ui)}
+.omni-author-line a{width:max-content;color:#91f4cd;font-size:13px;text-decoration:none;border-bottom:1px solid #5b9f7f}
+.omni-author-line a:hover{color:white}
+@media(max-width:650px){.omni-author-line{grid-template-columns:1fr;gap:18px}}
