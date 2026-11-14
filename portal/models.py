@@ -247,6 +247,7 @@ class CloudOAuthAttempt(Base):
         ForeignKey("portal_customers.id"), index=True, nullable=False)
     provider: Mapped[str] = mapped_column(String(32), nullable=False)
     state_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    session_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     verifier_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
     consumed_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
