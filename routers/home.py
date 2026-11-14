@@ -2,6 +2,9 @@
 from pathlib import Path
 
 from fastapi import APIRouter, Request
+from portal.db import session_factory
+from portal.routes import current_customer
+from portal.security import secure_request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from core.templates import render
@@ -71,7 +74,19 @@ async def robotization(request: Request):
     return render(request, "robotization.html")
 
 
-@router.get("/admin", response_class=HTMLResponse)
-async def admin(request: Request):
-    """Legacy admin page. Not production-safe until authentication is implemented."""
-    return render(request, "admin.html")
+@router.get("/bots/lab", response_class=HTMLResponse)
+@router.get("/bot-lab", response_class=HTMLResponse)
+async def bot_lab(request: Request):
+    """Authenticated operations workspace, not simulated admin telemetry."""
+    secure_request(request)
+    with session_factory()() as db:
+        if current_customer(request, db) is None:
+            return RedirectResponse("/account/login", status_code=303)
+    response = render(request, "bot_lab.html")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@router.get("/admin", include_in_schema=False)
+async def legacy_admin(request: Request):
+    return RedirectResponse("/bots/lab", status_code=307)
