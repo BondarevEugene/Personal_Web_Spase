@@ -83,3 +83,16 @@
 .lab-job .lab-small{margin-left:auto}
 .lab-job-log{flex-basis:100%;border-top:1px solid #426079;padding:8px 3px;color:#d6e7f5;font-size:11px}
 .lab-job-log p{margin:5px 0}
+
+
+.lab-resource-workbench{margin:19px 0;padding:17px;background:#10273d;border:1px solid #50758b;border-radius:12px}
+.lab-resource-workbench h3{margin:0 0 10px;color:#e8f9ff;font-size:15px}
+.lab-resource-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:15px 0}
+.lab-resource-fields label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:800;color:#c4dff2}
+.lab-resource-fields select{width:100%;padding:10px;background:#091b30;color:#fff;border:1px solid #698ba6;border-radius:8px;font-size:12px}
+.lab-resource-fields select:disabled{opacity:.45}
+.lab-resource-workbench .lab-button:disabled{opacity:.5;cursor:not-allowed}
+.lab-resource-report{background:#091e32;border:1px solid #466783;border-radius:9px;padding:13px;margin-top:15px;font-size:12px;overflow-wrap:anywhere;color:#d5eafa}
+.lab-resource-report strong{color:#95ead9;display:block;margin-bottom:5px}
+.lab-resource-report p{margin:5px 0;line-height:1.6}
+@media(max-width:1100px){.lab-resource-fields{grid-template-columns:1fr}}
