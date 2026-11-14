@@ -109,3 +109,10 @@ body{background:radial-gradient(ellipse 58rem 43rem at 89% 12%,rgba(55,65,126,.1
 @media(max-width:1000px){.solutions-grid,.engagement-grid{grid-template-columns:1fr 1fr}.solution-card:last-child,.engagement-card:last-child{grid-column:1/-1}.comparison-layout,.faq-layout{gap:44px}.hero h1{font-size:clamp(3.3rem,6.4vw,6rem)}}
 @media(max-width:730px){.proof-inner{align-items:flex-start;flex-direction:column;gap:16px}.proof-inner>div{justify-content:flex-start}.solutions-grid,.engagement-grid,.comparison-layout,.faq-layout{grid-template-columns:1fr}.solution-card:last-child,.engagement-card:last-child{grid-column:auto}.solution-card,.engagement-card{min-height:auto}.comparison-copy h2{font-size:44px}.case-filterbar>span{width:100%}.case-filterbar button{padding:9px 12px}.event-flow{padding:22px 14px}.event-two{grid-template-columns:1fr}.hero h1{font-size:clamp(3.2rem,13vw,5.5rem)}.floating-contact{right:15px;bottom:14px;padding:12px 16px}.footer-hero p{font-size:clamp(40px,9vw,68px)}}
 @media(prefers-reduced-motion:reduce){.solution-card,.floating-contact,.case-filterbar button{transition:none}}
+
+
+/* Explicit Studio → Platform entry. Isolated from the legacy platform design. */
+.platform-link{display:inline-flex;align-items:center;gap:9px;padding:12px 14px;border:1px solid #3b4c65;border-radius:5px;color:#bed1e8;font:600 12px/1.2 var(--font);white-space:nowrap;transition:border-color .25s,color .25s,background .25s}
+.platform-link:hover{border-color:#7de9da;color:#e9fffa;background:#172637}
+.platform-link span{color:var(--cyan);font-size:16px}
+@media(max-width:590px){.platform-link{padding:9px 10px;font-size:11px;gap:5px}.platform-link span{display:none}}

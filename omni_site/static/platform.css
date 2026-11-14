@@ -1,0 +1,41 @@
+/* The platform uses exactly the same tokens, typography and header as Studio v3. */
+.platform-app .pf-hero{padding-top:clamp(80px,9vw,150px);padding-bottom:clamp(90px,10vw,160px)}
+.pf-hero-grid{display:grid;grid-template-columns:1.07fr .93fr;align-items:center;gap:clamp(40px,5.5vw,100px)}
+.pf-hero .eyebrow{display:flex;align-items:center;gap:13px}
+.pf-hero h1{font-family:var(--display);font-weight:600;font-size:clamp(45px,5.2vw,83px);letter-spacing:-.073em;line-height:1.08;margin:28px 0}
+.pf-hero-copy>p{max-width:650px;color:#aebcd0;font-size:clamp(15px,1.3vw,18px);line-height:1.85}
+.pf-actions{display:flex;gap:13px;flex-wrap:wrap;margin:35px 0 43px}
+.pf-hero-meta{display:flex;flex-wrap:wrap;gap:10px 24px;color:#8798b4;font:600 10px monospace;letter-spacing:.12em}
+.pf-stage{position:relative;padding:27px;background:linear-gradient(145deg,#131e32,#0c1422 70%);border:1px solid #374665;border-radius:18px;box-shadow:0 35px 100px #0007,0 0 100px #6067c515;min-height:420px}
+.pf-stage-head,.pf-stage-foot{display:flex;align-items:center;gap:12px;justify-content:space-between;font:600 10px monospace;letter-spacing:.1em;color:#90a6c2}
+.pf-stage-head{padding-bottom:38px}.pf-stage-head .live-dot{margin-right:auto}.pf-stage-foot{margin-top:30px;color:#7083a0}
+.pf-flow-node{display:flex;flex-direction:column;gap:8px;padding:20px 23px;border-radius:9px;background:#19263c;border:1px solid #456184;color:#d5e4fb;transition:transform .25s,border-color .25s}
+a.pf-flow-node:hover{transform:translateY(-4px);border-color:#80e6d9}
+.pf-flow-node>span{font:700 10px monospace;letter-spacing:.1em;color:#81decf}
+.pf-flow-node>strong{font:600 clamp(17px,1.7vw,22px) var(--display)}
+.pf-flow-node>small{font-size:11px;color:#90a7c4}
+.pf-flow-main{max-width:83%;margin:0 auto;background:linear-gradient(120deg,#293454,#192b3f);border-color:#8695d4}
+.pf-flow-split{height:44px;position:relative;max-width:52%;margin:0 auto;border-bottom:1px solid #677f9f}
+.pf-flow-split:before{content:"";position:absolute;top:0;left:50%;height:100%;border-left:1px solid #677f9f}
+.pf-flow-split span{position:absolute;bottom:-17px;height:17px;border-left:1px solid #677f9f}.pf-flow-split span:first-child{left:0}.pf-flow-split span:last-child{right:0}
+.pf-flow-bottom{margin-top:17px;display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.pf-module-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.pf-module{min-height:355px;padding:31px;background:linear-gradient(155deg,#151e2f,#0c1422);border:1px solid #33425a;border-radius:13px;display:flex;flex-direction:column;transition:border-color .3s,transform .3s,box-shadow .3s}
+.pf-module:hover{border-color:#8be0df;transform:translateY(-5px);box-shadow:0 20px 50px #0005}
+.pf-module-primary{background:radial-gradient(circle at 90% 5%,#4e479552,transparent 60%),linear-gradient(160deg,#192641,#10182a);border-color:#707ab9}
+.pf-module-index{font:700 10px monospace;letter-spacing:.14em;color:#89b9c9}
+.pf-module-icon{display:grid;place-items:center;width:54px;height:54px;border-radius:13px;background:#293454;color:#b1fff3;font:600 27px var(--display);margin:30px 0 14px}
+.pf-module h3{font:600 clamp(21px,1.8vw,27px)/1.2 var(--display);letter-spacing:-.04em;margin-bottom:11px}
+.pf-module p{color:#a1b0c3;line-height:1.7;font-size:14px}
+.pf-module-footer{border-top:1px solid #36445d;margin-top:auto;padding-top:18px;font-size:12px;color:#ccece7;display:flex;justify-content:space-between;gap:10px;font-weight:700}.pf-module-footer b{font-size:20px;font-weight:400}
+.pf-status-section{background:linear-gradient(110deg,#0d1726,#0b1423);border-block:1px solid #25364c}
+.pf-status-panel{display:flex;align-items:center;justify-content:space-between;gap:55px;padding:35px 0}
+.pf-status-panel h2,.pf-note h2{font-size:clamp(31px,3.7vw,54px);letter-spacing:-.06em;margin:20px 0}
+.pf-status-panel p,.pf-note p{max-width:620px;color:#a6b5c9}
+.pf-status-data{min-width:250px;padding:23px 28px;background:#131f32;border:1px solid #42506d;border-radius:12px;display:flex;flex-direction:column;gap:13px}
+.pf-status-data span{font:700 17px var(--display)}.pf-online{color:#8ee5d2}.pf-offline{color:#f2adad}
+.pf-status-data small{color:#9aacbe;font:10px monospace}.pf-status-data a{font-size:12px;color:#bbcbf6}
+.pf-note{padding:45px;border:1px solid #2d3f54;border-radius:17px;background:linear-gradient(130deg,#101b2d,#0c1320)}.pf-note .text-link{margin-top:16px}
+.pf-footer-links{display:flex;gap:24px;flex-wrap:wrap;padding:40px 0;color:#aebed1;font:600 13px var(--font)}.pf-footer-links a:hover{color:#8eebdb}
+@media(max-width:1050px){.pf-hero-grid{grid-template-columns:1fr}.pf-stage{max-width:640px;width:100%}.pf-module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.pf-module-grid{grid-template-columns:1fr}.pf-status-panel{flex-direction:column;align-items:stretch}.pf-flow-bottom{grid-template-columns:1fr}.pf-flow-split{display:none}.pf-stage{min-height:0}.pf-flow-bottom{margin-top:13px}.pf-note{padding:26px}.pf-hero h1{font-size:clamp(40px,9vw,60px)}}

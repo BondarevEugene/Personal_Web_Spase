@@ -95,7 +95,7 @@ async def lifespan(app: FastAPI):
     # TODO:
     # registry.load()
 
-    logger.info("Registry loaded.")
+    logger.info("Registry integration pending (no registry initialized).")
 
     # ------------------------------------------------------------------
     # AI Runtime
@@ -106,7 +106,7 @@ async def lifespan(app: FastAPI):
     # TODO:
     # orchestrator.initialize()
 
-    logger.info("AI Runtime ready.")
+    logger.info("AI Runtime not initialized (feature pending).")
 
     # ------------------------------------------------------------------
     # Builder
@@ -117,7 +117,7 @@ async def lifespan(app: FastAPI):
     # TODO:
     # builder.initialize()
 
-    logger.info("Builder ready.")
+    logger.info("Builder: validation/export endpoints available; live deploy disabled.")
 
     logger.info("=" * 70)
     logger.info("SYSTEM READY")

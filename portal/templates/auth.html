@@ -1,0 +1,33 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050811"><title>{{ "Регистрация" if mode == "register" else "Вход" }} — OmniFactory</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=1"></head>
+<body class="account-app"><header class="site-header"><div class="header-inner container">
+<a class="brand" href="/studio"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNTS</small></span></a>
+<nav class="account-header-links" aria-label="Навигация"><a href="/studio">Студия</a><a href="/">Платформа</a><a href="/account/login">Вход</a><a href="/account/register">Регистрация</a></nav>
+</div></header><main class="container account-auth-main"><section class="account-auth-copy">
+<div class="eyebrow">OMNIFACTORY / PRIVATE WORKSPACE</div><h1>Твоя система.<br><span class="gradient-text">Твой доступ.</span></h1>
+<p>Аккаунт для работы с собственными проектами OmniFactory. Данные клиентов разделяются по организациям, а пароли никогда не сохраняются в открытом виде.</p>
+<div class="account-auth-points"><span>01 / ПЕРСОНАЛЬНЫЕ НАСТРОЙКИ</span><span>02 / ПОДПИСКИ И СЧЕТА</span><span>03 / УПРАВЛЕНИЕ ПРОЕКТАМИ — СЛЕДУЮЩИЙ ЭТАП</span></div>
+</section><section class="account-auth-card" aria-labelledby="auth-title">
+<div class="eyebrow">CUSTOMER IDENTITY</div><h2 id="auth-title">{{ "Создать аккаунт" if mode == "register" else "Войти в OmniFactory" }}</h2>
+{% if error %}<p role="alert" class="account-error">{{ error }}</p>{% endif %}
+<form method="post" action="{{ '/account/register' if mode == 'register' else '/account/login' }}" autocomplete="on">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+{% if mode == "register" %}
+<label>Логин <input name="username" type="text" minlength="4" maxlength="30" pattern="[A-Za-z][A-Za-z0-9._-]{3,29}" autocomplete="username" required placeholder="my_company"></label>
+<label>Имя <input name="display_name" type="text" minlength="2" maxlength="120" autocomplete="name" required placeholder="Как к вам обращаться"></label>
+<label>Email <input name="email" type="email" maxlength="254" autocomplete="email" required placeholder="name@company.com"></label>
+<label>Организация <input name="organization" type="text" minlength="2" maxlength="160" required placeholder="Название организации"></label>
+<label>Пароль <input name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required placeholder="Не менее 12 символов"></label>
+<label>Повтори пароль <input name="password_repeat" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
+{% else %}
+<label>Логин или email <input name="login" type="text" autocomplete="username" maxlength="254" required></label>
+<label>Пароль <input name="password" type="password" autocomplete="current-password" required></label>
+{% endif %}
+<button class="button button-primary account-submit" type="submit">{{ "Зарегистрироваться" if mode == "register" else "Войти" }} <span>↗</span></button>
+</form>
+<div class="account-auth-foot">
+{% if mode == "register" %}Уже зарегистрирован? <a href="/account/login">Войти</a>
+{% else %}Ещё нет аккаунта? <a href="/account/register">Зарегистрироваться</a>{% endif %}
+</div><p class="account-smallprint">Реальные платежи пока не принимаются. Подтверждение email и восстановление пароля будут добавлены перед публичным коммерческим запуском.</p>
+</section></main></body></html>

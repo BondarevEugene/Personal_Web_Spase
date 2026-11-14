@@ -47,7 +47,4 @@ def render(request: Request, page: str, **context):
 
     context["request"] = request
 
-    return templates.TemplateResponse(
-        page,
-        context
-    )
+    return templates.TemplateResponse(request=request, name=page, context=context)
