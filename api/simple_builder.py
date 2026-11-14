@@ -105,6 +105,94 @@ def capabilities():
     }
 
 
+# Discovery catalog. Availability is intentionally explicit: listings do not imply
+# OAuth connections or workflow execution are implemented.
+INTEGRATION_CATALOG = (
+    {"id": "telegram", "name": "Telegram", "category": "messaging",
+     "status": "export", "blocks": ["message", "choice", "photo", "document", "end"],
+     "description": "Генерация Python / aiogram 3 сценария"},
+    {"id": "google_docs", "name": "Google Docs", "category": "documents",
+     "status": "planned", "blocks": ["create_document", "append_text", "read_document"],
+     "description": "Для работы потребуются Google OAuth и серверный исполнитель"},
+    {"id": "google_sheets", "name": "Google Sheets", "category": "documents",
+     "status": "planned", "blocks": ["read_rows", "append_row", "update_row"],
+     "description": "Для работы потребуются Google OAuth и серверный исполнитель"},
+    {"id": "facebook", "name": "Facebook Pages", "category": "social",
+     "status": "planned", "blocks": ["publish_post", "read_comments", "page_message"],
+     "description": "Потребуются Meta Graph API, разрешения и OAuth"},
+    {"id": "instagram", "name": "Instagram Business", "category": "social",
+     "status": "planned", "blocks": ["publish_media", "list_comments", "reply_comment"],
+     "description": "Потребуются Meta Instagram API, разрешения и OAuth"},
+    {"id": "http", "name": "HTTP / REST", "category": "logic",
+     "status": "planned", "blocks": ["request", "webhook"],
+     "description": "Для исполнения нужны ограничения исходящих адресов и контроль секретов"},
+    {"id": "python", "name": "Python обработчик", "category": "logic",
+     "status": "planned", "blocks": ["handler"],
+     "description": "Будет доступен только через изолированный исполнитель"},
+)
+
+
+@router.get("/integrations")
+def list_integrations():
+    """Public, non-secret integration catalog with honest capability flags."""
+    return {"integrations": list(INTEGRATION_CATALOG),
+            "statuses": {"export": "Работает экспорт", "planned": "В разработке"}}
+
+
+class SimulationRequest(BaseModel):
+    """Bounded dry-run. No Telegram calls, network, credentials or user code."""
+
+    scenario: Scenario
+    choices: dict[str, int] = Field(default_factory=dict, max_length=80)
+
+
+@router.post("/simulate")
+def simulate_scenario(request: SimulationRequest):
+    """Trace a complete deterministic route, pausing when a choice is missing.
+
+    The selected option index is keyed by the choice node ID. A maximum of
+    50 transitions prevents unbounded execution even for cyclic graphs.
+    """
+    scenario = request.scenario
+    by_id = {node.id: node for node in scenario.nodes}
+    trace: list[dict] = []
+    current = scenario.start
+    for _ in range(50):
+        node = by_id[current]
+        item = {"id": node.id, "kind": node.kind, "text": node.text}
+        if node.kind in {"photo", "document"}:
+            item["media"] = node.media
+        trace.append(item)
+        if node.kind == "end":
+            return {"status": "completed", "trace": trace, "steps": len(trace)}
+        if node.kind == "choice":
+            index = request.choices.get(node.id)
+            if index is None:
+                return {
+                    "status": "awaiting_choice",
+                    "at": node.id,
+                    "options": [
+                        {"index": i, "label": choice.label}
+                        for i, choice in enumerate(node.options)
+                    ],
+                    "trace": trace,
+                    "steps": len(trace),
+                }
+            if index < 0 or index >= len(node.options):
+                return {
+                    "status": "invalid_choice",
+                    "at": node.id,
+                    "trace": trace,
+                    "steps": len(trace),
+                }
+            current = node.options[index].target
+        else:
+            if not node.next:
+                return {"status": "completed", "trace": trace, "steps": len(trace)}
+            current = node.next
+    return {"status": "step_limit", "trace": trace, "steps": len(trace)}
+
+
 @router.post("/validate")
 def validate_scenario(scenario: Scenario):
     reachable = _reachable(scenario)

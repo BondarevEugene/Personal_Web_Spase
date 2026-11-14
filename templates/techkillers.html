@@ -1,249 +1,28 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMNIFACTORY // TECH_KILLERS INTERFACE</title>
-
-    <!-- Подключение шрифтов платформы -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --bg-base: #0d0e12;
-            --bg-surface: #181a22;
-            --bg-element: #222531;
-            --border-soft: #2a2e3f;
-            --accent-purple: #7c3aed;
-            --accent-purple-glow: rgba(124, 58, 237, 0.15);
-            --accent-blue: #0ea5e9;
-            --accent-blue-glow: rgba(14, 165, 233, 0.15);
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --status-ok: #10b981;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background-color: var(--bg-base);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            padding: 40px 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .content-wrapper {
-            max-width: 1200px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 32px;
-        }
-
-        /* ШАПКА ДОСЬЕ */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-soft);
-            padding-bottom: 20px;
-        }
-
-        .page-title h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            background: linear-gradient(90deg, #fff, var(--accent-blue));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .page-title p {
-            color: var(--text-muted);
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .btn-back {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-soft);
-            color: var(--text-main);
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 13.5px;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-back:hover {
-            border-color: var(--accent-purple);
-            background: var(--accent-purple-glow);
-        }
-
-        /* ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ НУМЕРОЛОГИИ */
-        .images-showcase-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 24px;
-        }
-
-        .img-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-soft);
-            border-radius: 14px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-        .img-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent-blue);
-        }
-
-        .img-card img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            border-bottom: 1px solid var(--border-soft);
-            background: #090a0f;
-        }
-
-        .img-card-info {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .img-card-info h4 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            color: #fff;
-            letter-spacing: 0.5px;
-        }
-
-        .img-card-info p {
-            color: var(--text-muted);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        /* ПЛАШКИ ТЕХНОЛОГИЙ */
-        .tech-stack-section {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-soft);
-            border-radius: 14px;
-            padding: 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .tech-stack-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: var(--accent-blue);
-            text-transform: uppercase;
-        }
-
-        .tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .tech-tag {
-            background: var(--bg-element);
-            border: 1px solid var(--border-soft);
-            color: #fff;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-            font-family: 'JetBrains Mono', monospace;
-            transition: all 0.2s ease;
-        }
-        .tech-tag:hover {
-            border-color: var(--accent-purple);
-            background: var(--accent-purple-glow);
-        }
-        .tech-tag.highlight {
-            border-color: var(--accent-blue);
-            color: #bae6fd;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="content-wrapper">
-
-        <!-- ТОПБАР С СЫЛКОЙ ВОЗВРАТА -->
-        <div class="page-header">
-            <div class="page-title">
-                <h1>☠ SYSTEM DOSSIER // TECH_KILLERS INFRASTRUCTURE</h1>
-                <p>Паспорт когнитивного контура и стек модулей автоматизации распределенных вычислений.</p>
-            </div>
-            <a href="/" class="btn-back">← На Главный Узел</a>
-        </div>
-
-        <!-- ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ ПРОЕКТА НУМЕРОЛОГИИ С УКАЗАННЫМИ ПУТЯМИ -->
-        <div class="images-showcase-grid">
-            <div class="img-card">
-                <img src="/assets/projects/genesys/img/admin_panel.png" alt="Admin Panel Preview" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23090a0f\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%234a4a5a\' font-family=\'Orbitron\'>ADMIN_PANEL.PNG</text></svg>'">
-                <div class="img-card-info">
-                    <h4>GENESYS MONITORING PANEL</h4>
-                    <p>Интерфейс распределения и оркестрации входящих психоматриц личности.[cite: 10]</p>
-                </div>
-            </div>
-
-            <div class="img-card">
-                <img src="/assets/projects/genesys/img/db_schema.png" alt="Database Schema Preview" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23090a0f\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%234a4a5a\' font-family=\'Orbitron\'>DB_SCHEMA.PNG</text></svg>'">
-                <div class="img-card-info">
-                    <h4>CORE VECTOR ARCHITECTURE</h4>
-                    <p>Связи реляционных таблиц СУБД и весов локальной векторной коллекции памяти ChromaDB.[cite: 10]</p>
-                </div>
-            </div>
-
-            <div class="img-card">
-                <img src="/assets/projects/genesys/img/code_view.png" alt="Code View Preview" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100%\' height=\'100%\'><rect width=\'100%\' height=\'100%\' fill=\'%23090a0f\'/><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%234a4a5a\' font-family=\'Orbitron\'>CODE_VIEW.PNG</text></svg>'">
-                <div class="img-card-info">
-                    <h4>TENSOR CALCULUS MODULE</h4>
-                    <p>Математический движок на базе библиотеки NumPy для выполнения преобразований матриц.[cite: 10]</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ПОЛЕ С ЗАКРУГЛЕННЫМИ ПЛАШКАМИ ИСПОЛЬЗУЕМЫХ ТЕХНОЛОГИЙ -->
-        <div class="tech-stack-section">
-            <div class="tech-stack-title">// Стек ядра автоматизации OmniFactory</div>
-            <div class="tags-container">
-                <div class="tech-tag highlight">Python 3.11+</div>
-                <div class="tech-tag">FastAPI Framework</div>
-                <div class="tech-tag">Docker Engine API</div>
-                <div class="tech-tag highlight">ChromaDB Node</div>
-                <div class="tech-tag">Flet (Flutter UI Layer)</div>
-                <div class="tech-tag">NumPy Tensor Engine</div>
-                <div class="tech-tag highlight">Celery Async Workers</div>
-                <div class="tech-tag">Redis Cache</div>
-                <div class="tech-tag">Uvicorn Server Process</div>
-            </div>
-        </div>
-
-    </div>
-
-</body>
-</html>
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#081422"><title>Технологии и инженерный подход — OMNIFACTORY</title>
+<link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1"></head>
+<body class="omni-revamp">
+<header class="omni-top"><div class="omni-top-inner">
+<a class="omni-brand" href="/" aria-label="OmniFactory — главная"><span class="omni-brand-logo" aria-hidden="true"><i>◇</i></span><span><strong>OMNI<span>FACTORY</span></strong><small>PYTHON ENGINEERING / PLATFORM</small></span></a>
+<nav class="omni-nav" aria-label="Основная навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/architect">Конструктор</a><a href="/robotization">Автоматизация</a><a href="/techkillers" aria-current="page">Технологии</a><a href="/studio">Студия</a><a href="/dashboard">Диагностика</a></nav></div></header>
+<main class="omni-main" id="main">
+<section class="omni-hero"><div><p class="omni-eyebrow">ENGINEERING / PLATFORM CAPABILITIES</p>
+<h1>Инженерные решения.<br><em>Без декораций.</em></h1>
+<p class="omni-lead">Вместо прежнего «TECH KILLERS» и скриншотов старой нумерологии — понятная карта технологических компонентов, фактически представленных в портале, и задач следующего этапа.</p>
+<div class="omni-actions"><a class="omni-button primary" href="/architect">Graph Studio</a><a class="omni-button" href="/docs">API проекта</a><a class="omni-button" href="/projects">Каталог проектов</a></div></div>
+<aside class="omni-hero-aside"><strong>Принцип</strong>Не приписываем платформе работающий Docker-оркестратор, Celery-кластер, Redis или сертификаты безопасности без реального внедрения и проверки.</aside></section>
+<section class="omni-section"><div class="omni-section-head"><h2>Основной технологический стек</h2><p>Компоненты текущего портала и работающего редактора. Это обзор архитектуры, а не автоматическая диагностика установленной версии каждого пакета.</p></div>
+<div class="omni-grid">
+<article class="omni-card blue"><div class="omni-meta">BACKEND / PYTHON</div><h3>FastAPI</h3><p>Маршрутизация, API, серверная проверка сценариев и выдача архивов проектов.</p><div class="omni-card-footer"><a href="/docs">Swagger API →</a></div></article>
+<article class="omni-card mint"><div class="omni-meta">UI / TEMPLATES</div><h3>Jinja2 и CSS</h3><p>Серверные шаблоны страниц и интерфейс Graph Studio на браузерном JavaScript.</p><div class="omni-card-footer"><a href="/architect">Посмотреть интерфейс →</a></div></article>
+<article class="omni-card violet"><div class="omni-meta">MESSAGING / EXPORT</div><h3>aiogram 3</h3><p>Шаблон автономного Telegram-бота, который создаётся при экспорте сценария.</p><div class="omni-card-footer"><a href="/architect">Сценарии Telegram →</a></div></article>
+<article class="omni-card amber"><div class="omni-meta">DATA / FOUNDATION</div><h3>SQLAlchemy и Alembic</h3><p>Инструменты для моделей и миграций. Единый серверный реестр графов ещё предстоит реализовать.</p><div class="omni-card-footer"><a href="/projects">Модель данных →</a></div></article>
+<article class="omni-card blue"><div class="omni-meta">HTTP / RUNNING APP</div><h3>Uvicorn</h3><p>ASGI-сервер FastAPI; публичная проверка состояния доступна через endpoint /health.</p><div class="omni-card-footer"><a href="/health">Проверить /health →</a></div></article>
+<article class="omni-card rose"><div class="omni-meta">SECURITY / NEXT</div><h3>Исполнение кода и секреты</h3><p>Для пользовательских Python-обработчиков потребуются sandbox-процессы, контроль ресурсов, ACL и зашифрованное хранение ключей.</p><div class="omni-card-footer"><a href="/robotization">План развития →</a></div></article>
+</div></section>
+<section class="omni-section"><div class="omni-section-head"><h2>Ключевые инженерные решения</h2></div>
+<div class="omni-steps"><article class="omni-step"><h3>Честные статусы</h3><p>Не показываем синтетическую телеметрию как реальную и не обещаем готовый деплой.</p></article><article class="omni-step"><h3>Безопасный экспорт</h3><p>Сценарий валидируется и генерируется из фиксированного Python-шаблона; пользовательский код не исполняется сервером.</p></article><article class="omni-step"><h3>Расширение по модулям</h3><p>Коннекторы, хранение проектов и движок автоматизации развиваются отдельно от текущего редактора.</p></article></div></section>
+<section class="omni-section"><div class="omni-panel"><h3>Нужны реальные технические показатели?</h3><p>Для этого должны появиться защищённые endpoints мониторинга и журналов с авторизацией. Публичная диагностическая страница показывает только подтверждённые ответы платформы.</p><a class="omni-button" href="/dashboard">Состояние платформы</a></div></section></main>
+<footer class="omni-footer"><div class="omni-footer-inner"><div><strong>OMNIFACTORY</strong><p>Инструменты проектирования, автоматизации и разработки цифровых продуктов. Только проверенные функции отмечены как доступные.</p></div><nav class="omni-footer-links" aria-label="Ссылки внизу страницы"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/architect">Graph Studio</a><a href="/robotization">Автоматизация</a><a href="/docs">API</a><a href="/studio">Studio</a></nav></div><div class="omni-footnote">© 2026 OMNIFACTORY · PYTHON ENGINEERING · PLATFORM DEVELOPMENT</div></footer>
+</body></html>

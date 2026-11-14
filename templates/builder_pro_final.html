@@ -6,45 +6,76 @@
 <title>OmniFactory — конструктор Telegram-ботов</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
-<link rel="stylesheet" href="/studio-assets/builder.css?v=2">
+<link rel="stylesheet" href="/studio-assets/builder.css?v=7">
 <script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/graph_studio.js?v=2"></script>
+<script defer src="/studio-assets/graph_studio.js?v=7"></script>
 </head>
 <body class="platform-app builder-app">
 <a class="skip-link" href="#main">Перейти к редактору</a><div class="grid-noise" aria-hidden="true"></div>
 <header class="site-header" id="site-header"><div class="header-inner container">
 <a class="brand" href="/" aria-label="OmniFactory — платформа"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 38 38" fill="none"><path d="M19 2 35 19 19 36 3 19Z" stroke="currentColor" stroke-width="1.8"/><path d="m19 9 10 10-10 10L9 19Z" fill="currentColor" opacity=".75"/><path d="M19 9v20M9 19h20" stroke="#08121c" stroke-width="1.5"/></svg></span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / BUILDER</small></span></a>
-<nav id="main-nav" class="nav-links" aria-label="Навигация"><a href="/">Платформа</a><a class="active" href="/builder_pro_final.html">Конструктор</a><a href="/dashboard">Диагностика</a><a href="/studio">Студия</a></nav>
+<nav id="main-nav" class="nav-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a class="active" href="/architect">Конструктор</a><a href="/robotization">Автоматизация</a><a href="/techkillers">Технологии</a><a href="/dashboard">Диагностика</a><a href="/studio">Студия</a></nav>
 <div class="nav-actions"><a class="header-contact" href="/docs">API <span aria-hidden="true">↗</span></a><button class="menu-toggle" type="button" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Открыть меню"><span></span><span></span></button></div>
 </div></header>
 <main id="main" class="container builder-page">
-<div class="builder-intro"><div><div class="builder-hero-kicker">OMNIFACTORY / GRAPH STUDIO</div><h1>Логика становится<br><span class="gradient-text">видимой.</span></h1><p>Визуальный редактор процессов: размещай узлы на свободном поле, соединяй порты, проектируй ветвления диалогов и экспортируй готовый Python-проект.</p><div class="builder-hero-metric"><strong>01</strong> Пространство без ограничений по шаблону <strong>02</strong> Соединения и ветвления <strong>03</strong> Python / aiogram 3</div></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Graph Studio v2</strong><small>Черновик сохраняется в браузере. Серверный деплой и личные кабинеты — отдельный этап.</small></div></div>
+<div class="builder-intro"><div><div class="builder-hero-kicker">OMNIFACTORY / GRAPH STUDIO</div><h1>Логика становится<br><span class="gradient-text">видимой.</span></h1><p>Создай Telegram-сценарий от начала до конца: добавь блоки, соедини выходы со входами, проверь логику, протестируй диалог и скачай исполняемый Python-проект. Для реального запуска понадобится токен BotFather и Python-хостинг.</p><div class="builder-hero-metric"><strong>01</strong> Пространство без ограничений по шаблону <strong>02</strong> Соединения и ветвления <strong>03</strong> Python / aiogram 3</div></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Graph Studio v2</strong><small>Черновик сохраняется в текущем браузере, а ZIP содержит самостоятельный aiogram-проект. Автоматическое развёртывание ещё не реализовано.</small></div></div>
 <div class="builder-toolbar">
 <label for="scenario-name">Название сценария <input id="scenario-name" type="text" maxlength="100" value="Мой Telegram-бот" autocomplete="off"></label>
 <div class="builder-toolbar-actions">
-<button id="btn-save" type="button" class="button button-line">Сохранить</button>
+<button id="btn-new-scenario" type="button" class="button button-line">＋ Новый бот</button>
+<button id="btn-demo-scenario" type="button" class="button button-line">Пример диалога</button>
+<button id="btn-save" type="button" class="button button-line">Сохранить черновик</button>
 <button id="btn-import" type="button" class="button button-line">Импорт JSON</button>
 <button id="btn-download-json" type="button" class="button button-line">Скачать JSON</button>
-<button id="btn-validate" type="button" class="button button-line">Проверить</button>
+<button id="btn-validate" type="button" class="button button-line">Проверить схему</button>
+<button id="btn-test-canvas" type="button" class="button button-primary">▶ Тестировать диалог</button>
+<button id="btn-expand-canvas" type="button" class="button button-line" aria-pressed="false">Развернуть поле</button>
+<button id="btn-export-info" type="button" class="button button-line">Как работает экспорт?</button>
 <button id="btn-export" type="button" class="button button-primary">Экспорт Python ZIP <span aria-hidden="true">↗</span></button>
 <input type="file" id="import-file" accept=".json,application/json" hidden>
 </div></div>
+<section class="export-explainer" id="export-explainer" hidden aria-label="Формат экспорта">
+ <div><strong>Что создаётся при экспорте?</strong><p>Скачивается ZIP-архив самостоятельного Python Telegram-бота. Это исходный код, а не уже запущенный бот.</p></div>
+ <div class="export-file-list"><code>bot.py</code><code>scenario.json</code><code>requirements.txt</code><code>.env.example</code><code>README.md</code></div>
+ <p>Для запуска нужен токен от BotFather, установка библиотек и компьютер либо хостинг с Python 3.11+. Платформа сейчас не публикует бота автоматически. Интеграции Google, Meta и пользовательский Python пока не входят в экспорт.</p>
+</section>
+<section class="builder-cloud" aria-label="Сохранённые проекты аккаунта">
+ <div class="builder-cloud-title"><strong>МОИ СЦЕНАРИИ</strong><small id="cloud-state" role="status">Проверка входа…</small></div>
+ <label for="cloud-project-list">Проекты аккаунта</label>
+ <select id="cloud-project-list" aria-label="Выбрать сохранённый сценарий"><option value="">Новый проект</option></select>
+ <button id="btn-cloud-save" type="button" class="button button-primary">Сохранить в аккаунте</button>
+ <button id="btn-cloud-load" type="button" class="button button-line">Открыть</button>
+ <button id="btn-cloud-delete" type="button" class="button button-line">Удалить</button>
+ <a href="/account/login" class="cloud-login-link">Войти в кабинет ↗</a>
+</section>
+<div class="builder-guide" aria-label="Как создать бота"><span><b>1</b> Новый бот или пример</span><span><b>2</b> Настрой узлы и связи</span><span><b>3</b> Проверь схему</span><span><b>4</b> Тестируй маршрут</span><span><b>5</b> Экспортируй ZIP</span></div>
+<div class="integration-information" id="integration-information" hidden aria-live="polite"></div>
 <div id="project-status" class="builder-feedback" role="status" aria-live="polite">Редактор загружается…</div>
 <div class="builder-layout">
 <aside class="builder-palette" aria-label="Библиотека блоков">
 <div class="builder-pane-head"><span>01 / БЛОКИ</span><small>Клик или перетащи</small></div>
+<div class="palette-group-label">TELEGRAM / ДИАЛОГИ <span>РАБОТАЕТ</span></div>
 <button class="palette-node" data-add="message" type="button" draggable="true"><b>✉</b><span><strong>Сообщение</strong><small>Отправка текста</small></span></button>
 <button class="palette-node" data-add="choice" type="button" draggable="true"><b>◇</b><span><strong>Кнопки</strong><small>Выбор пути</small></span></button>
 <button class="palette-node" data-add="photo" type="button" draggable="true"><b>▧</b><span><strong>Фото</strong><small>HTTPS / Telegram file_id</small></span></button>
 <button class="palette-node" data-add="document" type="button" draggable="true"><b>▤</b><span><strong>Документ</strong><small>HTTPS / Telegram file_id</small></span></button>
 <button class="palette-node" data-add="end" type="button" draggable="true"><b>■</b><span><strong>Завершение</strong><small>Конец диалога</small></span></button>
+<div class="palette-group-label">ИНТЕГРАЦИИ / КОННЕКТОРЫ <span>ROADMAP</span></div>
+<button class="palette-node integration-node" data-integration="google_docs" type="button"><b>G</b><span><strong>Google Docs</strong><small>Документы · OAuth требуется</small></span></button>
+<button class="palette-node integration-node" data-integration="google_sheets" type="button"><b>▦</b><span><strong>Google Sheets</strong><small>Таблицы · OAuth требуется</small></span></button>
+<button class="palette-node integration-node" data-integration="facebook" type="button"><b>f</b><span><strong>Facebook Pages</strong><small>Meta Graph API</small></span></button>
+<button class="palette-node integration-node" data-integration="instagram" type="button"><b>◎</b><span><strong>Instagram Business</strong><small>Meta API</small></span></button>
+<div class="palette-group-label">ЛОГИКА / ОБРАБОТЧИКИ <span>ROADMAP</span></div>
+<button class="palette-node integration-node" data-integration="http" type="button"><b>↗</b><span><strong>HTTP / Webhook</strong><small>REST запросы, события</small></span></button>
+<button class="palette-node integration-node" data-integration="python" type="button"><b>{ }</b><span><strong>Python Handler</strong><small>Изолированный исполнитель</small></span></button>
 <p class="builder-tip">Перетащи блок на поле. Двигай его за заголовок. Нажми порт справа, затем порт слева на другом блоке — связь появится автоматически.</p>
 </aside>
-<section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
+<section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div class="graph-legend" aria-label="Легенда типов узлов"><span class="legend-message">● Сообщения</span><span class="legend-choice">◆ Ветвления</span><span class="legend-photo">▣ Медиа</span><span class="legend-document">▤ Документы</span><span class="legend-end">■ Завершение</span></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
 <aside class="builder-inspector" aria-label="Настройка блока"><div class="builder-pane-head"><span>03 / ИНСПЕКТОР</span><small>Параметры</small></div><div id="editor-inspector" class="builder-inspector-body"></div></aside>
 </div>
-<section class="builder-preview" aria-label="Предпросмотр"><div><div class="eyebrow">04 / DIALOGUE PREVIEW</div><h2>Пройди диалог перед экспортом.</h2><p>Это симуляция в браузере. Настоящий Telegram-бот начнёт отвечать после запуска сгенерированного Python-проекта.</p><button id="btn-preview" type="button" class="button button-line">▶ Начать предпросмотр</button></div><div id="preview-messages" class="builder-preview-chat" aria-live="polite"><p>Здесь появятся сообщения.</p></div></section>
+<section class="builder-preview" id="builder-preview" aria-label="Тестирование сценария"><div><div class="eyebrow">04 / DIALOGUE PREVIEW</div><h2>Тестовый диалог и трассировка.</h2><p>Это симуляция в браузере, а не запуск Telegram-бота. Настоящий Telegram-бот начнёт отвечать после запуска сгенерированного Python-проекта.</p><button id="btn-preview" type="button" class="button button-line">▶ Начать предпросмотр</button></div><div class="preview-workspace"><div id="preview-messages" class="builder-preview-chat" aria-live="polite"><p>Здесь появятся сообщения.</p></div><div class="preview-trace" id="preview-trace" aria-label="Шаги симуляции"></div></div></section>
 <section class="builder-security-note"><strong>Безопасный экспорт:</strong> секреты не попадают в ZIP. Токен Telegram задаётся только в переменных окружения при запуске бота. Запуск на нашем сервере и синхронизация CRM пока не реализованы.</section>
+<div id="graph-context-menu" class="graph-context-menu" role="menu" hidden></div>
 </main>
 <footer class="builder-footer" aria-label="OmniFactory footer">
  <div class="builder-footer-main">
