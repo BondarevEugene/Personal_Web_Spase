@@ -5,6 +5,7 @@ worker may resolve credentials after checking the resource owner.
 """
 from __future__ import annotations
 
+import binascii
 import hashlib
 import os
 import re
@@ -29,7 +30,7 @@ def _fernet() -> Fernet:
         raise BotVaultUnavailable("Dedicated Bot Vault key is not configured")
     try:
         return Fernet(key.encode("ascii"))
-    except (ValueError, UnicodeError) as exc:
+    except (ValueError, UnicodeError, binascii.Error) as exc:
         raise BotVaultUnavailable("Invalid Bot Vault encryption key") from exc
 
 
