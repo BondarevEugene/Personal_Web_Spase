@@ -18,7 +18,7 @@ def test_dashboard_uses_verified_endpoints_and_unified_navigation():
     response = client.get("/dashboard")
     assert response.status_code == 200
     page = response.text
-    assert "/studio-assets/legacy_refresh.css?v=1" in page
+    assert "/studio-assets/legacy_refresh.css?v=2" in page
     for endpoint in ("/health", "/api/v1/builder/simple/capabilities",
                      "/api/v1/builder/simple/integrations"):
         assert endpoint in page
