@@ -70,7 +70,10 @@ def test_guest_auth_and_capabilities(db_ready):
     guest = TestClient(app)
     assert guest.get(API + "/capabilities").json()["railway_mutations_enabled"] is False
     assert guest.get(API + "/jobs").status_code == 401
-    assert guest.post(API + "/jobs", json={"plan_id": "a"}).status_code == 401
+    assert guest.post(API + "/jobs", json={
+        "plan_id": "00000000-0000-0000-0000-000000000000",
+        "confirmation": "SIMULATE DEPLOYMENT",
+    }).status_code == 401
 
 
 def test_job_requires_csrf_exact_confirmation_and_key(db_ready):
