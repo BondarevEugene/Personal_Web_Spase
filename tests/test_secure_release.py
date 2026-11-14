@@ -112,7 +112,6 @@ def review(c, bot, plan, key="release-request-01"):
 
 
 def test_operator_image_must_be_pinned(monkeypatch):
-    assert allowed_image("telegram_aiogram") is None or True
     monkeypatch.setenv("OMNI_RELEASE_IMAGE_TELEGRAM_AIOGRAM",
                        "registry.example.com/omni/telegram:latest")
     assert allowed_image("telegram_aiogram") is None
