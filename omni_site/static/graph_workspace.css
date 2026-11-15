@@ -1,0 +1,51 @@
+/* OMNIFACTORY Graph Studio | practical workspace refinements based on user screenshot.
+   Completely scoped to the constructor: no changes to Bot Lab or admin themes. */
+.builder-app .graph-workspace-helper{font-size:12px;line-height:1.5;color:#9bbdd1;margin:7px 3px 13px}
+.builder-app .graph-lab-link{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.builder-app.graph-workspace-compact .builder-intro{padding:5px 2px 4px!important;margin:0 0 8px!important;min-height:0}
+.builder-app.graph-workspace-compact .builder-intro h1{font-size:clamp(21px,2vw,28px)!important;line-height:1.1;margin:4px 0!important}
+.builder-app.graph-workspace-compact .builder-intro h1 br{display:none}
+.builder-app.graph-workspace-compact .builder-intro .builder-hero-kicker{font-size:10px}
+.builder-app.graph-workspace-compact .builder-intro p,.builder-app.graph-workspace-compact .builder-intro-note,
+.builder-app.graph-workspace-compact .builder-hero-metric{display:none!important}
+.builder-app.graph-workspace-compact .builder-page{padding-top:82px!important}
+.builder-app.graph-workspace-compact .builder-toolbar{gap:8px;padding:10px 12px!important;align-items:center}
+.builder-app.graph-workspace-compact .builder-toolbar-actions{gap:6px}
+.builder-app.graph-workspace-compact .builder-toolbar .button{min-height:36px;padding:7px 10px;font-size:11px}
+.builder-app.graph-workspace-compact .builder-toolbar input{min-width:155px;max-width:265px}
+.builder-app.graph-workspace-compact .builder-guide{display:none}
+.builder-app.graph-workspace-compact .builder-feedback{min-height:28px;padding:5px!important}
+.builder-app.graph-workspace-compact .builder-cloud{padding:10px 14px;margin:7px 0}
+.builder-app.graph-workspace-compact .graph-workspace-helper{margin:3px 0 8px}
+.builder-app.graph-workspace-compact .builder-layout{grid-template-columns:minmax(190px,230px) minmax(360px,1fr) minmax(260px,315px);gap:10px}
+.builder-app .builder-palette,.builder-app .builder-canvas,.builder-app .builder-inspector{border-radius:12px;box-shadow:0 7px 28px #02071335}
+.builder-app .builder-palette,.builder-app .builder-inspector{background:#101e30}
+.builder-app .builder-canvas{border-color:#4a6986}
+.builder-app.graph-workspace-compact .builder-canvas-scroll{height:min(71vh,820px);min-height:535px}
+.builder-app.graph-workspace-compact .builder-palette,.builder-app.graph-workspace-compact .builder-inspector{min-height:535px}
+.builder-app .builder-inspector input:focus-visible,.builder-app .builder-inspector textarea:focus-visible,
+.builder-app .builder-inspector select:focus-visible{border-color:#8ce8d6;outline:2px solid #8ce8d644;outline-offset:1px}
+.builder-app .graph-node.selected{outline-offset:4px;outline-width:2px}
+.builder-app .graph-port{min-width:19px;min-height:19px}
+.builder-app.graph-fullscreen .graph-workspace-helper{display:none}
+@media(max-width:1250px){
+ .builder-app.graph-workspace-compact .builder-layout{grid-template-columns:200px minmax(320px,1fr) 275px}
+ .builder-app.graph-workspace-compact .builder-toolbar .button{font-size:11px}
+}
+@media(max-width:980px){
+ .builder-app.graph-workspace-compact .builder-layout{grid-template-columns:minmax(175px,.38fr) minmax(340px,1fr)}
+ .builder-app.graph-workspace-compact .builder-inspector{grid-column:1/-1;min-height:220px}
+ .builder-app.graph-workspace-compact .builder-canvas-scroll{height:570px}
+}
+@media(max-width:700px){
+ .builder-app.graph-workspace-compact .builder-layout{grid-template-columns:1fr}
+ .builder-app.graph-workspace-compact .builder-palette{max-height:300px;min-height:0;overflow-y:auto}
+ .builder-app.graph-workspace-compact .builder-inspector{grid-column:auto}
+ .builder-app.graph-workspace-compact .builder-page{padding-top:75px!important}
+ .builder-app.graph-workspace-compact .builder-toolbar input{max-width:none}
+ .builder-app.graph-workspace-compact .builder-canvas-scroll{height:515px;min-height:475px}
+ .builder-app .graph-lab-link{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ .builder-app .graph-node,.builder-app .graph-port{transition:none!important}
+}
