@@ -1,5 +1,7 @@
 """Account-backed builder drafts must remain private and CSRF protected."""
 from pathlib import Path
+from io import BytesIO
+from zipfile import ZipFile
 
 import pytest
 from alembic import command
@@ -121,3 +123,96 @@ def test_invalid_graph_and_layout_cannot_be_saved(db_ready):
     assert c.post(BASE, headers=token, json={
         "scenario": SCENARIO, "positions": {"unknown": {"x": 1, "y": 2}}
     }).status_code == 422
+
+
+def test_duplicate_project_preserves_graph_and_layout_and_requires_csrf(db_ready):
+    owner = register("dup_owner", "dup-owner@builder.test")
+    other = register("dup_other", "dup-other@builder.test")
+    original = owner.post(BASE, headers=csrf(owner), json={
+        "scenario": SCENARIO,
+        "positions": {"hello": {"x": 120, "y": 185}},
+    })
+    assert original.status_code == 201, original.text
+    original_id = original.json()["id"]
+    path = BASE + "/" + original_id + "/duplicate"
+
+    assert owner.post(path).status_code == 403
+    assert other.post(path, headers=csrf(other)).status_code == 404
+
+    created = owner.post(path, headers=csrf(owner))
+    assert created.status_code == 201, created.text
+    copy_id = created.json()["id"]
+    assert copy_id != original_id
+    assert created.json()["name"] == "Welcome bot (копия)"
+
+    copy = owner.get(BASE + "/" + copy_id)
+    assert copy.status_code == 200
+    assert copy.json()["scenario"]["name"] == "Welcome bot (копия)"
+    original_nodes = owner.get(BASE + "/" + original_id).json()["scenario"]["nodes"]
+    assert copy.json()["scenario"]["nodes"] == original_nodes
+    assert copy.json()["positions"]["hello"] == {"x": 120.0, "y": 185.0}
+    assert other.get(BASE + "/" + copy_id).status_code == 404
+
+    # The original remains unchanged when a duplicate is made.
+    saved_original = owner.get(BASE + "/" + original_id).json()
+    assert saved_original["scenario"]["name"] == "Welcome bot"
+    assert len(owner.get(BASE).json()["projects"]) == 2
+
+
+def test_duplicate_control_is_wired_into_graph_studio():
+    client = TestClient(app)
+    page = client.get("/architect")
+    assert page.status_code == 200
+    assert 'id="btn-cloud-duplicate"' in page.text
+    script = client.get("/studio-assets/graph_studio.js")
+    assert script.status_code == 200
+    assert "async function duplicateCloud()" in script.text
+    assert "/duplicate" in script.text
+
+
+def test_saved_project_export_is_owned_and_returns_runnable_zip(db_ready):
+    owner = register("export_owner", "export-owner@builder.test")
+    outsider = register("export_other", "export-other@builder.test")
+    created = owner.post(BASE, headers=csrf(owner), json={"scenario": SCENARIO})
+    assert created.status_code == 201, created.text
+    export_url = BASE + "/" + created.json()["id"] + "/export"
+
+    assert TestClient(app).get(export_url).status_code == 401
+    assert outsider.get(export_url).status_code == 404
+    result = owner.get(export_url)
+    assert result.status_code == 200, result.text
+    assert result.headers["content-type"] == "application/zip"
+    with ZipFile(BytesIO(result.content)) as archive:
+        assert {"bot.py", "scenario.json", "requirements.txt"}.issubset(archive.namelist())
+        scenario = __import__("json").loads(archive.read("scenario.json"))
+        assert scenario["name"] == SCENARIO["name"]
+        assert [node["id"] for node in scenario["nodes"]] == ["hello", "done"]
+
+
+def test_bot_lab_editor_deep_link_and_export_buttons_exist():
+    client = TestClient(app)
+    script = client.get("/studio-assets/bot_lab.js")
+    assert script.status_code == 200
+    assert "/architect?project=" in script.text
+    assert "/export" in script.text
+    graph_script = client.get("/studio-assets/graph_studio.js")
+    assert graph_script.status_code == 200
+    assert "openLinkedProject" in graph_script.text
+    assert "await loadCloud()" in graph_script.text
+    assert "window.history.replaceState" in graph_script.text
+
+
+def test_editor_main_actions_have_clear_priority():
+    page = TestClient(app).get("/architect")
+    assert page.status_code == 200
+    html = page.text
+    assert 'class="builder-main-controls"' in html
+    assert 'class="builder-tools-more"' in html
+    assert 'class="builder-tools-extra"' in html
+    primary = html.split('class="builder-main-controls"', 1)[1].split("</div>", 1)[0]
+    advanced = html.split('class="builder-tools-extra"', 1)[1].split("</div>", 1)[0]
+    for identifier in ("btn-new-scenario", "btn-validate", "btn-test-canvas", "btn-export"):
+        assert f'id="{identifier}"' in primary
+        assert f'id="{identifier}"' not in advanced
+    for identifier in ("btn-import", "btn-download-json", "btn-save", "btn-expand-canvas"):
+        assert f'id="{identifier}"' in advanced

@@ -12,7 +12,7 @@ import zipfile
 from collections import deque
 from typing import Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, model_validator
 
@@ -151,6 +151,78 @@ INTEGRATION_CATALOG = (
      "status": "planned", "blocks": ["handler"],
      "description": "Будет доступен только через изолированный исполнитель"},
 )
+
+
+
+# Ready-to-customize examples; no network calls, bot tokens or background jobs.
+# Scenarios are validated by the same schema used for import and export.
+STARTER_TEMPLATES = {
+    "info": {
+        "label": "Визитка компании",
+        "description": "Приветствие, услуги и контакты через кнопки.",
+        "scenario": {
+            "name": "Бот-визитка",
+            "start": "welcome",
+            "nodes": [
+                {"id": "welcome", "kind": "message", "text": "Добро пожаловать! Чем мы можем помочь?", "next": "menu"},
+                {"id": "menu", "kind": "choice", "text": "Выберите раздел:",
+                 "options": [{"label": "О нас", "target": "about"},
+                             {"label": "Услуги", "target": "services"},
+                             {"label": "Контакты", "target": "contacts"}]},
+                {"id": "about", "kind": "message", "text": "Расскажите здесь о вашей компании.", "next": "finish"},
+                {"id": "services", "kind": "message", "text": "Опишите здесь ваши услуги.", "next": "finish"},
+                {"id": "contacts", "kind": "message", "text": "Добавьте здесь свои контакты.", "next": "finish"},
+                {"id": "finish", "kind": "end", "text": "Спасибо за обращение!"},
+            ],
+        },
+    },
+    "faq": {
+        "label": "Бот с ответами на вопросы",
+        "description": "Выбор вопроса и подготовленный ответ; без внешней базы знаний.",
+        "scenario": {
+            "name": "FAQ-бот",
+            "start": "menu",
+            "nodes": [
+                {"id": "menu", "kind": "choice", "text": "Какой вопрос вас интересует?",
+                 "options": [{"label": "Как заказать?", "target": "order"},
+                             {"label": "Как получить поддержку?", "target": "support"}]},
+                {"id": "order", "kind": "message", "text": "Добавьте здесь порядок оформления заказа.", "next": "finish"},
+                {"id": "support", "kind": "message", "text": "Добавьте здесь контакты поддержки.", "next": "finish"},
+                {"id": "finish", "kind": "end", "text": "Рады помочь!"},
+            ],
+        },
+    },
+    "survey": {
+        "label": "Диалоговая анкета",
+        "description": "Сбор ответов в переменные. Экспортируемый пример хранит их только до перезапуска.",
+        "scenario": {
+            "name": "Анкета пользователя",
+            "start": "ask_name",
+            "nodes": [
+                {"id": "ask_name", "kind": "input", "text": "Как вас зовут?", "variable": "name", "next": "ask_topic"},
+                {"id": "ask_topic", "kind": "input", "text": "Какой вопрос вы хотите обсудить?", "variable": "topic", "next": "summary"},
+                {"id": "summary", "kind": "message", "text": "Спасибо, {{name}}! Ваш вопрос: {{topic}}", "next": "finish"},
+                {"id": "finish", "kind": "end", "text": "На этом демонстрационная анкета завершена."},
+            ],
+        },
+    },
+}
+
+
+@router.get("/templates")
+def list_starter_templates():
+    return {"templates": [
+        {"id": key, "label": entry["label"], "description": entry["description"]}
+        for key, entry in STARTER_TEMPLATES.items()
+    ]}
+
+
+@router.get("/templates/{template_id}")
+def get_starter_template(template_id: str):
+    entry = STARTER_TEMPLATES.get(template_id)
+    if entry is None:
+        raise HTTPException(404, "Template not found")
+    return {"id": template_id, "scenario": Scenario.model_validate(entry["scenario"]).model_dump(mode="json")}
 
 
 @router.get("/integrations")

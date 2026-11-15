@@ -36,7 +36,10 @@ def test_platform_links_back_to_studio_and_existing_builder():
 def test_repaired_builder_ui_and_static_assets_are_accessible():
     response = client.get("/builder_pro_final.html")
     assert response.status_code == 200
-    assert "Graph Studio v2" in response.text
+    assert "OMNIFACTORY / GRAPH STUDIO" in response.text
+    assert 'id="btn-new-scenario"' in response.text
+    assert 'id="btn-test-canvas"' in response.text
+    assert 'id="btn-export"' in response.text
     assert "/studio-assets/graph_studio.js?v=8" in response.text
     script = client.get("/studio-assets/graph_studio.js")
     assert script.status_code == 200

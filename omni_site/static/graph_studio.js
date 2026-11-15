@@ -69,6 +69,20 @@ async function loadCloud(){
   status('Открыт сохранённый проект: '+project.name);
  }catch(err){status('Не удалось открыть проект: '+err.message,true);}
 }
+
+async function duplicateCloud(){
+ const id=$('cloud-project-list').value;
+ if(!id){status('Выбери сохранённый проект для копирования.',true);return;}
+ if(!cloudActive){status('Войди в кабинет для копирования проекта.',true);return;}
+ try{
+  const token=await csrfForCloud();
+  const result=await cloudRequest('/'+encodeURIComponent(id)+'/duplicate',{
+   method:'POST',headers:{'X-Omni-CSRF':token}
+  });
+  await refreshCloud(result.id);
+  status('Создана копия «'+result.name+'». Выбери «Открыть», чтобы редактировать её.');
+ }catch(err){status('Не удалось создать копию: '+err.message,true);}
+}
 async function deleteCloud(){
  const id=$('cloud-project-list').value;
  if(!id){status('Выбери проект для удаления.',true);return;}
@@ -81,6 +95,35 @@ async function deleteCloud(){
   await refreshCloud('');
   status('Проект удалён из аккаунта. Локальный черновик не затронут.');
  }catch(err){status('Не удалось удалить проект: '+err.message,true);}
+}
+async function loadTemplateCatalog(){
+ const list=$('builder-template'),button=$('btn-use-template');
+ button.disabled=true;
+ try{
+  const response=await fetch(API+'/templates',{cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const result=await response.json();
+  list.replaceChildren();
+  const choose=el('option','','Выбери готовую основу');choose.value='';list.append(choose);
+  for(const item of result.templates){
+   const option=el('option','',item.label);option.value=item.id;list.append(option);
+  }
+  button.disabled=false;
+ }catch(err){
+  list.replaceChildren();
+  const failed=el('option','','Шаблоны сейчас недоступны');failed.value='';list.append(failed);
+  status('Не удалось загрузить каталог шаблонов: '+err.message,true);
+ }
+}
+async function applyStarterTemplate(){
+ const id=$('builder-template').value;
+ if(!id){status('Сначала выбери шаблон из списка.',true);return;}
+ try{
+  const response=await fetch(API+'/templates/'+encodeURIComponent(id),{cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const result=await response.json();
+  replaceScenario(()=>result.scenario);
+ }catch(err){status('Не удалось открыть шаблон: '+err.message,true);}
 }
 const integrationDetails={
  google_docs:'Google Docs: создание, чтение и изменение документов. Для подключения потребуется OAuth Google и серверный исполнитель.',
@@ -396,6 +439,7 @@ document.addEventListener('keydown',e=>{
 });
 $('btn-expand-canvas').addEventListener('click',()=>setExpanded(!canvasExpanded));
 $('btn-new-scenario').addEventListener('click',()=>replaceScenario(fresh));
+$('btn-use-template').addEventListener('click',applyStarterTemplate);
 $('btn-demo-scenario').addEventListener('click',()=>replaceScenario(sample));
 $('btn-test-canvas').addEventListener('click',()=>{
  preview();$('builder-preview').scrollIntoView({behavior:'smooth',block:'start'});
@@ -425,6 +469,7 @@ $('btn-save').addEventListener('click',()=>{save();status('Черновик со
 $('btn-cloud-save').addEventListener('click',saveCloud);
 $('btn-cloud-load').addEventListener('click',loadCloud);
 $('btn-cloud-delete').addEventListener('click',deleteCloud);
+$('btn-cloud-duplicate').addEventListener('click',duplicateCloud);
 // Selection alone never changes the active project: only Open does.
 $('btn-validate').addEventListener('click',async()=>{try{const result=await(await post('/validate')).json();status('Проверено '+result.nodes+' узлов. '+result.warnings.join('; '));}catch(e){status(e.message,true);}});
 $('btn-export').addEventListener('click',async()=>{try{await post('/validate');const r=await post('/export');download(await r.blob(),'omnifactory_bot.zip');status('Экспорт Python готов.');}catch(e){status(e.message,true);}});
@@ -461,5 +506,24 @@ try{
  }
 }catch(e){status('Старый черновик не удалось открыть. Загружен пример.',true);}
 selected=data.start;$('scenario-name').value=data.name;render();inspector();status('Graph Studio готов: перемещай узлы и соединяй входы с выходами.');
-void refreshCloud();
+// Bot Lab links to an owned saved graph. Keep local work safe: the existing
+// loadCloud confirmation and browser backup apply to the deep-link too.
+async function openLinkedProject(){
+ const linkedId=new URLSearchParams(window.location.search).get('project');
+ if(!linkedId){await refreshCloud();return;}
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkedId)){
+  status('Некорректный идентификатор проекта в ссылке.',true);
+  await refreshCloud();return;
+ }
+ await refreshCloud(linkedId);
+ const choice=$('cloud-project-list');
+ if(!cloudActive||choice.value!==linkedId){
+  status('Проект из ссылки недоступен текущему аккаунту.',true);return;
+ }
+ // Remove the query before prompting, preventing repeated prompts on reload.
+ window.history.replaceState(null,'',window.location.pathname+window.location.hash);
+ await loadCloud();
+}
+void loadTemplateCatalog();
+void openLinkedProject();
 })();
