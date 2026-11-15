@@ -2,8 +2,9 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bot Lab · OmniFactory Managed Cloud</title><meta name="theme-color" content="#081828">
 <link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
-<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=5">
-<script defer src="/studio-assets/bot_lab.js?v=5"></script></head>
+<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=6">
+<script defer src="/studio-assets/bot_lab.js?v=6"></script>
+<script defer src="/studio-assets/bot_lab_release.js?v=1"></script></head>
 <body class="omni-revamp lab-body">
 <a class="lab-skip" href="#lab-main">К содержимому</a>
 <header class="omni-top"><div class="omni-top-inner"><a class="omni-brand" href="/" aria-label="OmniFactory">
@@ -79,6 +80,18 @@
       <h3>Ожидают приглашения</h3><div id="lab-pending-invites" class="lab-member-list">Получаем список…</div>
       <details class="lab-audit"><summary>Журнал безопасности</summary><div id="lab-security-audit" class="lab-member-list"></div></details>
     </div>
+  </section>
+  <section class="lab-release-panel" id="lab-release-panel" hidden aria-label="Подготовка релиза">
+    <div class="lab-release-head"><div><span class="lab-kicker">OMNI RELEASE / CONTROLLED DELIVERY</span><h3>Центр подготовки релиза</h3></div><span class="lab-release-tag">Без платных операций</span></div>
+    <p class="lab-muted">Выбирай план размещения, проверяй Telegram, неизменяемый runtime и полномочия. Запрос на рассмотрение фиксирует версию сценария и не публикует бота.</p>
+    <label class="lab-release-label" for="lab-release-plan">План размещения</label>
+    <select id="lab-release-plan" class="lab-release-select"><option value="">Выбери план</option></select>
+    <div class="lab-actions">
+      <button id="lab-release-check" class="lab-button" type="button">Проверить готовность</button>
+      <button id="lab-release-request" class="lab-button primary" type="button" disabled>Отправить на проверку релиза</button>
+    </div>
+    <div id="lab-release-results" class="lab-release-results" aria-live="polite">Выбери собственного бота и план размещения.</div>
+    <h3>Мои запросы на релиз</h3><div id="lab-release-history" class="lab-jobs">Пока не загружено.</div>
   </section>
   <section class="lab-resource-workbench" aria-label="Подключение существующего Railway-сервиса">
     <h3>Инфраструктура проекта · Railway BYOC</h3>

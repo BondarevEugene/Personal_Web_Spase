@@ -59,6 +59,7 @@ function renderDetail(){
  const facts=$('lab-selected-facts'),acts=$('lab-actions');
  facts.replaceChildren();acts.replaceChildren();$('lab-readiness').replaceChildren();
  $('lab-security-workbench').hidden=!info||info.entity!=='bot';
+ document.dispatchEvent(new CustomEvent('omni:bot-selection',{detail:{bot:info&&info.entity==='bot'?{id:info.id,name:info.name}:null,plans:store?.deployments||[]}}));
  clearSecretInput();
  $('lab-enqueue').disabled=!selected||selected.entity!=='plan';
  if(!info){

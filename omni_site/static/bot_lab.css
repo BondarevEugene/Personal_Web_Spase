@@ -131,3 +131,19 @@
 .lab-accept-invitation .lab-small{justify-self:start}
 @media(max-width:1050px){.lab-access-invite{grid-template-columns:1fr 1fr}.lab-access-invite button{grid-column:1/-1}}
 @media(max-width:600px){.lab-secret-entry{flex-direction:column}.lab-access-invite{grid-template-columns:1fr}.lab-access-invite button{grid-column:auto}.lab-security-heading{align-items:flex-start;flex-direction:column}.lab-once-token{flex-direction:column;align-items:stretch}}
+
+
+.lab-release-panel{margin:18px 0;padding:20px;border-radius:14px;border:1px solid #6c94a1;background:linear-gradient(140deg,#163847,#122a40 75%);box-shadow:0 14px 30px rgba(0,0,0,.1)}
+.lab-release-panel[hidden]{display:none!important}
+.lab-release-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.lab-release-head h3{font-size:20px;margin:5px 0 11px;color:#ecfafa}
+.lab-release-tag{font-size:11px;font-weight:800;padding:6px 10px;border:1px solid #8eb6aa;border-radius:999px;color:#bcf5dc;background:#214f51}
+.lab-release-label{display:block;color:#beddea;font-size:11px;font-weight:800;margin:15px 0 6px}
+.lab-release-select{width:100%;max-width:500px;background:#0a1e31;color:#eefaff;border:1px solid #668da5;padding:12px;border-radius:9px}
+.lab-release-panel .lab-actions{margin:14px 0}.lab-release-panel .lab-button:disabled{opacity:.45;cursor:not-allowed}
+.lab-release-results{display:grid;gap:7px;padding:12px;background:#081f31;border-radius:11px;border:1px solid #45677c;margin-top:12px}
+.lab-release-summary{color:#c9f4e6;font-size:13px;padding:7px}
+.lab-release-check{display:grid;grid-template-columns:24px 1fr;align-items:center;gap:9px;border-radius:7px;background:#173247;padding:9px 12px;font-size:12px;color:#dcecf6}
+.lab-release-check b{background:#e8b97d;color:#17232d;border-radius:50%;width:20px;height:20px;text-align:center}
+.lab-release-check.passed b{background:#8cdec3}.lab-release-caution{font-size:12px;background:#42392e;color:#ffdfaf;border-left:3px solid #eec18c;padding:12px;margin:6px 0 0}
+@media(max-width:650px){.lab-release-head{align-items:flex-start;flex-direction:column}.lab-release-panel{padding:14px}}
