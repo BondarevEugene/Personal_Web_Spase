@@ -1,0 +1,33 @@
+name: Telegram Runtime v1 Security and Integration
+
+on:
+  push:
+    branches:
+      - feat/telegram-runtime-v1-20261114
+  pull_request:
+    branches:
+      - feat/managed-cloud-secure-release-20261114
+      - test/subscriptions
+
+jobs:
+  telegram-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install portal and isolated runtime test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "fastapi~=0.136.1" "pydantic>=2,<3" "httpx>=0.27,<1" "SQLAlchemy>=2,<3" "Jinja2>=3,<4" "pytest>=8,<10" "argon2-cffi>=23,<26" "alembic>=1.14,<2" "cryptography>=43,<48" python-multipart "aiogram==3.22.0"
+      - name: Compile runtime and portal code
+        run: |
+          python -m py_compile runtime/telegram/app.py runtime/telegram/scenario.py api/telegram_runtime.py server.py
+      - name: Run runtime and release security suites
+        run: |
+          python -m pytest -q --tb=short tests/test_telegram_runtime_v1.py tests/test_secure_release.py tests/test_builder_logic_nodes.py tests/test_bot_security.py tests/test_railway_resource_bindings.py
+      - name: Docker build smoke test
+        run: |
+          docker build -f runtime/telegram/Dockerfile -t omnifactory-telegram-runtime:ci .
