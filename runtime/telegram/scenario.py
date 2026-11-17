@@ -1,6 +1,7 @@
 """Standalone, dependency-free scenario validation for runtime and portal."""
 from __future__ import annotations
 import base64
+import binascii
 import json
 import re
 from typing import Any
@@ -22,7 +23,7 @@ def read_scenario(encoded: str) -> dict[str, Any]:
         if len(raw) > SCENARIO_LIMIT:
             raise ValueError("Scenario too large")
         spec = json.loads(raw.decode("utf-8"))
-    except (ValueError, UnicodeError, TypeError) as exc:
+    except (ValueError, UnicodeError, TypeError, binascii.Error) as exc:
         raise ValueError("Invalid runtime scenario encoding") from exc
     if not isinstance(spec, dict):
         raise ValueError("Scenario must be an object")
