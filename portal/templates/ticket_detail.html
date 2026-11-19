@@ -30,5 +30,13 @@
 <label>Дополнить заявку <textarea name="body" rows="4" maxlength="3000" required placeholder="Уточнения, дополнительная информация..."></textarea></label>
 <button class="button button-primary account-submit" type="submit">Отправить сообщение <span>↗</span></button>
 </form></section>
-</div><p class="account-back"><a href="/account/tickets">← Все заявки</a></p>
+</div>
+<section class="account-panel" style="margin-top:22px" aria-labelledby="ticket-history-title">
+<div class="eyebrow">03 / REQUEST JOURNEY</div><h2 id="ticket-history-title">Этапы обработки</h2>
+{% if events %}<div class="account-ticket-list">{% for event in events %}
+<div class="account-ticket"><span class="account-ticket-title">{{ statuses.get(event.old_status,event.old_status) }} → {{ statuses.get(event.new_status,event.new_status) }}</span><span class="account-ticket-meta">{{ event.created_at.strftime("%d.%m.%Y %H:%M") }}</span>
+{% if event.comment %}<p class="account-message-body">{{ event.comment }}</p>{% endif %}</div>
+{% endfor %}</div>{% else %}<div class="account-empty">Заявка зарегистрирована. При изменении статуса здесь появится история работы.</div>{% endif %}
+</section>
+<p class="account-back"><a href="/account/tickets">← Все заявки</a></p>
 </main></body></html>
