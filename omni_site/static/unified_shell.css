@@ -1,0 +1,115 @@
+/* OMNIFACTORY UNIFIED SHELL v1
+   Shared visual language for public platform, development tools and customer pages.
+   This layer is presentation-only; it never changes API behaviour. */
+:root{
+ --omni-shell-bg:#07090e;
+ --omni-shell-panel:#111623;
+ --omni-shell-line:#293144;
+ --omni-shell-text:#f3f4f9;
+ --omni-shell-muted:#aebbd0;
+ --omni-shell-cyan:#83e2d5;
+ --omni-shell-violet:#ac86ee;
+}
+html{scroll-padding-top:95px}
+body.omni-revamp,body.platform-app,body.account-app{
+ background:radial-gradient(ellipse at 85% 0%,#303d6b25,transparent 43%),var(--omni-shell-bg);
+ color:var(--omni-shell-text);
+ font-family:var(--font,'DM Sans',Inter,Arial,sans-serif);
+}
+body.omni-revamp .omni-top{
+ background:#0b101bF2;
+ border-color:var(--omni-shell-line);
+ backdrop-filter:blur(18px);
+}
+body.omni-revamp .omni-top-inner{
+ max-width:1560px;
+ min-height:72px;
+ padding:12px clamp(20px,3vw,46px);
+}
+body.omni-revamp .omni-brand strong{font:700 17px/1.1 var(--display,'Space Grotesk',Arial,sans-serif);letter-spacing:-.045em}
+body.omni-revamp .omni-brand strong span{color:var(--omni-shell-violet)}
+body.omni-revamp .omni-brand-logo{border-color:var(--omni-shell-violet);color:#b9a7ee}
+body.omni-revamp .omni-nav{align-items:center;gap:4px}
+body.omni-revamp .omni-nav a{font:600 12px/1.3 var(--font,'DM Sans',sans-serif);color:#b9c6d7;padding:9px 11px;border-radius:8px;transition:background .15s,color .15s}
+body.omni-revamp .omni-nav a:hover,body.omni-revamp .omni-nav a[aria-current=page]{
+ color:#fff;background:#2c3450;
+}
+body.omni-revamp .omni-main{max-width:1470px}
+body.omni-revamp .omni-hero{border-color:var(--omni-shell-line)}
+body.omni-revamp .omni-hero h1{
+ font-family:var(--display,'Space Grotesk',Arial,sans-serif);
+ font-weight:600;letter-spacing:-.07em
+}
+body.omni-revamp .omni-hero h1 em{color:#a5adff}
+body.omni-revamp .omni-lead,body.omni-revamp .cloud-note{color:#b0bfd2}
+body.omni-revamp .omni-hero-aside,
+body.omni-revamp .omni-panel,
+body.omni-revamp .omni-card,
+body.omni-revamp .cloud-form,
+body.omni-revamp .cloud-output{
+ background:linear-gradient(145deg,#141f32,#0d1524);
+ border-color:#34425c;
+ border-radius:15px;
+ box-shadow:0 16px 52px #0002;
+}
+body.omni-revamp .omni-button.primary{background:var(--omni-shell-cyan);border-color:var(--omni-shell-cyan);color:#081721}
+body.omni-revamp .omni-button{border-color:#455a76;background:#1b2b42}
+body.omni-revamp .omni-footer{background:#0b111d;border-color:#293144}
+body.account-app .site-header,body.platform-app .site-header{border-color:#293144}
+body.account-app .account-auth-card,body.account-app .account-panel,
+body.account-app .account-kpis article{border-color:#35445e}
+.omni-section-rail{
+ position:fixed;right:clamp(12px,1.8vw,28px);top:130px;
+ display:grid;gap:5px;z-index:20;
+ width:176px;padding:17px;
+ border:1px solid #35445e;border-radius:14px;
+ background:#101725ef;box-shadow:0 18px 65px #0005;
+ backdrop-filter:blur(15px)
+}
+.omni-section-rail strong{font:700 10px/1.5 monospace;letter-spacing:.11em;color:#a9b3ee;margin-bottom:9px}
+.omni-section-rail a{color:#bdcbe0;font-size:12px;line-height:1.45;text-decoration:none;padding:9px 10px;border-radius:7px}
+.omni-section-rail a:hover,.omni-section-rail a:focus-visible,.omni-section-rail a[aria-current=location]{
+ color:#fff;background:#293452
+}
+.platform-app.has-section-rail #main{padding-right:185px}
+.platform-app.has-section-rail .pf-hero.container,
+.platform-app.has-section-rail .section.container{max-width:1430px}
+.omni-page-rail{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 28px}
+.omni-page-rail a{font-size:12px;color:#cad7ed;padding:9px 13px;border:1px solid #35465c;border-radius:8px;text-decoration:none}
+.omni-page-rail a:hover{border-color:#a8a3ef;background:#1c2740}
+.omni-page-rail small{display:block;color:#8299b3;margin-right:9px}
+@media(max-width:1480px){
+ .platform-app.has-section-rail #main{padding-right:0}
+ .omni-section-rail{position:static;width:auto;margin:16px clamp(24px,5.3vw,84px);display:flex;flex-wrap:wrap;align-items:center}
+ .omni-section-rail strong{margin:0 12px 0 0}
+}
+@media(max-width:950px){
+ body.omni-revamp .omni-top-inner{flex-wrap:wrap;gap:12px}
+ body.omni-revamp .omni-nav{width:100%;flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px;scrollbar-width:thin}
+ body.omni-revamp .omni-nav a{flex:0 0 auto}
+}
+@media(max-width:650px){
+ .omni-section-rail{padding:12px;gap:2px}
+ .omni-section-rail a{font-size:11px;padding:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .omni-section-rail a,body.omni-revamp .omni-nav a{transition:none}
+}
+
+/* A deliberately lightweight, truthful marketing interaction. */
+.omni-idea-playground{
+ margin-top:20px;margin-bottom:55px;display:flex;
+ justify-content:space-between;align-items:center;gap:30px;
+ background:linear-gradient(115deg,#1c2543,#111a2b 70%);
+ border:1px solid #3b426a;border-radius:16px;
+ padding-block:clamp(24px,3vw,48px)
+}
+.omni-idea-copy{max-width:740px}
+.omni-idea-copy h2{
+ font:600 clamp(23px,2.8vw,38px)/1.2 var(--display,'Space Grotesk',sans-serif);
+ letter-spacing:-.05em;margin:14px 0
+}
+.omni-idea-copy p{font-size:14px;color:#c5d5e9;margin-bottom:0}
+.omni-idea-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.omni-idea-actions .button{white-space:nowrap}
+@media(max-width:850px){.omni-idea-playground{flex-direction:column;align-items:start}.omni-idea-actions{justify-content:flex-start}}

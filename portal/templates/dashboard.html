@@ -1,6 +1,7 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#050811"><title>Личный кабинет — OmniFactory</title>
-<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"></head>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
+</head>
 <body class="account-app"><header class="site-header"><div class="header-inner container">
 <a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNT</small></span></a>
 <nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/architect">Конструктор</a><a href="/automation/studio">Автоматизация</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account/tickets">Заявки</a><a href="/studio">Студия</a></nav>
@@ -12,7 +13,7 @@
 <div class="account-workspace-layout">
 <div class="account-workspace-content">
 <div class="account-quick-actions"><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
-<div class="account-kpis"><article><span>ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
+<div class="account-kpis"><article><span>ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
 <article><span>УЧЁТ РЕГИСТРАЦИИ</span><strong>Зарегистрирован</strong><small>{{ user.created_at.strftime("%d.%m.%Y") }}</small></article>
 <article><span>ПОДТВЕРЖДЕНИЕ EMAIL</span><strong>{{ "Подтверждён" if user.email_verified else "Не подтверждён" }}</strong><small>Проверка email будет добавлена</small></article></div>
 <section class="account-panel account-ticket-overview" id="requests">
