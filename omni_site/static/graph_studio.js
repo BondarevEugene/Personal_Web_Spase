@@ -502,6 +502,38 @@ $('import-file').addEventListener('change',async e=>{
   data=obj;positions={};selected=data.start;counter=1;cloudProjectId=null;change();inspector();$('scenario-name').value=data.name;status('Сценарий импортирован.');
  }catch(err){status('Ошибка импорта: '+err.message,true);}e.target.value='';
 });
+const paletteQuery=$('graph-palette-query');
+if(paletteQuery){
+ const palette=document.querySelector('.builder-palette');
+ const items=Array.from(palette.querySelectorAll('.palette-node'));
+ function filterPalette(){
+  const term=paletteQuery.value.trim().toLocaleLowerCase('ru');
+  let visible=0;
+  for(const item of items){
+   const match=!term||item.textContent.toLocaleLowerCase('ru').includes(term)||
+    (item.dataset.add||item.dataset.integration||'').includes(term);
+   item.hidden=!match;if(match)visible++;
+  }
+  for(const label of palette.querySelectorAll('.palette-group-label')){
+   let cursor=label.nextElementSibling,has=false;
+   while(cursor&&!cursor.classList.contains('palette-group-label')){
+    if(cursor.matches('.palette-node')&&!cursor.hidden)has=true;
+    cursor=cursor.nextElementSibling;
+   }
+   label.hidden=!has;
+  }
+  $('graph-palette-results').textContent=term?
+   (visible?'Найдено блоков: '+visible:'Совпадений нет. Измените запрос.'):'';
+ }
+ paletteQuery.addEventListener('input',filterPalette);
+ document.addEventListener('keydown',event=>{
+  if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){
+   event.preventDefault();paletteQuery.focus();paletteQuery.select();
+  }else if(event.key==='Escape'&&document.activeElement===paletteQuery){
+   paletteQuery.value='';filterPalette();paletteQuery.blur();
+  }
+ });
+}
 $('btn-preview').addEventListener('click',preview);
 const controls=el('div','graph-controls');
 const level=el('span','graph-zoom-label','100%');
