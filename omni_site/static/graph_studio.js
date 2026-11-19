@@ -105,6 +105,7 @@ const sample=()=>({name:'Пример: персональный Telegram-бот'
 {id:'finish',kind:'end',text:'До встречи!'}]});
 const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш',input:'Ввод пользователя',condition:'Условие IF / ELSE',set_variable:'Переменная'};
 let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
+let diagnosticIssues=[];
 let canvasExpanded=false;
 function replaceScenario(factory) {
  const ok=window.confirm('Текущий черновик будет заменён. Сохраняем резервную копию в этом браузере. Продолжить?');
@@ -216,7 +217,10 @@ function render(){
  $('node-count').textContent=data.nodes.length+' узлов';
  data.nodes.forEach((n,i)=>{
   const p=position(n.id,i),card=el('section','builder-node graph-node'+(selected===n.id?' selected':''));
-  card.dataset.nodeId=n.id;decorateCard(card,n);card.style.left=p.x+'px';card.style.top=p.y+'px';
+  card.dataset.nodeId=n.id;decorateCard(card,n);
+  const issue=diagnosticIssues.find(item=>item.node_id===n.id);
+  if(issue){card.classList.add(issue.severity==='error'?'graph-diagnostic-error':'graph-diagnostic-warning');}
+  card.style.left=p.x+'px';card.style.top=p.y+'px';
   card.addEventListener('contextmenu',e=>contextMenu(e,n.id));
   const head=el('div','builder-node-head graph-node-head');head.append(el('span','',n.id===data.start?'● START':n.id),el('strong','',names[n.kind]));
   head.title='Переместить узел';card.append(head);
@@ -244,7 +248,15 @@ function render(){
  });
  root.append(worldEl);edges();
 }
-function change(){render();save();}
+function change(){
+ diagnosticIssues=[];
+ const panel=$('graph-diagnostics');
+ if(panel&&!panel.hidden){
+  $('graph-diagnostics-summary').textContent='Схема изменена — запустите проверку повторно.';
+  $('graph-diagnostics-list').replaceChildren();
+ }
+ render();save();
+}
 function field(parent,title,value,changeFn,textarea=false){
  const label=el('label','inspector-field'),input=el(textarea?'textarea':'input');
  label.append(el('span','',title));input.value=value??'';input.addEventListener('input',()=>changeFn(input.value));
@@ -426,7 +438,46 @@ $('btn-cloud-save').addEventListener('click',saveCloud);
 $('btn-cloud-load').addEventListener('click',loadCloud);
 $('btn-cloud-delete').addEventListener('click',deleteCloud);
 // Selection alone never changes the active project: only Open does.
-$('btn-validate').addEventListener('click',async()=>{try{const result=await(await post('/validate')).json();status('Проверено '+result.nodes+' узлов. '+result.warnings.join('; '));}catch(e){status(e.message,true);}});
+function showDiagnostics(result){
+ const panel=$('graph-diagnostics'),list=$('graph-diagnostics-list');
+ diagnosticIssues=Array.isArray(result.issues)?result.issues:[];
+ panel.hidden=false;
+ $('btn-validate').setAttribute('aria-expanded','true');
+ $('graph-diagnostics-summary').textContent=
+  result.nodes+' узлов · '+result.reachable+' достижимых · '+
+  (result.error_count||0)+' ошибок · '+(result.warning_count||0)+' предупреждений';
+ list.replaceChildren();
+ if(!diagnosticIssues.length){
+  list.append(el('p','graph-diagnostics-clean','✓ Ошибок и предупреждений не обнаружено.'));
+ }else{
+  for(const issue of diagnosticIssues){
+   const row=btn(
+    (issue.severity==='error'?'Ошибка · ':'Проверить · ')+issue.message,
+    ()=>{
+     if(!data.nodes.some(node=>node.id===issue.node_id))return;
+     selected=issue.node_id;inspector();render();
+     const card=Array.from(document.querySelectorAll('.graph-node'))
+       .find(node=>node.dataset.nodeId===issue.node_id);
+     if(card)card.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});
+     status('Выбран блок '+issue.node_id+'. Исправьте параметры и повторите проверку.');
+    },'graph-diagnostics-item '+(issue.severity==='error'?'error':'warning')
+   );
+   row.title='Перейти к блоку '+issue.node_id;list.append(row);
+  }
+ }
+ render();
+ status('Диагностика: '+(result.error_count||0)+' ошибок, '+
+  (result.warning_count||0)+' предупреждений.',Boolean(result.error_count));
+}
+$('btn-validate').addEventListener('click',async()=>{
+ try{const result=await(await post('/validate')).json();showDiagnostics(result);}
+ catch(e){status('Диагностика: '+e.message,true);}
+});
+$('graph-diagnostics-close').addEventListener('click',()=>{
+ $('graph-diagnostics').hidden=true;
+ $('btn-validate').setAttribute('aria-expanded','false');
+ diagnosticIssues=[];render();
+});
 $('btn-export').addEventListener('click',async()=>{try{await post('/validate');const r=await post('/export');download(await r.blob(),'omnifactory_bot.zip');status('Экспорт Python готов.');}catch(e){status(e.message,true);}});
 $('btn-download-json').addEventListener('click',()=>download(new Blob([JSON.stringify(payload(),null,2)],{type:'application/json'}),'scenario.json'));
 $('btn-import').addEventListener('click',()=>$('import-file').click());
