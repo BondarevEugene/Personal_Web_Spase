@@ -109,3 +109,5 @@ def test_debugger_is_a_real_trace_ui():
     assert "item.next" in js
     assert "selected=item.id;inspector();render();" in js
     assert "if(serial!==debugSerial)return;" in js
+    assert "function clearDebugTrace()" in js
+    assert "clearDebugTrace();" in js
