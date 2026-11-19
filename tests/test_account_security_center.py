@@ -165,3 +165,62 @@ def test_no_secrets_or_session_tokens_rendered(db_ready):
     assert client.cookies.get("omni_portal_session") not in page.text
     assert "token_hash" not in page.text
     assert 'name="csrf_token"' in page.text
+
+
+def test_multilingual_registration_and_login_keep_selected_language(db_ready):
+    client = TestClient(app)
+    response = client.get("/account/register?lang=uk")
+    assert response.status_code == 200
+    assert 'lang="uk"' in response.text
+    assert "Створити обліковий запис" in response.text
+    assert 'name="lang" value="uk"' in response.text
+    response = client.post("/account/register", follow_redirects=False, data={
+        "csrf_token": client.cookies.get("omni_portal_csrf"),
+        "lang": "uk",
+        "username": "uksecurity",
+        "display_name": "UA client",
+        "email": "uksecurity@security.test",
+        "organization": "UA security org",
+        "password": ORIGINAL,
+        "password_repeat": ORIGINAL,
+    })
+    assert response.status_code == 303, response.text
+    page = client.get("/account")
+    assert 'lang="uk"' in page.text
+
+    login_client = TestClient(app)
+    page = login_client.get("/account/login?lang=en")
+    assert page.status_code == 200
+    assert 'lang="en"' in page.text
+    assert "Sign in to OmniFactory" in page.text
+    logged = login_client.post("/account/login", follow_redirects=False, data={
+        "csrf_token": login_client.cookies.get("omni_portal_csrf"),
+        "lang": "en",
+        "login": "uksecurity",
+        "password": ORIGINAL,
+    })
+    assert logged.status_code == 303
+    # Stored UA preference takes precedence over the language of login form.
+    assert 'lang="uk"' in login_client.get("/account").text
+
+    with session_factory()() as db:
+        from portal.models import CustomerSettings
+
+        customer = db.scalar(select(Customer).where(
+            Customer.username == "uksecurity"
+        ))
+        settings = db.get(CustomerSettings, customer.id)
+        assert settings.language == "uk"
+
+
+def test_missing_and_invalid_csrf_never_revoke_sessions(db_ready):
+    first = register("csrfguard")
+    second = login("csrfguard", ORIGINAL)
+    for endpoint in ("/account/security/revoke-others",
+                     "/account/security/logout-all"):
+        assert first.post(endpoint, data={"password": ORIGINAL}).status_code == 403
+        assert first.post(endpoint, data={
+            "password": ORIGINAL, "csrf_token": "not-a-valid-csrf",
+        }).status_code == 403
+    assert second.get("/account").status_code == 200
+    assert first.get("/account").status_code == 200
