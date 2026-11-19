@@ -46,3 +46,11 @@
 .account-app .workspace-attention-heading{align-items:start;flex-direction:column;gap:5px}
 .account-app .workspace-nav-inner a{font-size:11px;padding:7px 10px}}
 @media(prefers-reduced-motion:reduce){.account-app .workspace-attention-item{transition:none}}
+
+/* Server-backed locale switcher: compact, keyboard-friendly and persistent. */
+.account-app .workspace-language{display:flex;gap:3px;align-items:center;margin-left:auto;padding:1px 0 1px 10px}
+.account-app .workspace-language input[type=hidden]{display:none}
+.account-app .workspace-language button{background:#1b202b;border:1px solid #565d6e;border-radius:5px;padding:7px 8px;min-height:30px;color:#b6c4d6;font-size:10px;font-weight:750;cursor:pointer}
+.account-app .workspace-language button[aria-pressed=true]{border-color:#b9a5c9;background:#383044;color:#fff}
+.account-app .workspace-language button:hover,.account-app .workspace-language button:focus-visible{outline:2px solid #c1a4da;outline-offset:1px;color:#fff}
+@media(max-width:680px){.account-app .workspace-language{padding-left:6px}.account-app .workspace-language button{padding:6px 7px}}
