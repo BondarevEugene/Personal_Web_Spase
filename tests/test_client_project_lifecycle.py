@@ -101,6 +101,12 @@ def test_operator_only_status_milestones_and_customer_acceptance(db_ready, monke
             "csrf_token": operator_csrf(operator), "status": target,
         }, follow_redirects=False)
 
+    assigned = operator.post(detail + "/assignment", data={
+        "csrf_token": operator_csrf(operator), "assignee_id": staff_id,
+        "due_on": "2026-12-15",
+    }, follow_redirects=False)
+    assert assigned.status_code == 303, assigned.text
+    assert "15.12.2026" in client.get("/account/projects/" + project_id).text
     assert transition("accepted").status_code == 409
     assert transition("planning").status_code == 303
     assert operator.post(detail + "/milestones", data={
