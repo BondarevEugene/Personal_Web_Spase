@@ -32,13 +32,18 @@
 <button id="btn-save" type="button" class="button button-line">Сохранить черновик</button>
 <button id="btn-import" type="button" class="button button-line">Импорт JSON</button>
 <button id="btn-download-json" type="button" class="button button-line">Скачать JSON</button>
-<button id="btn-validate" type="button" class="button button-line">Проверить схему</button>
+<button id="btn-validate" type="button" class="button button-line" aria-controls="graph-diagnostics" aria-expanded="false">Диагностика графа</button>
 <button id="btn-test-canvas" type="button" class="button button-primary">▶ Тестировать диалог</button>
 <button id="btn-expand-canvas" type="button" class="button button-line" aria-pressed="false">Развернуть поле</button>
 <button id="btn-export-info" type="button" class="button button-line">Как работает экспорт?</button>
 <button id="btn-export" type="button" class="button button-primary">Экспорт Python ZIP <span aria-hidden="true">↗</span></button>
 <input type="file" id="import-file" accept=".json,application/json" hidden>
 </div></div>
+<section class="graph-diagnostics" id="graph-diagnostics" aria-label="Диагностика графа" hidden>
+<div class="graph-diagnostics-head"><div><strong>Диагностика сценария</strong><small id="graph-diagnostics-summary" role="status" aria-live="polite">Запустите проверку, чтобы увидеть проблемы и рекомендации.</small></div>
+<button type="button" id="graph-diagnostics-close" aria-label="Закрыть диагностику">Закрыть ×</button></div>
+<div class="graph-diagnostics-list" id="graph-diagnostics-list"></div>
+</section>
 <section class="export-explainer" id="export-explainer" hidden aria-label="Формат экспорта">
  <div><strong>Что создаётся при экспорте?</strong><p>Скачивается ZIP-архив самостоятельного Python Telegram-бота. Это исходный код, а не уже запущенный бот.</p></div>
  <div class="export-file-list"><code>bot.py</code><code>scenario.json</code><code>requirements.txt</code><code>.env.example</code><code>README.md</code></div>
