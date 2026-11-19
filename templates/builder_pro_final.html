@@ -9,7 +9,8 @@
 <link rel="stylesheet" href="/studio-assets/builder.css?v=8">
 <link rel="stylesheet" href="/studio-assets/graph_workspace.css?v=1">
 <script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/graph_studio.js?v=8"></script>
+<script defer src="/studio-assets/graph_history.js?v=1"></script>
+<script defer src="/studio-assets/graph_studio.js?v=9"></script>
 <script defer src="/studio-assets/graph_workspace.js?v=1"></script>
 <link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
 </head>
@@ -25,6 +26,9 @@
 <div class="builder-toolbar">
 <label for="scenario-name">Название сценария <input id="scenario-name" type="text" maxlength="100" value="Мой Telegram-бот" autocomplete="off"></label>
 <div class="builder-toolbar-actions">
+<div class="graph-history-actions" role="group" aria-label="История редактирования">
+<button type="button" id="graph-undo" class="button button-line" disabled title="Отменить (Ctrl+Z)" aria-label="Отменить действие">↶ Отменить</button>
+<button type="button" id="graph-redo" class="button button-line" disabled title="Повторить (Ctrl+Shift+Z)" aria-label="Повторить действие">↷ Повторить</button></div>
 <button id="btn-workspace-density" type="button" class="button button-line" aria-pressed="true" aria-controls="graph-workspace-help">Рабочий режим</button>
 <a href="/bots/lab" class="button button-line graph-lab-link">◈ Лаборатория ботов</a>
 <button id="btn-new-scenario" type="button" class="button button-line">＋ Новый бот</button>
