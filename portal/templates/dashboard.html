@@ -26,7 +26,7 @@
 <p>Отдельный реестр проектов, которые OMNIFACTORY разрабатывает по вашему запросу. Черновики конструктора находятся ниже.</p>
 {% if client_projects %}<div class="account-ticket-list">{% for project in client_projects %}
 <a class="account-ticket" href="/account/projects/{{ project.id }}"><span class="account-ticket-title">{{ project.title }}</span>
-<span class="account-ticket-meta">{{ project.updated_at.strftime("%d.%m.%Y") }} · {{ project.status }}</span></a>{% endfor %}</div>
+<span class="account-ticket-meta">{{ project.updated_at.strftime("%d.%m.%Y") }} · {{ client_project_statuses.get(project.status, project.status) }}</span></a>{% endfor %}</div>
 {% else %}<div class="account-empty">У вас пока нет заказов на разработку. <a href="/account/projects#new-project">Создать первый запрос ↗</a></div>{% endif %}
 </section>
 <section class="account-panel account-ticket-overview" id="requests">
