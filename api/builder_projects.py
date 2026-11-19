@@ -9,7 +9,7 @@ import json
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 
@@ -27,15 +27,53 @@ class Coordinates(BaseModel):
     y: float = Field(ge=0, le=8000, allow_inf_nan=False)
 
 
+class CanvasGroup(BaseModel):
+    """Organizational annotation, not an executable node or subgraph."""
+
+    id: str = Field(pattern=r"^group[0-9]{1,6}$")
+    title: str = Field(min_length=2, max_length=60)
+    node_ids: list[str] = Field(min_length=1, max_length=80)
+
+
 class ProjectData(BaseModel):
     scenario: Scenario
     positions: dict[str, Coordinates] = Field(default_factory=dict, max_length=80)
+    groups: list[CanvasGroup] = Field(default_factory=list, max_length=20)
+
+    @model_validator(mode="after")
+    def checked_groups(self):
+        nodes = {node.id for node in self.scenario.nodes}
+        ids = [group.id for group in self.groups]
+        members = [node_id for group in self.groups for node_id in group.node_ids]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Повторяющиеся идентификаторы групп")
+        if len(members) != len(set(members)) or not set(members).issubset(nodes):
+            raise ValueError("Группы должны содержать существующие узлы без повторов")
+        return self
 
     def checked_positions(self) -> dict:
         ids = {node.id for node in self.scenario.nodes}
         if not set(self.positions).issubset(ids):
             raise HTTPException(422, "Layout references unknown node")
         return {node: point.model_dump() for node, point in self.positions.items()}
+
+
+def pack_layout(data: ProjectData) -> str:
+    """Keep old positions-only rows readable while saving new annotations."""
+    return json.dumps({
+        "positions": data.checked_positions(),
+        "groups": [group.model_dump() for group in data.groups],
+    })
+
+
+def unpack_layout(raw: str) -> tuple[dict, list]:
+    content = json.loads(raw or "{}")
+    if not isinstance(content, dict):
+        return {}, []
+    if "positions" in content and isinstance(content["positions"], dict):
+        groups = content.get("groups", [])
+        return content["positions"], groups if isinstance(groups, list) else []
+    return content, []
 
 
 def customer_required(request: Request, db):
@@ -51,7 +89,7 @@ def serialize(project: BuilderProject, full: bool = False) -> dict:
               "updated_at": project.updated_at.isoformat() + "Z"}
     if full:
         result["scenario"] = json.loads(project.scenario_json)
-        result["positions"] = json.loads(project.layout_json)
+        result["positions"], result["groups"] = unpack_layout(project.layout_json)
     return result
 
 
@@ -88,7 +126,7 @@ def create_project(request: Request, data: ProjectData):
     with session_factory()() as db:
         user = customer_required(request, db)
         verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
-        positions = data.checked_positions()
+        layout = pack_layout(data)
         try:
             count = db.scalar(
                 select(func.count()).select_from(BuilderProject)
@@ -100,7 +138,7 @@ def create_project(request: Request, data: ProjectData):
             row = BuilderProject(
                 customer_id=user.id, name=data.scenario.name,
                 scenario_json=data.scenario.model_dump_json(),
-                layout_json=json.dumps(positions),
+                layout_json=layout,
                 created_at=now, updated_at=now,
             )
             db.add(row)
@@ -133,7 +171,7 @@ def update_project(id: str, request: Request, data: ProjectData):
     with session_factory()() as db:
         user = customer_required(request, db)
         verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
-        positions = data.checked_positions()
+        layout = pack_layout(data)
         try:
             row = db.scalar(select(BuilderProject).where(
                 BuilderProject.id == project_id(id),
@@ -143,7 +181,7 @@ def update_project(id: str, request: Request, data: ProjectData):
                 raise HTTPException(404, detail="Project not found")
             row.name = data.scenario.name
             row.scenario_json = data.scenario.model_dump_json()
-            row.layout_json = json.dumps(positions)
+            row.layout_json = layout
             row.updated_at = utcnow()
             db.commit()
             return serialize(row)

@@ -7,11 +7,12 @@
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
 <link rel="stylesheet" href="/studio-assets/builder.css?v=8">
-<link rel="stylesheet" href="/studio-assets/graph_workspace.css?v=1">
+<link rel="stylesheet" href="/studio-assets/graph_workspace.css?v=2">
 <script defer src="/studio-assets/site.js?v=3"></script>
 <script defer src="/studio-assets/graph_history.js?v=1"></script>
 <script defer src="/studio-assets/graph_layout.js?v=1"></script>
-<script defer src="/studio-assets/graph_studio.js?v=11"></script>
+<script defer src="/studio-assets/graph_groups.js?v=1"></script>
+<script defer src="/studio-assets/graph_studio.js?v=12"></script>
 <script defer src="/studio-assets/graph_workspace.js?v=1"></script>
 <link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
 </head>
@@ -94,7 +95,19 @@
 <button class="palette-node integration-node" data-integration="python" type="button"><b>{ }</b><span><strong>Python Handler</strong><small>Изолированный исполнитель</small></span></button>
 <p class="builder-tip">Перетащи блок на поле. Двигай его за заголовок. Нажми порт справа, затем порт слева на другом блоке — связь появится автоматически.</p>
 </aside>
-<section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div class="graph-legend" aria-label="Легенда типов узлов"><span class="legend-message">● Сообщения</span><span class="legend-choice">◆ Ветвления</span><span class="legend-photo">▣ Медиа</span><span class="legend-document">▤ Документы</span><span class="legend-end">■ Завершение</span><span class="legend-choice">◇ Условия</span><span class="legend-document">⇥ Ввод</span><span class="legend-photo">≔ Переменные</span></div><div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
+<section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div class="graph-legend" aria-label="Легенда типов узлов"><span class="legend-message">● Сообщения</span><span class="legend-choice">◆ Ветвления</span><span class="legend-photo">▣ Медиа</span><span class="legend-document">▤ Документы</span><span class="legend-end">■ Завершение</span><span class="legend-choice">◇ Условия</span><span class="legend-document">⇥ Ввод</span><span class="legend-photo">≔ Переменные</span></div><section class="graph-groups-panel" aria-label="Логические группы сценария">
+<div class="graph-groups-head"><strong>ГРУППЫ / НАВИГАЦИЯ</strong><span id="graph-groups-count">0 групп</span></div>
+<div class="graph-groups-controls">
+<label for="graph-group-name">Название группы<input id="graph-group-name" type="text" maxlength="60" placeholder="Например, Регистрация" autocomplete="off"></label>
+<button type="button" id="graph-group-create" title="Создать группу из выбранного блока">＋ Группа</button>
+<label for="graph-group-target">Переместить выбранный блок в группу
+<select id="graph-group-target"><option value="">Без группы</option></select></label>
+<button type="button" id="graph-group-apply">Применить</button>
+</div>
+<div id="graph-groups-list" class="graph-groups-list" aria-label="Список групп"></div>
+<p class="graph-groups-note">Группы организуют работу на холсте и сохраняются с проектом. Они не изменяют исполнение Python-бота. Нажмите название блока в группе для перехода.</p>
+</section>
+<div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
 <aside class="builder-inspector" aria-label="Настройка блока"><div class="builder-pane-head"><span>03 / ИНСПЕКТОР</span><small>Параметры</small></div><div id="editor-inspector" class="builder-inspector-body"></div></aside>
 </div>
 <section class="builder-preview" id="builder-preview" aria-label="Тестирование сценария"><div><div class="eyebrow">04 / DIALOGUE PREVIEW</div><h2>Тестовый диалог и трассировка.</h2><p>Это симуляция в браузере, а не запуск Telegram-бота. Настоящий Telegram-бот начнёт отвечать после запуска сгенерированного Python-проекта.</p><button id="btn-preview" type="button" class="button button-line">▶ Начать предпросмотр</button></div><div class="preview-workspace"><div id="preview-messages" class="builder-preview-chat" aria-live="polite"><p>Здесь появятся сообщения.</p></div><div class="preview-debugger" aria-label="Пошаговый отладчик">

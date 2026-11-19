@@ -47,7 +47,7 @@ async function saveCloud(){
   const result=await cloudRequest(id?'/'+encodeURIComponent(id):'',{
    method:id?'PUT':'POST',
    headers:{'Content-Type':'application/json','X-Omni-CSRF':token},
-   body:JSON.stringify({scenario:payload(),positions})
+   body:JSON.stringify({scenario:payload(),positions,groups})
   });
   cloudProjectId=result.id;
   save();await refreshCloud(cloudProjectId);
@@ -59,9 +59,11 @@ async function loadCloud(){
  if(!id){status('Сначала выбери сохранённый проект в списке.',true);return;}
  if(!window.confirm('Открыть сохранённый проект? Текущий черновик останется в резервной копии браузера.'))return;
  try{
-  localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions}));
+  localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions,groups}));
   const project=await cloudRequest('/'+encodeURIComponent(id));
   data=project.scenario;positions=project.positions||{};
+  groups=window.OmniGraphGroups.clean(project.groups||[],data.nodes);
+  expandedGroups.clear();
   cloudProjectId=id;
   counter=1;selected=data.start;link=null;
   $('scenario-name').value=data.name;
@@ -104,7 +106,8 @@ const sample=()=>({name:'Пример: персональный Telegram-бот'
 {id:'about',kind:'message',text:'Мы создаём цифровые решения.',next:'finish'},
 {id:'finish',kind:'end',text:'До встречи!'}]});
 const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш',input:'Ввод пользователя',condition:'Условие IF / ELSE',set_variable:'Переменная'};
-let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
+let data=sample(),selected=data.start,positions={},groups=[],zoom=1,link=null,counter=1;
+const expandedGroups=new Set();
 let diagnosticIssues=[];
 let debugTrace=[];
 let debugStep=-1;
@@ -116,10 +119,10 @@ let canvasExpanded=false;
 function replaceScenario(factory) {
  const ok=window.confirm('Текущий черновик будет заменён. Сохраняем резервную копию в этом браузере. Продолжить?');
  if(!ok)return;
- try{localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions}));}
+ try{localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions,groups}));}
  catch(_err){status('Не удалось сохранить резервную копию. Отмена замены.',true);return;}
  data=factory();
- positions={};counter=1;selected=data.start;link=null;cloudProjectId=null;
+ positions={};groups=[];expandedGroups.clear();counter=1;selected=data.start;link=null;cloudProjectId=null;
  $('cloud-project-list').value='';
  $('scenario-name').value=data.name;
  change();inspector();resetHistory();
@@ -152,6 +155,7 @@ function removeNode(id){
  if(data.nodes.length<=1)return status('Нельзя удалить единственный узел.',true);
  data.nodes=data.nodes.filter(n=>n.id!==id);
  delete positions[id];
+ groups=window.OmniGraphGroups.ungroup(groups,id);
  for(const n of data.nodes){
   if(n.next===id)n.next=null;
   if(n.true_target===id)n.true_target=null;
@@ -196,14 +200,14 @@ function updateHistoryButtons(){
  if(undo)undo.disabled=!graphHistory||!graphHistory.canUndo();
  if(redo)redo.disabled=!graphHistory||!graphHistory.canRedo();
 }
-function graphState(){return {data,positions};}
+function graphState(){return {data,positions,groups};}
 function resetHistory(){
  if(!graphHistory)graphHistory=window.OmniGraphHistory.create(graphState(),60);
  else graphHistory.reset(graphState());
  updateHistoryButtons();
 }
 function persistDraft(){
- try{localStorage.setItem(STORE,JSON.stringify({data,positions,cloudProjectId}));}
+ try{localStorage.setItem(STORE,JSON.stringify({data,positions,groups,cloudProjectId}));}
  catch(e){status('Локальное сохранение недоступно',true);}
 }
 function clearDebugTrace(){
@@ -228,6 +232,7 @@ function restoreGraph(snapshot){
  if(!snapshot)return;
  clearDebugTrace();
  data=snapshot.data;positions=snapshot.positions;
+ groups=window.OmniGraphGroups.clean(snapshot.groups||[],data.nodes);
  if(!data.nodes.some(node=>node.id===selected))selected=data.start;
  link=null;diagnosticIssues=[];
  const panel=$('graph-diagnostics');
@@ -265,6 +270,77 @@ function connect(target){
  else if(n.kind!=='end')n.next=target;
  status('Соединено: '+n.id+' → '+target);link=null;render();save();
 }
+function focusGraphNode(id){
+ if(!data.nodes.some(node=>node.id===id))return;
+ selected=id;render();inspector();
+ const card=Array.from(document.querySelectorAll('.graph-node'))
+  .find(node=>node.dataset.nodeId===id);
+ if(card)card.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});
+ status('Выбран блок '+id);
+}
+function renderGroups(){
+ const target=$('graph-groups-list'),select=$('graph-group-target');
+ if(!target||!select)return;
+ groups=window.OmniGraphGroups.clean(groups,data.nodes);
+ $('graph-groups-count').textContent=groups.length+' групп';
+ target.replaceChildren();
+ const current=groups.find(group=>group.node_ids.includes(selected));
+ select.replaceChildren();
+ const free=el('option','', 'Без группы');free.value='';select.append(free);
+ for(const group of groups){
+  const option=el('option','',group.title);option.value=group.id;select.append(option);
+ }
+ select.value=current?current.id:'';
+ if(!groups.length){
+  target.append(el('p','graph-groups-empty','Групп пока нет. Выберите блок и создайте первую.'));
+  return;
+ }
+ for(const group of groups){
+  const details=el('details','graph-group');
+  details.open=expandedGroups.has(group.id);
+  details.addEventListener('toggle',()=>{
+   if(details.open)expandedGroups.add(group.id);
+   else expandedGroups.delete(group.id);
+  });
+  const summary=el('summary','graph-group-title',group.title+' · '+group.node_ids.length);
+  details.append(summary);
+  const rows=el('div','graph-group-members');
+  for(const id of group.node_ids){
+   const node=data.nodes.find(item=>item.id===id);
+   if(!node)continue;
+   const entry=btn(node.id+' · '+names[node.kind],()=>focusGraphNode(id),
+    'graph-group-member'+(selected===id?' selected':''));
+   rows.append(entry);
+  }
+  const remove=btn('Удалить группу',()=>{
+   groups=window.OmniGraphGroups.deleteGroup(groups,group.id);
+   expandedGroups.delete(group.id);change();
+   status('Группа удалена. Узлы и переходы сохранены.');
+  },'graph-group-remove');
+  rows.append(remove);details.append(rows);target.append(details);
+ }
+}
+$('graph-group-create').addEventListener('click',()=>{
+ try{
+  const title=$('graph-group-name').value.trim();
+  groups=window.OmniGraphGroups.create(groups,data.nodes,title,selected);
+  expandedGroups.add(groups[groups.length-1].id);
+  $('graph-group-name').value='';
+  change();status('Группа создана, выбранный блок добавлен.');
+ }catch(error){status('Группы: '+error.message,true);}
+});
+$('graph-group-apply').addEventListener('click',()=>{
+ const groupId=$('graph-group-target').value;
+ const previous=groups.find(group=>group.node_ids.includes(selected));
+ if((previous?previous.id:'')===groupId)return;
+ try{
+  groups=groupId?
+   window.OmniGraphGroups.move(groups,data.nodes,groupId,selected):
+   window.OmniGraphGroups.ungroup(groups,selected);
+  if(groupId)expandedGroups.add(groupId);
+  change();status('Принадлежность блока к группе обновлена.');
+ }catch(error){status('Группы: '+error.message,true);}
+});
 function render(){
  data.nodes.forEach((node,i)=>position(node.id,i));
  world.height=Math.max(1400,...Object.values(positions)
@@ -279,6 +355,11 @@ function render(){
  data.nodes.forEach((n,i)=>{
   const p=position(n.id,i),card=el('section','builder-node graph-node'+(selected===n.id?' selected':''));
   card.dataset.nodeId=n.id;decorateCard(card,n);
+  const membership=groups.find(group=>group.node_ids.includes(n.id));
+  if(membership){
+   card.dataset.groupId=membership.id;
+   card.append(el('span','graph-node-group-chip',membership.title));
+  }
   const issue=diagnosticIssues.find(item=>item.node_id===n.id);
   if(issue){card.classList.add(issue.severity==='error'?'graph-diagnostic-error':'graph-diagnostic-warning');}
   card.style.left=p.x+'px';card.style.top=p.y+'px';
@@ -307,7 +388,7 @@ function render(){
   });
   worldEl.append(card);
  });
- root.append(worldEl);edges();
+ root.append(worldEl);edges();renderGroups();
 }
 function change(){
  diagnosticIssues=[];
@@ -648,7 +729,7 @@ $('import-file').addEventListener('change',async e=>{
   const obj=JSON.parse(await file.text());
   const r=await fetch(API+'/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
   if(!r.ok)throw Error('Схема не прошла серверную проверку');
-  data=obj;positions={};selected=data.start;counter=1;cloudProjectId=null;change();inspector();$('scenario-name').value=data.name;resetHistory();status('Сценарий импортирован.');
+  data=obj;positions={};groups=[];expandedGroups.clear();selected=data.start;counter=1;cloudProjectId=null;change();inspector();$('scenario-name').value=data.name;resetHistory();status('Сценарий импортирован.');
  }catch(err){status('Ошибка импорта: '+err.message,true);}e.target.value='';
 });
 const paletteQuery=$('graph-palette-query');
@@ -696,7 +777,7 @@ try{
   stored.data.nodes.some(n=>n.id===stored.data.start)){
   data=stored.data;
   cloudProjectId=typeof stored.cloudProjectId==='string'&&/^[0-9a-f-]{36}$/i.test(stored.cloudProjectId)?stored.cloudProjectId:null;
-  positions={};
+  positions={};groups=window.OmniGraphGroups.clean(stored.groups||[],data.nodes);
   for(const [id,p] of Object.entries(stored.positions||{})){
    if(data.nodes.some(n=>n.id===id)&&p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&
        p.x>=0&&p.y>=0&&p.x<world.width&&p.y<=8000)

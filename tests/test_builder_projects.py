@@ -69,7 +69,8 @@ def test_unauthenticated_project_api_denies_access(db_ready):
 def test_create_list_open_update_delete_and_csrf(db_ready):
     c = register("build_owner", "owner@builder.test")
     assert c.get(BASE).json() == {"projects": []}
-    body = {"scenario": SCENARIO, "positions": {"hello": {"x": 50, "y": 60}}}
+    body = {"scenario": SCENARIO, "positions": {"hello": {"x": 50, "y": 60}},
+            "groups": [{"id": "group1", "title": "Начало диалога", "node_ids": ["hello"]}]}
     assert c.post(BASE, json=body).status_code == 403
     created = c.post(BASE, headers=csrf(c), json=body)
     assert created.status_code == 201, created.text
@@ -83,14 +84,20 @@ def test_create_list_open_update_delete_and_csrf(db_ready):
     assert [node["id"] for node in saved.json()["scenario"]["nodes"]] == ["hello", "done"]
     assert saved.json()["scenario"]["nodes"][0]["text"] == "Привет!"
     assert saved.json()["positions"]["hello"] == {"x": 50.0, "y": 60.0}
+    assert saved.json()["groups"] == body["groups"]
 
 
     modified = {"scenario": {**SCENARIO, "name": "Updated bot"},
-                "positions": {"done": {"x": 70, "y": 100}}}
+                "positions": {"done": {"x": 70, "y": 100}},
+                "groups": [{"id": "group1", "title": "Завершение", "node_ids": ["done"]}]}
     assert c.put(BASE + "/" + id, json=modified).status_code == 403
     updated = c.put(BASE + "/" + id, headers=csrf(c), json=modified)
     assert updated.status_code == 200, updated.text
     assert updated.json()["name"] == "Updated bot"
+    reopened = c.get(BASE + "/" + id)
+    assert reopened.status_code == 200
+    assert reopened.json()["groups"] == modified["groups"]
+    assert reopened.json()["positions"]["done"] == {"x": 70.0, "y": 100.0}
     assert c.delete(BASE + "/" + id).status_code == 403
     deleted = c.delete(BASE + "/" + id, headers=csrf(c))
     assert deleted.status_code == 204
