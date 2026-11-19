@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, CheckConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, LargeBinary, String, Text, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from portal.db import Base
@@ -556,3 +556,22 @@ class ClientProjectNotification(Base):
     message: Mapped[str] = mapped_column(String(250), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+
+
+class ClientProjectAttachment(Base):
+    """Small private customer attachment stored transactionally in database.
+
+    Intentionally bounded; production large-file storage requires a private
+    object-storage adapter and malware scanning before raising upload limits.
+    """
+
+    __tablename__ = "portal_client_project_attachments"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    uploaded_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    filename: Mapped[str] = mapped_column(String(120), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(70), nullable=False)
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    data: Mapped[bytes] = mapped_column(LargeBinary(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
