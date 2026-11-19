@@ -12,8 +12,9 @@
 {% if success %}<p class="account-success" role="status">Настройки сохранены.</p>{% endif %}
 <div class="account-workspace-layout">
 <div class="account-workspace-content">
-<div class="account-quick-actions"><a class="button button-primary" href="/account/projects#new-project">+ Новый заказ</a><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="#tools">Мои проекты ↓</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
+<div class="account-quick-actions"><a class="button button-line" href="/account/notifications">Уведомления · {{ unread_project_notices }} непрочитанных ↗</a><a class="button button-primary" href="/account/projects#new-project">+ Новый заказ</a><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="#tools">Мои проекты ↓</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
 <div class="account-kpis">
+<article><span>НОВЫЕ УВЕДОМЛЕНИЯ</span><strong>{{ unread_project_notices }}</strong><small>Непрочитанные события по вашим заказам</small></article>
 <article><span>ЗАКАЗЫ В РАБОТЕ</span><strong>{{ active_client_project_count }}</strong><small>Заказы вашей организации</small></article>
 <article><span>БОТЫ</span><strong>{{ bot_count }}</strong><small>Мои сохранённые схемы</small></article>
 <article><span>АВТОМАТИЗАЦИИ</span><strong>{{ flow_count }}</strong><small>Мои процессы</small></article>
