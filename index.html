@@ -10,8 +10,9 @@
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
 <link rel="stylesheet" href="/studio-assets/founders.css?v=1">
 <script defer src="/studio-assets/site.js?v=3"></script>
+<link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
 </head>
-<body class="platform-app">
+<body class="platform-app has-section-rail">
 <a class="skip-link" href="#main">Перейти к содержанию</a>
 <div class="grid-noise" aria-hidden="true"></div>
 <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
@@ -20,13 +21,15 @@
     <span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 38 38" fill="none"><path d="M19 2 35 19 19 36 3 19Z" stroke="currentColor" stroke-width="1.8"/><path d="m19 9 10 10-10 10L9 19Z" fill="currentColor" opacity=".75"/><path d="M19 9v20M9 19h20" stroke="#08121c" stroke-width="1.5"/></svg></span>
     <span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / PLATFORM</small></span>
   </a>
-  <nav id="main-nav" class="nav-links" aria-label="Навигация платформы">
-    <a class="active" href="#workspace">Платформа</a>
-    <a href="/projects">Проекты</a><a href="/bots/lab">Bot Lab</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/robotization">Автоматизация</a><a href="/techkillers">Технологии</a>
-    <a href="/architect">Конструктор</a><a href="#founders">Основатели</a>
-    
-    <a href="/dashboard">Состояние</a>
-    <a href="/studio">Студия</a><a href="/account">Кабинет</a>
+  <nav id="main-nav" class="nav-links" aria-label="Модули OMNIFACTORY">
+    <a class="active" href="/">Платформа</a>
+    <a href="/architect">Конструктор</a>
+    <a href="/bots/lab">Bot Lab</a>
+    <a href="/automation/studio">Автоматизация</a>
+    <a href="/cloud/deploy">Cloud Deploy</a>
+    <a href="/projects">Проекты</a>
+    <a href="/account">Кабинет</a>
+    <a href="/studio">Студия</a>
   </nav>
   <div class="nav-actions">
     <a class="platform-link" href="/account/login">Войти</a>
@@ -34,6 +37,13 @@
     <button id="menu-toggle" class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Открыть меню"><span></span><span></span></button>
   </div>
 </div></header>
+<nav class="omni-section-rail" aria-label="Навигация по главной странице">
+<strong>НА ЭТОЙ СТРАНИЦЕ</strong>
+<a href="#workspace">Обзор</a>
+<a href="#products">Инструменты</a>
+<a href="#founders">Основатели</a>
+<a href="#status">Состояние платформы</a>
+</nav>
 <main id="main">
 <section class="pf-hero container" id="workspace">
   <div class="pf-hero-grid">
