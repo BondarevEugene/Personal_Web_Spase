@@ -511,3 +511,48 @@ class ClientProjectEvent(Base):
     event_type: Mapped[str] = mapped_column(String(32), nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class ClientProjectDocument(Base):
+    """Immutable text document revision; not an uploaded attachment or signature."""
+
+    __tablename__ = "portal_client_project_documents"
+    __table_args__ = (
+        UniqueConstraint("project_id", "document_kind", "version",
+                         name="uq_client_project_document_version"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    created_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    document_kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class ClientProjectApproval(Base):
+    """Acknowledgment of an exact document version, not a legal e-signature."""
+
+    __tablename__ = "portal_client_project_approvals"
+    __table_args__ = (
+        UniqueConstraint("document_id", "org_id", name="uq_client_document_org_approval"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_client_project_documents.id"), index=True, nullable=False)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), nullable=False)
+    approved_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class ClientProjectNotification(Base):
+    """Per-recipient in-app operational notice with an explicit read timestamp."""
+
+    __tablename__ = "portal_client_project_notifications"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    recipient_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), index=True, nullable=False)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), nullable=False)
+    message: Mapped[str] = mapped_column(String(250), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
