@@ -49,3 +49,25 @@
 @media(prefers-reduced-motion:reduce){
  .builder-app .graph-node,.builder-app .graph-port{transition:none!important}
 }
+
+/* Quiet, almost-black Graph Studio diagnostics. Does not replace type colors. */
+.builder-app .graph-diagnostics{
+ margin:9px 0 15px;padding:14px 17px;background:#0b0d12;
+ border:1px solid #454955;border-radius:10px;color:#eceef5
+}
+.builder-app .graph-diagnostics[hidden]{display:none}
+.builder-app .graph-diagnostics-head{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.builder-app .graph-diagnostics-head strong{display:block;font:600 15px/1.35 var(--display)}
+.builder-app .graph-diagnostics-head small{display:block;margin-top:5px;color:#b8bfce;font-size:12px}
+.builder-app #graph-diagnostics-close{border:1px solid #626776;background:#20232c;color:#f2f3f8;border-radius:6px;padding:8px 12px}
+.builder-app .graph-diagnostics-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-top:13px}
+.builder-app .graph-diagnostics-item{display:block;text-align:left;width:100%;border:1px solid #515563;background:#1b1d25;color:#f0f1f6;
+ border-radius:7px;padding:10px 12px;font-size:12px;line-height:1.5;cursor:pointer}
+.builder-app .graph-diagnostics-item.error{border-left:3px solid #e99190}
+.builder-app .graph-diagnostics-item.warning{border-left:3px solid #d8bd7b}
+.builder-app .graph-diagnostics-item:hover,.builder-app .graph-diagnostics-item:focus-visible{background:#2b2d39;border-color:#babed2}
+.builder-app .graph-diagnostics-clean{color:#b7dcc6;font-size:13px}
+.builder-app .graph-node.graph-diagnostic-error{outline:2px dashed #e99190;outline-offset:4px}
+.builder-app .graph-node.graph-diagnostic-warning{outline:2px dashed #d8bd7b;outline-offset:4px}
+@media(max-width:700px){.builder-app .graph-diagnostics-list{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.builder-app .graph-diagnostics-item{transition:none}}
