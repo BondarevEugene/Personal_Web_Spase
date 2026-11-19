@@ -214,6 +214,12 @@ def account(request: Request):
                          bot_projects=bot_projects, workflows=workflows,
                          client_projects=client_projects,
                          active_client_project_count=active_client_project_count,
+                         client_project_statuses={
+                             "requested": "Новый запрос", "planning": "Планирование",
+                             "in_progress": "В разработке", "review": "На приёмке",
+                             "accepted": "Принят", "paused": "Приостановлен",
+                             "cancelled": "Отменён",
+                         },
                          support_statuses=_SUPPORT_STATUS,
                          success=request.query_params.get("updated") == "1")
 
