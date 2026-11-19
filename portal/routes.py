@@ -18,7 +18,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from portal.db import session_factory
-from portal.models import (AutomationWorkflow, BuilderProject, Customer, CustomerSettings, Invoice, Organization, PaymentRecord,
+from portal.models import (AutomationWorkflow, BuilderProject, ClientProject, Customer, CustomerSettings, Invoice, Organization, PaymentRecord,
                            PortalSession, RegistrationEvent, Subscription, SupportEvent, SupportMessage, SupportTicket, utcnow)
 from portal.security import (CSRF_COOKIE, SESSION_COOKIE, hash_password, issue_csrf,
                              new_session, password_matches, secure_request,
@@ -187,6 +187,13 @@ def account(request: Request):
             SupportTicket.org_id == user.org_id,
             SupportTicket.status.notin_(("resolved", "closed")),
         )) or 0
+        client_projects = db.scalars(select(ClientProject).where(
+            ClientProject.org_id == user.org_id
+        ).order_by(ClientProject.updated_at.desc()).limit(6)).all()
+        active_client_project_count = db.scalar(select(func.count(ClientProject.id)).where(
+            ClientProject.org_id == user.org_id,
+            ClientProject.status.notin_(("accepted", "cancelled")),
+        )) or 0
         bot_count = db.scalar(select(func.count(BuilderProject.id)).where(
             BuilderProject.customer_id == user.id,
         )) or 0
@@ -205,6 +212,8 @@ def account(request: Request):
                          active_ticket_count=active_ticket_count,
                          bot_count=bot_count, flow_count=flow_count,
                          bot_projects=bot_projects, workflows=workflows,
+                         client_projects=client_projects,
+                         active_client_project_count=active_client_project_count,
                          support_statuses=_SUPPORT_STATUS,
                          success=request.query_params.get("updated") == "1")
 
