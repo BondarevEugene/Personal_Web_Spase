@@ -429,3 +429,29 @@ class CloudReleaseReview(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime())
+
+
+class SupportTicket(Base):
+    """Customer-created service request, strictly scoped to an organization."""
+
+    __tablename__ = "portal_support_tickets"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    created_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    subject: Mapped[str] = mapped_column(String(160), nullable=False)
+    category: Mapped[str] = mapped_column(String(30), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="new")
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class SupportMessage(Base):
+    """Thread message. All access is mediated through the owning ticket's org_id."""
+
+    __tablename__ = "portal_support_messages"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    ticket_id: Mapped[str] = mapped_column(ForeignKey("portal_support_tickets.id"), index=True, nullable=False)
+    author_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)

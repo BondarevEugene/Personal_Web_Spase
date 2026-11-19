@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050811"><title>Сервисные заявки — OmniFactory</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3">
+<link rel="stylesheet" href="/studio-assets/account.css?v=2"></head>
+<body class="account-app">
+<header class="site-header"><div class="header-inner container">
+<a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>CLIENT WORKSPACE / SERVICE DESK</small></span></a>
+<nav class="account-header-links" aria-label="Разделы платформы">
+<a href="/">Платформа</a><a href="/architect">Конструктор</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account" aria-current="page">Мой кабинет</a></nav>
+</div></header>
+<main class="container account-dashboard">
+<nav class="account-breadcrumb" aria-label="Путь"><a href="/account">Кабинет</a><span>/</span><span>Заявки</span></nav>
+<div class="eyebrow">OMNIFACTORY / CUSTOMER SERVICE DESK</div>
+<h1>Вопросы и задачи.<br><span class="gradient-text">Всё под контролем.</span></h1>
+<p class="account-dashboard-lede">Опишите задачу один раз и следите за её рассмотрением в личном кабинете. Все обращения доступны участникам вашей организации.</p>
+{% if created %}<div class="account-success" role="status">Заявка зарегистрирована. Её статус можно отслеживать ниже.</div>{% endif %}
+<div class="account-dashboard-grid">
+<section class="account-panel" id="new-ticket">
+<div class="eyebrow">01 / NEW REQUEST</div><h2>Создать заявку</h2>
+<form method="post" action="/account/tickets">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>Тема <input name="subject" maxlength="160" minlength="5" required placeholder="Например, подключить новый канал"></label>
+<label>Тип обращения <select name="category" required>
+<option value="question">Вопрос или консультация</option><option value="incident">Проблема с работой</option>
+<option value="change">Доработка или новая функция</option><option value="billing">Оплата и документы</option>
+</select></label>
+<label>Описание <textarea name="description" minlength="15" maxlength="5000" rows="7" required placeholder="Что требуется, какой результат ожидаете и где возникла проблема?"></textarea></label>
+<button class="button button-primary account-submit" type="submit">Отправить обращение <span>↗</span></button>
+<p class="account-smallprint">Не указывайте пароли, токены доступа и банковские реквизиты в тексте заявки.</p>
+</form></section>
+<section class="account-panel" id="my-tickets">
+<div class="eyebrow">02 / REQUEST HISTORY</div><h2>Мои обращения</h2>
+{% if tickets %}<div class="account-ticket-list">
+{% for ticket in tickets %}
+<a class="account-ticket" href="/account/tickets/{{ ticket.id }}">
+<span class="account-ticket-title">{{ ticket.subject }}</span>
+<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ ticket.category }} · {{ statuses.get(ticket.status, ticket.status) }}</span>
+<span class="account-ticket-open">Открыть обсуждение ↗</span>
+</a>
+{% endfor %}
+</div>{% else %}<div class="account-empty"><strong>Пока нет обращений.</strong><p>Это хорошо — либо вы ещё не обращались за поддержкой. Создайте первую заявку через форму слева.</p></div>{% endif %}
+</section></div>
+<p class="account-back"><a href="/account">← Назад в рабочее пространство</a></p>
+</main>
+</body></html>

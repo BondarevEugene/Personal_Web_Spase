@@ -1,19 +1,31 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#050811"><title>Личный кабинет — OmniFactory</title>
-<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=1"></head>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container">
 <a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNT</small></span></a>
-<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/bots/lab">Конструктор</a><a href="/robotization">Автоматизация</a><a href="/studio">Студия</a></nav>
+<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/architect">Конструктор</a><a href="/automation/studio">Автоматизация</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account/tickets">Заявки</a><a href="/studio">Студия</a></nav>
 <form method="post" action="/account/logout" class="account-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Выйти ↗</button></form></div></header>
 <main class="container account-dashboard"><div class="eyebrow">PRIVATE CLIENT SPACE / OMNIFACTORY</div>
 <h1>Добро пожаловать,<br><span class="gradient-text">{{ user.display_name }}.</span></h1>
 <p class="account-dashboard-lede">Аккаунт <strong>{{ user.username }}</strong> · Организация <strong>{{ org.name }}</strong> · Роль <strong>{{ user.role }}</strong></p>
 {% if success %}<p class="account-success" role="status">Настройки сохранены.</p>{% endif %}
-<div class="account-kpis"><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
+<div class="account-workspace-layout">
+<div class="account-workspace-content">
+<div class="account-quick-actions"><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
+<div class="account-kpis"><article><span>ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
 <article><span>УЧЁТ РЕГИСТРАЦИИ</span><strong>Зарегистрирован</strong><small>{{ user.created_at.strftime("%d.%m.%Y") }}</small></article>
 <article><span>ПОДТВЕРЖДЕНИЕ EMAIL</span><strong>{{ "Подтверждён" if user.email_verified else "Не подтверждён" }}</strong><small>Проверка email будет добавлена</small></article></div>
+<section class="account-panel account-ticket-overview" id="requests">
+<div class="eyebrow">01 / SERVICE DESK</div><div class="account-section-heading"><h2>Ваши обращения</h2><a href="/account/tickets">Все заявки ↗</a></div>
+{% if tickets %}<div class="account-ticket-list">{% for ticket in tickets %}
+<a class="account-ticket" href="/account/tickets/{{ ticket.id }}">
+<span class="account-ticket-title">{{ ticket.subject }}</span>
+<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ ticket.status }}</span>
+</a>{% endfor %}</div>
+{% else %}<div class="account-empty">У вас пока нет заявок. Если нужна помощь, консультация или доработка — создайте обращение, и оно появится здесь.</div>{% endif %}
+</section>
 <div class="account-dashboard-grid">
-<section class="account-panel"><div class="eyebrow">01 / PROFILE SETTINGS</div><h2>Настройки аккаунта</h2>
+<section class="account-panel" id="settings"><div class="eyebrow">02 / PROFILE SETTINGS</div><h2>Настройки аккаунта</h2>
 <form method="post" action="/account/settings"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <label>Имя <input name="display_name" type="text" minlength="2" maxlength="120" value="{{ user.display_name }}" required></label>
 <label>Почта <input type="email" value="{{ user.email }}" disabled></label>
@@ -22,12 +34,16 @@
 <label class="account-inline-checkbox"><input name="marketing_opt_in" value="yes" type="checkbox" {% if settings.marketing_opt_in %}checked{% endif %}> Получать новости о продуктах</label>
 <button class="button button-primary account-submit" type="submit">Сохранить изменения <span>↗</span></button></form>
 </section>
-<section class="account-panel"><div class="eyebrow">02 / COMMERCIAL ACCOUNTING</div><h2>Подписка и платежи</h2>
+<section class="account-panel" id="billing"><div class="eyebrow">03 / COMMERCIAL ACCOUNTING</div><h2>Подписка и платежи</h2>
 <p><a class="button button-line" href="/account/billing">Посмотреть тарифы и счета ↗</a></p>
 <p>Тариф: <strong>{{ subscription.plan_code if subscription else "не выбран" }}</strong>. Стоимость: <strong>{{ "%.2f"|format((subscription.price_minor if subscription else 0)/100) }} {{ subscription.currency if subscription else "UAH" }}</strong>.</p>
 <p>Платёжные шлюзы ещё не подключены. Регистрация фиксируется в базе, но не считается оплатой и не создаёт выручку.</p>
 <h3>Счета</h3>{% if invoices %}<div class="account-ledger">{% for invoice in invoices %}<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }}</span><strong>{{ "%.2f"|format(invoice.amount_minor/100) }} {{ invoice.currency }} · {{ invoice.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Выставленных счетов пока нет.</div>{% endif %}
 <h3>История платежей</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ payment.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Подтверждённых платежных операций пока нет.</div>{% endif %}
 </section>
-<section class="account-panel account-panel-wide"><div class="eyebrow">03 / PROJECTS AND TOOLS</div><h2>Инструменты разработки</h2><p>Graph Studio позволяет создавать схемы диалогов, тестировать их и сохранять черновики в личном аккаунте. Для запуска скачанного Python-бота потребуется Telegram-токен и хостинг.</p><a class="button button-line" href="/architect">Открыть конструктор <span>↗</span></a></section>
+<section class="account-panel account-panel-wide" id="tools"><div class="eyebrow">04 / PROJECTS AND TOOLS</div><h2>Инструменты разработки</h2><p>Graph Studio позволяет создавать схемы диалогов, тестировать их и сохранять черновики в личном аккаунте. Для запуска скачанного Python-бота потребуется Telegram-токен и хостинг.</p><a class="button button-line" href="/architect">Открыть конструктор <span>↗</span></a></section>
+</div></div>
+<aside class="account-section-nav" aria-label="Разделы кабинета"><strong>НА ЭТОЙ СТРАНИЦЕ</strong>
+<a href="#requests">Обращения</a><a href="#settings">Профиль</a>
+<a href="#billing">Финансы</a><a href="#tools">Инструменты</a></aside>
 </div></main></body></html>
