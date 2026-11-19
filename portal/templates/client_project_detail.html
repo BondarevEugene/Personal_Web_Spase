@@ -5,6 +5,20 @@
 <div class="cp-grid"><section class="account-panel"><h2>Техническое задание</h2><p class="cp-brief">{{ project.brief }}</p></section><section class="account-panel"><h2>Этапы работы</h2>
 {% if milestones %}<ol class="cp-stages">{% for stage in milestones %}<li><strong>{{ stage.title }}</strong><small>{{ milestone_labels.get(stage.status, stage.status) }}</small><p>{{ stage.details }}</p></li>{% endfor %}</ol>{% else %}<p class="account-empty">План работ ещё не утверждён оператором.</p>{% endif %}
 </section></div>
+<section class="account-panel cp-attachments" aria-label="Вложения проекта">
+<h2>Файлы проекта</h2><p>PDF, PNG, JPEG и TXT до {{ attachment_limit_mb }} МБ каждый. Максимум восемь вложений на проект. Файлы доступны только участникам организации и операторам платформы.</p>
+{% if project_attachments %}<div class="cp-list">{% for file in project_attachments %}
+<div class="cp-project"><span><strong>{{ file.filename }}</strong><small>{{ file.created_at.strftime("%d.%m.%Y %H:%M") }} · {{ "%.1f"|format(file.size_bytes/1024) }} КБ · SHA-256 {{ file.sha256[:12] }}…</small></span>
+<a class="button button-line" href="/account/projects/{{ project.id }}/attachments/{{ file.id }}">Скачать ↗</a></div>
+{% endfor %}</div>{% else %}<div class="account-empty">Вложений ещё нет.</div>{% endif %}
+{% if project.status not in ["accepted", "cancelled"] %}
+<form method="post" action="/account/projects/{{ project.id }}/attachments" enctype="multipart/form-data" class="cp-upload">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label for="cp-file-customer">Добавить файл проекта
+<input id="cp-file-customer" type="file" name="uploaded" accept=".pdf,.png,.jpg,.jpeg,.txt" required></label>
+<button class="button button-line" type="submit">Загрузить файл ↗</button>
+</form>{% endif %}
+</section>
 <section class="account-panel cp-documents"><h2>Документы и согласования</h2>
 <p>Текстовые версии документов проекта. Согласование фиксирует конкретную редакцию и не является электронной подписью.</p>
 {% if project_documents %}<div class="cp-list">{% for doc in project_documents %}
