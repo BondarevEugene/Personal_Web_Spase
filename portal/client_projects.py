@@ -147,6 +147,20 @@ def accept_project(request: Request, id: str, csrf_token: str = Form("")):
             raise HTTPException(403, "Для приёмки требуется владелец организации")
         if project.status != "review":
             raise HTTPException(409, "Проект не передан на приёмку")
+        # A specification published during review invalidates any older
+        # acknowledgment; acceptance requires the newest document version.
+        from portal.models import ClientProjectApproval, ClientProjectDocument
+        latest_spec = db.scalar(select(ClientProjectDocument).where(
+            ClientProjectDocument.project_id == project.id,
+            ClientProjectDocument.document_kind == "specification",
+        ).order_by(ClientProjectDocument.version.desc()).limit(1))
+        if latest_spec is not None:
+            approved_latest = db.scalar(select(ClientProjectApproval.id).where(
+                ClientProjectApproval.document_id == latest_spec.id,
+                ClientProjectApproval.org_id == user.org_id,
+            ))
+            if approved_latest is None:
+                raise HTTPException(409, "Актуальная версия технического задания не согласована")
         has_stage = db.scalar(select(ClientProjectMilestone.id).where(
             ClientProjectMilestone.project_id == project.id
         ).limit(1))
