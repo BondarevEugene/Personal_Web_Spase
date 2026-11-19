@@ -3,6 +3,7 @@
 This checks Python ZIP -> import -> /start -> choice -> input -> condition -> end.
 It does not rely on platform browser mocks or a real Telegram token.
 """
+import asyncio
 import importlib.util
 import json
 from io import BytesIO
@@ -10,7 +11,6 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock
 from zipfile import ZipFile
 
-import pytest
 from fastapi.testclient import TestClient
 
 from server import app
@@ -70,8 +70,7 @@ def callback(bot, node_id="choose", index="0"):
     )
 
 
-@pytest.mark.asyncio
-async def test_exported_bot_user_journey_and_callback_replay(tmp_path):
+async def _test_exported_bot_user_journey_and_callback_replay(tmp_path):
     module = exported_module(tmp_path)
     bot = SimpleNamespace(
         send_message=AsyncMock(), send_photo=AsyncMock(), send_document=AsyncMock(),
@@ -113,8 +112,7 @@ async def test_exported_bot_user_journey_and_callback_replay(tmp_path):
     assert user_key not in module.VALUES
 
 
-@pytest.mark.asyncio
-async def test_exported_bot_other_choice_finishes_without_input(tmp_path):
+async def _test_exported_bot_other_choice_finishes_without_input(tmp_path):
     module = exported_module(tmp_path)
     bot = SimpleNamespace(
         send_message=AsyncMock(), send_photo=AsyncMock(), send_document=AsyncMock(),
@@ -126,8 +124,7 @@ async def test_exported_bot_other_choice_finishes_without_input(tmp_path):
     assert bot.send_message.await_args.args[1] == "Stopped"
 
 
-@pytest.mark.asyncio
-async def test_exported_bot_invalid_input_retries_without_state_change(tmp_path):
+async def _test_exported_bot_invalid_input_retries_without_state_change(tmp_path):
     module = exported_module(tmp_path)
     bot = SimpleNamespace(
         send_message=AsyncMock(), send_photo=AsyncMock(), send_document=AsyncMock(),
@@ -150,3 +147,14 @@ def test_generated_runtime_has_no_automatic_cloud_deployment(tmp_path):
     assert "Paste API keys" not in (tmp_path / "README.md").read_text(
         encoding="utf-8"
     )
+
+def test_exported_bot_user_journey_and_callback_replay(tmp_path):
+    asyncio.run(_test_exported_bot_user_journey_and_callback_replay(tmp_path))
+
+
+def test_exported_bot_other_choice_finishes_without_input(tmp_path):
+    asyncio.run(_test_exported_bot_other_choice_finishes_without_input(tmp_path))
+
+
+def test_exported_bot_invalid_input_retries_without_state_change(tmp_path):
+    asyncio.run(_test_exported_bot_invalid_input_retries_without_state_change(tmp_path))
