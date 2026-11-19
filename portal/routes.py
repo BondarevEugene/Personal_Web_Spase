@@ -41,7 +41,8 @@ def form_page(request: Request, name: str, **context):
         # Pages other than the dashboard already supply a logged-in user.
         with session_factory()() as db:
             settings = db.get(CustomerSettings, user.id)
-    language = normalize_language(getattr(settings, "language", "ru"))
+    language = normalize_language(getattr(settings, "language",
+                           context.get("auth_lang", request.query_params.get("lang", "ru"))))
     response = templates.TemplateResponse(
         request=request, name=name,
         context={"csrf_token": token, "ui_lang": language,
@@ -97,9 +98,10 @@ def register_form(request: Request):
 def register(request: Request, csrf_token: str = Form(""), username: str = Form(""),
              display_name: str = Form(""), email: str = Form(""),
              organization: str = Form(""), password: str = Form(""),
-             password_repeat: str = Form("")):
+             password_repeat: str = Form(""), lang: str = Form("ru")):
     secure_request(request)
     verify_csrf(request, csrf_token)
+    lang = normalize_language(lang)
     if os.getenv("OMNI_PORTAL_ALLOW_REGISTRATION", "1") != "1":
         raise HTTPException(403, detail="Registration is currently disabled")
     username = username.strip().lower()
@@ -116,7 +118,7 @@ def register(request: Request, csrf_token: str = Form(""), username: str = Form(
     elif not 12 <= len(password) <= 128 or password != password_repeat:
         problem = "Пароль: 12–128 символов. Повтор пароля должен совпадать."
     if problem:
-        return form_page(request, "auth.html", mode="register", error=problem)
+        return form_page(request, "auth.html", mode="register", error=problem, auth_lang=lang)
 
     with session_factory()() as db:
         # Unique constraints remain the final arbiter of concurrent registrations.
@@ -132,7 +134,7 @@ def register(request: Request, csrf_token: str = Form(""), username: str = Form(
                         role="owner", email_verified=False)
         db.add(user)
         db.flush()
-        db.add(CustomerSettings(customer_id=user.id))
+        db.add(CustomerSettings(customer_id=user.id, language=lang))
         db.add(RegistrationEvent(customer_id=user.id, org_id=org.id, source="studio"))
         db.add(Subscription(org_id=org.id, plan_code="free", status="active",
                             price_minor=0, currency="UAH"))
@@ -153,9 +155,10 @@ def login_form(request: Request):
 
 @router.post("/login")
 def login(request: Request, csrf_token: str = Form(""), login: str = Form(""),
-          password: str = Form("")):
+          password: str = Form(""), lang: str = Form("ru")):
     secure_request(request)
     verify_csrf(request, csrf_token)
+    lang = normalize_language(lang)
     name = login.strip().lower()[:254]
     ip = request.client.host if request.client else "unknown"
     key = f"{ip}:{name}"
@@ -167,7 +170,7 @@ def login(request: Request, csrf_token: str = Form(""), login: str = Form(""),
         if not password_matches(user.password_hash if user else None, password) or not (user and user.is_active):
             unsuccessful_login(key)
             return form_page(request, "auth.html", mode="login",
-                             error="Неверный логин или пароль.")
+                             error="Неверный логин или пароль.", auth_lang=lang)
         _LOGIN_ATTEMPTS.pop(key, None)
         return create_login(request, db, user)
 
