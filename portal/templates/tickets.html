@@ -37,7 +37,7 @@
 {% for ticket in tickets %}
 <a class="account-ticket" href="/account/tickets/{{ ticket.id }}">
 <span class="account-ticket-title">{{ ticket.subject }}</span>
-<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ ticket.category }} · {{ statuses.get(ticket.status, ticket.status) }}</span>
+<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ ticket.category }} · {{ t(statuses.get(ticket.status, ticket.status)) }}</span>
 <span class="account-ticket-open">{{ t("Открыть обсуждение ↗") }}</span>
 </a>
 {% endfor %}
