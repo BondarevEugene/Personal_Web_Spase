@@ -112,7 +112,21 @@ def test_customer_file_persists_and_is_private(db_ready, monkeypatch):
     assert "attachment;" in received.headers["content-disposition"]
     assert received.headers["content-type"] == "application/octet-stream"
     assert "no-store" in received.headers["cache-control"]
-    assert "requirements.pdf" in client.get("/account/projects/" + project_id).text
+    assert "requirements.pdf · v1" in client.get("/account/projects/" + project_id).text
+    revised = client.post(url, data={"csrf_token": token(client)},
+                          files={"uploaded": ("requirements.pdf", b"%PDF-1.4\n%%EOF",
+                                              "application/pdf")},
+                          follow_redirects=False)
+    assert revised.status_code == 303
+    with session_factory()() as db:
+        versions = db.scalars(select(ClientProjectAttachment).where(
+            ClientProjectAttachment.project_id == project_id,
+            ClientProjectAttachment.filename == "requirements.pdf",
+        ).order_by(ClientProjectAttachment.version)).all()
+        assert [record.version for record in versions] == [1, 2]
+        assert versions[0].data == file_body
+        assert versions[1].data == b"%PDF-1.4\n%%EOF"
+    assert "requirements.pdf · v2" in client.get("/account/projects/" + project_id).text
 
     assert outsider.get(download).status_code == 404
     assert outsider.post(url, data={"csrf_token": token(outsider)},
