@@ -14,12 +14,12 @@ from pathlib import Path
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from portal.db import session_factory
 from portal.models import (Customer, CustomerSettings, Invoice, Organization, PaymentRecord,
-                           PortalSession, RegistrationEvent, Subscription, utcnow)
+                           PortalSession, RegistrationEvent, Subscription, SupportMessage, SupportTicket, utcnow)
 from portal.security import (CSRF_COOKIE, SESSION_COOKIE, hash_password, issue_csrf,
                              new_session, password_matches, secure_request,
                              set_auth_cookie, token_hash, verify_csrf, new_csrf_token)
@@ -178,8 +178,14 @@ def account(request: Request):
                               .order_by(Invoice.created_at.desc()).limit(30)).all()
         payments = db.scalars(select(PaymentRecord).where(PaymentRecord.org_id == user.org_id)
                               .order_by(PaymentRecord.created_at.desc()).limit(30)).all()
+        tickets = db.scalars(select(SupportTicket)
+                             .where(SupportTicket.org_id == user.org_id)
+                             .order_by(SupportTicket.updated_at.desc()).limit(5)).all()
+        ticket_count = db.scalar(select(func.count(SupportTicket.id))
+                                 .where(SupportTicket.org_id == user.org_id)) or 0
         return form_page(request, "dashboard.html", user=user, org=org, settings=settings,
                          subscription=subscription, invoices=invoices, payments=payments,
+                         tickets=tickets, ticket_count=ticket_count,
                          success=request.query_params.get("updated") == "1")
 
 
@@ -224,3 +230,99 @@ def logout(request: Request, csrf_token: str = Form("")):
     response = RedirectResponse("/account/login", status_code=303)
     response.delete_cookie(SESSION_COOKIE, path="/")
     return response
+
+
+_SUPPORT_CATEGORIES = {"question", "incident", "change", "billing"}
+_SUPPORT_STATUS = {
+    "new": "Новая", "review": "На рассмотрении",
+    "approved": "Согласована", "in_progress": "В работе",
+    "waiting_customer": "Ожидает клиента",
+    "resolved": "Решена", "closed": "Закрыта",
+}
+
+
+@router.get("/tickets", response_class=HTMLResponse)
+def support_tickets(request: Request):
+    secure_request(request)
+    with session_factory()() as db:
+        user = current_customer(request, db)
+        if not user:
+            return RedirectResponse("/account/login", status_code=303)
+        tickets = db.scalars(
+            select(SupportTicket).where(SupportTicket.org_id == user.org_id)
+            .order_by(SupportTicket.updated_at.desc()).limit(100)
+        ).all()
+        return form_page(request, "tickets.html", user=user, tickets=tickets,
+                         statuses=_SUPPORT_STATUS,
+                         created=request.query_params.get("created") == "1",
+                         error=None)
+
+
+@router.post("/tickets")
+def create_support_ticket(request: Request, csrf_token: str = Form(""),
+                          subject: str = Form(""), category: str = Form("question"),
+                          description: str = Form("")):
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    subject = subject.strip()
+    description = description.strip()
+    if not 5 <= len(subject) <= 160 or not 15 <= len(description) <= 5000:
+        raise HTTPException(422, detail="Название 5–160 символов, описание 15–5000.")
+    if category not in _SUPPORT_CATEGORIES:
+        raise HTTPException(422, detail="Unknown support category")
+    with session_factory()() as db:
+        user = current_customer(request, db)
+        if not user:
+            return RedirectResponse("/account/login", status_code=303)
+        ticket = SupportTicket(org_id=user.org_id, created_by_id=user.id,
+                               subject=subject, category=category,
+                               description=description, status="new")
+        db.add(ticket)
+        db.commit()
+    return RedirectResponse("/account/tickets?created=1", status_code=303)
+
+
+@router.get("/tickets/{ticket_id}", response_class=HTMLResponse)
+def support_ticket_detail(request: Request, ticket_id: str):
+    secure_request(request)
+    with session_factory()() as db:
+        user = current_customer(request, db)
+        if not user:
+            return RedirectResponse("/account/login", status_code=303)
+        ticket = db.scalar(select(SupportTicket).where(
+            SupportTicket.id == ticket_id,
+            SupportTicket.org_id == user.org_id,
+        ))
+        if not ticket:
+            raise HTTPException(404, detail="Ticket not found")
+        messages = db.scalars(
+            select(SupportMessage).where(SupportMessage.ticket_id == ticket.id)
+            .order_by(SupportMessage.created_at.asc()).limit(200)
+        ).all()
+        return form_page(request, "ticket_detail.html", user=user, ticket=ticket,
+                         messages=messages,
+                         status_label=_SUPPORT_STATUS.get(ticket.status, ticket.status))
+
+
+@router.post("/tickets/{ticket_id}/messages")
+def add_support_message(request: Request, ticket_id: str,
+                        csrf_token: str = Form(""), body: str = Form("")):
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    body = body.strip()
+    if not 1 <= len(body) <= 3000:
+        raise HTTPException(422, detail="Message must contain 1–3000 characters")
+    with session_factory()() as db:
+        user = current_customer(request, db)
+        if not user:
+            return RedirectResponse("/account/login", status_code=303)
+        ticket = db.scalar(select(SupportTicket).where(
+            SupportTicket.id == ticket_id,
+            SupportTicket.org_id == user.org_id,
+        ))
+        if not ticket:
+            raise HTTPException(404, detail="Ticket not found")
+        db.add(SupportMessage(ticket_id=ticket.id, author_id=user.id, body=body))
+        ticket.updated_at = utcnow()
+        db.commit()
+    return RedirectResponse("/account/tickets/" + ticket_id, status_code=303)
