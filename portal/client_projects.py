@@ -80,8 +80,9 @@ def project_context(db, project):
     events = db.scalars(select(ClientProjectEvent).where(
         ClientProjectEvent.project_id == project.id
     ).order_by(ClientProjectEvent.created_at, ClientProjectEvent.id).limit(200)).all()
+    from portal.project_documents import documents_context
     return {"milestones": milestones, "events": events, "statuses": STATES,
-            "milestone_labels": MILESTONES}
+            "milestone_labels": MILESTONES, **documents_context(db, project)}
 
 
 @router.get("", response_class=HTMLResponse)
@@ -237,6 +238,20 @@ def update_status(request: Request, id: str, csrf_token: str = Form(""),
         if len(note.strip()) > 1000:
             raise HTTPException(422, "Комментарий слишком длинный")
         if status == "review":
+            # A published specification must be acknowledged at its newest
+            # revision before delivery can be submitted for acceptance.
+            from portal.models import ClientProjectApproval, ClientProjectDocument
+            specification = db.scalar(select(ClientProjectDocument).where(
+                ClientProjectDocument.project_id == project.id,
+                ClientProjectDocument.document_kind == "specification",
+            ).order_by(ClientProjectDocument.version.desc()).limit(1))
+            if specification is not None:
+                approved = db.scalar(select(ClientProjectApproval.id).where(
+                    ClientProjectApproval.document_id == specification.id,
+                    ClientProjectApproval.org_id == project.org_id,
+                ))
+                if approved is None:
+                    raise HTTPException(409, "Согласуйте последнюю версию технического задания")
             has_stage = db.scalar(select(ClientProjectMilestone.id).where(
                 ClientProjectMilestone.project_id == project.id
             ).limit(1))
