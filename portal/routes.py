@@ -19,7 +19,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from portal.db import session_factory
 from portal.models import (Customer, CustomerSettings, Invoice, Organization, PaymentRecord,
-                           PortalSession, RegistrationEvent, Subscription, SupportMessage, SupportTicket, utcnow)
+                           PortalSession, RegistrationEvent, Subscription, SupportEvent, SupportMessage, SupportTicket, utcnow)
 from portal.security import (CSRF_COOKIE, SESSION_COOKIE, hash_password, issue_csrf,
                              new_session, password_matches, secure_request,
                              set_auth_cookie, token_hash, verify_csrf, new_csrf_token)
@@ -299,8 +299,12 @@ def support_ticket_detail(request: Request, ticket_id: str):
             select(SupportMessage).where(SupportMessage.ticket_id == ticket.id)
             .order_by(SupportMessage.created_at.asc()).limit(200)
         ).all()
+        events = db.scalars(
+            select(SupportEvent).where(SupportEvent.ticket_id == ticket.id)
+            .order_by(SupportEvent.created_at.asc()).limit(200)
+        ).all()
         return form_page(request, "ticket_detail.html", user=user, ticket=ticket,
-                         messages=messages,
+                         messages=messages, events=events, statuses=_SUPPORT_STATUS,
                          status_label=_SUPPORT_STATUS.get(ticket.status, ticket.status))
 
 
