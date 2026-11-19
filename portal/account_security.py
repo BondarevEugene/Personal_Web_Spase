@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, select
 
 from portal.db import session_factory
 from portal.models import CustomerSettings, PortalSession, utcnow
