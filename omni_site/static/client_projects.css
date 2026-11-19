@@ -25,3 +25,20 @@
 .client-projects-page form select{background:#081422;color:#eaf0f9;border:1px solid #455b79;border-radius:6px;min-height:38px;padding:7px}
 .client-projects-page form button{justify-self:start}
 @media(max-width:840px){.cp-grid{grid-template-columns:1fr}.cp-heading{flex-direction:column;align-items:flex-start}.cp-project{align-items:flex-start;flex-wrap:wrap}}
+
+/* Client project documents: readable text review, explicit approvals, no fake uploads. */
+.client-projects-page .cp-documents{margin-top:16px}
+.client-projects-page .cp-document{padding:12px 14px;border:1px solid #3b465b;
+ border-radius:9px;background:#171d2b;color:#ebf0f8}
+.client-projects-page .cp-document summary{display:flex;align-items:center;
+ justify-content:space-between;flex-wrap:wrap;gap:10px;cursor:pointer;font-size:13px}
+.client-projects-page .cp-document summary::marker{color:#a9b8ce}
+.client-projects-page .cp-document .cp-brief{white-space:pre-wrap;overflow-wrap:anywhere;
+ border-top:1px solid #394356;padding:12px 0;margin:12px 0;color:#dce3ed}
+.client-projects-page .cp-document small{font-size:11px;color:#aebcd1}
+.client-projects-page .cp-document form{margin-top:12px}
+.client-projects-page .cp-document button{font-size:12px;min-height:36px}
+.client-projects-page .cp-project form{display:flex;margin:0;align-self:center}
+.client-projects-page .cp-project a:not(.button){color:#b9cbe6;text-decoration:underline}
+@media(max-width:760px){.client-projects-page .cp-document summary{align-items:flex-start}
+.client-projects-page .cp-project form{width:100%}}
