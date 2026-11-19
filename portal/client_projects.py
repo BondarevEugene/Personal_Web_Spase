@@ -80,9 +80,11 @@ def project_context(db, project):
     events = db.scalars(select(ClientProjectEvent).where(
         ClientProjectEvent.project_id == project.id
     ).order_by(ClientProjectEvent.created_at, ClientProjectEvent.id).limit(200)).all()
+    from portal.project_attachments import attachment_context
     from portal.project_documents import documents_context
     return {"milestones": milestones, "events": events, "statuses": STATES,
-            "milestone_labels": MILESTONES, **documents_context(db, project)}
+            "milestone_labels": MILESTONES, **documents_context(db, project),
+            **attachment_context(db, project)}
 
 
 @router.get("", response_class=HTMLResponse)

@@ -42,3 +42,13 @@
 .client-projects-page .cp-project a:not(.button){color:#b9cbe6;text-decoration:underline}
 @media(max-width:760px){.client-projects-page .cp-document summary{align-items:flex-start}
 .client-projects-page .cp-project form{width:100%}}
+
+/* Private file records: small, readable and compatible with the dark workspace. */
+.client-projects-page .cp-attachments{margin:16px 0}
+.client-projects-page .cp-attachments .cp-project{flex-wrap:wrap}
+.client-projects-page .cp-attachments .cp-project small{font-family:monospace;overflow-wrap:anywhere}
+.client-projects-page .cp-attachments .button{padding:8px 12px;min-height:35px;white-space:nowrap;font-size:12px}
+.client-projects-page .cp-upload{margin-top:16px;padding:14px;border:1px solid #3a4659;border-radius:9px;background:#141c29}
+.client-projects-page .cp-upload input[type=file]{width:100%;max-width:100%;background:#1a2433;color:#e4edfa;border:1px solid #53647a;border-radius:6px;padding:9px;font-size:12px}
+.client-projects-page .cp-upload button{justify-self:start}
+@media(max-width:650px){.client-projects-page .cp-attachments .cp-project{display:grid;grid-template-columns:1fr;gap:9px}.client-projects-page .cp-attachments .button{justify-self:start}}
