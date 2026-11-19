@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 
 from portal.db import session_factory
-from portal.models import ClientProject, ClientProjectEvent, ClientProjectMilestone, Customer, utcnow
+from portal.models import ClientProject, ClientProjectEvent, ClientProjectMilestone, ClientProjectNotification, Customer, utcnow
 from portal.routes import current_customer, form_page
 from portal.security import secure_request, verify_csrf
 from portal.support_admin import operator_ids, require_operator
@@ -62,6 +62,17 @@ def activity(db, project_id: str, actor_id: str, kind: str, summary: str):
                               event_type=kind, summary=summary))
 
 
+def notify_org(db, project: ClientProject, message: str):
+    """Create bounded per-customer inbox entries, never send email or leak tenants."""
+    members = db.scalars(select(Customer).where(
+        Customer.org_id == project.org_id, Customer.is_active.is_(True)
+    ).limit(100)).all()
+    for member in members:
+        db.add(ClientProjectNotification(
+            recipient_id=member.id, project_id=project.id, message=message[:250],
+        ))
+
+
 def project_context(db, project):
     milestones = db.scalars(select(ClientProjectMilestone).where(
         ClientProjectMilestone.project_id == project.id
@@ -105,6 +116,7 @@ def create_project(request: Request, csrf_token: str = Form(""),
         db.add(project)
         db.flush()
         activity(db, project.id, user.id, "request", "Клиент отправил запрос на проект")
+        notify_org(db, project, "Создан новый заказ: " + project.title)
         db.commit()
     return RedirectResponse("/account/projects?created=1", status_code=303)
 
@@ -147,6 +159,7 @@ def accept_project(request: Request, id: str, csrf_token: str = Form("")):
             raise HTTPException(409, "Не все этапы завершены")
         project.status, project.updated_at = "accepted", utcnow()
         activity(db, project.id, user.id, "acceptance", "Клиент подтвердил приёмку результата")
+        notify_org(db, project, "Заказ принят клиентом: " + project.title)
         db.commit()
     return RedirectResponse("/account/projects/" + project.id, status_code=303)
 
@@ -206,6 +219,7 @@ def assign_project(request: Request, id: str, csrf_token: str = Form(""),
         activity(db, project.id, actor.id, "assignment",
                  "Назначен исполнитель " + (assignee_id or "не назначен")
                  + "; дата сдачи " + (due_on or "не назначена"))
+        notify_org(db, project, "Обновлён исполнитель или срок заказа: " + project.title)
         db.commit()
     return RedirectResponse("/support/projects/" + project.id, status_code=303)
 
@@ -238,6 +252,7 @@ def update_status(request: Request, id: str, csrf_token: str = Form(""),
         project.status, project.updated_at = status, utcnow()
         activity(db, project.id, operator.id, "status",
                  previous + " → " + status + (": " + note.strip() if note.strip() else ""))
+        notify_org(db, project, "Статус заказа «" + project.title + "»: " + STATES[status])
         db.commit()
     return RedirectResponse("/support/projects/" + project.id, status_code=303)
 
