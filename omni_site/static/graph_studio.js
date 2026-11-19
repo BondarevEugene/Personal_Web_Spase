@@ -478,7 +478,19 @@ $('graph-diagnostics-close').addEventListener('click',()=>{
  $('btn-validate').setAttribute('aria-expanded','false');
  diagnosticIssues=[];render();
 });
-$('btn-export').addEventListener('click',async()=>{try{await post('/validate');const r=await post('/export');download(await r.blob(),'omnifactory_bot.zip');status('Экспорт Python готов.');}catch(e){status(e.message,true);}});
+$('btn-export').addEventListener('click',async()=>{
+ try{
+  const result=await(await post('/validate')).json();
+  if(!result.ok){
+   showDiagnostics(result);
+   status('Экспорт остановлен: исправьте ошибки в графе и повторите проверку.',true);
+   return;
+  }
+  const r=await post('/export');
+  download(await r.blob(),'omnifactory_bot.zip');
+  status('Экспорт Python готов.');
+ }catch(e){status(e.message,true);}
+});
 $('btn-download-json').addEventListener('click',()=>download(new Blob([JSON.stringify(payload(),null,2)],{type:'application/json'}),'scenario.json'));
 $('btn-import').addEventListener('click',()=>$('import-file').click());
 $('import-file').addEventListener('change',async e=>{
