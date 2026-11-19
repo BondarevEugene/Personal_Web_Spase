@@ -75,7 +75,6 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "Новый заказ": {"uk": "Нове замовлення", "en": "New order"},
     "Финансовый центр": {"uk": "Фінансовий центр", "en": "Finance center"},
     "Счета и подписка": {"uk": "Рахунки та підписка", "en": "Invoices and subscription"},
-    "Новый запрос": {"uk": "Новий запит", "en": "New request"},
     "Заказы и разработка": {"uk": "Замовлення та розробка", "en": "Orders and development"},
     "Название проекта": {"uk": "Назва проєкту", "en": "Project title"},
     "Техническая задача": {"uk": "Технічне завдання", "en": "Project brief"},
@@ -239,7 +238,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
 
 def normalize_language(value: object) -> str:
     """Accept only configured locale values; never accept template selectors."""
-    return value if value in LANGUAGES else "ru"
+    return value if isinstance(value, str) and value in LANGUAGES else "ru"
 
 
 def translator(language: str) -> Callable[[str], str]:
