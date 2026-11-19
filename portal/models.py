@@ -469,3 +469,45 @@ class SupportEvent(Base):
     new_status: Mapped[str] = mapped_column(String(30), nullable=False)
     comment: Mapped[str] = mapped_column(Text, nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class ClientProject(Base):
+    """Organization-scoped paid-work request; never inferred from builder drafts."""
+
+    __tablename__ = "portal_client_projects"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    created_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    brief: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(24), default="requested", nullable=False)
+    assigned_to_id: Mapped[str | None] = mapped_column(ForeignKey("portal_customers.id"), nullable=True)
+    due_date: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class ClientProjectMilestone(Base):
+    """Operational stage entered by an authorized platform operator."""
+
+    __tablename__ = "portal_client_project_milestones"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    details: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    status: Mapped[str] = mapped_column(String(24), default="planned", nullable=False)
+    ordinal: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class ClientProjectEvent(Base):
+    """Immutable status/milestone/acceptance history for the client portal."""
+
+    __tablename__ = "portal_client_project_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    actor_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
