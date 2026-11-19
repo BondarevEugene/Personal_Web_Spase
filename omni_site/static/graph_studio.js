@@ -206,13 +206,27 @@ function persistDraft(){
  try{localStorage.setItem(STORE,JSON.stringify({data,positions,cloudProjectId}));}
  catch(e){status('Локальное сохранение недоступно',true);}
 }
+function clearDebugTrace(){
+ ++debugSerial;
+ if(debugTrace.length||debugStep>=0){
+  debugTrace=[];debugStep=-1;
+  const trace=$('preview-trace');
+  if(trace)trace.textContent='Схема изменена. Запустите тест повторно.';
+  $('debug-step-prev').disabled=true;
+  $('debug-step-next').disabled=true;
+  $('debug-step-position').textContent='— / —';
+  $('debug-step-details').textContent='Результаты предыдущей трассировки устарели.';
+ }
+}
 function save(){
+ clearDebugTrace();
  if(graphHistory)graphHistory.record(graphState(),historyTypingGroup);
  updateHistoryButtons();
  persistDraft();
 }
 function restoreGraph(snapshot){
  if(!snapshot)return;
+ clearDebugTrace();
  data=snapshot.data;positions=snapshot.positions;
  if(!data.nodes.some(node=>node.id===selected))selected=data.start;
  link=null;diagnosticIssues=[];
