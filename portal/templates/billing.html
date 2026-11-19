@@ -14,6 +14,7 @@
 <h1>Прозрачные тарифы.<br><span class="gradient-text">Под контролем.</span></h1>
 <p class="account-dashboard-lede">Регистрация бесплатна. Платный доступ возникает только после подтверждённой оплаты счёта. Онлайн-эквайринг пока не подключён, автосписаний нет.</p>
 {% if created %}<p role="status" class="account-success">Предварительный счёт создан. Он не является подтверждением оплаты и не активирует платный доступ.</p>{% endif %}
+<div class="cf-billing-shortcut"><a class="button button-line" href="/account/finance">Финансовый центр: месячная выписка и CSV ↗</a></div>
 <div class="account-kpis">
 <article><span>ДОСТУП</span><strong>{{ "Платный" if entitlements.paid_access else "Free" }}</strong><small>Проверка на сервере</small></article>
 <article><span>ТЕКУЩИЙ УРОВЕНЬ</span><strong>{{ entitlements.plan|upper }}</strong><small>{{ entitlements.subscription_status }}</small></article>
