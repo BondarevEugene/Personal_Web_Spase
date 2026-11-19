@@ -1,6 +1,8 @@
 """Client projects: customer requests, milestones, audited operator delivery and acceptance."""
 from __future__ import annotations
 
+from datetime import datetime
+import re
 from uuid import UUID
 
 from fastapi import APIRouter, Form, HTTPException, Request
@@ -8,10 +10,10 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 
 from portal.db import session_factory
-from portal.models import ClientProject, ClientProjectEvent, ClientProjectMilestone, utcnow
+from portal.models import ClientProject, ClientProjectEvent, ClientProjectMilestone, Customer, utcnow
 from portal.routes import current_customer, form_page
 from portal.security import secure_request, verify_csrf
-from portal.support_admin import require_operator
+from portal.support_admin import operator_ids, require_operator
 
 router = APIRouter(prefix="/account/projects", tags=["Customer Projects"])
 operator_router = APIRouter(prefix="/support/projects", tags=["Project Operations"])
@@ -166,6 +168,43 @@ def operator_detail(request: Request, id: str):
         return form_page(request, "client_project_operator.html",
                          user=operator, projects=rows, project=project,
                          **project_context(db, project))
+
+
+@operator_router.post("/{id}/assignment")
+def assign_project(request: Request, id: str, csrf_token: str = Form(""),
+                   assignee_id: str = Form(""), due_on: str = Form("")):
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    assignee_id = assignee_id.strip()
+    if due_on and (len(due_on) != 10 or
+                   not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", due_on)):
+        raise HTTPException(422, "Дата должна быть YYYY-MM-DD")
+    try:
+        due_date = datetime.strptime(due_on, "%Y-%m-%d") if due_on else None
+    except ValueError:
+        raise HTTPException(422, "Некорректная дата")
+    with session_factory()() as db:
+        actor = require_operator(request, db)
+        project = operator_project(db, id)
+        if project.status in {"accepted", "cancelled"}:
+            raise HTTPException(409, "Проект закрыт")
+        if assignee_id:
+            assignee_id = project_key(assignee_id)
+            if assignee_id.lower() not in operator_ids():
+                raise HTTPException(403, "Назначать можно только операторов платформы")
+            customer = db.get(Customer, assignee_id)
+            if customer is None or not customer.is_active:
+                raise HTTPException(422, "Исполнитель не найден")
+        else:
+            assignee_id = None
+        project.assigned_to_id = assignee_id
+        project.due_date = due_date
+        project.updated_at = utcnow()
+        activity(db, project.id, actor.id, "assignment",
+                 "Назначен исполнитель " + (assignee_id or "не назначен")
+                 + "; дата сдачи " + (due_on or "не назначена"))
+        db.commit()
+    return RedirectResponse("/support/projects/" + project.id, status_code=303)
 
 
 @operator_router.post("/{id}/status")
