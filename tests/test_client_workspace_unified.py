@@ -62,7 +62,7 @@ def test_shared_navigation_links_only_to_existing_real_routes():
             encoding="utf-8"
         )
         assert '{% include "_workspace_nav.html" %}' in text, filename
-        assert 'client_workspace.css?v=1' in text, filename
+        assert 'client_workspace.css?v=2' in text, filename
     assert 'aria-current="page"' in shell
 
 
