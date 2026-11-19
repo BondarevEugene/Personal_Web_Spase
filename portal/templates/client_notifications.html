@@ -3,7 +3,7 @@
 {% include "_workspace_nav.html" %}
 <main class="container client-projects-page"><nav class="account-breadcrumb"><a href="/account">{{ t("Кабинет") }}</a><span>/</span><span>{{ t("Уведомления") }}</span></nav><div class="cp-heading"><div><span class="eyebrow">CLIENT WORKSPACE / INBOX</span><h1>{{ t("Уведомления") }}</h1><p>{{ t("Изменения ваших заказов внутри кабинета, без email или SMS-рассылки.") }}</p></div></div>
 <section class="account-panel"><h2>{{ t("Последние события") }}</h2>{% if notices %}<div class="cp-list">{% for notice in notices %}
-<article class="cp-project"><div><strong>{{ notice.message }}</strong><small>{{ notice.created_at.strftime("%d.%m.%Y %H:%M") }} · {{ "Прочитано" if notice.read_at else "Новое" }}</small><a href="/account/projects/{{ notice.project_id }}">{{ t("Открыть проект ↗") }}</a></div>
+<article class="cp-project"><div><strong>{{ notice.message }}</strong><small>{{ notice.created_at.strftime("%d.%m.%Y %H:%M") }} · {{ t("Прочитано") if notice.read_at else t("Новое") }}</small><a href="/account/projects/{{ notice.project_id }}">{{ t("Открыть проект ↗") }}</a></div>
 {% if not notice.read_at %}<form method="post" action="/account/notifications/{{ notice.id }}/read"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="button button-line" type="submit">{{ t("Прочитано") }}</button></form>{% endif %}
 </article>{% endfor %}</div>{% else %}<p class="account-empty">{{ t("Уведомлений пока нет. Изменения заказов будут появляться здесь.") }}</p>{% endif %}</section>
 </main></body></html>
