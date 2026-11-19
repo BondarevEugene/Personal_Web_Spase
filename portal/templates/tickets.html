@@ -1,35 +1,35 @@
 <!doctype html>
-<html lang="ru">
+<html lang="{{ ui_lang }}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#050811"><title>Сервисные заявки — OmniFactory</title>
+<meta name="theme-color" content="#050811"><title>{{ t("Сервисные заявки — OmniFactory") }}</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1"><link rel="stylesheet" href="/studio-assets/client_workspace.css?v=1"></head>
 <body class="account-app">
 <header class="site-header"><div class="header-inner container">
 <a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>CLIENT WORKSPACE / SERVICE DESK</small></span></a>
 <nav class="account-header-links" aria-label="Разделы платформы">
-<a href="/">Платформа</a><a href="/architect">Конструктор</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account" aria-current="page">Мой кабинет</a></nav>
+<a href="/">{{ t("Платформа") }}</a><a href="/architect">{{ t("Конструктор") }}</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account" aria-current="page">{{ t("Мой кабинет") }}</a></nav>
 </div></header>
 {% include "_workspace_nav.html" %}
 <main class="container account-dashboard">
-<nav class="account-breadcrumb" aria-label="Путь"><a href="/account">Кабинет</a><span>/</span><span>Заявки</span></nav>
+<nav class="account-breadcrumb" aria-label="Путь"><a href="/account">{{ t("Кабинет") }}</a><span>/</span><span>{{ t("Заявки") }}</span></nav>
 <div class="eyebrow">OMNIFACTORY / CUSTOMER SERVICE DESK</div>
-<h1>Вопросы и задачи.<br><span class="gradient-text">Всё под контролем.</span></h1>
-<p class="account-dashboard-lede">Опишите задачу один раз и следите за её рассмотрением в личном кабинете. Все обращения доступны участникам вашей организации.</p>
-{% if created %}<div class="account-success" role="status">Заявка зарегистрирована. Её статус можно отслеживать ниже.</div>{% endif %}
+<h1>{{ t("Вопросы и задачи.") }}<br><span class="gradient-text">{{ t("Всё под контролем.") }}</span></h1>
+<p class="account-dashboard-lede">{{ t("Опишите задачу один раз и следите за её рассмотрением в личном кабинете. Все обращения доступны участникам вашей организации.") }}</p>
+{% if created %}<div class="account-success" role="status">{{ t("Заявка зарегистрирована. Её статус можно отслеживать ниже.") }}</div>{% endif %}
 <div class="account-dashboard-grid">
 <section class="account-panel" id="new-ticket">
-<div class="eyebrow">01 / NEW REQUEST</div><h2>Создать заявку</h2>
+<div class="eyebrow">01 / NEW REQUEST</div><h2>{{ t("Создать заявку") }}</h2>
 <form method="post" action="/account/tickets">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-<label>Тема <input name="subject" maxlength="160" minlength="5" required placeholder="Например, подключить новый канал"></label>
-<label>Тип обращения <select name="category" required>
-<option value="question">Вопрос или консультация</option><option value="incident">Проблема с работой</option>
-<option value="change">Доработка или новая функция</option><option value="billing">Оплата и документы</option>
+<label>{{ t("Тема") }} <input name="subject" maxlength="160" minlength="5" required placeholder="Например, подключить новый канал"></label>
+<label>{{ t("Тип обращения") }} <select name="category" required>
+<option value="question">{{ t("Вопрос или консультация") }}</option><option value="incident">{{ t("Проблема с работой") }}</option>
+<option value="change">{{ t("Доработка или новая функция") }}</option><option value="billing">{{ t("Оплата и документы") }}</option>
 </select></label>
-<label>Описание <textarea name="description" minlength="15" maxlength="5000" rows="7" required placeholder="Что требуется, какой результат ожидаете и где возникла проблема?"></textarea></label>
-<button class="button button-primary account-submit" type="submit">Отправить обращение <span>↗</span></button>
-<p class="account-smallprint">Не указывайте пароли, токены доступа и банковские реквизиты в тексте заявки.</p>
+<label>{{ t("Описание") }} <textarea name="description" minlength="15" maxlength="5000" rows="7" required placeholder="Что требуется, какой результат ожидаете и где возникла проблема?"></textarea></label>
+<button class="button button-primary account-submit" type="submit">{{ t("Отправить обращение") }} <span>↗</span></button>
+<p class="account-smallprint">{{ t("Не указывайте пароли, токены доступа и банковские реквизиты в тексте заявки.") }}</p>
 </form></section>
 <section class="account-panel" id="my-tickets">
 <div class="eyebrow">02 / REQUEST HISTORY</div><h2>Мои обращения</h2>
@@ -38,11 +38,11 @@
 <a class="account-ticket" href="/account/tickets/{{ ticket.id }}">
 <span class="account-ticket-title">{{ ticket.subject }}</span>
 <span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ ticket.category }} · {{ statuses.get(ticket.status, ticket.status) }}</span>
-<span class="account-ticket-open">Открыть обсуждение ↗</span>
+<span class="account-ticket-open">{{ t("Открыть обсуждение ↗") }}</span>
 </a>
 {% endfor %}
-</div>{% else %}<div class="account-empty"><strong>Пока нет обращений.</strong><p>Это хорошо — либо вы ещё не обращались за поддержкой. Создайте первую заявку через форму слева.</p></div>{% endif %}
+</div>{% else %}<div class="account-empty"><strong>{{ t("Пока нет обращений.") }}</strong><p>{{ t("Это хорошо — либо вы ещё не обращались за поддержкой. Создайте первую заявку через форму слева.") }}</p></div>{% endif %}
 </section></div>
-<p class="account-back"><a href="/account">← Назад в рабочее пространство</a></p>
+<p class="account-back"><a href="/account">{{ t("← Назад в рабочее пространство") }}</a></p>
 </main>
 </body></html>
