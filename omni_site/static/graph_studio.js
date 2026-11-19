@@ -249,6 +249,9 @@ function connect(target){
  status('Соединено: '+n.id+' → '+target);link=null;render();save();
 }
 function render(){
+ data.nodes.forEach((node,i)=>position(node.id,i));
+ world.height=Math.max(1400,...Object.values(positions)
+  .filter(p=>Number.isFinite(p.y)).map(p=>p.y+260));
  const root=$('flow-canvas');root.replaceChildren();
  const worldEl=el('div','flow-workspace');worldEl.id='flow-workspace';
  worldEl.style.width=world.width+'px';worldEl.style.height=world.height+'px';worldEl.style.zoom=zoom;
@@ -488,6 +491,23 @@ document.addEventListener('keydown',event=>{
   event.preventDefault();redoGraph();
  }
 });
+$('btn-auto-layout').addEventListener('click',()=>{
+ try{
+  const layout=window.OmniGraphLayout.arrange(payload());
+  // Work on coordinates only. Never mutate node data, transitions or identity.
+  const changed=Object.keys(layout.positions).some(id=>
+   !positions[id]||positions[id].x!==layout.positions[id].x||
+   positions[id].y!==layout.positions[id].y);
+  if(!changed){status('Блоки уже расположены по схеме.');return;}
+  positions=layout.positions;
+  world.height=layout.height;
+  change();inspector();
+  status('Расставлено '+layout.nodes+' узлов · '+
+   (layout.mode==='layers'?'по связям':'компактной сеткой')+
+   (layout.disconnected?' · изолированных: '+layout.disconnected:'')+
+   '. Ctrl+Z отменяет расстановку.');
+ }catch(error){status('Не удалось расставить блоки: '+error.message,true);}
+});
 $('btn-save').addEventListener('click',()=>{save();status('Черновик сохранён в этом браузере.');});
 $('btn-cloud-save').addEventListener('click',saveCloud);
 $('btn-cloud-load').addEventListener('click',loadCloud);
@@ -605,7 +625,7 @@ try{
   positions={};
   for(const [id,p] of Object.entries(stored.positions||{})){
    if(data.nodes.some(n=>n.id===id)&&p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&
-       p.x>=0&&p.y>=0&&p.x<world.width&&p.y<world.height)
+       p.x>=0&&p.y>=0&&p.x<world.width&&p.y<=8000)
     positions[id]={x:p.x,y:p.y};
   }
  }
