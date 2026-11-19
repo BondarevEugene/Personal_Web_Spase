@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050811"><title>{{ ticket.subject }} — Заявка OmniFactory</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3">
+<link rel="stylesheet" href="/studio-assets/account.css?v=2"></head>
+<body class="account-app">
+<header class="site-header"><div class="header-inner container">
+<a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>CLIENT WORKSPACE / REQUEST</small></span></a>
+<nav class="account-header-links" aria-label="Разделы платформы"><a href="/">Платформа</a><a href="/account">Кабинет</a><a href="/account/tickets" aria-current="page">Заявки</a></nav>
+</div></header>
+<main class="container account-dashboard">
+<nav class="account-breadcrumb" aria-label="Путь"><a href="/account">Кабинет</a><span>/</span><a href="/account/tickets">Заявки</a><span>/</span><span>Детали</span></nav>
+<div class="eyebrow">SERVICE REQUEST / {{ ticket.id[:8] }}</div>
+<h1 class="account-ticket-heading">{{ ticket.subject }}</h1>
+<p class="account-dashboard-lede">Статус: <strong>{{ status_label }}</strong> · Создана {{ ticket.created_at.strftime("%d.%m.%Y %H:%M") }}</p>
+<div class="account-dashboard-grid">
+<section class="account-panel">
+<div class="eyebrow">01 / REQUEST DETAILS</div><h2>Описание задачи</h2>
+<p class="account-message-body">{{ ticket.description }}</p>
+</section>
+<section class="account-panel">
+<div class="eyebrow">02 / CONVERSATION</div><h2>История обсуждения</h2>
+{% if messages %}<div class="account-thread">{% for message in messages %}
+<article class="account-thread-message"><small>{{ message.created_at.strftime("%d.%m.%Y %H:%M") }}</small>
+<p class="account-message-body">{{ message.body }}</p></article>
+{% endfor %}</div>
+{% else %}<div class="account-empty">Пока нет сообщений. Напишите дополнение к заявке, если требуется.</div>{% endif %}
+<form method="post" action="/account/tickets/{{ ticket.id }}/messages">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>Дополнить заявку <textarea name="body" rows="4" maxlength="3000" required placeholder="Уточнения, дополнительная информация..."></textarea></label>
+<button class="button button-primary account-submit" type="submit">Отправить сообщение <span>↗</span></button>
+</form></section>
+</div><p class="account-back"><a href="/account/tickets">← Все заявки</a></p>
+</main></body></html>
