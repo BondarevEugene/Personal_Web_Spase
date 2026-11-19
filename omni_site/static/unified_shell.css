@@ -95,3 +95,21 @@ body.account-app .account-kpis article{border-color:#35445e}
 @media(prefers-reduced-motion:reduce){
  .omni-section-rail a,body.omni-revamp .omni-nav a{transition:none}
 }
+
+/* A deliberately lightweight, truthful marketing interaction. */
+.omni-idea-playground{
+ margin-top:20px;margin-bottom:55px;display:flex;
+ justify-content:space-between;align-items:center;gap:30px;
+ background:linear-gradient(115deg,#1c2543,#111a2b 70%);
+ border:1px solid #3b426a;border-radius:16px;
+ padding-block:clamp(24px,3vw,48px)
+}
+.omni-idea-copy{max-width:740px}
+.omni-idea-copy h2{
+ font:600 clamp(23px,2.8vw,38px)/1.2 var(--display,'Space Grotesk',sans-serif);
+ letter-spacing:-.05em;margin:14px 0
+}
+.omni-idea-copy p{font-size:14px;color:#c5d5e9;margin-bottom:0}
+.omni-idea-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.omni-idea-actions .button{white-space:nowrap}
+@media(max-width:850px){.omni-idea-playground{flex-direction:column;align-items:start}.omni-idea-actions{justify-content:flex-start}}
