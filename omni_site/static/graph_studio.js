@@ -59,7 +59,7 @@ async function loadCloud(){
  if(!id){status('Сначала выбери сохранённый проект в списке.',true);return;}
  if(!window.confirm('Открыть сохранённый проект? Текущий черновик останется в резервной копии браузера.'))return;
  try{
-  localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions}));
+  localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions,groups}));
   const project=await cloudRequest('/'+encodeURIComponent(id));
   data=project.scenario;positions=project.positions||{};
   groups=window.OmniGraphGroups.clean(project.groups||[],data.nodes);
@@ -119,7 +119,7 @@ let canvasExpanded=false;
 function replaceScenario(factory) {
  const ok=window.confirm('Текущий черновик будет заменён. Сохраняем резервную копию в этом браузере. Продолжить?');
  if(!ok)return;
- try{localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions}));}
+ try{localStorage.setItem(BACKUP_STORE,JSON.stringify({data,positions,groups}));}
  catch(_err){status('Не удалось сохранить резервную копию. Отмена замены.',true);return;}
  data=factory();
  positions={};groups=[];expandedGroups.clear();counter=1;selected=data.start;link=null;cloudProjectId=null;
