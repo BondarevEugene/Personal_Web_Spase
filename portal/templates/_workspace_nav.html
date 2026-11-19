@@ -1,13 +1,19 @@
 <nav class="workspace-nav" aria-label="Рабочие разделы OMNIFACTORY">
   <div class="workspace-nav-inner">
-    <a href="/account" {% if request.url.path == "/account" or request.url.path == "/account/" %}aria-current="page"{% endif %}>Обзор</a>
-    <a href="/account/projects" {% if request.url.path.startswith("/account/projects") %}aria-current="page"{% endif %}>Заказы</a>
-    <a href="/account/notifications" {% if request.url.path.startswith("/account/notifications") %}aria-current="page"{% endif %}>Уведомления</a>
-    <a href="/account/tickets" {% if request.url.path.startswith("/account/tickets") %}aria-current="page"{% endif %}>Поддержка</a>
-    <a href="/account/finance" {% if request.url.path.startswith("/account/finance") %}aria-current="page"{% endif %}>Финансы</a>
-    <a href="/account/billing" {% if request.url.path.startswith("/account/billing") %}aria-current="page"{% endif %}>Тарифы</a>
+    <a href="/account" {% if request.url.path == "/account" or request.url.path == "/account/" %}aria-current="page"{% endif %}>{{ t("Обзор") }}</a>
+    <a href="/account/projects" {% if request.url.path.startswith("/account/projects") %}aria-current="page"{% endif %}>{{ t("Заказы") }}</a>
+    <a href="/account/notifications" {% if request.url.path.startswith("/account/notifications") %}aria-current="page"{% endif %}>{{ t("Уведомления") }}</a>
+    <a href="/account/tickets" {% if request.url.path.startswith("/account/tickets") %}aria-current="page"{% endif %}>{{ t("Поддержка") }}</a>
+    <a href="/account/finance" {% if request.url.path.startswith("/account/finance") %}aria-current="page"{% endif %}>{{ t("Финансы") }}</a>
+    <a href="/account/billing" {% if request.url.path.startswith("/account/billing") %}aria-current="page"{% endif %}>{{ t("Тарифы") }}</a>
     <span class="workspace-nav-separator" aria-hidden="true"></span>
     <a href="/architect">Graph Studio</a>
     <a href="/automation/studio">Automation Studio</a>
+    <form class="workspace-language" action="/account/language" method="post" aria-label="Interface language">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit" name="language" value="uk" {% if ui_lang == "uk" %}aria-pressed="true"{% endif %}>UA</button>
+      <button type="submit" name="language" value="ru" {% if ui_lang == "ru" %}aria-pressed="true"{% endif %}>RU</button>
+      <button type="submit" name="language" value="en" {% if ui_lang == "en" %}aria-pressed="true"{% endif %}>EN</button>
+    </form>
   </div>
 </nav>

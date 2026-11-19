@@ -1,93 +1,93 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="{{ ui_lang }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#050811"><title>Личный кабинет — OmniFactory</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
-<link rel="stylesheet" href="/studio-assets/client_workspace.css?v=1"></head>
+<link rel="stylesheet" href="/studio-assets/client_workspace.css?v=2"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container">
 <a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNT</small></span></a>
-<nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/architect">Конструктор</a><a href="/automation/studio">Автоматизация</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account/tickets">Заявки</a><a href="/studio">Студия</a></nav>
-<form method="post" action="/account/logout" class="account-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Выйти ↗</button></form></div></header>
+<nav class="account-header-links" aria-label="Навигация"><a href="/">{{ t("Платформа") }}</a><a href="/architect">{{ t("Конструктор") }}</a><a href="/automation/studio">{{ t("Автоматизация") }}</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account/tickets">{{ t("Заявки") }}</a><a href="/studio">{{ t("Студия") }}</a></nav>
+<form method="post" action="/account/logout" class="account-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">{{ t("Выйти ↗") }}</button></form></div></header>
 {% include "_workspace_nav.html" %}
 <main class="container account-dashboard"><div class="eyebrow">PRIVATE CLIENT SPACE / OMNIFACTORY</div>
-<h1>Рабочий кабинет</h1>
-<p class="account-dashboard-lede">Здравствуйте, <strong>{{ user.display_name }}</strong> · Организация <strong>{{ org.name }}</strong> · Аккаунт <strong>{{ user.username }}</strong> · Роль <strong>{{ user.role }}</strong></p>
-{% if success %}<p class="account-success" role="status">Настройки сохранены.</p>{% endif %}
+<h1>{{ t("Рабочий кабинет") }}</h1>
+<p class="account-dashboard-lede">{{ t("Здравствуйте,") }} <strong>{{ user.display_name }}</strong> {{ t("· Организация") }} <strong>{{ org.name }}</strong> {{ t("· Аккаунт") }} <strong>{{ user.username }}</strong> {{ t("· Роль") }} <strong>{{ user.role }}</strong></p>
+{% if success %}<p class="account-success" role="status">{{ t("Настройки сохранены.") }}</p>{% endif %}
 <section class="workspace-attention" aria-label="Требует внимания">
-  <div class="workspace-attention-heading"><h2>Сейчас требует внимания</h2><span>Фактические данные вашей организации</span></div>
+  <div class="workspace-attention-heading"><h2>{{ t("Сейчас требует внимания") }}</h2><span>{{ t("Фактические данные вашей организации") }}</span></div>
   <div class="workspace-attention-grid">
-    <a class="workspace-attention-item" href="/account/projects"><strong>{{ projects_awaiting_approval }}</strong><span>Проектов на приёмке</span><small>Проверьте результаты и подтвердите готовые работы</small></a>
-    <a class="workspace-attention-item" href="/account/projects"><strong>{{ projects_overdue }}</strong><span>Проектов с истёкшим сроком</span><small>Включая проекты, которые ещё не завершены</small></a>
-    <a class="workspace-attention-item" href="/account/notifications"><strong>{{ unread_project_notices }}</strong><span>Непрочитанных событий</span><small>Обновления по вашим проектам и документам</small></a>
+    <a class="workspace-attention-item" href="/account/projects"><strong>{{ projects_awaiting_approval }}</strong><span>{{ t("Проектов на приёмке") }}</span><small>{{ t("Проверьте результаты и подтвердите готовые работы") }}</small></a>
+    <a class="workspace-attention-item" href="/account/projects"><strong>{{ projects_overdue }}</strong><span>{{ t("Проектов с истёкшим сроком") }}</span><small>{{ t("Включая проекты, которые ещё не завершены") }}</small></a>
+    <a class="workspace-attention-item" href="/account/notifications"><strong>{{ unread_project_notices }}</strong><span>{{ t("Непрочитанных событий") }}</span><small>{{ t("Обновления по вашим проектам и документам") }}</small></a>
   </div>
-  <p class="workspace-status-legend">Если показатель равен нулю, действий по этой категории сейчас не требуется. Данные доступны только вашей организации.</p>
+  <p class="workspace-status-legend">{{ t("Если показатель равен нулю, действий по этой категории сейчас не требуется. Данные доступны только вашей организации.") }}</p>
 </section>
 <div class="account-workspace-layout">
 <div class="account-workspace-content">
-<div class="account-quick-actions"><a class="button button-line" href="/account/notifications">Уведомления · {{ unread_project_notices }} непрочитанных ↗</a><a class="button button-primary" href="/account/projects#new-project">+ Новый заказ</a><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="#tools">Мои проекты ↓</a><a class="button button-line" href="/account/finance">Финансовый центр ↗</a><a class="button button-line" href="/account/billing">Тарифы и счета ↗</a></div>
+<div class="account-quick-actions"><a class="button button-line" href="/account/notifications">Уведомления · {{ unread_project_notices }} непрочитанных ↗</a><a class="button button-primary" href="/account/projects#new-project">{{ t("+ Новый заказ") }}</a><a class="button button-primary" href="/account/tickets#new-ticket">{{ t("+ Создать заявку") }}</a><a class="button button-line" href="/account/tickets">{{ t("Мои обращения ↗") }}</a><a class="button button-line" href="#tools">{{ t("Мои проекты ↓") }}</a><a class="button button-line" href="/account/finance">{{ t("Финансовый центр ↗") }}</a><a class="button button-line" href="/account/billing">{{ t("Тарифы и счета ↗") }}</a></div>
 <div class="account-kpis">
-<article><span>ЗАКАЗЫ В РАБОТЕ</span><strong>{{ active_client_project_count }}</strong><small>Заказы вашей организации</small></article>
-<article><span>СХЕМЫ БОТОВ</span><strong>{{ bot_count }}</strong><small>Сохранённые черновики</small></article>
+<article><span>ЗАКАЗЫ В РАБОТЕ</span><strong>{{ active_client_project_count }}</strong><small>{{ t("Заказы вашей организации") }}</small></article>
+<article><span>{{ t("СХЕМЫ БОТОВ") }}</span><strong>{{ bot_count }}</strong><small>{{ t("Сохранённые черновики") }}</small></article>
 
-<article><span>АВТОМАТИЗАЦИИ</span><strong>{{ flow_count }}</strong><small>Мои процессы</small></article>
-<article><span>ОТКРЫТЫЕ ОБРАЩЕНИЯ</span><strong>{{ active_ticket_count }}</strong><small>В вашей организации</small></article>
-<article><span>ВСЕ ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
-<article><span>УЧЁТ РЕГИСТРАЦИИ</span><strong>Зарегистрирован</strong><small>{{ user.created_at.strftime("%d.%m.%Y") }}</small></article>
-<article><span>ПОДТВЕРЖДЕНИЕ EMAIL</span><strong>{{ "Подтверждён" if user.email_verified else "Не подтверждён" }}</strong><small>Проверка email будет добавлена</small></article></div>
+<article><span>{{ t("АВТОМАТИЗАЦИИ") }}</span><strong>{{ flow_count }}</strong><small>{{ t("Мои процессы") }}</small></article>
+<article><span>{{ t("ОТКРЫТЫЕ ОБРАЩЕНИЯ") }}</span><strong>{{ active_ticket_count }}</strong><small>{{ t("В вашей организации") }}</small></article>
+<article><span>{{ t("ВСЕ ОБРАЩЕНИЯ") }}</span><strong>{{ ticket_count }}</strong><small>{{ t("Заявки вашей организации") }}</small></article><article><span>{{ t("ТЕКУЩИЙ ПЛАН") }}</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
+<article><span>{{ t("УЧЁТ РЕГИСТРАЦИИ") }}</span><strong>{{ t("Зарегистрирован") }}</strong><small>{{ user.created_at.strftime("%d.%m.%Y") }}</small></article>
+<article><span>{{ t("ПОДТВЕРЖДЕНИЕ EMAIL") }}</span><strong>{{ "Подтверждён" if user.email_verified else "Не подтверждён" }}</strong><small>{{ t("Проверка email будет добавлена") }}</small></article></div>
 <section class="account-panel account-panel-wide" id="client-projects">
-<div class="eyebrow">01 / CUSTOMER PROJECT DELIVERY</div><div class="account-section-heading"><h2>Проекты на заказ</h2><a href="/account/projects">Все заказы ↗</a></div>
-<p>Отдельный реестр проектов, которые OMNIFACTORY разрабатывает по вашему запросу. Черновики конструктора находятся ниже.</p>
+<div class="eyebrow">01 / CUSTOMER PROJECT DELIVERY</div><div class="account-section-heading"><h2>{{ t("Проекты на заказ") }}</h2><a href="/account/projects">{{ t("Все заказы ↗") }}</a></div>
+<p>{{ t("Отдельный реестр проектов, которые OMNIFACTORY разрабатывает по вашему запросу. Черновики конструктора находятся ниже.") }}</p>
 {% if client_projects %}<div class="account-ticket-list">{% for project in client_projects %}
 <a class="account-ticket" href="/account/projects/{{ project.id }}"><span class="account-ticket-title">{{ project.title }}</span>
-<span class="account-ticket-meta">{{ project.updated_at.strftime("%d.%m.%Y") }} · {{ client_project_statuses.get(project.status, project.status) }}</span></a>{% endfor %}</div>
-{% else %}<div class="account-empty">У вас пока нет заказов на разработку. <a href="/account/projects#new-project">Создать первый запрос ↗</a></div>{% endif %}
+<span class="account-ticket-meta">{{ project.updated_at.strftime("%d.%m.%Y") }} · {{ t(client_project_statuses.get(project.status, project.status)) }}</span></a>{% endfor %}</div>
+{% else %}<div class="account-empty">{{ t("У вас пока нет заказов на разработку.") }} <a href="/account/projects#new-project">{{ t("Создать первый запрос ↗") }}</a></div>{% endif %}
 </section>
 <section class="account-panel account-ticket-overview" id="requests">
-<div class="eyebrow">02 / SERVICE DESK</div><div class="account-section-heading"><h2>Ваши обращения</h2><a href="/account/tickets">Все заявки ↗</a></div>
+<div class="eyebrow">02 / SERVICE DESK</div><div class="account-section-heading"><h2>{{ t("Ваши обращения") }}</h2><a href="/account/tickets">{{ t("Все заявки ↗") }}</a></div>
 {% if tickets %}<div class="account-ticket-list">{% for ticket in tickets %}
 <a class="account-ticket" href="/account/tickets/{{ ticket.id }}">
 <span class="account-ticket-title">{{ ticket.subject }}</span>
-<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ support_statuses.get(ticket.status, ticket.status) }}</span>
+<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ t(support_statuses.get(ticket.status, ticket.status)) }}</span>
 </a>{% endfor %}</div>
-{% else %}<div class="account-empty">У вас пока нет заявок. Если нужна помощь, консультация или доработка — создайте обращение, и оно появится здесь.</div>{% endif %}
+{% else %}<div class="account-empty">{{ t("У вас пока нет заявок. Если нужна помощь, консультация или доработка — создайте обращение, и оно появится здесь.") }}</div>{% endif %}
 </section>
 <div class="account-dashboard-grid">
-<section class="account-panel" id="settings"><div class="eyebrow">05 / PROFILE SETTINGS</div><h2>Настройки аккаунта</h2>
+<section class="account-panel" id="settings"><div class="eyebrow">05 / PROFILE SETTINGS</div><h2>{{ t("Настройки аккаунта") }}</h2>
 <form method="post" action="/account/settings"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-<label>Имя <input name="display_name" type="text" minlength="2" maxlength="120" value="{{ user.display_name }}" required></label>
-<label>Почта <input type="email" value="{{ user.email }}" disabled></label>
-<label>Язык интерфейса <select name="language"><option value="ru" {% if settings.language == "ru" %}selected{% endif %}>Русский</option><option value="uk" {% if settings.language == "uk" %}selected{% endif %}>Українська</option><option value="en" {% if settings.language == "en" %}selected{% endif %}>English</option></select></label>
-<label>Часовой пояс <input name="timezone" value="{{ settings.timezone }}" maxlength="64" required></label>
-<label class="account-inline-checkbox"><input name="marketing_opt_in" value="yes" type="checkbox" {% if settings.marketing_opt_in %}checked{% endif %}> Получать новости о продуктах</label>
-<button class="button button-primary account-submit" type="submit">Сохранить изменения <span>↗</span></button></form>
+<label>{{ t("Имя") }} <input name="display_name" type="text" minlength="2" maxlength="120" value="{{ user.display_name }}" required></label>
+<label>{{ t("Почта") }} <input type="email" value="{{ user.email }}" disabled></label>
+<label>{{ t("Язык интерфейса") }} <select name="language"><option value="ru" {% if settings.language == "ru" %}selected{% endif %}>{{ t("Русский") }}</option><option value="uk" {% if settings.language == "uk" %}selected{% endif %}>{{ t("Українська") }}</option><option value="en" {% if settings.language == "en" %}selected{% endif %}>{{ t("English") }}</option></select></label>
+<label>{{ t("Часовой пояс") }} <input name="timezone" value="{{ settings.timezone }}" maxlength="64" required></label>
+<label class="account-inline-checkbox"><input name="marketing_opt_in" value="yes" type="checkbox" {% if settings.marketing_opt_in %}checked{% endif %}> {{ t("Получать новости о продуктах") }}</label>
+<button class="button button-primary account-submit" type="submit">{{ t("Сохранить изменения") }} <span>↗</span></button></form>
 </section>
-<section class="account-panel" id="billing"><div class="eyebrow">04 / COMMERCIAL ACCOUNTING</div><h2>Подписка и платежи</h2>
-<p><a class="button button-line" href="/account/billing">Посмотреть тарифы и счета ↗</a></p>
-<p>Тариф: <strong>{{ subscription.plan_code if subscription else "не выбран" }}</strong>. Стоимость: <strong>{{ "%.2f"|format((subscription.price_minor if subscription else 0)/100) }} {{ subscription.currency if subscription else "UAH" }}</strong>.</p>
-<p>Платёжные шлюзы ещё не подключены. Регистрация фиксируется в базе, но не считается оплатой и не создаёт выручку.</p>
-<h3>Счета</h3>{% if invoices %}<div class="account-ledger">{% for invoice in invoices %}<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }}</span><strong>{{ "%.2f"|format(invoice.amount_minor/100) }} {{ invoice.currency }} · {{ invoice.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Выставленных счетов пока нет.</div>{% endif %}
-<h3>История платежей</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ payment.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Подтверждённых платежных операций пока нет.</div>{% endif %}
+<section class="account-panel" id="billing"><div class="eyebrow">04 / COMMERCIAL ACCOUNTING</div><h2>{{ t("Подписка и платежи") }}</h2>
+<p><a class="button button-line" href="/account/billing">{{ t("Посмотреть тарифы и счета ↗") }}</a></p>
+<p>{{ t("Тариф:") }} <strong>{{ subscription.plan_code if subscription else "не выбран" }}</strong>{{ t(". Стоимость:") }} <strong>{{ "%.2f"|format((subscription.price_minor if subscription else 0)/100) }} {{ subscription.currency if subscription else "UAH" }}</strong>.</p>
+<p>{{ t("Платёжные шлюзы ещё не подключены. Регистрация фиксируется в базе, но не считается оплатой и не создаёт выручку.") }}</p>
+<h3>{{ t("Счета") }}</h3>{% if invoices %}<div class="account-ledger">{% for invoice in invoices %}<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }}</span><strong>{{ "%.2f"|format(invoice.amount_minor/100) }} {{ invoice.currency }} · {{ t(invoice.status) }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">{{ t("Выставленных счетов пока нет.") }}</div>{% endif %}
+<h3>{{ t("История платежей") }}</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ t(payment.status) }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">{{ t("Подтверждённых платежных операций пока нет.") }}</div>{% endif %}
 </section>
 <section class="account-panel account-panel-wide" id="tools">
-<div class="eyebrow">03 / MY DIGITAL WORKSPACE</div><h2>Мои инструменты и сохранённые проекты</h2>
-<p>Здесь показаны только созданные вами сценарии Graph Studio и Automation Studio. Незавершённые черновики не считаются работающими ботами или запущенными автоматизациями.</p>
+<div class="eyebrow">03 / MY DIGITAL WORKSPACE</div><h2>{{ t("Мои инструменты и сохранённые проекты") }}</h2>
+<p>{{ t("Здесь показаны только созданные вами сценарии Graph Studio и Automation Studio. Незавершённые черновики не считаются работающими ботами или запущенными автоматизациями.") }}</p>
 <div class="account-project-grid">
 <div><h3>Telegram · Graph Studio</h3>
 {% if bot_projects %}<div class="account-project-list">{% for project in bot_projects %}
 <div class="account-project-row"><strong>{{ project.name }}</strong>
 <small>Черновик · обновлён {{ project.updated_at.strftime("%d.%m.%Y") }}</small></div>
 {% endfor %}</div>
-{% else %}<div class="account-empty">Пока нет сохранённых схем. Откройте конструктор, соберите сценарий и сохраните его.</div>{% endif %}
-<a class="button button-line" href="/architect">Перейти в конструктор ↗</a></div>
-<div><h3>Automation Studio</h3>
+{% else %}<div class="account-empty">{{ t("Пока нет сохранённых схем. Откройте конструктор, соберите сценарий и сохраните его.") }}</div>{% endif %}
+<a class="button button-line" href="/architect">{{ t("Перейти в конструктор ↗") }}</a></div>
+<div><h3>{{ t("Automation Studio") }}</h3>
 {% if workflows %}<div class="account-project-list">{% for workflow in workflows %}
 <div class="account-project-row"><strong>{{ workflow.name }}</strong>
 <small>Сценарий · версия {{ workflow.revision }} · {{ workflow.updated_at.strftime("%d.%m.%Y") }}</small></div>
 {% endfor %}</div>
-{% else %}<div class="account-empty">Автоматизаций пока нет. Создайте процесс и сохраните его в свой аккаунт.</div>{% endif %}
-<a class="button button-line" href="/automation/studio">Открыть Automation Studio ↗</a></div>
+{% else %}<div class="account-empty">{{ t("Автоматизаций пока нет. Создайте процесс и сохраните его в свой аккаунт.") }}</div>{% endif %}
+<a class="button button-line" href="/automation/studio">{{ t("Открыть Automation Studio ↗") }}</a></div>
 </div>
 </section>
 </div></div>
-<aside class="account-section-nav" aria-label="Разделы кабинета"><strong>НА ЭТОЙ СТРАНИЦЕ</strong>
-<a href="#client-projects">Заказы</a><a href="#requests">Обращения</a><a href="#tools">Мои проекты</a><a href="#settings">Профиль</a>
-<a href="#billing">Финансы</a></aside>
+<aside class="account-section-nav" aria-label="Разделы кабинета"><strong>{{ t("НА ЭТОЙ СТРАНИЦЕ") }}</strong>
+<a href="#client-projects">{{ t("Заказы") }}</a><a href="#requests">{{ t("Обращения") }}</a><a href="#tools">{{ t("Мои проекты") }}</a><a href="#settings">{{ t("Профиль") }}</a>
+<a href="#billing">{{ t("Финансы") }}</a></aside>
 </div></main></body></html>

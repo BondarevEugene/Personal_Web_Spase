@@ -18,6 +18,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from portal.db import session_factory
+from portal.i18n import normalize_language, translator
 from portal.models import (AutomationWorkflow, BuilderProject, ClientProject, ClientProjectNotification, Customer, CustomerSettings, Invoice, Organization, PaymentRecord,
                            PortalSession, RegistrationEvent, Subscription, SupportEvent, SupportMessage, SupportTicket, utcnow)
 from portal.security import (CSRF_COOKIE, SESSION_COOKIE, hash_password, issue_csrf,
@@ -34,8 +35,18 @@ _TZ = re.compile(r"^[A-Za-z0-9_+/-]{1,64}$")
 
 def form_page(request: Request, name: str, **context):
     token = new_csrf_token()
-    response = templates.TemplateResponse(request=request, name=name,
-                                          context={"csrf_token": token, **context})
+    settings = context.get("settings")
+    user = context.get("user")
+    if settings is None and user is not None:
+        # Pages other than the dashboard already supply a logged-in user.
+        with session_factory()() as db:
+            settings = db.get(CustomerSettings, user.id)
+    language = normalize_language(getattr(settings, "language", "ru"))
+    response = templates.TemplateResponse(
+        request=request, name=name,
+        context={"csrf_token": token, "ui_lang": language,
+                 "t": translator(language), **context},
+    )
     issue_csrf(response, request, token)
     response.headers["Cache-Control"] = "no-store"
     return response
@@ -239,6 +250,27 @@ def account(request: Request):
                          },
                          support_statuses=_SUPPORT_STATUS,
                          success=request.query_params.get("updated") == "1")
+
+
+@router.post("/language")
+def change_workspace_language(request: Request, csrf_token: str = Form(""),
+                              language: str = Form("")):
+    """Set language for the entire account; never rely on browser-only switches."""
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    if language not in {"uk", "ru", "en"}:
+        raise HTTPException(422, "Unsupported interface language")
+    with session_factory()() as db:
+        user = current_customer(request, db)
+        if user is None:
+            return RedirectResponse("/account/login", status_code=303)
+        settings = db.get(CustomerSettings, user.id)
+        if settings is None:
+            settings = CustomerSettings(customer_id=user.id)
+            db.add(settings)
+        settings.language = language
+        db.commit()
+    return RedirectResponse("/account", status_code=303)
 
 
 @router.post("/settings")
