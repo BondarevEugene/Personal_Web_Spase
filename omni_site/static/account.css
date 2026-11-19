@@ -27,3 +27,41 @@
 .account-logout{margin-left:20px}.account-logout button{border:1px solid #48627a;border-radius:6px;background:#17263b;color:#c4d6e8;padding:10px 15px;cursor:pointer;font-size:12px}
 @media(max-width:850px){.account-auth-main{grid-template-columns:1fr}.account-dashboard-grid{grid-template-columns:1fr}.account-panel-wide{grid-column:auto}}
 @media(max-width:590px){.account-header-links{gap:10px}.account-header-links a{font-size:10px}.account-kpis{grid-template-columns:1fr}.account-logout{margin-left:0}.account-logout button{padding:7px}}
+
+/* Unified Client Workspace v2: navigable, responsive, accessible service desk */
+.account-app{color:#e7effb}
+.account-header-links a[aria-current="page"]{color:#e7f0ff;border-bottom:2px solid #a78bfa}
+.account-workspace-layout{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:28px;align-items:start}
+.account-workspace-content{min-width:0}
+.account-section-nav{position:sticky;top:95px;display:grid;gap:10px;align-content:start;background:#101827;border:1px solid #31445f;border-radius:14px;padding:22px}
+.account-section-nav strong{font:700 10px/1.5 monospace;color:#b9a4fb;letter-spacing:.1em}
+.account-section-nav a{color:#d3e0f0;text-decoration:none;font-size:13px;padding:10px;border-radius:8px}
+.account-section-nav a:hover,.account-section-nav a:focus-visible{background:#24314b;color:white}
+.account-quick-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.account-quick-actions .button{margin:0}
+.account-ticket-overview{margin-bottom:25px}
+.account-section-heading{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.account-section-heading h2{margin:16px 0}
+.account-section-heading a,.account-back a,.account-ticket-open{color:#9edbec;text-decoration:underline;text-underline-offset:4px}
+.account-ticket-list{display:grid;gap:11px;margin-top:18px}
+.account-ticket{display:grid;gap:5px;text-decoration:none;background:#0b1829;border:1px solid #344763;border-radius:12px;padding:16px 18px;transition:border-color .15s,transform .15s}
+.account-ticket:hover,.account-ticket:focus-visible{border-color:#b3a0ed;transform:translateY(-1px)}
+.account-ticket-title{color:#eff5ff;font-weight:700;overflow-wrap:anywhere}
+.account-ticket-meta{color:#acc0d7;font-size:12px}
+.account-ticket-open{font-size:12px}
+.account-breadcrumb{display:flex;align-items:center;gap:11px;flex-wrap:wrap;font-size:12px;margin-bottom:26px;color:#b7c9e0}
+.account-breadcrumb a{color:#c6d4ec}
+.account-panel textarea{min-height:120px;resize:vertical;background:#081422;color:#ecf7ff;border:1px solid #455b79;border-radius:6px;padding:12px;font:500 13px var(--font);width:100%}
+.account-panel textarea:focus-visible{outline:2px solid #8be2db;outline-offset:2px}
+.account-thread{display:grid;gap:13px;margin-bottom:24px}
+.account-thread-message{padding:17px;background:#0b1829;border:1px solid #344763;border-radius:12px}
+.account-thread-message small{color:#aabed7}
+.account-message-body{white-space:pre-wrap;overflow-wrap:anywhere;color:#d7e4f6!important}
+.account-ticket-heading{overflow-wrap:anywhere}
+.account-back{margin-top:30px}
+.account-kpis{grid-template-columns:repeat(auto-fit,minmax(175px,1fr))}
+.account-empty strong{display:block;color:#e9f4ff;margin-bottom:6px}
+.account-auth-card input:focus-visible,.account-panel input:focus-visible{outline:2px solid #8be2db;outline-offset:2px}
+@media(max-width:1050px){.account-workspace-layout{grid-template-columns:1fr}.account-section-nav{position:static;display:flex;flex-wrap:wrap;order:-1}.account-section-nav strong{width:100%}}
+@media(max-width:590px){.account-section-heading{align-items:start;flex-direction:column}.account-quick-actions .button{width:100%;justify-content:center}.account-dashboard{padding-top:35px}.account-panel{padding:20px}.account-header-links{width:100%;overflow-x:auto;flex-wrap:nowrap}.account-header-links a{white-space:nowrap}}
+@media(prefers-reduced-motion:reduce){.account-ticket{transition:none}.account-ticket:hover{transform:none}}
