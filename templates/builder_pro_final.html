@@ -65,6 +65,9 @@
 <div class="builder-layout">
 <aside class="builder-palette" aria-label="Библиотека блоков">
 <div class="builder-pane-head"><span>01 / БЛОКИ</span><small>Клик или перетащи</small></div>
+<label class="graph-palette-search" for="graph-palette-query"><span>Поиск блока</span>
+<input id="graph-palette-query" type="search" autocomplete="off" placeholder="Название или функция (Ctrl+K)" aria-controls="graph-palette-results"></label>
+<p id="graph-palette-results" class="graph-palette-results" role="status" aria-live="polite"></p>
 <div class="palette-group-label">TELEGRAM / ДИАЛОГИ <span>РАБОТАЕТ</span></div>
 <button class="palette-node" data-add="message" type="button" draggable="true"><b>✉</b><span><strong>Сообщение</strong><small>Отправка текста</small></span></button>
 <button class="palette-node" data-add="choice" type="button" draggable="true"><b>◇</b><span><strong>Кнопки</strong><small>Выбор пути</small></span></button>
