@@ -13,7 +13,7 @@
 <nav class="account-breadcrumb" aria-label="Путь"><a href="/account">{{ t("Кабинет") }}</a><span>/</span><a href="/account/tickets">{{ t("Заявки") }}</a><span>/</span><span>{{ t("Детали") }}</span></nav>
 <div class="eyebrow">SERVICE REQUEST / {{ ticket.id[:8] }}</div>
 <h1 class="account-ticket-heading">{{ ticket.subject }}</h1>
-<p class="account-dashboard-lede">{{ t("Статус:") }} <strong>{{ status_label }}</strong> · Создана {{ ticket.created_at.strftime("%d.%m.%Y %H:%M") }}</p>
+<p class="account-dashboard-lede">{{ t("Статус:") }} <strong>{{ t(status_label) }}</strong> · Создана {{ ticket.created_at.strftime("%d.%m.%Y %H:%M") }}</p>
 <div class="account-dashboard-grid">
 <section class="account-panel">
 <div class="eyebrow">01 / REQUEST DETAILS</div><h2>{{ t("Описание задачи") }}</h2>
@@ -35,7 +35,7 @@
 <section class="account-panel" style="margin-top:22px" aria-labelledby="ticket-history-title">
 <div class="eyebrow">03 / REQUEST JOURNEY</div><h2 id="ticket-history-title">{{ t("Этапы обработки") }}</h2>
 {% if events %}<div class="account-ticket-list">{% for event in events %}
-<div class="account-ticket"><span class="account-ticket-title">{{ statuses.get(event.old_status,event.old_status) }} → {{ statuses.get(event.new_status,event.new_status) }}</span><span class="account-ticket-meta">{{ event.created_at.strftime("%d.%m.%Y %H:%M") }}</span>
+<div class="account-ticket"><span class="account-ticket-title">{{ t(statuses.get(event.old_status,event.old_status)) }} → {{ t(statuses.get(event.new_status,event.new_status)) }}</span><span class="account-ticket-meta">{{ event.created_at.strftime("%d.%m.%Y %H:%M") }}</span>
 {% if event.comment %}<p class="account-message-body">{{ event.comment }}</p>{% endif %}</div>
 {% endfor %}</div>{% else %}<div class="account-empty">{{ t("Заявка зарегистрирована. При изменении статуса здесь появится история работы.") }}</div>{% endif %}
 </section>
