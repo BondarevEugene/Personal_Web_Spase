@@ -18,3 +18,8 @@
 .account-app .account-security-danger button{border-color:#9e6976;color:#f4d9e1}
 .account-app .account-security-footnote{font-size:11px;color:#aab8cc;line-height:1.55;margin-top:25px}
 @media(max-width:760px){.account-app .account-security-grid{grid-template-columns:1fr}.account-app .account-security-grid button{width:100%}}
+
+.account-app .auth-language{display:flex;justify-content:flex-end;gap:5px;margin-bottom:9px}
+.account-app .auth-language a{display:inline-block;min-width:34px;text-align:center;padding:7px 9px;border-radius:6px;border:1px solid #465369;background:#1b2230;color:#bfccde;text-decoration:none;font-size:11px;font-weight:750}
+.account-app .auth-language a[aria-current=page]{background:#3b334e;border-color:#bba6d5;color:#fff}
+.account-app .auth-language a:focus-visible{outline:2px solid #d3b9e4;outline-offset:2px}
