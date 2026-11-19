@@ -65,3 +65,14 @@
 @media(max-width:1050px){.account-workspace-layout{grid-template-columns:1fr}.account-section-nav{position:static;display:flex;flex-wrap:wrap;order:-1}.account-section-nav strong{width:100%}}
 @media(max-width:590px){.account-section-heading{align-items:start;flex-direction:column}.account-quick-actions .button{width:100%;justify-content:center}.account-dashboard{padding-top:35px}.account-panel{padding:20px}.account-header-links{width:100%;overflow-x:auto;flex-wrap:nowrap}.account-header-links a{white-space:nowrap}}
 @media(prefers-reduced-motion:reduce){.account-ticket{transition:none}.account-ticket:hover{transform:none}}
+
+/* Real saved project overview, no mocked status badges */
+.account-project-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:23px;margin-top:26px}
+.account-project-grid>div{min-width:0;background:#0b1829;border:1px solid #344763;border-radius:12px;padding:22px;display:flex;flex-direction:column;align-items:flex-start;gap:14px}
+.account-project-grid h3{margin:0;color:#eaf1ff;font:600 19px var(--display,'Space Grotesk',sans-serif)}
+.account-project-grid .button{margin-top:auto}
+.account-project-list{display:grid;gap:10px;width:100%}
+.account-project-row{padding:14px;border:1px solid #33445d;background:#15223a;border-radius:9px;display:grid;gap:6px}
+.account-project-row strong{color:#eef5ff;overflow-wrap:anywhere}
+.account-project-row small{color:#a8c1d9;font-size:11px}
+@media(max-width:830px){.account-project-grid{grid-template-columns:1fr}}

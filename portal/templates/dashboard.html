@@ -12,8 +12,12 @@
 {% if success %}<p class="account-success" role="status">Настройки сохранены.</p>{% endif %}
 <div class="account-workspace-layout">
 <div class="account-workspace-content">
-<div class="account-quick-actions"><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
-<div class="account-kpis"><article><span>ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
+<div class="account-quick-actions"><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="#tools">Мои проекты ↓</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
+<div class="account-kpis">
+<article><span>БОТЫ</span><strong>{{ bot_count }}</strong><small>Мои сохранённые схемы</small></article>
+<article><span>АВТОМАТИЗАЦИИ</span><strong>{{ flow_count }}</strong><small>Мои процессы</small></article>
+<article><span>ОТКРЫТЫЕ ОБРАЩЕНИЯ</span><strong>{{ active_ticket_count }}</strong><small>В вашей организации</small></article>
+<article><span>ВСЕ ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
 <article><span>УЧЁТ РЕГИСТРАЦИИ</span><strong>Зарегистрирован</strong><small>{{ user.created_at.strftime("%d.%m.%Y") }}</small></article>
 <article><span>ПОДТВЕРЖДЕНИЕ EMAIL</span><strong>{{ "Подтверждён" if user.email_verified else "Не подтверждён" }}</strong><small>Проверка email будет добавлена</small></article></div>
 <section class="account-panel account-ticket-overview" id="requests">
@@ -21,7 +25,7 @@
 {% if tickets %}<div class="account-ticket-list">{% for ticket in tickets %}
 <a class="account-ticket" href="/account/tickets/{{ ticket.id }}">
 <span class="account-ticket-title">{{ ticket.subject }}</span>
-<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ ticket.status }}</span>
+<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ support_statuses.get(ticket.status, ticket.status) }}</span>
 </a>{% endfor %}</div>
 {% else %}<div class="account-empty">У вас пока нет заявок. Если нужна помощь, консультация или доработка — создайте обращение, и оно появится здесь.</div>{% endif %}
 </section>
@@ -42,9 +46,28 @@
 <h3>Счета</h3>{% if invoices %}<div class="account-ledger">{% for invoice in invoices %}<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }}</span><strong>{{ "%.2f"|format(invoice.amount_minor/100) }} {{ invoice.currency }} · {{ invoice.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Выставленных счетов пока нет.</div>{% endif %}
 <h3>История платежей</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ payment.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Подтверждённых платежных операций пока нет.</div>{% endif %}
 </section>
-<section class="account-panel account-panel-wide" id="tools"><div class="eyebrow">04 / PROJECTS AND TOOLS</div><h2>Инструменты разработки</h2><p>Graph Studio позволяет создавать схемы диалогов, тестировать их и сохранять черновики в личном аккаунте. Для запуска скачанного Python-бота потребуется Telegram-токен и хостинг.</p><a class="button button-line" href="/architect">Открыть конструктор <span>↗</span></a></section>
+<section class="account-panel account-panel-wide" id="tools">
+<div class="eyebrow">04 / MY DIGITAL WORKSPACE</div><h2>Мои инструменты и сохранённые проекты</h2>
+<p>Здесь показаны только созданные вами сценарии Graph Studio и Automation Studio. Незавершённые черновики не считаются работающими ботами или запущенными автоматизациями.</p>
+<div class="account-project-grid">
+<div><h3>Telegram · Graph Studio</h3>
+{% if bot_projects %}<div class="account-project-list">{% for project in bot_projects %}
+<div class="account-project-row"><strong>{{ project.name }}</strong>
+<small>Черновик · обновлён {{ project.updated_at.strftime("%d.%m.%Y") }}</small></div>
+{% endfor %}</div>
+{% else %}<div class="account-empty">Пока нет сохранённых схем. Откройте конструктор, соберите сценарий и сохраните его.</div>{% endif %}
+<a class="button button-line" href="/architect">Перейти в конструктор ↗</a></div>
+<div><h3>Automation Studio</h3>
+{% if workflows %}<div class="account-project-list">{% for workflow in workflows %}
+<div class="account-project-row"><strong>{{ workflow.name }}</strong>
+<small>Сценарий · версия {{ workflow.revision }} · {{ workflow.updated_at.strftime("%d.%m.%Y") }}</small></div>
+{% endfor %}</div>
+{% else %}<div class="account-empty">Автоматизаций пока нет. Создайте процесс и сохраните его в свой аккаунт.</div>{% endif %}
+<a class="button button-line" href="/automation/studio">Открыть Automation Studio ↗</a></div>
+</div>
+</section>
 </div></div>
 <aside class="account-section-nav" aria-label="Разделы кабинета"><strong>НА ЭТОЙ СТРАНИЦЕ</strong>
-<a href="#requests">Обращения</a><a href="#settings">Профиль</a>
-<a href="#billing">Финансы</a><a href="#tools">Инструменты</a></aside>
+<a href="#requests">Обращения</a><a href="#tools">Мои проекты</a><a href="#settings">Профиль</a>
+<a href="#billing">Финансы</a></aside>
 </div></main></body></html>
