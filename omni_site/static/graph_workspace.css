@@ -135,3 +135,5 @@
 .builder-app .graph-groups-empty,.builder-app .graph-groups-note{margin:5px 0;font-size:11px;color:#abb6c7;line-height:1.45}
 .builder-app .graph-groups-note{margin-top:8px}
 @media(max-width:700px){.builder-app .graph-groups-controls label{flex:1 1 100%}.builder-app .graph-group{flex-basis:100%}}
+
+.builder-app .graph-node-group-chip{display:inline-block;max-width:100%;align-self:flex-start;padding:3px 7px;font:600 10px/1.3 var(--font);background:#252935;border:1px solid #626b7e;color:#cdd5e3;border-radius:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
