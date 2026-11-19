@@ -270,6 +270,77 @@ function connect(target){
  else if(n.kind!=='end')n.next=target;
  status('Соединено: '+n.id+' → '+target);link=null;render();save();
 }
+function focusGraphNode(id){
+ if(!data.nodes.some(node=>node.id===id))return;
+ selected=id;render();inspector();
+ const card=Array.from(document.querySelectorAll('.graph-node'))
+  .find(node=>node.dataset.nodeId===id);
+ if(card)card.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});
+ status('Выбран блок '+id);
+}
+function renderGroups(){
+ const target=$('graph-groups-list'),select=$('graph-group-target');
+ if(!target||!select)return;
+ groups=window.OmniGraphGroups.clean(groups,data.nodes);
+ $('graph-groups-count').textContent=groups.length+' групп';
+ target.replaceChildren();
+ const current=groups.find(group=>group.node_ids.includes(selected));
+ select.replaceChildren();
+ const free=el('option','', 'Без группы');free.value='';select.append(free);
+ for(const group of groups){
+  const option=el('option','',group.title);option.value=group.id;select.append(option);
+ }
+ select.value=current?current.id:'';
+ if(!groups.length){
+  target.append(el('p','graph-groups-empty','Групп пока нет. Выберите блок и создайте первую.'));
+  return;
+ }
+ for(const group of groups){
+  const details=el('details','graph-group');
+  details.open=expandedGroups.has(group.id);
+  details.addEventListener('toggle',()=>{
+   if(details.open)expandedGroups.add(group.id);
+   else expandedGroups.delete(group.id);
+  });
+  const summary=el('summary','graph-group-title',group.title+' · '+group.node_ids.length);
+  details.append(summary);
+  const rows=el('div','graph-group-members');
+  for(const id of group.node_ids){
+   const node=data.nodes.find(item=>item.id===id);
+   if(!node)continue;
+   const entry=btn(node.id+' · '+names[node.kind],()=>focusGraphNode(id),
+    'graph-group-member'+(selected===id?' selected':''));
+   rows.append(entry);
+  }
+  const remove=btn('Удалить группу',()=>{
+   groups=window.OmniGraphGroups.deleteGroup(groups,group.id);
+   expandedGroups.delete(group.id);change();
+   status('Группа удалена. Узлы и переходы сохранены.');
+  },'graph-group-remove');
+  rows.append(remove);details.append(rows);target.append(details);
+ }
+}
+$('graph-group-create').addEventListener('click',()=>{
+ try{
+  const title=$('graph-group-name').value.trim();
+  groups=window.OmniGraphGroups.create(groups,data.nodes,title,selected);
+  expandedGroups.add(groups[groups.length-1].id);
+  $('graph-group-name').value='';
+  change();status('Группа создана, выбранный блок добавлен.');
+ }catch(error){status('Группы: '+error.message,true);}
+});
+$('graph-group-apply').addEventListener('click',()=>{
+ const groupId=$('graph-group-target').value;
+ const previous=groups.find(group=>group.node_ids.includes(selected));
+ if((previous?previous.id:'')===groupId)return;
+ try{
+  groups=groupId?
+   window.OmniGraphGroups.move(groups,data.nodes,groupId,selected):
+   window.OmniGraphGroups.ungroup(groups,selected);
+  if(groupId)expandedGroups.add(groupId);
+  change();status('Принадлежность блока к группе обновлена.');
+ }catch(error){status('Группы: '+error.message,true);}
+});
 function render(){
  data.nodes.forEach((node,i)=>position(node.id,i));
  world.height=Math.max(1400,...Object.values(positions)
