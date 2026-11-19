@@ -441,6 +441,7 @@ class SupportTicket(Base):
     subject: Mapped[str] = mapped_column(String(160), nullable=False)
     category: Mapped[str] = mapped_column(String(30), nullable=False)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="new")
+    assigned_to_id: Mapped[str | None] = mapped_column(ForeignKey("portal_customers.id"), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
@@ -454,4 +455,17 @@ class SupportMessage(Base):
     ticket_id: Mapped[str] = mapped_column(ForeignKey("portal_support_tickets.id"), index=True, nullable=False)
     author_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class SupportEvent(Base):
+    """Append-only service desk status change visible in the customer's timeline."""
+
+    __tablename__ = "portal_support_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    ticket_id: Mapped[str] = mapped_column(ForeignKey("portal_support_tickets.id"), index=True, nullable=False)
+    actor_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    old_status: Mapped[str] = mapped_column(String(30), nullable=False)
+    new_status: Mapped[str] = mapped_column(String(30), nullable=False)
+    comment: Mapped[str] = mapped_column(Text, nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
