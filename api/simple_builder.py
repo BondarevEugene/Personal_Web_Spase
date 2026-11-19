@@ -12,7 +12,7 @@ import zipfile
 from collections import deque
 from typing import Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, model_validator
 
@@ -519,6 +519,13 @@ Type /start in your Telegram bot to begin the conversation.
 @router.post("/export")
 def export_scenario(scenario: Scenario):
     """Return a fixed-template ZIP, never executing user content as Python."""
+    diagnosis = analyze_scenario(scenario)
+    if not diagnosis["ok"]:
+        raise HTTPException(status_code=422, detail={
+            "message": "Исправьте ошибки графа перед экспортом",
+            "issues": [issue for issue in diagnosis["issues"]
+                       if issue["severity"] == "error"],
+        })
     # Bound file sizes: max 80 nodes, constrained text and options via Pydantic.
     payload = json.dumps(scenario.model_dump(mode="json"), ensure_ascii=False, indent=2)
     mem = io.BytesIO()
