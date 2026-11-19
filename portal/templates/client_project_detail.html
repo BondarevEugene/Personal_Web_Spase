@@ -2,9 +2,9 @@
 <body class="account-app"><header class="site-header"><div class="header-inner container"><a class="brand" href="/account">◈ OMNIFACTORY</a><nav class="account-header-links"><a href="/account">{{ t("Кабинет") }}</a><a href="/account/projects">{{ t("Все проекты") }}</a><a href="/account/tickets">{{ t("Поддержка") }}</a><a href="/account/billing">{{ t("Финансы") }}</a></nav></div></header>
 {% include "_workspace_nav.html" %}
 <main class="container client-projects-page"><nav class="account-breadcrumb"><a href="/account">{{ t("Кабинет") }}</a><span>/</span><a href="/account/projects">{{ t("Заказы") }}</a><span>/</span><span>{{ t("Карточка") }}</span></nav>
-<div class="cp-heading"><div><span class="eyebrow">PROJECT / {{ project.id[:8] }}</span><h1>{{ project.title }}</h1><span class="cp-status">{{ statuses.get(project.status, project.status) }}</span><p>Запрос создан {{ project.created_at.strftime("%d.%m.%Y") }}. Дата сдачи: {{ project.due_date.strftime("%d.%m.%Y") if project.due_date else "не назначена" }}.</p></div></div>
+<div class="cp-heading"><div><span class="eyebrow">PROJECT / {{ project.id[:8] }}</span><h1>{{ project.title }}</h1><span class="cp-status">{{ t(statuses.get(project.status, project.status)) }}</span><p>Запрос создан {{ project.created_at.strftime("%d.%m.%Y") }}. Дата сдачи: {{ project.due_date.strftime("%d.%m.%Y") if project.due_date else "не назначена" }}.</p></div></div>
 <div class="cp-grid"><section class="account-panel"><h2>{{ t("Техническое задание") }}</h2><p class="cp-brief">{{ project.brief }}</p></section><section class="account-panel"><h2>{{ t("Этапы работы") }}</h2>
-{% if milestones %}<ol class="cp-stages">{% for stage in milestones %}<li><strong>{{ stage.title }}</strong><small>{{ milestone_labels.get(stage.status, stage.status) }}</small><p>{{ stage.details }}</p></li>{% endfor %}</ol>{% else %}<p class="account-empty">{{ t("План работ ещё не утверждён оператором.") }}</p>{% endif %}
+{% if milestones %}<ol class="cp-stages">{% for stage in milestones %}<li><strong>{{ stage.title }}</strong><small>{{ t(milestone_labels.get(stage.status, stage.status)) }}</small><p>{{ stage.details }}</p></li>{% endfor %}</ol>{% else %}<p class="account-empty">{{ t("План работ ещё не утверждён оператором.") }}</p>{% endif %}
 </section></div>
 <section class="account-panel cp-attachments" aria-label="Вложения проекта">
 <h2>{{ t("Файлы проекта") }}</h2><p>PDF, PNG, JPEG и TXT до {{ attachment_limit_mb }} МБ каждый. Максимум восемь вложений на проект. Файлы доступны только участникам организации и операторам платформы.</p>
@@ -23,8 +23,8 @@
 <section class="account-panel cp-documents"><h2>{{ t("Документы и согласования") }}</h2>
 <p>{{ t("Текстовые версии документов проекта. Согласование фиксирует конкретную редакцию и не является электронной подписью.") }}</p>
 {% if project_documents %}<div class="cp-list">{% for doc in project_documents %}
-<details class="cp-document"><summary><strong>{{ document_kinds.get(doc.document_kind, doc.document_kind) }} · {{ doc.title }}</strong>
-<span class="cp-status">v{{ doc.version }} · {{ "Согласовано" if doc.id in approved_documents else "Не согласовано" }}</span></summary>
+<details class="cp-document"><summary><strong>{{ t(document_kinds.get(doc.document_kind, doc.document_kind)) }} · {{ doc.title }}</strong>
+<span class="cp-status">v{{ doc.version }} · {{ t("Согласовано") if doc.id in approved_documents else t("Не согласовано") }}</span></summary>
 <p class="cp-brief">{{ doc.body }}</p><small>{{ doc.created_at.strftime("%d.%m.%Y %H:%M") }}</small>
 {% if user.role == "owner" and doc.id not in approved_documents and latest_documents[doc.document_kind].id == doc.id and project.status not in ["accepted", "cancelled"] %}
 <form method="post" action="/account/projects/{{ project.id }}/documents/{{ doc.id }}/approve"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
