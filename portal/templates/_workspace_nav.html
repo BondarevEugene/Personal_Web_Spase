@@ -1,0 +1,13 @@
+<nav class="workspace-nav" aria-label="Рабочие разделы OMNIFACTORY">
+  <div class="workspace-nav-inner">
+    <a href="/account" {% if request.url.path == "/account" or request.url.path == "/account/" %}aria-current="page"{% endif %}>Обзор</a>
+    <a href="/account/projects" {% if request.url.path.startswith("/account/projects") %}aria-current="page"{% endif %}>Заказы</a>
+    <a href="/account/notifications" {% if request.url.path.startswith("/account/notifications") %}aria-current="page"{% endif %}>Уведомления</a>
+    <a href="/account/tickets" {% if request.url.path.startswith("/account/tickets") %}aria-current="page"{% endif %}>Поддержка</a>
+    <a href="/account/finance" {% if request.url.path.startswith("/account/finance") %}aria-current="page"{% endif %}>Финансы</a>
+    <a href="/account/billing" {% if request.url.path.startswith("/account/billing") %}aria-current="page"{% endif %}>Тарифы</a>
+    <span class="workspace-nav-separator" aria-hidden="true"></span>
+    <a href="/architect">Graph Studio</a>
+    <a href="/automation/studio">Automation Studio</a>
+  </div>
+</nav>

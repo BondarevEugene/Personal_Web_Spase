@@ -1,0 +1,48 @@
+/* OMNIFACTORY Client Workspace: a consistent, low-glare operational shell. */
+.account-app{background:#080a0f;color:#ebedf3}
+.account-app .site-header{background:#0b0d13;border-bottom:1px solid #30333d}
+.account-app .workspace-nav{background:#0f1119;border-bottom:1px solid #353a46;padding:0 20px}
+.account-app .workspace-nav-inner{max-width:1390px;margin:0 auto;display:flex;gap:3px;align-items:center;overflow-x:auto;scrollbar-width:thin;padding:7px 0}
+.account-app .workspace-nav-inner a{display:inline-flex;min-height:34px;align-items:center;padding:7px 12px;border-radius:6px;color:#bdc5d5;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+.account-app .workspace-nav-inner a:hover,.account-app .workspace-nav-inner a:focus-visible{background:#272c38;color:#fff}
+.account-app .workspace-nav-inner a[aria-current=page]{background:#313448;color:#fff;box-shadow:inset 0 -2px #ac9acb}
+.account-app .workspace-nav-separator{height:22px;width:1px;background:#4b4d5b;margin:0 8px;flex:0 0 1px}
+.account-app .account-dashboard{padding-top:35px;padding-bottom:90px}
+.account-app .account-dashboard>h1{font-size:clamp(28px,3.3vw,46px);line-height:1.1;letter-spacing:-.045em;margin:12px 0}
+.account-app .account-dashboard-lede{font-size:13px;line-height:1.6}
+.account-app .account-quick-actions{margin-top:17px;gap:7px}
+.account-app .account-quick-actions .button{font-size:12px;padding:10px 13px}
+.account-app .account-kpis{margin:21px 0;gap:9px;grid-template-columns:repeat(4,minmax(0,1fr))}
+.account-app .account-kpis article{padding:15px 16px;gap:6px;background:#131720;border-color:#373c4a;min-width:0}
+.account-app .account-kpis span{color:#bdc6d6}
+.account-app .account-kpis strong{font-size:25px;color:#f1f3f9}
+.account-app .account-kpis small{font-size:11px}
+.account-app .account-panel{background:#11141c;border-color:#383c49;box-shadow:none;padding:clamp(17px,2.3vw,28px)}
+.account-app .account-panel h2{font-size:clamp(19px,2vw,26px);margin:9px 0 15px}
+.account-app .account-section-nav{background:#11141c;border-color:#383c49;padding:15px}
+.account-app .account-ticket,.account-app .account-project-grid>div{background:#191d29;border-color:#3b414e}
+.account-app .account-dashboard-grid{gap:13px}
+.account-app .workspace-attention{margin:24px 0 15px;padding:19px;background:#12151e;border:1px solid #444956;border-radius:10px}
+.account-app .workspace-attention-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:12px}
+.account-app .workspace-attention-heading h2{font:600 18px/1.3 var(--display);letter-spacing:-.02em;margin:0}
+.account-app .workspace-attention-heading span{color:#abb5c7;font-size:11px}
+.account-app .workspace-attention-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.account-app .workspace-attention-item{display:grid;align-content:start;gap:6px;background:#1c202d;border:1px solid #464b5b;border-radius:7px;padding:13px 14px;text-decoration:none;color:#ecf0f8;min-width:0}
+.account-app .workspace-attention-item:hover,.account-app .workspace-attention-item:focus-visible{border-color:#b9aacd;background:#292d3c}
+.account-app .workspace-attention-item strong{font:650 22px var(--display)}
+.account-app .workspace-attention-item span{font-size:12px;font-weight:650}
+.account-app .workspace-attention-item small{font-size:11px;color:#aebad0;line-height:1.45}
+.account-app .workspace-attention-item:first-child{border-left:3px solid #c4a6d0}
+.account-app .workspace-status-legend{color:#aeb8c8;font-size:11px;line-height:1.5;margin-top:10px}
+.account-app .account-project-row{background:#202430;border-color:#44495a}
+.account-app .workspace-secondary-meta{margin-top:18px;border:1px solid #3b4150;border-radius:9px;background:#11151d;padding:10px 13px}
+.account-app .workspace-secondary-meta summary{cursor:pointer;color:#ced5e2;font-size:12px;font-weight:600}
+.account-app .workspace-secondary-meta>div{margin-top:12px}
+@media(max-width:1100px){.account-app .account-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){.account-app .workspace-attention-grid{grid-template-columns:1fr}.account-app .workspace-nav{padding:0 10px}}
+@media(max-width:590px){.account-app .account-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+.account-app .account-kpis article{padding:12px}.account-app .account-quick-actions .button{width:auto;flex:1 1 140px}
+.account-app .account-dashboard{padding-top:22px}.account-app .workspace-attention{padding:13px}
+.account-app .workspace-attention-heading{align-items:start;flex-direction:column;gap:5px}
+.account-app .workspace-nav-inner a{font-size:11px;padding:7px 10px}}
+@media(prefers-reduced-motion:reduce){.account-app .workspace-attention-item{transition:none}}

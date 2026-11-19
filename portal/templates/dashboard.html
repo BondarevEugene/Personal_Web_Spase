@@ -1,22 +1,32 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#050811"><title>Личный кабинет — OmniFactory</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
-</head>
+<link rel="stylesheet" href="/studio-assets/client_workspace.css?v=1"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container">
 <a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNT</small></span></a>
 <nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/architect">Конструктор</a><a href="/automation/studio">Автоматизация</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account/tickets">Заявки</a><a href="/studio">Студия</a></nav>
 <form method="post" action="/account/logout" class="account-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Выйти ↗</button></form></div></header>
+{% include "_workspace_nav.html" %}
 <main class="container account-dashboard"><div class="eyebrow">PRIVATE CLIENT SPACE / OMNIFACTORY</div>
-<h1>Добро пожаловать,<br><span class="gradient-text">{{ user.display_name }}.</span></h1>
-<p class="account-dashboard-lede">Аккаунт <strong>{{ user.username }}</strong> · Организация <strong>{{ org.name }}</strong> · Роль <strong>{{ user.role }}</strong></p>
+<h1>Рабочий кабинет</h1>
+<p class="account-dashboard-lede">Здравствуйте, <strong>{{ user.display_name }}</strong> · Организация <strong>{{ org.name }}</strong> · Аккаунт <strong>{{ user.username }}</strong> · Роль <strong>{{ user.role }}</strong></p>
 {% if success %}<p class="account-success" role="status">Настройки сохранены.</p>{% endif %}
+<section class="workspace-attention" aria-label="Требует внимания">
+  <div class="workspace-attention-heading"><h2>Сейчас требует внимания</h2><span>Фактические данные вашей организации</span></div>
+  <div class="workspace-attention-grid">
+    <a class="workspace-attention-item" href="/account/projects"><strong>{{ projects_awaiting_approval }}</strong><span>Проектов на приёмке</span><small>Проверьте результаты и подтвердите готовые работы</small></a>
+    <a class="workspace-attention-item" href="/account/projects"><strong>{{ projects_overdue }}</strong><span>Проектов с истёкшим сроком</span><small>Включая проекты, которые ещё не завершены</small></a>
+    <a class="workspace-attention-item" href="/account/notifications"><strong>{{ unread_project_notices }}</strong><span>Непрочитанных событий</span><small>Обновления по вашим проектам и документам</small></a>
+  </div>
+  <p class="workspace-status-legend">Если показатель равен нулю, действий по этой категории сейчас не требуется. Данные доступны только вашей организации.</p>
+</section>
 <div class="account-workspace-layout">
 <div class="account-workspace-content">
 <div class="account-quick-actions"><a class="button button-line" href="/account/notifications">Уведомления · {{ unread_project_notices }} непрочитанных ↗</a><a class="button button-primary" href="/account/projects#new-project">+ Новый заказ</a><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="#tools">Мои проекты ↓</a><a class="button button-line" href="/account/finance">Финансовый центр ↗</a><a class="button button-line" href="/account/billing">Тарифы и счета ↗</a></div>
 <div class="account-kpis">
-<article><span>НОВЫЕ УВЕДОМЛЕНИЯ</span><strong>{{ unread_project_notices }}</strong><small>Непрочитанные события по вашим заказам</small></article>
 <article><span>ЗАКАЗЫ В РАБОТЕ</span><strong>{{ active_client_project_count }}</strong><small>Заказы вашей организации</small></article>
-<article><span>БОТЫ</span><strong>{{ bot_count }}</strong><small>Мои сохранённые схемы</small></article>
+<article><span>СХЕМЫ БОТОВ</span><strong>{{ bot_count }}</strong><small>Сохранённые черновики</small></article>
+
 <article><span>АВТОМАТИЗАЦИИ</span><strong>{{ flow_count }}</strong><small>Мои процессы</small></article>
 <article><span>ОТКРЫТЫЕ ОБРАЩЕНИЯ</span><strong>{{ active_ticket_count }}</strong><small>В вашей организации</small></article>
 <article><span>ВСЕ ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
@@ -31,7 +41,7 @@
 {% else %}<div class="account-empty">У вас пока нет заказов на разработку. <a href="/account/projects#new-project">Создать первый запрос ↗</a></div>{% endif %}
 </section>
 <section class="account-panel account-ticket-overview" id="requests">
-<div class="eyebrow">01 / SERVICE DESK</div><div class="account-section-heading"><h2>Ваши обращения</h2><a href="/account/tickets">Все заявки ↗</a></div>
+<div class="eyebrow">02 / SERVICE DESK</div><div class="account-section-heading"><h2>Ваши обращения</h2><a href="/account/tickets">Все заявки ↗</a></div>
 {% if tickets %}<div class="account-ticket-list">{% for ticket in tickets %}
 <a class="account-ticket" href="/account/tickets/{{ ticket.id }}">
 <span class="account-ticket-title">{{ ticket.subject }}</span>
@@ -40,7 +50,7 @@
 {% else %}<div class="account-empty">У вас пока нет заявок. Если нужна помощь, консультация или доработка — создайте обращение, и оно появится здесь.</div>{% endif %}
 </section>
 <div class="account-dashboard-grid">
-<section class="account-panel" id="settings"><div class="eyebrow">02 / PROFILE SETTINGS</div><h2>Настройки аккаунта</h2>
+<section class="account-panel" id="settings"><div class="eyebrow">05 / PROFILE SETTINGS</div><h2>Настройки аккаунта</h2>
 <form method="post" action="/account/settings"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <label>Имя <input name="display_name" type="text" minlength="2" maxlength="120" value="{{ user.display_name }}" required></label>
 <label>Почта <input type="email" value="{{ user.email }}" disabled></label>
@@ -49,7 +59,7 @@
 <label class="account-inline-checkbox"><input name="marketing_opt_in" value="yes" type="checkbox" {% if settings.marketing_opt_in %}checked{% endif %}> Получать новости о продуктах</label>
 <button class="button button-primary account-submit" type="submit">Сохранить изменения <span>↗</span></button></form>
 </section>
-<section class="account-panel" id="billing"><div class="eyebrow">03 / COMMERCIAL ACCOUNTING</div><h2>Подписка и платежи</h2>
+<section class="account-panel" id="billing"><div class="eyebrow">04 / COMMERCIAL ACCOUNTING</div><h2>Подписка и платежи</h2>
 <p><a class="button button-line" href="/account/billing">Посмотреть тарифы и счета ↗</a></p>
 <p>Тариф: <strong>{{ subscription.plan_code if subscription else "не выбран" }}</strong>. Стоимость: <strong>{{ "%.2f"|format((subscription.price_minor if subscription else 0)/100) }} {{ subscription.currency if subscription else "UAH" }}</strong>.</p>
 <p>Платёжные шлюзы ещё не подключены. Регистрация фиксируется в базе, но не считается оплатой и не создаёт выручку.</p>
@@ -57,7 +67,7 @@
 <h3>История платежей</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ payment.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">Подтверждённых платежных операций пока нет.</div>{% endif %}
 </section>
 <section class="account-panel account-panel-wide" id="tools">
-<div class="eyebrow">04 / MY DIGITAL WORKSPACE</div><h2>Мои инструменты и сохранённые проекты</h2>
+<div class="eyebrow">03 / MY DIGITAL WORKSPACE</div><h2>Мои инструменты и сохранённые проекты</h2>
 <p>Здесь показаны только созданные вами сценарии Graph Studio и Automation Studio. Незавершённые черновики не считаются работающими ботами или запущенными автоматизациями.</p>
 <div class="account-project-grid">
 <div><h3>Telegram · Graph Studio</h3>
