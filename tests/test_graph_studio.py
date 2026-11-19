@@ -50,7 +50,7 @@ def test_integration_catalog_does_not_claim_unimplemented_execution():
         assert integrations[name]["status"] == "planned"
     capabilities = client.get("/api/v1/builder/simple/capabilities").json()
     assert "python" not in capabilities["supported_blocks"]
-    assert capabilities["server_persistence"] is False
+    assert capabilities["server_persistence"] is True
 
 
 def test_palette_distinguishes_real_and_planned_integrations():
