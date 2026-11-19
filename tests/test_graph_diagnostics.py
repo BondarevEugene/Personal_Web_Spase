@@ -90,3 +90,18 @@ def test_graph_page_has_real_diagnostics_controls():
     assert "function showDiagnostics(result)" in js
     assert "graph-diagnostic-error" in js
     assert "scrollIntoView" in js
+
+
+def test_palette_search_filters_actual_available_blocks():
+    page = client.get("/architect").text
+    assert 'id="graph-palette-query"' in page
+    assert 'data-add="message"' in page
+    js = (ROOT / "omni_site" / "static" / "graph_studio.js").read_text(
+        encoding="utf-8"
+    )
+    assert "function filterPalette()" in js
+    assert "event.key.toLowerCase()==='k'" in js
+    css = (ROOT / "omni_site" / "static" / "graph_workspace.css").read_text(
+        encoding="utf-8"
+    )
+    assert ".palette-node[hidden]" in css
