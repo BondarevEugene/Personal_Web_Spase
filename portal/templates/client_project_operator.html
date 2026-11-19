@@ -1,0 +1,32 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Оператор проектов — OMNIFACTORY</title><link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1"><link rel="stylesheet" href="/studio-assets/client_projects.css?v=2"></head>
+<body class="account-app"><header class="site-header"><div class="header-inner container"><a class="brand" href="/support/projects">◈ OMNIFACTORY <small>OPERATOR PROJECTS</small></a><nav class="account-header-links"><a href="/account">Кабинет</a><a href="/support/desk">Сервис-деск</a><a href="/support/projects">Заказы</a></nav></div></header>
+<main class="container client-projects-page"><div class="cp-heading"><div><span class="eyebrow">PLATFORM OPERATIONS / CUSTOMER DELIVERY</span><h1>Проекты клиентов</h1><p>Доступ только операторам, указанным в OMNI_SUPPORT_OPERATOR_IDS.</p></div></div>
+<div class="cp-grid"><section class="account-panel"><h2>Реестр заказов</h2>{% if projects %}<div class="cp-list">{% for row in projects %}<a class="cp-project" href="/support/projects/{{ row.id }}"><strong>{{ row.title }}</strong><span class="cp-status">{{ statuses.get(row.status, row.status) }}</span></a>{% endfor %}</div>{% else %}<p class="account-empty">Заявок пока нет.</p>{% endif %}</section>
+{% if project %}<section class="account-panel"><h2>Управление: {{ project.title }}</h2><p>{{ project.brief }}</p><form method="post" action="/support/projects/{{ project.id }}/assignment">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>UUID исполнителя из списка операторов<input name="assignee_id" maxlength="36" value="{{ project.assigned_to_id or '' }}" placeholder="Оставьте пустым, чтобы снять назначение"></label>
+<label>Плановая дата сдачи<input type="date" name="due_on" value="{{ project.due_date.strftime('%Y-%m-%d') if project.due_date else '' }}"></label>
+<button type="submit" class="button button-line">Сохранить назначение и срок</button>
+</form><p>Текущий статус: <strong>{{ statuses.get(project.status, project.status) }}</strong></p>
+{% if project.status not in ["accepted","cancelled"] %}<form method="post" action="/support/projects/{{ project.id }}/status"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Следующий статус<select name="status" required>
+{% if project.status == "requested" %}<option value="planning">Планирование</option><option value="cancelled">Отменён</option>{% elif project.status == "planning" %}<option value="in_progress">В разработке</option><option value="paused">Приостановлен</option><option value="cancelled">Отменён</option>{% elif project.status == "in_progress" %}<option value="review">На приёмку</option><option value="paused">Приостановлен</option><option value="cancelled">Отменён</option>{% elif project.status == "paused" %}<option value="planning">Планирование</option><option value="in_progress">В разработке</option><option value="cancelled">Отменён</option>{% elif project.status == "review" %}<option value="in_progress">На доработку</option><option value="paused">Приостановлен</option>{% endif %}
+</select></label><label>Комментарий<input name="note" maxlength="1000"></label><button type="submit" class="button button-primary">Обновить статус</button></form>{% endif %}
+</section>{% endif %}</div>
+{% if project %}<div class="cp-grid"><section class="account-panel"><h2>Этапы проекта</h2>{% if milestones %}<ol class="cp-stages">{% for stage in milestones %}<li><strong>{{ stage.title }}</strong><small>{{ milestone_labels.get(stage.status, stage.status) }}</small><p>{{ stage.details }}</p>
+{% if project.status not in ["accepted","cancelled"] %}<form method="post" action="/support/projects/{{ project.id }}/milestones/{{ stage.id }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><select name="status" required>{% if stage.status == "planned" %}<option value="in_progress">В работу</option>{% elif stage.status == "in_progress" %}<option value="completed">Завершить</option><option value="planned">Вернуть в план</option>{% else %}<option value="in_progress">Вернуть в работу</option>{% endif %}</select><button type="submit">Изменить этап</button></form>{% endif %}
+</li>{% endfor %}</ol>{% endif %}
+{% if project.status not in ["accepted","cancelled"] %}<form method="post" action="/support/projects/{{ project.id }}/milestones"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Новый этап<input name="title" minlength="3" maxlength="160" required></label><label>Описание<textarea name="details" maxlength="2000" rows="3"></textarea></label><button type="submit" class="button button-line">Добавить этап</button></form>{% endif %}</section>
+<section class="account-panel"><h2>Документы проекта</h2>
+<p>Публикуйте новую неизменяемую версию текстового технического задания, результата или другого документа.</p>
+{% if project_documents %}<div class="cp-list">{% for doc in project_documents %}
+<details class="cp-document"><summary>{{ document_kinds.get(doc.document_kind, doc.document_kind) }} · {{ doc.title }} · v{{ doc.version }} · {{ "Согласовано" if doc.id in approved_documents else "Не согласовано" }}</summary>
+<p class="cp-brief">{{ doc.body }}</p><small>Создан {{ doc.created_at.strftime("%d.%m.%Y %H:%M") }}</small></details>{% endfor %}</div>{% endif %}
+{% if project.status not in ["accepted","cancelled"] %}<form method="post" action="/support/projects/{{ project.id }}/documents">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>Тип документа<select name="kind" required><option value="specification">Техническое задание</option><option value="delivery">Описание результата</option><option value="other">Другой документ</option></select></label>
+<label>Название<input name="title" minlength="4" maxlength="160" required></label>
+<label>Содержание<textarea name="body" minlength="30" maxlength="12000" rows="7" required></textarea></label>
+<button class="button button-primary" type="submit">Опубликовать новую версию</button></form>{% endif %}
+</section>
+<section class="account-panel"><h2>Журнал событий</h2>{% if events %}<ol class="cp-events">{% for event in events %}<li><time>{{ event.created_at.strftime("%d.%m.%Y %H:%M") }}</time><span>{{ event.summary }}</span></li>{% endfor %}</ol>{% else %}<p>Нет событий</p>{% endif %}</section></div>{% endif %}
+</main></body></html>

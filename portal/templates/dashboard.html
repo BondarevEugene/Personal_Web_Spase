@@ -12,14 +12,24 @@
 {% if success %}<p class="account-success" role="status">Настройки сохранены.</p>{% endif %}
 <div class="account-workspace-layout">
 <div class="account-workspace-content">
-<div class="account-quick-actions"><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="#tools">Мои проекты ↓</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
+<div class="account-quick-actions"><a class="button button-line" href="/account/notifications">Уведомления · {{ unread_project_notices }} непрочитанных ↗</a><a class="button button-primary" href="/account/projects#new-project">+ Новый заказ</a><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="#tools">Мои проекты ↓</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
 <div class="account-kpis">
+<article><span>НОВЫЕ УВЕДОМЛЕНИЯ</span><strong>{{ unread_project_notices }}</strong><small>Непрочитанные события по вашим заказам</small></article>
+<article><span>ЗАКАЗЫ В РАБОТЕ</span><strong>{{ active_client_project_count }}</strong><small>Заказы вашей организации</small></article>
 <article><span>БОТЫ</span><strong>{{ bot_count }}</strong><small>Мои сохранённые схемы</small></article>
 <article><span>АВТОМАТИЗАЦИИ</span><strong>{{ flow_count }}</strong><small>Мои процессы</small></article>
 <article><span>ОТКРЫТЫЕ ОБРАЩЕНИЯ</span><strong>{{ active_ticket_count }}</strong><small>В вашей организации</small></article>
 <article><span>ВСЕ ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
 <article><span>УЧЁТ РЕГИСТРАЦИИ</span><strong>Зарегистрирован</strong><small>{{ user.created_at.strftime("%d.%m.%Y") }}</small></article>
 <article><span>ПОДТВЕРЖДЕНИЕ EMAIL</span><strong>{{ "Подтверждён" if user.email_verified else "Не подтверждён" }}</strong><small>Проверка email будет добавлена</small></article></div>
+<section class="account-panel account-panel-wide" id="client-projects">
+<div class="eyebrow">01 / CUSTOMER PROJECT DELIVERY</div><div class="account-section-heading"><h2>Проекты на заказ</h2><a href="/account/projects">Все заказы ↗</a></div>
+<p>Отдельный реестр проектов, которые OMNIFACTORY разрабатывает по вашему запросу. Черновики конструктора находятся ниже.</p>
+{% if client_projects %}<div class="account-ticket-list">{% for project in client_projects %}
+<a class="account-ticket" href="/account/projects/{{ project.id }}"><span class="account-ticket-title">{{ project.title }}</span>
+<span class="account-ticket-meta">{{ project.updated_at.strftime("%d.%m.%Y") }} · {{ client_project_statuses.get(project.status, project.status) }}</span></a>{% endfor %}</div>
+{% else %}<div class="account-empty">У вас пока нет заказов на разработку. <a href="/account/projects#new-project">Создать первый запрос ↗</a></div>{% endif %}
+</section>
 <section class="account-panel account-ticket-overview" id="requests">
 <div class="eyebrow">01 / SERVICE DESK</div><div class="account-section-heading"><h2>Ваши обращения</h2><a href="/account/tickets">Все заявки ↗</a></div>
 {% if tickets %}<div class="account-ticket-list">{% for ticket in tickets %}
@@ -68,6 +78,6 @@
 </section>
 </div></div>
 <aside class="account-section-nav" aria-label="Разделы кабинета"><strong>НА ЭТОЙ СТРАНИЦЕ</strong>
-<a href="#requests">Обращения</a><a href="#tools">Мои проекты</a><a href="#settings">Профиль</a>
+<a href="#client-projects">Заказы</a><a href="#requests">Обращения</a><a href="#tools">Мои проекты</a><a href="#settings">Профиль</a>
 <a href="#billing">Финансы</a></aside>
 </div></main></body></html>
