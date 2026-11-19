@@ -108,6 +108,7 @@ let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
 let diagnosticIssues=[];
 let graphHistory=null;
 let historyTypingGroup=null;
+let historyFieldCounter=0;
 let canvasExpanded=false;
 function replaceScenario(factory) {
  const ok=window.confirm('Текущий черновик будет заменён. Сохраняем резервную копию в этом браузере. Продолжить?');
@@ -299,7 +300,8 @@ function change(){
 }
 function field(parent,title,value,changeFn,textarea=false){
  const label=el('label','inspector-field'),input=el(textarea?'textarea':'input');
- label.append(el('span','',title));input.value=value??'';input.addEventListener('input',()=>{historyTypingGroup='field:'+selected+':'+title;try{changeFn(input.value);}finally{historyTypingGroup=null;}});
+ const typingGroup='field:'+selected+':'+(++historyFieldCounter);
+ label.append(el('span','',title));input.value=value??'';input.addEventListener('input',()=>{historyTypingGroup=typingGroup;try{changeFn(input.value);}finally{historyTypingGroup=null;}});
  input.addEventListener('blur',()=>render());label.append(input);parent.append(label);
 }
 function selector(parent,title,value,options,handler){
