@@ -171,7 +171,7 @@ def update_project(id: str, request: Request, data: ProjectData):
     with session_factory()() as db:
         user = customer_required(request, db)
         verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
-        positions = data.checked_positions()
+        layout = pack_layout(data)
         try:
             row = db.scalar(select(BuilderProject).where(
                 BuilderProject.id == project_id(id),
