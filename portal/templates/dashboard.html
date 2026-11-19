@@ -37,7 +37,7 @@
 <p>{{ t("Отдельный реестр проектов, которые OMNIFACTORY разрабатывает по вашему запросу. Черновики конструктора находятся ниже.") }}</p>
 {% if client_projects %}<div class="account-ticket-list">{% for project in client_projects %}
 <a class="account-ticket" href="/account/projects/{{ project.id }}"><span class="account-ticket-title">{{ project.title }}</span>
-<span class="account-ticket-meta">{{ project.updated_at.strftime("%d.%m.%Y") }} · {{ client_project_statuses.get(project.status, project.status) }}</span></a>{% endfor %}</div>
+<span class="account-ticket-meta">{{ project.updated_at.strftime("%d.%m.%Y") }} · {{ t(client_project_statuses.get(project.status, project.status)) }}</span></a>{% endfor %}</div>
 {% else %}<div class="account-empty">{{ t("У вас пока нет заказов на разработку.") }} <a href="/account/projects#new-project">{{ t("Создать первый запрос ↗") }}</a></div>{% endif %}
 </section>
 <section class="account-panel account-ticket-overview" id="requests">
@@ -45,7 +45,7 @@
 {% if tickets %}<div class="account-ticket-list">{% for ticket in tickets %}
 <a class="account-ticket" href="/account/tickets/{{ ticket.id }}">
 <span class="account-ticket-title">{{ ticket.subject }}</span>
-<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ support_statuses.get(ticket.status, ticket.status) }}</span>
+<span class="account-ticket-meta">{{ ticket.created_at.strftime("%d.%m.%Y") }} · {{ t(support_statuses.get(ticket.status, ticket.status)) }}</span>
 </a>{% endfor %}</div>
 {% else %}<div class="account-empty">{{ t("У вас пока нет заявок. Если нужна помощь, консультация или доработка — создайте обращение, и оно появится здесь.") }}</div>{% endif %}
 </section>
@@ -63,8 +63,8 @@
 <p><a class="button button-line" href="/account/billing">{{ t("Посмотреть тарифы и счета ↗") }}</a></p>
 <p>{{ t("Тариф:") }} <strong>{{ subscription.plan_code if subscription else "не выбран" }}</strong>{{ t(". Стоимость:") }} <strong>{{ "%.2f"|format((subscription.price_minor if subscription else 0)/100) }} {{ subscription.currency if subscription else "UAH" }}</strong>.</p>
 <p>{{ t("Платёжные шлюзы ещё не подключены. Регистрация фиксируется в базе, но не считается оплатой и не создаёт выручку.") }}</p>
-<h3>{{ t("Счета") }}</h3>{% if invoices %}<div class="account-ledger">{% for invoice in invoices %}<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }}</span><strong>{{ "%.2f"|format(invoice.amount_minor/100) }} {{ invoice.currency }} · {{ invoice.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">{{ t("Выставленных счетов пока нет.") }}</div>{% endif %}
-<h3>{{ t("История платежей") }}</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ payment.status }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">{{ t("Подтверждённых платежных операций пока нет.") }}</div>{% endif %}
+<h3>{{ t("Счета") }}</h3>{% if invoices %}<div class="account-ledger">{% for invoice in invoices %}<div><span>{{ invoice.created_at.strftime("%d.%m.%Y") }} · {{ invoice.description }}</span><strong>{{ "%.2f"|format(invoice.amount_minor/100) }} {{ invoice.currency }} · {{ t(invoice.status) }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">{{ t("Выставленных счетов пока нет.") }}</div>{% endif %}
+<h3>{{ t("История платежей") }}</h3>{% if payments %}<div class="account-ledger">{% for payment in payments %}<div><span>{{ payment.created_at.strftime("%d.%m.%Y") }} · {{ payment.provider }}</span><strong>{{ "%.2f"|format(payment.amount_minor/100) }} {{ payment.currency }} · {{ t(payment.status) }}</strong></div>{% endfor %}</div>{% else %}<div class="account-empty">{{ t("Подтверждённых платежных операций пока нет.") }}</div>{% endif %}
 </section>
 <section class="account-panel account-panel-wide" id="tools">
 <div class="eyebrow">03 / MY DIGITAL WORKSPACE</div><h2>{{ t("Мои инструменты и сохранённые проекты") }}</h2>
