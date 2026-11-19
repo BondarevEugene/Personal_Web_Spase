@@ -194,6 +194,16 @@ def account(request: Request):
             ClientProjectNotification.recipient_id == user.id,
             ClientProjectNotification.read_at.is_(None),
         )) or 0
+        projects_awaiting_approval = db.scalar(select(func.count(ClientProject.id)).where(
+            ClientProject.org_id == user.org_id,
+            ClientProject.status == "review",
+        )) or 0
+        projects_overdue = db.scalar(select(func.count(ClientProject.id)).where(
+            ClientProject.org_id == user.org_id,
+            ClientProject.due_date.is_not(None),
+            ClientProject.due_date < utcnow(),
+            ClientProject.status.notin_(("accepted", "cancelled")),
+        )) or 0
         active_client_project_count = db.scalar(select(func.count(ClientProject.id)).where(
             ClientProject.org_id == user.org_id,
             ClientProject.status.notin_(("accepted", "cancelled")),
@@ -219,6 +229,8 @@ def account(request: Request):
                          client_projects=client_projects,
                          active_client_project_count=active_client_project_count,
                          unread_project_notices=unread_project_notices,
+                         projects_awaiting_approval=projects_awaiting_approval,
+                         projects_overdue=projects_overdue,
                          client_project_statuses={
                              "requested": "Новый запрос", "planning": "Планирование",
                              "in_progress": "В разработке", "review": "На приёмке",
