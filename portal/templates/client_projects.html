@@ -6,7 +6,7 @@
 {% if created %}<p class="account-success" role="status">{{ t("Запрос зарегистрирован. Его рассмотрит оператор платформы.") }}</p>{% endif %}
 <div class="cp-grid"><section class="account-panel"><h2>{{ t("Мои проекты") }}</h2>
 {% if projects %}<div class="cp-list">{% for project in projects %}
-<a class="cp-project" href="/account/projects/{{ project.id }}"><span><strong>{{ project.title }}</strong><small>Обновлено {{ project.updated_at.strftime("%d.%m.%Y %H:%M") }}</small></span><span class="cp-status">{{ statuses.get(project.status, project.status) }}</span></a>
+<a class="cp-project" href="/account/projects/{{ project.id }}"><span><strong>{{ project.title }}</strong><small>Обновлено {{ project.updated_at.strftime("%d.%m.%Y %H:%M") }}</small></span><span class="cp-status">{{ t(statuses.get(project.status, project.status)) }}</span></a>
 {% endfor %}</div>{% else %}<p class="account-empty">{{ t("Заказов пока нет. Опишите задачу — она появится в реестре со статусом «Новый запрос».") }}</p>{% endif %}
 </section><section class="account-panel" id="new-project"><h2>{{ t("Новый запрос") }}</h2><p>{{ t("Опишите бизнес-задачу. Сроки и стоимость не назначаются автоматически.") }}</p>
 <form action="/account/projects" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>{{ t("Название проекта") }}<input name="title" required minlength="5" maxlength="160" placeholder="Автоматизация обработки обращений"></label>
