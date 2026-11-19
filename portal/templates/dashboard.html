@@ -1,11 +1,12 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#050811"><title>Личный кабинет — OmniFactory</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
-</head>
+<link rel="stylesheet" href="/studio-assets/client_workspace.css?v=1"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container">
 <a class="brand" href="/"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNT</small></span></a>
 <nav class="account-header-links" aria-label="Навигация"><a href="/">Платформа</a><a href="/architect">Конструктор</a><a href="/automation/studio">Автоматизация</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/account/tickets">Заявки</a><a href="/studio">Студия</a></nav>
 <form method="post" action="/account/logout" class="account-logout"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Выйти ↗</button></form></div></header>
+{% include "_workspace_nav.html" %}
 <main class="container account-dashboard"><div class="eyebrow">PRIVATE CLIENT SPACE / OMNIFACTORY</div>
 <h1>Добро пожаловать,<br><span class="gradient-text">{{ user.display_name }}.</span></h1>
 <p class="account-dashboard-lede">Аккаунт <strong>{{ user.username }}</strong> · Организация <strong>{{ org.name }}</strong> · Роль <strong>{{ user.role }}</strong></p>
