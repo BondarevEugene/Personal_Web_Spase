@@ -24,7 +24,7 @@ router = APIRouter(prefix="/api/v1/builder/projects", tags=["Graph Studio projec
 
 class Coordinates(BaseModel):
     x: float = Field(ge=0, le=2200, allow_inf_nan=False)
-    y: float = Field(ge=0, le=1400, allow_inf_nan=False)
+    y: float = Field(ge=0, le=8000, allow_inf_nan=False)
 
 
 class ProjectData(BaseModel):
