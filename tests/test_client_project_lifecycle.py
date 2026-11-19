@@ -229,6 +229,28 @@ def test_versioned_specification_approval_and_inbox_is_tenant_scoped(
         assert versions[0].body.startswith("The first")
     assert client.post(approve_url, data=csrf(client)).status_code == 409
 
+    def status_change(value):
+        return staff.post(op_page + "/status", data={
+            "csrf_token": operator_csrf(staff), "status": value,
+        }, follow_redirects=False)
+
+    assert status_change("planning").status_code == 303
+    assert staff.post(op_page + "/milestones", data={
+        "csrf_token": operator_csrf(staff), "title": "Build and deliver",
+        "details": "Complete documented deliverables and obtain project approval.",
+    }, follow_redirects=False).status_code == 303
+    from portal.models import ClientProjectMilestone
+    with session_factory()() as db:
+        stage_id = db.scalar(select(ClientProjectMilestone.id).where(
+            ClientProjectMilestone.project_id == project_id
+        ))
+    assert status_change("in_progress").status_code == 303
+    for stage_status in ("in_progress", "completed"):
+        assert staff.post(op_page + "/milestones/" + stage_id, data={
+            "csrf_token": operator_csrf(staff), "status": stage_status,
+        }, follow_redirects=False).status_code == 303
+    assert status_change("review").status_code == 409
+
     # Client inbox is per recipient; a different organization cannot mark it read.
     inbox = client.get("/account/notifications")
     assert inbox.status_code == 200
@@ -254,6 +276,9 @@ def test_versioned_specification_approval_and_inbox_is_tenant_scoped(
         customer_page + "/documents/" + second_id + "/approve",
         data=csrf(client), follow_redirects=False
     ).status_code == 303
+    assert status_change("review").status_code == 303
+    assert client.post(customer_page + "/accept", data=csrf(client),
+                       follow_redirects=False).status_code == 303
 
 
 def test_operator_documents_are_csrf_protected_and_bound_to_real_projects(
