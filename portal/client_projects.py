@@ -134,6 +134,11 @@ def accept_project(request: Request, id: str, csrf_token: str = Form("")):
             raise HTTPException(403, "Для приёмки требуется владелец организации")
         if project.status != "review":
             raise HTTPException(409, "Проект не передан на приёмку")
+        has_stage = db.scalar(select(ClientProjectMilestone.id).where(
+            ClientProjectMilestone.project_id == project.id
+        ).limit(1))
+        if has_stage is None:
+            raise HTTPException(409, "Нет этапов для приёмки")
         incomplete = db.scalar(select(ClientProjectMilestone.id).where(
             ClientProjectMilestone.project_id == project.id,
             ClientProjectMilestone.status != "completed",
@@ -218,6 +223,11 @@ def update_status(request: Request, id: str, csrf_token: str = Form(""),
         if len(note.strip()) > 1000:
             raise HTTPException(422, "Комментарий слишком длинный")
         if status == "review":
+            has_stage = db.scalar(select(ClientProjectMilestone.id).where(
+                ClientProjectMilestone.project_id == project.id
+            ).limit(1))
+            if has_stage is None:
+                raise HTTPException(409, "Добавьте этапы до приёмки")
             incomplete = db.scalar(select(ClientProjectMilestone.id).where(
                 ClientProjectMilestone.project_id == project.id,
                 ClientProjectMilestone.status != "completed",
