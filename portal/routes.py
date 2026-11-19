@@ -18,7 +18,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from portal.db import session_factory
-from portal.models import (Customer, CustomerSettings, Invoice, Organization, PaymentRecord,
+from portal.models import (AutomationWorkflow, BuilderProject, Customer, CustomerSettings, Invoice, Organization, PaymentRecord,
                            PortalSession, RegistrationEvent, Subscription, SupportEvent, SupportMessage, SupportTicket, utcnow)
 from portal.security import (CSRF_COOKIE, SESSION_COOKIE, hash_password, issue_csrf,
                              new_session, password_matches, secure_request,
@@ -183,9 +183,29 @@ def account(request: Request):
                              .order_by(SupportTicket.updated_at.desc()).limit(5)).all()
         ticket_count = db.scalar(select(func.count(SupportTicket.id))
                                  .where(SupportTicket.org_id == user.org_id)) or 0
+        active_ticket_count = db.scalar(select(func.count(SupportTicket.id)).where(
+            SupportTicket.org_id == user.org_id,
+            SupportTicket.status.notin_(("resolved", "closed")),
+        )) or 0
+        bot_count = db.scalar(select(func.count(BuilderProject.id)).where(
+            BuilderProject.customer_id == user.id,
+        )) or 0
+        flow_count = db.scalar(select(func.count(AutomationWorkflow.id)).where(
+            AutomationWorkflow.customer_id == user.id,
+        )) or 0
+        bot_projects = db.scalars(select(BuilderProject)
+                                  .where(BuilderProject.customer_id == user.id)
+                                  .order_by(BuilderProject.updated_at.desc()).limit(6)).all()
+        workflows = db.scalars(select(AutomationWorkflow)
+                               .where(AutomationWorkflow.customer_id == user.id)
+                               .order_by(AutomationWorkflow.updated_at.desc()).limit(6)).all()
         return form_page(request, "dashboard.html", user=user, org=org, settings=settings,
                          subscription=subscription, invoices=invoices, payments=payments,
                          tickets=tickets, ticket_count=ticket_count,
+                         active_ticket_count=active_ticket_count,
+                         bot_count=bot_count, flow_count=flow_count,
+                         bot_projects=bot_projects, workflows=workflows,
+                         support_statuses=_SUPPORT_STATUS,
                          success=request.query_params.get("updated") == "1")
 
 
