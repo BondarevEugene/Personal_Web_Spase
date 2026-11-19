@@ -566,10 +566,17 @@ class ClientProjectAttachment(Base):
     """
 
     __tablename__ = "portal_client_project_attachments"
+    __table_args__ = (
+        UniqueConstraint("project_id", "filename", "version",
+                         name="uq_project_attachment_filename_version"),
+        CheckConstraint("size_bytes > 0 AND size_bytes <= 2097152",
+                        name="ck_project_attachment_size"),
+    )
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
     project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
     uploaded_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
     filename: Mapped[str] = mapped_column(String(120), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     mime_type: Mapped[str] = mapped_column(String(70), nullable=False)
     size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     sha256: Mapped[str] = mapped_column(String(64), nullable=False)
