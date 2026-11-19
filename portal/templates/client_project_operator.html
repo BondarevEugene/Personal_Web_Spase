@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Оператор проектов — OMNIFACTORY</title><link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1"><link rel="stylesheet" href="/studio-assets/client_projects.css?v=2"></head>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Оператор проектов — OMNIFACTORY</title><link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1"><link rel="stylesheet" href="/studio-assets/client_projects.css?v=3"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container"><a class="brand" href="/support/projects">◈ OMNIFACTORY <small>OPERATOR PROJECTS</small></a><nav class="account-header-links"><a href="/account">Кабинет</a><a href="/support/desk">Сервис-деск</a><a href="/support/projects">Заказы</a></nav></div></header>
 <main class="container client-projects-page"><div class="cp-heading"><div><span class="eyebrow">PLATFORM OPERATIONS / CUSTOMER DELIVERY</span><h1>Проекты клиентов</h1><p>Доступ только операторам, указанным в OMNI_SUPPORT_OPERATOR_IDS.</p></div></div>
 <div class="cp-grid"><section class="account-panel"><h2>Реестр заказов</h2>{% if projects %}<div class="cp-list">{% for row in projects %}<a class="cp-project" href="/support/projects/{{ row.id }}"><strong>{{ row.title }}</strong><span class="cp-status">{{ statuses.get(row.status, row.status) }}</span></a>{% endfor %}</div>{% else %}<p class="account-empty">Заявок пока нет.</p>{% endif %}</section>
@@ -19,7 +19,7 @@
 <section class="account-panel cp-attachments"><h2>Файлы проекта</h2>
 <p>PDF, PNG, JPEG, TXT до {{ attachment_limit_mb }} МБ; не более восьми вложений. Доступ контролируется на сервере.</p>
 {% if project_attachments %}<div class="cp-list">{% for file in project_attachments %}
-<div class="cp-project"><span><strong>{{ file.filename }}</strong><small>{{ file.created_at.strftime("%d.%m.%Y %H:%M") }} · {{ "%.1f"|format(file.size_bytes/1024) }} КБ · SHA-256 {{ file.sha256[:12] }}…</small></span>
+<div class="cp-project"><span><strong>{{ file.filename }} · v{{ file.version }}</strong><small>{{ file.created_at.strftime("%d.%m.%Y %H:%M") }} · {{ "%.1f"|format(file.size_bytes/1024) }} КБ · SHA-256 {{ file.sha256[:12] }}…</small></span>
 <a class="button button-line" href="/support/projects/{{ project.id }}/attachments/{{ file.id }}">Скачать ↗</a></div>{% endfor %}</div>
 {% else %}<div class="account-empty">Вложений пока нет.</div>{% endif %}
 {% if project.status not in ["accepted","cancelled"] %}
