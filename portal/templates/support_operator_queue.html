@@ -1,0 +1,21 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050811"><title>Сервис-деск · OMNIFACTORY</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"></head>
+<body class="account-app"><header class="site-header"><div class="header-inner container">
+<a class="brand" href="/"><span class="brand-symbol">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>OPERATIONS / SERVICE DESK</small></span></a>
+<nav class="account-header-links" aria-label="Платформа"><a href="/">Платформа</a><a href="/support/desk" aria-current="page">Обращения</a><a href="/account">Мой кабинет</a></nav>
+</div></header><main class="container account-dashboard">
+<div class="eyebrow">INTERNAL OPERATIONS / SUPPORT QUEUE</div><h1>Сервисная очередь.<br><span class="gradient-text">Без потерянных заявок.</span></h1>
+<p class="account-dashboard-lede">Рабочее пространство операторов OMNIFACTORY. Только зарегистрированные обращения клиентов, без демонстрационных чисел.</p>
+<div class="account-panel"><form method="get" action="/support/desk">
+<label>Статус заявки <select name="status"><option value="">Все статусы</option>{% for code,label in statuses.items() %}
+<option value="{{ code }}" {% if filter_status == code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+<button class="button button-line" type="submit">Применить фильтр</button></form></div>
+<section class="account-panel" style="margin-top:22px"><div class="eyebrow">TICKETS / {{ tickets|length }} IN CURRENT VIEW</div>
+<h2>Клиентские обращения</h2>
+{% if tickets %}<div class="account-ticket-list">{% for ticket in tickets %}
+<a class="account-ticket" href="/support/desk/{{ ticket.id }}">
+<span class="account-ticket-title">{{ ticket.subject }}</span><span class="account-ticket-meta">{{ org_names.get(ticket.org_id,"Организация") }} · {{ statuses.get(ticket.status,ticket.status) }} · {{ ticket.updated_at.strftime("%d.%m.%Y %H:%M") }}</span><span class="account-ticket-open">Обработать ↗</span>
+</a>{% endfor %}</div>
+{% else %}<div class="account-empty">В выбранном фильтре нет заявок.</div>{% endif %}</section>
+</main></body></html>
