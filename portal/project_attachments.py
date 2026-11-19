@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 
 from portal.client_projects import activity, customer_project, notify_org, operator_project, project_key
 from portal.db import session_factory
-from portal.models import ClientProjectAttachment, utcnow
+from portal.models import ClientProject, ClientProjectAttachment, utcnow
 from portal.routes import current_customer
 from portal.security import secure_request, verify_csrf
 from portal.support_admin import require_operator
@@ -98,6 +98,11 @@ async def upload(request: Request, id: str, csrf_token: str, uploaded: UploadFil
             if actor is None:
                 return RedirectResponse("/account/login", status_code=303)
             project = customer_project(db, actor, id)
+        # Serialize per-project quotas and versions across PostgreSQL workers.
+        # SQLite lacks row-level locks; unique version remains final defense.
+        db.scalar(select(ClientProject.id).where(
+            ClientProject.id == project.id
+        ).with_for_update())
         if project.status in {"accepted", "cancelled"}:
             raise HTTPException(409, "Закрытый проект нельзя изменять")
         count, used = db.execute(select(
