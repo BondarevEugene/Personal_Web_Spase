@@ -71,3 +71,11 @@
 .builder-app .graph-node.graph-diagnostic-warning{outline:2px dashed #d8bd7b;outline-offset:4px}
 @media(max-width:700px){.builder-app .graph-diagnostics-list{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.builder-app .graph-diagnostics-item{transition:none}}
+
+.builder-app .graph-palette-search{display:grid;gap:5px;padding:11px 12px 4px;font-size:11px;color:#dce1ec}
+.builder-app .graph-palette-search input{width:100%;min-height:34px;padding:7px 10px;
+ color:#f5f6fb;background:#13151c;border:1px solid #646978;border-radius:7px;font-size:12px}
+.builder-app .graph-palette-search input:focus-visible{outline:2px solid #b1b6cf;outline-offset:1px}
+.builder-app .graph-palette-results{color:#bfc5d5;font-size:11px;margin:4px 12px}
+.builder-app .builder-palette .palette-node[hidden],
+.builder-app .builder-palette .palette-group-label[hidden]{display:none!important}
