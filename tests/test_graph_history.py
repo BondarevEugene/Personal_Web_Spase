@@ -18,7 +18,7 @@ def test_editor_loads_history_before_graph_studio():
         encoding="utf-8"
     )
     assert page.index("/studio-assets/graph_history.js?v=1") < page.index(
-        "/studio-assets/graph_studio.js?v=9"
+        "/studio-assets/graph_studio.js?v=10"
     )
     for marker in ('id="graph-undo"', 'id="graph-redo"'):
         assert marker in page
