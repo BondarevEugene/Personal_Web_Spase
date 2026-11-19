@@ -125,7 +125,7 @@ def register(request: Request, csrf_token: str = Form(""), username: str = Form(
         if db.scalar(select(Customer.id).where(or_(Customer.email == email,
                                                     Customer.username == username))):
             return form_page(request, "auth.html", mode="register",
-                             error="Такой логин или email уже используется.")
+                             error="Такой логин или email уже используется.", auth_lang=lang)
         org = Organization(name=organization)
         db.add(org)
         db.flush()
@@ -143,7 +143,8 @@ def register(request: Request, csrf_token: str = Form(""), username: str = Form(
         except IntegrityError:
             db.rollback()
             return form_page(request, "auth.html", mode="register",
-                             error="Не удалось зарегистрировать аккаунт: логин или email уже занят.")
+                             error="Не удалось зарегистрировать аккаунт: логин или email уже занят.",
+                             auth_lang=lang)
         return create_login(request, db, user)
 
 
