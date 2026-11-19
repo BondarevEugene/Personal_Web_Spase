@@ -464,6 +464,9 @@ async def choose(call: CallbackQuery) -> None:
     except (ValueError, KeyError, IndexError, TypeError, AttributeError):
         await call.answer("Начните сценарий заново командой /start", show_alert=True)
         return
+    # Consume the pending choice *before* awaiting network I/O.
+    # Repeated callback taps must not execute the same branch twice.
+    CURSORS.pop(cursor_key, None)
     await call.answer()
     await send_node(call.bot, call.message.chat.id, call.from_user.id, target)
 
