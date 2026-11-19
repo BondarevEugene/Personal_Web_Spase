@@ -16,6 +16,19 @@
 {% if project.status not in ["accepted","cancelled"] %}<form method="post" action="/support/projects/{{ project.id }}/milestones/{{ stage.id }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><select name="status" required>{% if stage.status == "planned" %}<option value="in_progress">В работу</option>{% elif stage.status == "in_progress" %}<option value="completed">Завершить</option><option value="planned">Вернуть в план</option>{% else %}<option value="in_progress">Вернуть в работу</option>{% endif %}</select><button type="submit">Изменить этап</button></form>{% endif %}
 </li>{% endfor %}</ol>{% endif %}
 {% if project.status not in ["accepted","cancelled"] %}<form method="post" action="/support/projects/{{ project.id }}/milestones"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>Новый этап<input name="title" minlength="3" maxlength="160" required></label><label>Описание<textarea name="details" maxlength="2000" rows="3"></textarea></label><button type="submit" class="button button-line">Добавить этап</button></form>{% endif %}</section>
+<section class="account-panel cp-attachments"><h2>Файлы проекта</h2>
+<p>PDF, PNG, JPEG, TXT до {{ attachment_limit_mb }} МБ; не более восьми вложений. Доступ контролируется на сервере.</p>
+{% if project_attachments %}<div class="cp-list">{% for file in project_attachments %}
+<div class="cp-project"><span><strong>{{ file.filename }}</strong><small>{{ file.created_at.strftime("%d.%m.%Y %H:%M") }} · {{ "%.1f"|format(file.size_bytes/1024) }} КБ · SHA-256 {{ file.sha256[:12] }}…</small></span>
+<a class="button button-line" href="/support/projects/{{ project.id }}/attachments/{{ file.id }}">Скачать ↗</a></div>{% endfor %}</div>
+{% else %}<div class="account-empty">Вложений пока нет.</div>{% endif %}
+{% if project.status not in ["accepted","cancelled"] %}
+<form method="post" action="/support/projects/{{ project.id }}/attachments" enctype="multipart/form-data" class="cp-upload">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label for="cp-file-operator">Загрузить файл проекта
+<input type="file" name="uploaded" id="cp-file-operator" accept=".pdf,.png,.jpg,.jpeg,.txt" required></label>
+<button class="button button-line" type="submit">Загрузить файл ↗</button>
+</form>{% endif %}</section>
 <section class="account-panel"><h2>Документы проекта</h2>
 <p>Публикуйте новую неизменяемую версию текстового технического задания, результата или другого документа.</p>
 {% if project_documents %}<div class="cp-list">{% for doc in project_documents %}
