@@ -22,7 +22,7 @@ def test_auto_layout_controls_and_editor_wiring():
     )
     assert html.index("graph_history.js?v=1") < html.index(
         "graph_layout.js?v=1"
-    ) < html.index("graph_studio.js?v=10")
+    ) < html.index("graph_studio.js?v=11")
     assert 'id="btn-auto-layout"' in html
     assert "window.OmniGraphLayout.arrange(payload())" in js
     assert "positions=layout.positions;" in js
