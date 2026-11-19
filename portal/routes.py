@@ -18,6 +18,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from portal.db import session_factory
+from portal.i18n import normalize_language, translator
 from portal.models import (AutomationWorkflow, BuilderProject, ClientProject, ClientProjectNotification, Customer, CustomerSettings, Invoice, Organization, PaymentRecord,
                            PortalSession, RegistrationEvent, Subscription, SupportEvent, SupportMessage, SupportTicket, utcnow)
 from portal.security import (CSRF_COOKIE, SESSION_COOKIE, hash_password, issue_csrf,
@@ -34,8 +35,18 @@ _TZ = re.compile(r"^[A-Za-z0-9_+/-]{1,64}$")
 
 def form_page(request: Request, name: str, **context):
     token = new_csrf_token()
-    response = templates.TemplateResponse(request=request, name=name,
-                                          context={"csrf_token": token, **context})
+    settings = context.get("settings")
+    user = context.get("user")
+    if settings is None and user is not None:
+        # Pages other than the dashboard already supply a logged-in user.
+        with session_factory()() as db:
+            settings = db.get(CustomerSettings, user.id)
+    language = normalize_language(getattr(settings, "language", "ru"))
+    response = templates.TemplateResponse(
+        request=request, name=name,
+        context={"csrf_token": token, "ui_lang": language,
+                 "t": translator(language), **context},
+    )
     issue_csrf(response, request, token)
     response.headers["Cache-Control"] = "no-store"
     return response
