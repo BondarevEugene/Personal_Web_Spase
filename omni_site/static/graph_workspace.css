@@ -86,3 +86,24 @@
 .builder-app .graph-history-actions .button:hover:not(:disabled){background:#292c35;border-color:#999fad}
 .builder-app .graph-history-actions .button:disabled{opacity:.42;cursor:not-allowed}
 @media(max-width:700px){.builder-app .graph-history-actions{width:100%;justify-content:flex-start;border:0;padding:0}}
+
+/* Step debugger: quiet, compact, matte inspection space. */
+.builder-app .preview-debugger{background:#0a0c11;border:1px solid #3c424e;border-radius:10px;padding:12px;min-width:0;color:#e7eaf1}
+.builder-app .preview-debugger-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid #323845;padding-bottom:10px}
+.builder-app .preview-debugger-head strong{font-size:12px;letter-spacing:.03em}
+.builder-app .preview-debugger-controls{display:flex;gap:7px;align-items:center}
+.builder-app .preview-debugger-controls button{width:30px;height:29px;border:1px solid #606777;border-radius:6px;background:#212630;color:#f3f5fa;cursor:pointer}
+.builder-app .preview-debugger-controls button:disabled{opacity:.4;cursor:not-allowed}
+.builder-app #debug-step-position{font:600 11px monospace;color:#d1d9eb;min-width:50px;text-align:center}
+.builder-app .preview-debugger .preview-trace{max-height:210px;overflow:auto;margin-top:9px}
+.builder-app .preview-trace .debug-step-link{display:block;width:100%;text-align:left;background:#171b23;border:1px solid #303744;border-radius:6px;padding:7px 10px;margin:5px 0;color:#dce4f0;font-size:11px;cursor:pointer}
+.builder-app .preview-trace .debug-step-link[aria-current=step]{background:#30364b;border-color:#9a9fb8;color:#fff}
+.builder-app .preview-trace .debug-step-link:hover{border-color:#9a9fb8}
+.builder-app .preview-debug-details{margin-top:12px;background:#131821;border:1px solid #303847;border-radius:8px;padding:12px;display:grid;gap:9px;font-size:12px;overflow-wrap:anywhere}
+.builder-app .preview-debug-details p{margin:0;color:#bac7db}
+.builder-app .debug-variables{display:grid;gap:5px}
+.builder-app .debug-variables b{color:#cbd3e3;font-size:11px}
+.builder-app .debug-variable{background:#1c2330;border-left:2px solid #909eb7;border-radius:3px;padding:5px 8px;font:12px/1.45 monospace;white-space:pre-wrap}
+.builder-app .debug-empty{font-size:11px;color:#9daabd}
+.builder-app .graph-node.graph-debug-active{outline:2px solid #d6dce9;outline-offset:5px}
+@media(prefers-reduced-motion:reduce){.builder-app .debug-step-link{transition:none!important}}
