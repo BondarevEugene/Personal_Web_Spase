@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-import re
 from uuid import UUID
 
 from fastapi import APIRouter, Form, HTTPException, Request
@@ -176,8 +175,7 @@ def assign_project(request: Request, id: str, csrf_token: str = Form(""),
     secure_request(request)
     verify_csrf(request, csrf_token)
     assignee_id = assignee_id.strip()
-    if due_on and (len(due_on) != 10 or
-                   not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", due_on)):
+    if due_on and len(due_on) != 10:
         raise HTTPException(422, "Дата должна быть YYYY-MM-DD")
     try:
         due_date = datetime.strptime(due_on, "%Y-%m-%d") if due_on else None
