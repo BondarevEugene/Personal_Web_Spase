@@ -43,6 +43,7 @@ from api.cloud_releases import router as cloud_releases_router
 from api.telegram_runtime import router as telegram_runtime_router
 from portal.routes import router as customer_portal_router
 from portal.billing_routes import router as customer_billing_router
+from portal.support_admin import router as support_admin_router
 
 # ------------------------------------------------------------------------------
 # APP
@@ -95,6 +96,7 @@ app.include_router(cloud_releases_router)
 app.include_router(telegram_runtime_router)
 app.include_router(customer_portal_router)
 app.include_router(customer_billing_router)
+app.include_router(support_admin_router)
 
 # ------------------------------------------------------------------------------
 # HEALTH CHECK
