@@ -65,7 +65,7 @@ async function loadCloud(){
   cloudProjectId=id;
   counter=1;selected=data.start;link=null;
   $('scenario-name').value=data.name;
-  change();inspector();
+  change();inspector();resetHistory();
   status('Открыт сохранённый проект: '+project.name);
  }catch(err){status('Не удалось открыть проект: '+err.message,true);}
 }
@@ -106,6 +106,9 @@ const sample=()=>({name:'Пример: персональный Telegram-бот'
 const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш',input:'Ввод пользователя',condition:'Условие IF / ELSE',set_variable:'Переменная'};
 let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
 let diagnosticIssues=[];
+let graphHistory=null;
+let historyTypingGroup=null;
+let historyFieldCounter=0;
 let canvasExpanded=false;
 function replaceScenario(factory) {
  const ok=window.confirm('Текущий черновик будет заменён. Сохраняем резервную копию в этом браузере. Продолжить?');
@@ -116,7 +119,7 @@ function replaceScenario(factory) {
  positions={};counter=1;selected=data.start;link=null;cloudProjectId=null;
  $('cloud-project-list').value='';
  $('scenario-name').value=data.name;
- change();inspector();
+ change();inspector();resetHistory();
  status('Сценарий создан. Настрой стартовый блок, проверь связи и протестируй диалог.');
 }
 function setExpanded(value){
@@ -185,7 +188,45 @@ function decorateCard(card,n) {
 const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;};
 const btn=(txt,cb,cls='inspector-btn')=>{const e=el('button',cls,txt);e.type='button';e.addEventListener('click',cb);return e;};
 const status=(msg,bad=false)=>{const n=$('project-status');n.textContent=msg;n.classList.toggle('error',bad);};
-const save=()=>{try{localStorage.setItem(STORE,JSON.stringify({data,positions,cloudProjectId}));}catch(e){status('Локальное сохранение недоступно',true);}};
+function updateHistoryButtons(){
+ const undo=$('graph-undo'),redo=$('graph-redo');
+ if(undo)undo.disabled=!graphHistory||!graphHistory.canUndo();
+ if(redo)redo.disabled=!graphHistory||!graphHistory.canRedo();
+}
+function graphState(){return {data,positions};}
+function resetHistory(){
+ if(!graphHistory)graphHistory=window.OmniGraphHistory.create(graphState(),60);
+ else graphHistory.reset(graphState());
+ updateHistoryButtons();
+}
+function persistDraft(){
+ try{localStorage.setItem(STORE,JSON.stringify({data,positions,cloudProjectId}));}
+ catch(e){status('Локальное сохранение недоступно',true);}
+}
+function save(){
+ if(graphHistory)graphHistory.record(graphState(),historyTypingGroup);
+ updateHistoryButtons();
+ persistDraft();
+}
+function restoreGraph(snapshot){
+ if(!snapshot)return;
+ data=snapshot.data;positions=snapshot.positions;
+ if(!data.nodes.some(node=>node.id===selected))selected=data.start;
+ link=null;diagnosticIssues=[];
+ const panel=$('graph-diagnostics');
+ if(panel){panel.hidden=true;$('btn-validate').setAttribute('aria-expanded','false');}
+ $('scenario-name').value=data.name;
+ render();inspector();persistDraft();updateHistoryButtons();
+}
+function undoGraph(){
+ if(!graphHistory||!graphHistory.canUndo())return;
+ restoreGraph(graphHistory.undo());status('Изменение отменено. Черновик восстановлен.');
+}
+function redoGraph(){
+ if(!graphHistory||!graphHistory.canRedo())return;
+ restoreGraph(graphHistory.redo());status('Изменение повторено.');
+}
+
 function position(id,index=0){if(!positions[id])positions[id]={x:80+(index%5)*335,y:90+Math.floor(index/5)*235};return positions[id];}
 function payload(){return {name:data.name,start:data.start,nodes:data.nodes.map(({id,kind,text='',next=null,media=null,options=[],variable=null,value='',operator='equals',true_target=null,false_target=null})=>({id,kind,text,next,media,options,variable,value,operator,true_target,false_target}))};}
 function edges(){
@@ -259,7 +300,8 @@ function change(){
 }
 function field(parent,title,value,changeFn,textarea=false){
  const label=el('label','inspector-field'),input=el(textarea?'textarea':'input');
- label.append(el('span','',title));input.value=value??'';input.addEventListener('input',()=>changeFn(input.value));
+ const typingGroup='field:'+selected+':'+(++historyFieldCounter);
+ label.append(el('span','',title));input.value=value??'';input.addEventListener('input',()=>{historyTypingGroup=typingGroup;try{changeFn(input.value);}finally{historyTypingGroup=null;}});
  input.addEventListener('blur',()=>render());label.append(input);parent.append(label);
 }
 function selector(parent,title,value,options,handler){
@@ -433,6 +475,19 @@ $('flow-canvas').addEventListener('drop',e=>{e.preventDefault();const value=e.da
  if(!value.startsWith('kind:'))return;const rect=$('flow-workspace').getBoundingClientRect();
  add(value.slice(5),{x:Math.max(0,(e.clientX-rect.left)/zoom),y:Math.max(0,(e.clientY-rect.top)/zoom)});});
 $('scenario-name').addEventListener('input',e=>{data.name=e.target.value;save();});
+$('graph-undo').addEventListener('click',undoGraph);
+$('graph-redo').addEventListener('click',redoGraph);
+document.addEventListener('keydown',event=>{
+ if(!(event.ctrlKey||event.metaKey)||event.altKey)return;
+ const target=event.target;
+ if(target&&(target.matches('input,textarea,select')||target.isContentEditable))return;
+ if(event.key.toLowerCase()==='z'){
+  event.preventDefault();
+  if(event.shiftKey)redoGraph();else undoGraph();
+ }else if(event.key.toLowerCase()==='y'){
+  event.preventDefault();redoGraph();
+ }
+});
 $('btn-save').addEventListener('click',()=>{save();status('Черновик сохранён в этом браузере.');});
 $('btn-cloud-save').addEventListener('click',saveCloud);
 $('btn-cloud-load').addEventListener('click',loadCloud);
@@ -499,7 +554,7 @@ $('import-file').addEventListener('change',async e=>{
   const obj=JSON.parse(await file.text());
   const r=await fetch(API+'/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
   if(!r.ok)throw Error('Схема не прошла серверную проверку');
-  data=obj;positions={};selected=data.start;counter=1;cloudProjectId=null;change();inspector();$('scenario-name').value=data.name;status('Сценарий импортирован.');
+  data=obj;positions={};selected=data.start;counter=1;cloudProjectId=null;change();inspector();$('scenario-name').value=data.name;resetHistory();status('Сценарий импортирован.');
  }catch(err){status('Ошибка импорта: '+err.message,true);}e.target.value='';
 });
 const paletteQuery=$('graph-palette-query');
@@ -555,6 +610,6 @@ try{
   }
  }
 }catch(e){status('Старый черновик не удалось открыть. Загружен пример.',true);}
-selected=data.start;$('scenario-name').value=data.name;render();inspector();status('Graph Studio готов: перемещай узлы и соединяй входы с выходами.');
+selected=data.start;$('scenario-name').value=data.name;resetHistory();render();inspector();status('Graph Studio готов: перемещай узлы и соединяй входы с выходами.');
 void refreshCloud();
 })();

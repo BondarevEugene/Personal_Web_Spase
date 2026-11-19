@@ -15,7 +15,7 @@ client = TestClient(app)
 def test_graph_studio_page_loads_premium_shell():
     response = client.get("/architect")
     assert response.status_code == 200
-    assert "/studio-assets/graph_studio.js?v=8" in response.text
+    assert "/studio-assets/graph_studio.js?v=9" in response.text
     assert "/studio-assets/builder.css?v=8" in response.text
     assert 'class="builder-footer"' in response.text
     assert "GRAPH CANVAS" in response.text
@@ -50,7 +50,7 @@ def test_integration_catalog_does_not_claim_unimplemented_execution():
         assert integrations[name]["status"] == "planned"
     capabilities = client.get("/api/v1/builder/simple/capabilities").json()
     assert "python" not in capabilities["supported_blocks"]
-    assert capabilities["server_persistence"] is False
+    assert capabilities["server_persistence"] is True
 
 
 def test_palette_distinguishes_real_and_planned_integrations():

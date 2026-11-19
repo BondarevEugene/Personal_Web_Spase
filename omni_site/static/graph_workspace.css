@@ -79,3 +79,10 @@
 .builder-app .graph-palette-results{color:#bfc5d5;font-size:11px;margin:4px 12px}
 .builder-app .builder-palette .palette-node[hidden],
 .builder-app .builder-palette .palette-group-label[hidden]{display:none!important}
+
+/* Graph Studio history controls: compact, keyboard-accessible and matte. */
+.builder-app .graph-history-actions{display:flex;align-items:center;gap:5px;border-right:1px solid #343944;padding-right:9px;margin-right:4px}
+.builder-app .graph-history-actions .button{padding:7px 9px;min-height:34px;background:#16181e;border-color:#525764;color:#e7e9f0;font-size:11px;white-space:nowrap}
+.builder-app .graph-history-actions .button:hover:not(:disabled){background:#292c35;border-color:#999fad}
+.builder-app .graph-history-actions .button:disabled{opacity:.42;cursor:not-allowed}
+@media(max-width:700px){.builder-app .graph-history-actions{width:100%;justify-content:flex-start;border:0;padding:0}}
