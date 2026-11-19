@@ -252,6 +252,27 @@ def account(request: Request):
                          success=request.query_params.get("updated") == "1")
 
 
+@router.post("/language")
+def change_workspace_language(request: Request, csrf_token: str = Form(""),
+                              language: str = Form("")):
+    """Set language for the entire account; never rely on browser-only switches."""
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    if language not in {"uk", "ru", "en"}:
+        raise HTTPException(422, "Unsupported interface language")
+    with session_factory()() as db:
+        user = current_customer(request, db)
+        if user is None:
+            return RedirectResponse("/account/login", status_code=303)
+        settings = db.get(CustomerSettings, user.id)
+        if settings is None:
+            settings = CustomerSettings(customer_id=user.id)
+            db.add(settings)
+        settings.language = language
+        db.commit()
+    return RedirectResponse("/account", status_code=303)
+
+
 @router.post("/settings")
 def update_settings(request: Request, csrf_token: str = Form(""),
                     display_name: str = Form(""), language: str = Form("ru"),
