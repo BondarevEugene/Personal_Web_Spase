@@ -355,6 +355,11 @@ function render(){
  data.nodes.forEach((n,i)=>{
   const p=position(n.id,i),card=el('section','builder-node graph-node'+(selected===n.id?' selected':''));
   card.dataset.nodeId=n.id;decorateCard(card,n);
+  const membership=groups.find(group=>group.node_ids.includes(n.id));
+  if(membership){
+   card.dataset.groupId=membership.id;
+   card.append(el('span','graph-node-group-chip',membership.title));
+  }
   const issue=diagnosticIssues.find(item=>item.node_id===n.id);
   if(issue){card.classList.add(issue.severity==='error'?'graph-diagnostic-error':'graph-diagnostic-warning');}
   card.style.left=p.x+'px';card.style.top=p.y+'px';
