@@ -13,7 +13,7 @@
 <div class="account-workspace-layout">
 <div class="account-workspace-content">
 <div class="account-quick-actions"><a class="button button-primary" href="/account/tickets#new-ticket">+ Создать заявку</a><a class="button button-line" href="/account/tickets">Мои обращения ↗</a><a class="button button-line" href="/account/billing">Счета и подписка ↗</a></div>
-<div class="account-kpis"><article><span>ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
+<div class="account-kpis"><article><span>ОБРАЩЕНИЯ</span><strong>{{ ticket_count }}</strong><small>Заявки вашей организации</small></article><article><span>ТЕКУЩИЙ ПЛАН</span><strong>{{ subscription.plan_code if subscription else "не назначен" }}</strong><small>{{ subscription.status if subscription else "нет подписки" }}</small></article>
 <article><span>УЧЁТ РЕГИСТРАЦИИ</span><strong>Зарегистрирован</strong><small>{{ user.created_at.strftime("%d.%m.%Y") }}</small></article>
 <article><span>ПОДТВЕРЖДЕНИЕ EMAIL</span><strong>{{ "Подтверждён" if user.email_verified else "Не подтверждён" }}</strong><small>Проверка email будет добавлена</small></article></div>
 <section class="account-panel account-ticket-overview" id="requests">
