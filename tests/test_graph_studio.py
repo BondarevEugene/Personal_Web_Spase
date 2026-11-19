@@ -15,7 +15,7 @@ client = TestClient(app)
 def test_graph_studio_page_loads_premium_shell():
     response = client.get("/architect")
     assert response.status_code == 200
-    assert "/studio-assets/graph_studio.js?v=10" in response.text
+    assert "/studio-assets/graph_studio.js?v=11" in response.text
     assert "/studio-assets/builder.css?v=8" in response.text
     assert 'class="builder-footer"' in response.text
     assert "GRAPH CANVAS" in response.text

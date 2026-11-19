@@ -106,6 +106,9 @@ const sample=()=>({name:'Пример: персональный Telegram-бот'
 const names={message:'Сообщение',choice:'Кнопки / диалог',photo:'Фото',document:'Документ',end:'Финиш',input:'Ввод пользователя',condition:'Условие IF / ELSE',set_variable:'Переменная'};
 let data=sample(),selected=data.start,positions={},zoom=1,link=null,counter=1;
 let diagnosticIssues=[];
+let debugTrace=[];
+let debugStep=-1;
+let debugSerial=0;
 let graphHistory=null;
 let historyTypingGroup=null;
 let historyFieldCounter=0;
@@ -203,13 +206,27 @@ function persistDraft(){
  try{localStorage.setItem(STORE,JSON.stringify({data,positions,cloudProjectId}));}
  catch(e){status('Локальное сохранение недоступно',true);}
 }
+function clearDebugTrace(){
+ ++debugSerial;
+ if(debugTrace.length||debugStep>=0){
+  debugTrace=[];debugStep=-1;
+  const trace=$('preview-trace');
+  if(trace)trace.textContent='Схема изменена. Запустите тест повторно.';
+  $('debug-step-prev').disabled=true;
+  $('debug-step-next').disabled=true;
+  $('debug-step-position').textContent='— / —';
+  $('debug-step-details').textContent='Результаты предыдущей трассировки устарели.';
+ }
+}
 function save(){
+ clearDebugTrace();
  if(graphHistory)graphHistory.record(graphState(),historyTypingGroup);
  updateHistoryButtons();
  persistDraft();
 }
 function restoreGraph(snapshot){
  if(!snapshot)return;
+ clearDebugTrace();
  data=snapshot.data;positions=snapshot.positions;
  if(!data.nodes.some(node=>node.id===selected))selected=data.start;
  link=null;diagnosticIssues=[];
@@ -366,23 +383,80 @@ async function post(path){
  return r;
 }
 function download(blob,name){const a=el('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+function showDebugStep(index){
+ if(!debugTrace.length||index<0||index>=debugTrace.length)return;
+ debugStep=index;
+ const item=debugTrace[index];
+ $('debug-step-position').textContent=(index+1)+' / '+debugTrace.length;
+ $('debug-step-prev').disabled=index===0;
+ $('debug-step-next').disabled=index===debugTrace.length-1;
+ const details=$('debug-step-details');
+ details.replaceChildren();
+ const heading=el('strong','',item.id+' · '+(names[item.kind]||item.kind));
+ details.append(heading);
+ const next=el('p','',item.next?'Следующий блок: '+item.next:'Ожидание пользователя или завершение');
+ details.append(next);
+ if(item.result!==undefined)
+  details.append(el('p','', 'Условие: '+(item.result?'TRUE':'FALSE')));
+ if(item.selected_option!==undefined)
+  details.append(el('p','', 'Выбран вариант № '+(item.selected_option+1)));
+ function variableList(title,value){
+  const wrap=el('div','debug-variables');
+  wrap.append(el('b','',title));
+  const keys=Object.keys(value||{});
+  if(!keys.length)wrap.append(el('span','debug-empty','Переменных пока нет'));
+  for(const key of keys)wrap.append(el('div','debug-variable',key+' = '+String(value[key])));
+  return wrap;
+ }
+ details.append(variableList('До выполнения',item.variables_before));
+ details.append(variableList('После выполнения',item.variables_after));
+ for(const row of $('preview-trace').querySelectorAll('[data-debug-index]')){
+  row.setAttribute('aria-current',Number(row.dataset.debugIndex)===index?'step':'false');
+ }
+ if(data.nodes.some(node=>node.id===item.id)){
+  selected=item.id;inspector();render();
+  const card=Array.from(document.querySelectorAll('.graph-node'))
+   .find(node=>node.dataset.nodeId===item.id);
+  if(card)card.classList.add('graph-debug-active');
+ }
+}
+$('debug-step-prev').addEventListener('click',()=>showDebugStep(debugStep-1));
+$('debug-step-next').addEventListener('click',()=>showDebugStep(debugStep+1));
 async function serverDryRun(choices,inputs){
  const trace=$('preview-trace');
  if(!trace)return;
+ const serial=++debugSerial;
  try{
   const response=await fetch(API+'/simulate',{method:'POST',headers:{'Content-Type':'application/json'},
    body:JSON.stringify({scenario:payload(),choices,inputs})});
   if(!response.ok)throw new Error('Сервер отклонил сценарий: '+response.status);
   const result=await response.json();
+  if(serial!==debugSerial)return;
+  debugTrace=Array.isArray(result.trace)?result.trace:[];
+  debugStep=-1;
   trace.replaceChildren();
   trace.append(el('strong','', 'Серверный dry-run · '+result.steps+' шагов'));
-  for(const step of result.trace||[])
-   trace.append(el('div','preview-trace-line',step.id+' · '+step.kind+(step.result===undefined?'':step.result?' · TRUE':' · FALSE')));
-  if(result.variables)trace.append(el('div','preview-trace-line',
-   'Переменные: '+JSON.stringify(result.variables)));
+  debugTrace.forEach((item,index)=>{
+   const label=(index+1)+'. '+item.id+' · '+item.kind+
+    (item.result===undefined?'':item.result?' · TRUE':' · FALSE');
+   const row=btn(label,()=>showDebugStep(index),'preview-trace-line debug-step-link');
+   row.dataset.debugIndex=String(index);
+   trace.append(row);
+  });
   trace.append(el('div','preview-trace-state','Статус: '+result.status));
+  if(debugTrace.length)showDebugStep(debugTrace.length-1);
+  else{
+   $('debug-step-position').textContent='— / —';
+   $('debug-step-prev').disabled=true;
+   $('debug-step-next').disabled=true;
+  }
  }catch(err){
+  if(serial!==debugSerial)return;
+  debugTrace=[];debugStep=-1;
+  $('debug-step-prev').disabled=true;$('debug-step-next').disabled=true;
+  $('debug-step-position').textContent='— / —';
   trace.replaceChildren();trace.append(el('div','preview-trace-error','Серверная проверка недоступна: '+err.message));
+  $('debug-step-details').textContent='Не удалось получить серверную трассировку.';
  }
 }
 function preview(){

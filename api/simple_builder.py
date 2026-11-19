@@ -190,39 +190,55 @@ class SimulationRequest(BaseModel):
 
 @router.post("/simulate")
 def simulate_scenario(request: SimulationRequest):
-    """Trace a complete deterministic route, pausing when a choice is missing.
+    """Bounded, deterministic server-side dry run with per-step state snapshots.
 
-    The selected option index is keyed by the choice node ID. A maximum of
-    50 transitions prevents unbounded execution even for cyclic graphs.
+    Trace rows are enriched with before/after variables and chosen next node,
+    allowing the editor to display an actual interpreter trace. No user code
+    or integration is executed; snapshots are per-request and not persisted.
     """
     scenario = request.scenario
     by_id = {node.id: node for node in scenario.nodes}
     trace: list[dict] = []
     variables: dict[str, str] = {}
     current = scenario.start
+
+    def finish(state: str, **extra):
+        return {"status": state, "trace": trace, "steps": len(trace),
+                "variables": dict(variables), **extra}
+
     for _ in range(50):
         node = by_id[current]
-        item = {"id": node.id, "kind": node.kind, "text": node.text}
+        item = {
+            "id": node.id, "kind": node.kind, "text": node.text,
+            "variables_before": dict(variables),
+        }
         if node.kind in {"photo", "document"}:
             item["media"] = node.media
         trace.append(item)
+
+        def step_done(next_id: str | None = None):
+            item["variables_after"] = dict(variables)
+            item["next"] = next_id
+
         if node.kind == "end":
-            return {"status": "completed", "trace": trace, "steps": len(trace),
-                    "variables": variables}
+            step_done()
+            return finish("completed")
         if node.kind == "set_variable":
             variables[node.variable] = substitute(node.value, variables)
             current = node.next
+            step_done(current)
             continue
         if node.kind == "input":
             value = request.inputs.get(node.id)
             if value is None:
-                return {"status": "awaiting_input", "at": node.id, "variable": node.variable,
-                        "trace": trace, "steps": len(trace), "variables": variables}
+                step_done()
+                return finish("awaiting_input", at=node.id, variable=node.variable)
             if len(value) > 300:
-                return {"status": "invalid_input", "at": node.id, "trace": trace,
-                        "steps": len(trace), "variables": variables}
+                step_done()
+                return finish("invalid_input", at=node.id)
             variables[node.variable] = value
             current = node.next
+            step_done(current)
             continue
         if node.kind == "condition":
             actual = variables.get(node.variable, "")
@@ -230,34 +246,31 @@ def simulate_scenario(request: SimulationRequest):
             outcome = match_condition(actual, node.operator, expected)
             item["result"] = outcome
             current = node.true_target if outcome else node.false_target
+            step_done(current)
             continue
         if node.kind == "choice":
             index = request.choices.get(node.id)
             if index is None:
-                return {
-                    "status": "awaiting_choice",
-                    "at": node.id,
-                    "options": [
-                        {"index": i, "label": choice.label}
-                        for i, choice in enumerate(node.options)
-                    ],
-                    "trace": trace,
-                    "steps": len(trace),
-                }
+                step_done()
+                return finish(
+                    "awaiting_choice", at=node.id,
+                    options=[{"index": i, "label": option.label}
+                             for i, option in enumerate(node.options)],
+                )
             if index < 0 or index >= len(node.options):
-                return {
-                    "status": "invalid_choice",
-                    "at": node.id,
-                    "trace": trace,
-                    "steps": len(trace),
-                }
+                step_done()
+                return finish("invalid_choice", at=node.id)
+            item["selected_option"] = index
             current = node.options[index].target
-        else:
-            if not node.next:
-                return {"status": "completed", "trace": trace, "steps": len(trace),
-                        "variables": variables}
-            current = node.next
-    return {"status": "step_limit", "trace": trace, "steps": len(trace), "variables": variables}
+            step_done(current)
+            continue
+        if not node.next:
+            step_done()
+            return finish("completed")
+        current = node.next
+        step_done(current)
+
+    return finish("step_limit")
 
 
 def analyze_scenario(scenario: Scenario) -> dict:
