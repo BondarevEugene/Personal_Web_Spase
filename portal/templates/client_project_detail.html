@@ -1,10 +1,21 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ project.title }} — OMNIFACTORY</title><link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1"><link rel="stylesheet" href="/studio-assets/client_projects.css?v=1"></head>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ project.title }} — OMNIFACTORY</title><link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1"><link rel="stylesheet" href="/studio-assets/client_projects.css?v=2"></head>
 <body class="account-app"><header class="site-header"><div class="header-inner container"><a class="brand" href="/account">◈ OMNIFACTORY</a><nav class="account-header-links"><a href="/account">Кабинет</a><a href="/account/projects">Все проекты</a><a href="/account/tickets">Поддержка</a><a href="/account/billing">Финансы</a></nav></div></header>
 <main class="container client-projects-page"><nav class="account-breadcrumb"><a href="/account">Кабинет</a><span>/</span><a href="/account/projects">Заказы</a><span>/</span><span>Карточка</span></nav>
 <div class="cp-heading"><div><span class="eyebrow">PROJECT / {{ project.id[:8] }}</span><h1>{{ project.title }}</h1><span class="cp-status">{{ statuses.get(project.status, project.status) }}</span><p>Запрос создан {{ project.created_at.strftime("%d.%m.%Y") }}. Дата сдачи: {{ project.due_date.strftime("%d.%m.%Y") if project.due_date else "не назначена" }}.</p></div></div>
 <div class="cp-grid"><section class="account-panel"><h2>Техническое задание</h2><p class="cp-brief">{{ project.brief }}</p></section><section class="account-panel"><h2>Этапы работы</h2>
 {% if milestones %}<ol class="cp-stages">{% for stage in milestones %}<li><strong>{{ stage.title }}</strong><small>{{ milestone_labels.get(stage.status, stage.status) }}</small><p>{{ stage.details }}</p></li>{% endfor %}</ol>{% else %}<p class="account-empty">План работ ещё не утверждён оператором.</p>{% endif %}
 </section></div>
+<section class="account-panel cp-documents"><h2>Документы и согласования</h2>
+<p>Текстовые версии документов проекта. Согласование фиксирует конкретную редакцию и не является электронной подписью.</p>
+{% if project_documents %}<div class="cp-list">{% for doc in project_documents %}
+<details class="cp-document"><summary><strong>{{ document_kinds.get(doc.document_kind, doc.document_kind) }} · {{ doc.title }}</strong>
+<span class="cp-status">v{{ doc.version }} · {{ "Согласовано" if doc.id in approved_documents else "Не согласовано" }}</span></summary>
+<p class="cp-brief">{{ doc.body }}</p><small>{{ doc.created_at.strftime("%d.%m.%Y %H:%M") }}</small>
+{% if user.role == "owner" and doc.id not in approved_documents and latest_documents[doc.document_kind].id == doc.id and project.status not in ["accepted", "cancelled"] %}
+<form method="post" action="/account/projects/{{ project.id }}/documents/{{ doc.id }}/approve"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<button type="submit" class="button button-primary">Согласовать эту версию</button></form>{% endif %}
+</details>{% endfor %}</div>
+{% else %}<p class="account-empty">Документы ещё не опубликованы оператором.</p>{% endif %}</section>
 <section class="account-panel cp-timeline"><h2>История проекта</h2>{% if events %}<ol class="cp-events">{% for event in events %}<li><time>{{ event.created_at.strftime("%d.%m.%Y %H:%M") }}</time><span>{{ event.summary }}</span></li>{% endfor %}</ol>{% else %}<p>Событий пока нет.</p>{% endif %}</section>
 {% if project.status == "review" %}<section class="account-panel cp-accept"><h2>Приёмка результата</h2><p>Подтверждение завершает проект. Если требуются доработки, обратитесь к оператору через поддержку.</p>
 {% if user.role == "owner" %}<form method="post" action="/account/projects/{{ project.id }}/accept"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="button button-primary">Подтвердить приёмку ↗</button></form>{% else %}<p>Приёмку подтверждает владелец организации.</p>{% endif %}</section>{% endif %}

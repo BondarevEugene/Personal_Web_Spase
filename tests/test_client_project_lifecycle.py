@@ -152,3 +152,162 @@ def test_project_writes_require_csrf_and_operator_access(db_ready):
     assert user.get("/support/projects").status_code == 403
     assert user.post("/support/projects/00000000-0000-0000-0000-000000000000/status",
                      data={"status": "planning"}).status_code == 403
+
+
+def test_versioned_specification_approval_and_inbox_is_tenant_scoped(
+    db_ready, monkeypatch
+):
+    from portal.models import (
+        ClientProject, ClientProjectApproval, ClientProjectDocument,
+        ClientProjectNotification,
+    )
+
+    client = register("docowner")
+    staff = register("docstaff")
+    outsider = register("docoutsider")
+    with session_factory()() as db:
+        staff_id = db.scalar(select(Customer.id).where(
+            Customer.username == "docstaff"
+        ))
+        client_id = db.scalar(select(Customer.id).where(
+            Customer.username == "docowner"
+        ))
+    monkeypatch.setenv("OMNI_SUPPORT_OPERATOR_IDS", staff_id)
+    created = client.post("/account/projects", data={
+        **csrf(client),
+        "title": "Versioned specification contract",
+        "brief": "A real customer project with approved requirements and tracked revisions.",
+    }, follow_redirects=False)
+    assert created.status_code == 303
+    with session_factory()() as db:
+        project_id = db.scalar(select(ClientProject.id).where(
+            ClientProject.title == "Versioned specification contract"
+        ))
+    op_page = "/support/projects/" + project_id
+    customer_page = "/account/projects/" + project_id
+
+    def publish(body):
+        return staff.post(op_page + "/documents", data={
+            "csrf_token": operator_csrf(staff),
+            "kind": "specification", "title": "Product specification",
+            "body": body,
+        }, follow_redirects=False)
+
+    assert publish("The first immutable technical specification for this order.").status_code == 303
+    with session_factory()() as db:
+        docs = db.scalars(select(ClientProjectDocument).where(
+            ClientProjectDocument.project_id == project_id
+        )).all()
+        assert len(docs) == 1
+        first_id = docs[0].id
+        assert docs[0].version == 1
+    assert "Product specification" in client.get(customer_page).text
+    assert "Product specification" not in outsider.get("/account/notifications").text
+    assert outsider.get(customer_page).status_code == 404
+    assert outsider.post(
+        customer_page + "/documents/" + first_id + "/approve",
+        data=csrf(outsider)
+    ).status_code == 404
+
+    approve_url = customer_page + "/documents/" + first_id + "/approve"
+    assert client.post(approve_url, data={}).status_code == 403
+    approved = client.post(approve_url, data=csrf(client), follow_redirects=False)
+    assert approved.status_code == 303, approved.text
+    # Approval is idempotent and never creates a duplicate ledger record.
+    assert client.post(approve_url, data=csrf(client),
+                       follow_redirects=False).status_code == 303
+    with session_factory()() as db:
+        assert len(db.scalars(select(ClientProjectApproval)).all()) == 1
+
+    assert publish("A second, distinct immutable revision requiring renewed approval.").status_code == 303
+    with session_factory()() as db:
+        versions = db.scalars(select(ClientProjectDocument).where(
+            ClientProjectDocument.project_id == project_id
+        ).order_by(ClientProjectDocument.version)).all()
+        second_id = versions[-1].id
+        assert [doc.version for doc in versions] == [1, 2]
+        assert versions[0].body.startswith("The first")
+    assert client.post(approve_url, data=csrf(client)).status_code == 409
+
+    def status_change(value):
+        return staff.post(op_page + "/status", data={
+            "csrf_token": operator_csrf(staff), "status": value,
+        }, follow_redirects=False)
+
+    assert status_change("planning").status_code == 303
+    assert staff.post(op_page + "/milestones", data={
+        "csrf_token": operator_csrf(staff), "title": "Build and deliver",
+        "details": "Complete documented deliverables and obtain project approval.",
+    }, follow_redirects=False).status_code == 303
+    from portal.models import ClientProjectMilestone
+    with session_factory()() as db:
+        stage_id = db.scalar(select(ClientProjectMilestone.id).where(
+            ClientProjectMilestone.project_id == project_id
+        ))
+    assert status_change("in_progress").status_code == 303
+    for stage_status in ("in_progress", "completed"):
+        assert staff.post(op_page + "/milestones/" + stage_id, data={
+            "csrf_token": operator_csrf(staff), "status": stage_status,
+        }, follow_redirects=False).status_code == 303
+    assert status_change("review").status_code == 409
+
+    # Client inbox is per recipient; a different organization cannot mark it read.
+    inbox = client.get("/account/notifications")
+    assert inbox.status_code == 200
+    assert "Новая версия документа" in inbox.text
+    with session_factory()() as db:
+        unread = db.scalar(select(ClientProjectNotification.id).where(
+            ClientProjectNotification.recipient_id == client_id,
+            ClientProjectNotification.read_at.is_(None)
+        ).limit(1))
+        assert unread is not None
+    assert outsider.post(
+        "/account/notifications/" + unread + "/read", data=csrf(outsider)
+    ).status_code == 404
+    done = client.post(
+        "/account/notifications/" + unread + "/read",
+        data=csrf(client), follow_redirects=False
+    )
+    assert done.status_code == 303
+    with session_factory()() as db:
+        notice = db.get(ClientProjectNotification, unread)
+        assert notice.read_at is not None
+    assert client.post(
+        customer_page + "/documents/" + second_id + "/approve",
+        data=csrf(client), follow_redirects=False
+    ).status_code == 303
+    assert status_change("review").status_code == 303
+    assert client.post(customer_page + "/accept", data=csrf(client),
+                       follow_redirects=False).status_code == 303
+
+
+def test_operator_documents_are_csrf_protected_and_bound_to_real_projects(
+    db_ready, monkeypatch
+):
+    staff = register("securestaff")
+    client = register("secureclient")
+    with session_factory()() as db:
+        staff_id = db.scalar(select(Customer.id).where(
+            Customer.username == "securestaff"
+        ))
+    created = client.post("/account/projects", data={
+        **csrf(client), "title": "A secure order",
+        "brief": "Security and access test of protected document endpoints.",
+    })
+    assert created.status_code == 200
+    from portal.models import ClientProject
+    with session_factory()() as db:
+        project_id = db.scalar(select(ClientProject.id).where(
+            ClientProject.title == "A secure order"
+        ))
+    url = "/support/projects/" + project_id + "/documents"
+    document = {
+        "kind": "specification", "title": "Requirements",
+        "body": "This document contains bounded text and a recorded version.",
+    }
+    assert staff.post(url, data=document).status_code == 403
+    monkeypatch.setenv("OMNI_SUPPORT_OPERATOR_IDS", staff_id)
+    assert staff.post(url, data=document).status_code == 403
+    assert staff.post(url, data={
+        **{"csrf_token": operator_csrf(staff)}, **document
+    }, follow_redirects=False).status_code == 303

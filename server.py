@@ -45,6 +45,9 @@ from portal.routes import router as customer_portal_router
 from portal.billing_routes import router as customer_billing_router
 from portal.support_admin import router as support_admin_router
 from portal.client_projects import router as client_projects_router, operator_router as operator_projects_router
+from portal.project_documents import (customer_router as project_documents_router,
+                                      operator_router as project_documents_operator_router,
+                                      inbox_router as customer_inbox_router)
 
 # ------------------------------------------------------------------------------
 # APP
@@ -100,6 +103,9 @@ app.include_router(customer_billing_router)
 app.include_router(support_admin_router)
 app.include_router(client_projects_router)
 app.include_router(operator_projects_router)
+app.include_router(project_documents_router)
+app.include_router(project_documents_operator_router)
+app.include_router(customer_inbox_router)
 
 # ------------------------------------------------------------------------------
 # HEALTH CHECK
