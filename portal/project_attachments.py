@@ -11,6 +11,7 @@ import re
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import RedirectResponse, Response
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
 from portal.client_projects import activity, customer_project, notify_org, operator_project, project_key
 from portal.db import session_factory
@@ -105,9 +106,14 @@ async def upload(request: Request, id: str, csrf_token: str, uploaded: UploadFil
         ).where(ClientProjectAttachment.project_id == project.id)).one()
         if count >= MAX_FILES or used + len(data) > MAX_TOTAL:
             raise HTTPException(413, "Лимит файлов проекта: 8 вложений / 8 МБ")
+        previous = db.scalar(select(func.max(ClientProjectAttachment.version)).where(
+            ClientProjectAttachment.project_id == project.id,
+            ClientProjectAttachment.filename == filename,
+        )) or 0
         attachment = ClientProjectAttachment(
             project_id=project.id, uploaded_by_id=actor.id,
-            filename=filename, mime_type=mime, size_bytes=len(data),
+            filename=filename, version=previous + 1,
+            mime_type=mime, size_bytes=len(data),
             sha256=hashlib.sha256(data).hexdigest(), data=data,
         )
         db.add(attachment)
@@ -115,7 +121,11 @@ async def upload(request: Request, id: str, csrf_token: str, uploaded: UploadFil
         activity(db, project.id, actor.id, "attachment",
                  "Загружен файл: " + filename)
         notify_org(db, project, "Добавлен файл к заказу: " + filename)
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError as exc:
+            db.rollback()
+            raise HTTPException(409, "Версия файла уже создана; обновите страницу") from exc
     destination = "/support/projects/" if as_operator else "/account/projects/"
     return RedirectResponse(destination + project.id, status_code=303)
 
