@@ -76,6 +76,23 @@ class DialogueStore:
             self.connection.execute("DELETE FROM dialogues WHERE updated_at < ?", (threshold,))
             self.connection.commit()
 
+    def statistics(self) -> dict[str, int]:
+        """Aggregate counters without user identifiers or message text."""
+        with self.lock:
+            dialogues = self.connection.execute(
+                "SELECT count(*) FROM dialogues").fetchone()[0]
+            updates = self.connection.execute(
+                "SELECT count(*) FROM updates").fetchone()[0]
+            waiting = self.connection.execute(
+                "SELECT count(*) FROM dialogues WHERE cursor IS NOT NULL").fetchone()[0]
+            return {"dialogues": dialogues, "waiting": waiting,
+                    "processed_updates": updates}
+
+    def check(self) -> bool:
+        """Verify SQLite integrity; not a Telegram delivery check."""
+        with self.lock:
+            return self.connection.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+
     def close(self):
         with self.lock:
             self.connection.close()
