@@ -17,7 +17,7 @@ router = APIRouter(prefix="/support/creative", tags=["Creative Content Studio"])
 
 
 def key_for(kind: str, slug: str) -> str:
-    if kind not in {"service", "case"}:
+    if kind not in {"service", "case", "home"}:
         raise HTTPException(404, "Unknown content kind")
     key = kind + ":" + slug
     if source(key) is None:
