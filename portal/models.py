@@ -629,6 +629,8 @@ class PublicPageRevision(Base):
     published_summary: Mapped[str | None] = mapped_column(String(800))
     published_at: Mapped[datetime | None] = mapped_column(DateTime())
     scheduled_for: Mapped[datetime | None] = mapped_column(DateTime())
+    scheduled_title: Mapped[str | None] = mapped_column(String(180))
+    scheduled_summary: Mapped[str | None] = mapped_column(String(800))
     updated_by_id: Mapped[str | None] = mapped_column(
         ForeignKey("portal_customers.id"), nullable=True,
     )
