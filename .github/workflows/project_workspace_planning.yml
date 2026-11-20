@@ -22,3 +22,6 @@ jobs:
       - run: python -m pip install "pytest>=8,<10" "ruff>=0.9,<1"
       - run: python -m ruff check portal/project_work.py tests/test_project_work_planning.py portal/migrations/versions/20261120_portal_18.py
       - run: python -m pytest -q --tb=short tests/test_project_work_planning.py tests/test_project_workspace_progress.py
+      - run: python -m alembic -c portal_alembic.ini upgrade head
+        env:
+          OMNI_PORTAL_DATABASE_URL: sqlite:///./workspace_ci.sqlite3
