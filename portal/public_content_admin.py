@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 
-from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from omni_site.content_store import (
@@ -12,6 +12,9 @@ from omni_site.content_store import (
 )
 from omni_site.editorial import ARTICLES, ARTICLE_BY_SLUG
 from omni_site.search_discovery import canonical_origin
+from omni_site.search_metrics import (
+    MAX_REPORT_BYTES, parse_page_csv, report_summary, store_metrics,
+)
 from portal.db import session_factory
 from portal.models import PublicArticleRevision
 from portal.routes import form_page
@@ -46,6 +49,7 @@ def content_dashboard(request: Request):
             request, "public_content_dashboard.html",
             user=operator, articles=ARTICLES, revisions=records,
             seo_checks=seo_checks, domain=domain,
+            search_stats=report_summary(db),
             disclaimer="Поисковые показы, клики и заявки здесь не измеряются. "
                        "Для них требуется отдельный источник аналитики.",
         )
@@ -128,3 +132,23 @@ def restore_article(request: Request, slug: str, csrf_token: str = Form("")):
         restore_original(db, slug)
         db.commit()
     return redirect_to("/support/content/" + slug)
+
+
+@router.post("/search-console/import")
+async def import_search_console(
+    request: Request, csrf_token: str = Form(""),
+    report_date: str = Form(""), report: UploadFile = File(...),
+):
+    verify_csrf(request, csrf_token)
+    with session_factory()() as db:
+        require_operator(request, db)
+        data = await report.read(MAX_REPORT_BYTES + 1)
+        try:
+            values = parse_page_csv(
+                data, os.getenv("OMNI_PUBLIC_BASE_URL", ""), report_date,
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        store_metrics(db, values)
+        db.commit()
+    return redirect_to("/support/content")
