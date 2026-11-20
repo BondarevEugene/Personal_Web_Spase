@@ -10,7 +10,9 @@ on:
       - "routers/home.py"
       - "scripts/public_ux_audit.py"
       - "scripts/public_asset_budget.py"
+      - "scripts/build_public_styles.py"
       - "tests/test_public_*.py"
+      - "tests/test_home_css_bundle.py"
       - ".github/workflows/public_browser_quality.yml"
   push:
     branches:
@@ -47,9 +49,12 @@ jobs:
       - name: Ruff new public QA modules
         run: |
           python -m ruff check \
+            scripts/build_public_styles.py \
+            tests/test_home_css_bundle.py \
             scripts/public_ux_audit.py \
             scripts/public_asset_budget.py \
-            tests/test_public_qa_contract.py
+            tests/test_public_qa_contract.py \
+            tests/test_home_css_bundle.py
 
       - name: Public product regressions
         run: |
@@ -66,6 +71,9 @@ jobs:
 
       - name: Apply portal SQLite migrations for isolated QA run
         run: python -m alembic -c portal_alembic.ini upgrade head
+
+      - name: Check generated homepage CSS is current
+        run: python -m scripts.build_public_styles --check
 
       - name: Public CSS and JS size and integrity report
         run: python -m scripts.public_asset_budget
