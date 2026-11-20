@@ -1,0 +1,68 @@
+<section class="account-panel" id="project-work">
+<h2>Задачи и трудозатраты</h2>
+<p>План: {{ "%.1f"|format(work_estimate_minutes / 60) }} ч · Учтено: {{ "%.1f"|format(work_actual_minutes / 60) }} ч</p>
+{% if work_tasks %}
+<div class="cp-list">
+{% for task in work_tasks %}
+<div class="cp-project">
+<div>
+<strong>{% if task.parent_id %}↳ {% endif %}{{ task.title }}</strong>
+<small>{{ task.status }} · План {{ "%.1f"|format(task.estimate_minutes / 60) }} ч · Факт {{ "%.1f"|format(work_logged.get(task.id, 0) / 60) }} ч
+{% if task.start_on %} · {{ task.start_on.strftime("%d.%m.%Y") }}{% endif %}
+{% if task.due_on %} — {{ task.due_on.strftime("%d.%m.%Y") }}{% endif %}
+</small>
+</div>
+{% if workspace_operator and project.status not in ["accepted", "cancelled"] %}
+<form method="post" action="/support/projects/{{ project.id }}/tasks/{{ task.id }}/status">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<select name="status" required>
+<option value="planned">Запланировано</option>
+<option value="in_progress">В работе</option>
+<option value="completed">Завершено</option>
+</select>
+<button type="submit">Изменить</button>
+</form>
+<form method="post" action="/support/projects/{{ project.id }}/tasks/{{ task.id }}/time">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input name="minutes" type="number" min="1" max="1440" placeholder="Минуты" required>
+<input name="note" minlength="3" maxlength="500" placeholder="Что сделано" required>
+<button type="submit">Учесть время</button>
+</form>
+{% endif %}
+</div>
+{% endfor %}
+</div>
+{% else %}<p>План задач пока не создан.</p>{% endif %}
+{% if gantt_bars %}
+<h3>Календарный план / Гант</h3>
+<p>{{ gantt_origin.strftime("%d.%m.%Y") }} — {{ gantt_finish.strftime("%d.%m.%Y") }}</p>
+<div class="pw-gantt" role="img" aria-label="Календарный план задач">
+{% for task, offset, width in gantt_bars %}
+<div class="pw-gantt-row"><span>{{ task.title }}</span>
+<div class="pw-gantt-track"><div class="pw-gantt-bar" style="left:{{ offset }}%;width:{{ width }}%"></div></div>
+</div>{% endfor %}
+</div>
+{% endif %}
+{% if workspace_operator and project.status not in ["accepted", "cancelled"] %}
+<h3>Добавить задачу</h3>
+<form method="post" action="/support/projects/{{ project.id }}/tasks">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>Название <input name="title" minlength="3" maxlength="160" required></label>
+<label>Родительская задача <select name="parent_id"><option value="">Корневая задача</option>
+{% for task in work_tasks if not task.parent_id %}<option value="{{ task.id }}">{{ task.title }}</option>{% endfor %}
+</select></label>
+<label>Начало <input type="date" name="start_on"></label>
+<label>Окончание <input type="date" name="due_on"></label>
+<label>План, часы <input type="number" name="estimate_hours" min="0" max="10000" value="0"></label>
+<label>ID исполнителя (оператор платформы) <input name="assignee_id" maxlength="36"></label>
+<button class="button button-primary" type="submit">Создать задачу</button>
+</form>
+{% endif %}
+</section>
+<style>
+.pw-gantt{display:grid;gap:12px;overflow-x:auto}
+.pw-gantt-row{display:grid;grid-template-columns:minmax(110px,190px) minmax(220px,1fr);align-items:center;gap:12px}
+.pw-gantt-row>span{font-size:.85rem;overflow-wrap:anywhere}
+.pw-gantt-track{position:relative;background:#e5ebf3;height:19px;border-radius:5px}
+.pw-gantt-bar{position:absolute;top:2px;bottom:2px;background:#477bd2;border-radius:4px}
+</style>
