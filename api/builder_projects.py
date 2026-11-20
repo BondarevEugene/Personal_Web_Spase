@@ -6,6 +6,7 @@ on mutations. No arbitrary user code, bot tokens or OAuth connections run here.
 from __future__ import annotations
 
 import json
+import hashlib
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -86,9 +87,27 @@ def customer_required(request: Request, db):
     return customer
 
 
+def project_revision(project: BuilderProject) -> str:
+    """Digest of the saved graph and layout."""
+    payload = (project.scenario_json + chr(0) + project.layout_json).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def ensure_revision(request: Request, project: BuilderProject) -> None:
+    """Prevent stale editors overwriting newer work when If-Match is supplied."""
+    expected = request.headers.get("If-Match")
+    if expected is not None and expected != project_revision(project):
+        raise HTTPException(409, detail={
+            "code": "PROJECT_CHANGED",
+            "message": "Проект изменился в другой вкладке. Обновите страницу.",
+            "current_revision": project_revision(project),
+        })
+
+
 def serialize(project: BuilderProject, full: bool = False) -> dict:
     result = {"id": project.id, "name": project.name,
-              "updated_at": project.updated_at.isoformat() + "Z"}
+              "updated_at": project.updated_at.isoformat() + "Z",
+              "revision": project_revision(project)}
     if full:
         result["scenario"] = json.loads(project.scenario_json)
         result["positions"], result["groups"] = unpack_layout(project.layout_json)
@@ -181,6 +200,7 @@ def update_project(id: str, request: Request, data: ProjectData):
             ))
             if row is None:
                 raise HTTPException(404, detail="Project not found")
+            ensure_revision(request, row)
             row.name = data.scenario.name
             row.scenario_json = data.scenario.model_dump_json()
             row.layout_json = layout
@@ -204,6 +224,7 @@ def delete_project(id: str, request: Request):
             ))
             if row is None:
                 raise HTTPException(404, detail="Project not found")
+            ensure_revision(request, row)
             db.delete(row)
             db.commit()
         except OperationalError:
