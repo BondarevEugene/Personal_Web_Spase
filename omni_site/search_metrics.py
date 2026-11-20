@@ -70,7 +70,10 @@ def parse_page_csv(blob: bytes, origin: str, day: str) -> list[PublicSearchMetri
         if number > MAX_ROWS:
             raise ValueError("Maximum 2000 rows")
         raw_url = (entry.get(page_col) or "").strip()
-        url = urlsplit(raw_url)
+        try:
+            url = urlsplit(raw_url)
+        except ValueError as exc:
+            raise ValueError("Malformed page URL in report") from exc
         if (url.scheme != "https" or url.netloc.lower() != host
                 or url.query or url.fragment or url.username or url.password):
             raise ValueError("Unexpected origin or URL in report")
