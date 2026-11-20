@@ -18,7 +18,7 @@
 <a href="/account/workspace?status=review"><span>{{ t("Требуют решения") }}</span><strong>{{ metrics.attention }}</strong></a>
 <a href="/account/workspace?status=completed"><span>{{ t("Принято") }}</span><strong>{{ metrics.completed }}</strong></a>
 </section>
-<div class="workspace-command-toolbar"><nav aria-label="Фильтры проектов">
+<p><a class="button button-primary" href="/account/decisions">{{ t("Мои согласования ↗") }}</a></p><div class="workspace-command-toolbar"><nav aria-label="Фильтры проектов">
 <a href="/account/workspace?status=all" {% if current_filter == "all" %}aria-current="page"{% endif %}>{{ t("Все") }}</a>
 <a href="/account/workspace?status=active" {% if current_filter == "active" %}aria-current="page"{% endif %}>{{ t("Активные") }}</a>
 <a href="/account/workspace?status=review" {% if current_filter == "review" %}aria-current="page"{% endif %}>{{ t("На согласовании") }}</a>
