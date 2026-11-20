@@ -476,6 +476,104 @@
     exportProject().catch(error => { status.textContent = error.message; });
   }));
 
+  const lifecycle = document.getElementById("graph-lifecycle");
+  let dirty = false;
+  const markDirty = () => {
+    dirty = true;
+    if (status) status.textContent = "Есть несохранённые изменения.";
+  };
+  root.addEventListener("input", markDirty);
+  root.addEventListener("change", markDirty);
+  const csrfHeaders = async () => {
+    const response = await fetch("/api/v1/builder/projects/csrf", {
+      credentials: "same-origin", cache: "no-store"
+    });
+    if (!response.ok) throw new Error("Сессия истекла. Войдите повторно.");
+    const data = await response.json();
+    return {"X-Omni-CSRF": data.csrf_token};
+  };
+  const projectAction = async (suffix, method) => {
+    const response = await fetch("/api/v1/builder/projects/" +
+      encodeURIComponent(projectId) + suffix, {
+      method, credentials: "same-origin", headers: await csrfHeaders()
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(JSON.stringify(body.detail || "Ошибка " + response.status));
+    }
+    return method === "DELETE" ? null : response.json();
+  };
+  const lifecycleButton = (label, action) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.style.cssText = "padding:10px 14px;margin:5px;border:1px solid #7184b0;" +
+      "border-radius:9px;background:#243552;color:#fff;cursor:pointer";
+    button.addEventListener("click", () => {
+      Promise.resolve().then(action).catch(error => {
+        status.textContent = error.message || "Не удалось выполнить действие";
+      });
+    });
+    lifecycle.append(button);
+  };
+  if (lifecycle) {
+    const heading = document.createElement("h3");
+    heading.textContent = "Управление сохранённым проектом";
+    lifecycle.append(heading);
+    lifecycleButton("Создать независимую копию", async () => {
+      if (dirty && !confirm("Копия будет создана из последней сохранённой версии. Продолжить?")) return;
+      const copy = await projectAction("/duplicate", "POST");
+      window.location.assign("/account/graph-project/" + encodeURIComponent(copy.id));
+    });
+    lifecycleButton("Проверить сохранённую версию", async () => {
+      const response = await fetch("/api/v1/builder/projects/" +
+        encodeURIComponent(projectId) + "/diagnostics", {
+        credentials: "same-origin", cache: "no-store"
+      });
+      if (!response.ok) throw new Error("Не удалось проверить сохранённый граф");
+      const report = await response.json();
+      validation.replaceChildren();
+      const heading = document.createElement("h3");
+      heading.textContent = report.ok ? "Сохранённый граф проверен" : "Есть ошибки";
+      validation.append(heading);
+      for (const issue of report.issues || []) {
+        const line = document.createElement("p");
+        line.textContent = issue.node_id + " · " + issue.message;
+        validation.append(line);
+      }
+    });
+    lifecycleButton("Экспортировать сохранённую версию", async () => {
+      if (dirty && !confirm("Экспортируется последняя сохранённая версия. Продолжить?")) return;
+      const response = await fetch("/api/v1/builder/projects/" +
+        encodeURIComponent(projectId) + "/export", {
+        credentials: "same-origin", cache: "no-store"
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(JSON.stringify(body.detail || "Экспорт отклонён"));
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "omnifactory-saved-telegram-bot.zip";
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.textContent = "Сохранённый проект экспортирован.";
+    });
+    lifecycleButton("Удалить проект", async () => {
+      if (!confirm("Безвозвратно удалить сохранённый проект?")) return;
+      await projectAction("", "DELETE");
+      window.location.assign("/account");
+    });
+  }
+  window.addEventListener("beforeunload", event => {
+    if (!dirty) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+
   const load = async () => {
     const response = await fetch("/api/v1/builder/projects/" +
       encodeURIComponent(projectId), {credentials: "same-origin", cache: "no-store"});
@@ -484,6 +582,7 @@
     project.positions ||= {};
     project.groups ||= [];
     render();
+    dirty = false;
     status.textContent = "Проект загружен. Изменения пока не сохранены.";
   };
 
@@ -511,6 +610,7 @@
         throw new Error(typeof details.detail === "string"
           ? details.detail : "Сервер отклонил изменения (" + response.status + ")");
       }
+      dirty = false;
       status.textContent = "Изменения сохранены. Можно закрыть и снова открыть проект.";
     } catch (error) {
       status.textContent = error.message || "Не удалось сохранить изменения";
