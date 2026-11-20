@@ -193,6 +193,7 @@
           tile.removeEventListener("pointerup", finish);
           tile.removeEventListener("pointercancel", finish);
           renderCanvas();
+          markDirty();
         };
         tile.addEventListener("pointermove", move);
         tile.addEventListener("pointerup", finish);
@@ -215,6 +216,7 @@
       ? {id, kind: "end"}
       : {id, kind: "message", text: "Новое сообщение", next: null});
     render();
+    markDirty();
     status.textContent = "Блок добавлен. Соедините его переходом и сохраните.";
   };
   document.getElementById("graph-add-message")?.addEventListener(
@@ -263,6 +265,7 @@
     project.scenario.nodes.push({id, kind, ...defaults[kind]});
     selectedNodeId = id;
     render();
+    markDirty();
     status.textContent = "Блок добавлен. Настройте переходы и сохраните.";
   };
   const connectNodes = (fromId, toId) => {
@@ -271,6 +274,7 @@
       status.textContent = "Завершающий блок не имеет исходящих связей.";
       return;
     }
+    markDirty();
     if (source.kind === "condition") {
       source.true_target = toId;
       status.textContent = "Ветка Да соединена. Ветку Нет настройте в инспекторе.";
@@ -356,6 +360,7 @@
     inspector.append(makeButton("Сделать начальным", () => {
       project.scenario.start = node.id;
       render();
+      markDirty();
     }));
   };
   const runAnalysis = async () => {
