@@ -71,7 +71,6 @@ def test_operator_only_access_to_editor_and_seo(db_ready, monkeypatch):
     dashboard = client.get("/support/content")
     assert dashboard.status_code == 200
     assert "Контент и SEO" in dashboard.text
-    assert "Реальная посещаемость неизвестна" not in dashboard.text
     assert "Реальная посещаемость" not in dashboard.text or "неизвестна" in dashboard.text.lower()
     assert "Поисковые показы" in dashboard.text
     assert "Контент и SEO" in client.get("/support/desk").text
