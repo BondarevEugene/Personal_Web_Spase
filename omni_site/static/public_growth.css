@@ -1,0 +1,38 @@
+/* Business impact lab — premium, fast, responsive, reduced-motion friendly. */
+.platform-app .growth-workbench{padding-top:clamp(70px,8vw,115px);padding-bottom:clamp(70px,8vw,115px)}
+.platform-app .growth-head{max-width:800px;margin-bottom:32px}
+.platform-app .growth-head h2{font-size:clamp(28px,4.8vw,58px);letter-spacing:-.055em;line-height:1.1;margin:12px 0 17px}
+.platform-app .growth-head p{color:#b9c6d8;font-size:14px;line-height:1.7}
+.platform-app .growth-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:16px}
+.platform-app .growth-calculator,.platform-app .growth-result,.platform-app .growth-picker{border:1px solid #37465f;background:#101724;border-radius:15px;padding:clamp(20px,3vw,34px);min-width:0}
+.platform-app .growth-fields{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.platform-app .growth-fields label{color:#d3ddeb;font-size:12px;font-weight:600;display:grid;align-content:start;gap:9px}
+.platform-app .growth-fields label:last-child{grid-column:1/-1}
+.platform-app .growth-fields input[type=number]{width:100%;background:#080e1a;border:1px solid #5a6a83;color:#f6f8fe;border-radius:8px;padding:10px 13px;min-height:45px;font-size:16px}
+.platform-app .growth-fields input[type=range]{width:100%;accent-color:#bda1e8;cursor:pointer;min-height:23px}
+.platform-app #growth-share-value{color:#d6c0ff;font-size:16px;font-weight:700}
+.platform-app .growth-assumption{color:#aebbd0;font-size:11px;line-height:1.7;margin:20px 0 0}
+.platform-app .growth-result{display:flex;flex-direction:column;justify-content:center;background:radial-gradient(circle at 90% 12%,#8173c729,transparent 46%),#141a2c}
+.platform-app .growth-result-kicker{font-size:10px;font-weight:700;letter-spacing:.13em;color:#bac6dd}
+.platform-app .growth-result>strong{font:650 clamp(54px,7vw,98px)/1.1 var(--display);letter-spacing:-.075em;color:#f2f3fc;margin:15px 0 10px}
+.platform-app .growth-result>strong small{font-size:19px;letter-spacing:0;margin-left:9px;color:#bcc9dc}
+.platform-app .growth-result-financial{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.platform-app .growth-result-financial output{font:650 clamp(30px,3.5vw,45px)/1.2 var(--display);letter-spacing:-.045em;color:#bce7dc}
+.platform-app .growth-result-financial span{color:#c4cfdf;font-size:13px}
+.platform-app .growth-result p{font-size:12px;line-height:1.6;color:#abbad0;max-width:410px;margin:22px 0}
+.platform-app .growth-result .button{align-self:flex-start;margin-top:3px}
+.platform-app .growth-picker{margin-top:16px;display:grid;grid-template-columns:minmax(190px,.85fr) minmax(230px,1fr) minmax(250px,1.1fr);align-items:center;gap:19px}
+.platform-app .growth-picker h3{font-size:clamp(22px,2.6vw,31px);line-height:1.13;letter-spacing:-.04em;margin:10px 0}
+.platform-app .growth-picker p{font-size:12px;line-height:1.6;color:#b7c5d8;margin:0}
+.platform-app .growth-choice{display:grid;gap:8px}
+.platform-app .growth-choice-button{min-height:40px;display:block;text-align:left;background:#1b2536;color:#c5d2e3;border:1px solid #465570;border-radius:8px;font-size:12px;font-weight:650;padding:10px 12px}
+.platform-app .growth-choice-button[aria-pressed=true]{border-color:#b6a1e0;color:#fff;background:#333049}
+.platform-app .growth-choice-button:focus-visible{outline:2px solid #e6d7ff;outline-offset:2px}
+.platform-app .growth-solution{background:#192437;border-radius:10px;border:1px solid #405572;padding:16px}
+.platform-app .growth-solution strong{font:600 18px var(--display);color:#f0f4fc}
+.platform-app .growth-solution p{margin:9px 0 17px;font-size:12px}
+.platform-app .growth-solution a{display:block;margin:8px 0;color:#c4e4ff;font-size:12px;font-weight:650;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:1050px){.platform-app .growth-picker{grid-template-columns:1fr 1fr}.platform-app .growth-picker>div:first-child{grid-column:1/-1}}
+@media(max-width:750px){.platform-app .growth-grid,.platform-app .growth-picker{grid-template-columns:1fr}.platform-app .growth-picker>div:first-child{grid-column:auto}}
+@media(max-width:480px){.platform-app .growth-fields{grid-template-columns:1fr}.platform-app .growth-fields label:last-child{grid-column:auto}.platform-app .growth-result>strong small{display:block;margin-left:0;font-size:16px}}
+@media(prefers-reduced-motion:reduce){.platform-app .growth-choice-button,.platform-app .growth-result *{transition:none!important;animation:none!important}}
