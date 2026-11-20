@@ -3,6 +3,7 @@
     <a href="/account" {% if request.url.path == "/account" or request.url.path == "/account/" %}aria-current="page"{% endif %}>{{ t("Обзор") }}</a>
     <a href="/account/workspace" {% if request.url.path.startswith("/account/workspace") %}aria-current="page"{% endif %}>{{ t("Центр проектов") }}</a>
     <a href="/account/projects" {% if request.url.path.startswith("/account/projects") %}aria-current="page"{% endif %}>{{ t("Заказы") }}</a>
+    <a href="/account/decisions" {% if request.url.path.startswith("/account/decisions") %}aria-current="page"{% endif %}>{{ t("Согласования") }}</a>
     <a href="/account/notifications" {% if request.url.path.startswith("/account/notifications") %}aria-current="page"{% endif %}>{{ t("Уведомления") }}</a>
     <a href="/account/tickets" {% if request.url.path.startswith("/account/tickets") %}aria-current="page"{% endif %}>{{ t("Поддержка") }}</a>
     <a href="/account/finance" {% if request.url.path.startswith("/account/finance") %}aria-current="page"{% endif %}>{{ t("Финансы") }}</a>
