@@ -105,6 +105,9 @@ def audit(base_url: str, output: Path) -> int:
                           links: [...document.querySelectorAll(
                             'a[href^="/"]'
                           )].length,
+                          localStylesheets: document.querySelectorAll(
+                            'link[rel="stylesheet"][href^="/studio-assets/"]'
+                          ).length,
                           navigation: performance.getEntriesByType(
                             'navigation'
                           )[0]?.duration ?? null,
@@ -137,6 +140,11 @@ def audit(base_url: str, output: Path) -> int:
                         )
                     if not geometry["title"]:
                         issues.append("missing document title")
+                    if route == "/" and geometry["localStylesheets"] != 1:
+                        issues.append(
+                            "homepage expects one CSS request, found " +
+                            str(geometry["localStylesheets"])
+                        )
                     if route == "/":
                         if page.locator(
                             ".omni-hero-pathways a"
