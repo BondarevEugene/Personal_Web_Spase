@@ -1,0 +1,23 @@
+name: OMNIFACTORY Project Workspace progress
+on:
+  pull_request:
+    paths:
+      - "portal/project_progress.py"
+      - "portal/client_projects.py"
+      - "portal/templates/_project_workspace_overview.html"
+      - "portal/templates/client_project_detail.html"
+      - "portal/templates/client_project_operator.html"
+      - "tests/test_project_workspace_progress.py"
+      - ".github/workflows/project_workspace_progress.yml"
+  workflow_dispatch:
+jobs:
+  progress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "pytest>=8,<10" "ruff>=0.9,<1"
+      - run: python -m ruff check portal/project_progress.py tests/test_project_workspace_progress.py
+      - run: python -m pytest -q tests/test_project_workspace_progress.py
