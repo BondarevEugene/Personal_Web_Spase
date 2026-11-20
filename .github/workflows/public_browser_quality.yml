@@ -51,8 +51,11 @@ jobs:
             scripts/public_ux_audit.py \
             scripts/public_asset_budget.py \
             scripts/build_home_css.py \
+            omni_site/blueprint_studio.py \
+            tests/test_public_blueprint_studio.py \
             tests/test_public_qa_contract.py \
-            tests/test_public_home_css_bundle.py
+            tests/test_public_home_css_bundle.py \
+            tests/test_public_blueprint_studio.py
 
       - name: Verify generated homepage CSS is current
         run: python -m scripts.build_home_css --check
