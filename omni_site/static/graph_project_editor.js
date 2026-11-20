@@ -799,6 +799,70 @@
     refreshRelease().catch(error => { content.textContent = error.message; });
   }
 
+  const operationsPanel = document.getElementById("graph-operations");
+  if (operationsPanel) {
+    const heading = document.createElement("h3");
+    heading.textContent = "Operations Center · история публикаций и проверок";
+    const summary = document.createElement("p");
+    summary.textContent = "Фактические записи из базы. Dry-run и review не означают, что бот работает.";
+    const output = document.createElement("div");
+    output.setAttribute("role", "status");
+    const refresh = document.createElement("button");
+    refresh.type = "button";
+    refresh.textContent = "Обновить историю операций";
+    const line = (parent, value) => {
+      const p = document.createElement("p");
+      p.textContent = value;
+      parent.append(p);
+    };
+    const update = async () => {
+      output.textContent = "Загружаем события…";
+      const response = await fetch("/api/v1/builder/operations/" +
+        encodeURIComponent(projectId), {
+        credentials: "same-origin", cache: "no-store"
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(JSON.stringify(data.detail || response.status));
+      output.replaceChildren();
+      line(output, "Версия сценария: " + data.revision_sha256.slice(0, 16));
+      line(output, "Онлайн-статус: не подтверждён (live provisioning отключён)");
+      if (!data.plans.length) line(output, "Пока нет планов публикации.");
+      for (const plan of data.plans) {
+        const section = document.createElement("section");
+        section.style.cssText = "border:1px solid #526581;border-radius:12px;" +
+          "padding:14px;margin:12px 0";
+        const title = document.createElement("h4");
+        title.textContent = plan.name + " · " + plan.status;
+        section.append(title);
+        line(section, "План создан: " + plan.created_at);
+        for (const review of plan.reviews) {
+          line(section, "Ревизия " + review.id.slice(0, 8) +
+            " · " + review.status + (review.revision_matches
+              ? " · соответствует графу" : " · граф изменён") +
+            (review.cancelled ? " · отменено" : ""));
+        }
+        for (const job of plan.jobs) {
+          const details = document.createElement("details");
+          const label = document.createElement("summary");
+          label.textContent = "Задача " + job.id.slice(0, 8) +
+            " · " + job.mode + " · " + job.status;
+          details.append(label);
+          if (job.error_code) line(details, "Ошибка: " + job.error_code);
+          for (const event of job.events) {
+            line(details, event.created_at + " · " + event.code + " · " + event.message);
+          }
+          section.append(details);
+        }
+        output.append(section);
+      }
+    };
+    refresh.addEventListener("click", () => {
+      update().catch(error => { output.textContent = error.message; });
+    });
+    operationsPanel.append(heading, summary, refresh, output);
+    update().catch(error => { output.textContent = error.message; });
+  }
+
   const load = async () => {
     const response = await fetch("/api/v1/builder/projects/" +
       encodeURIComponent(projectId), {credentials: "same-origin", cache: "no-store"});

@@ -46,6 +46,7 @@ from api.railway_resources import router as railway_resources_router
 from api.bot_security import router as bot_security_router
 from api.cloud_releases import router as cloud_releases_router
 from api.telegram_runtime import router as telegram_runtime_router
+from api.graph_operations import router as graph_operations_router
 from portal.routes import router as customer_portal_router
 from portal.account_security import router as account_security_router
 from portal.billing_routes import router as customer_billing_router
@@ -114,6 +115,7 @@ app.include_router(railway_resources_router)
 app.include_router(bot_security_router)
 app.include_router(cloud_releases_router)
 app.include_router(telegram_runtime_router)
+app.include_router(graph_operations_router)
 app.include_router(customer_portal_router)
 app.include_router(account_security_router)
 app.include_router(customer_billing_router)
