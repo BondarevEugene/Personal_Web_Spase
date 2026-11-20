@@ -114,10 +114,26 @@ def audit(base_url: str, output: Path) -> int:
                         })"""
                     )
                     if geometry["content"] > geometry["viewport"] + 2:
+                        suspects = page.evaluate(
+                            """() => [...document.querySelectorAll("body *")]
+                              .filter(el => {
+                                const r = el.getBoundingClientRect();
+                                const v = document.documentElement.clientWidth;
+                                return r.width > 0 &&
+                                  (r.right > v + 2 || r.left < -2);
+                              })
+                              .slice(0, 12).map(el => ({
+                                tag: el.tagName.toLowerCase(),
+                                css: String(el.className).slice(0, 90),
+                                right: Math.round(el.getBoundingClientRect().right),
+                                left: Math.round(el.getBoundingClientRect().left)
+                              }))"""
+                        )
                         issues.append(
                             "horizontal overflow: " +
                             str(geometry["content"]) + " > " +
-                            str(geometry["viewport"])
+                            str(geometry["viewport"]) +
+                            " suspects=" + json.dumps(suspects)
                         )
                     if not geometry["title"]:
                         issues.append("missing document title")
@@ -255,6 +271,8 @@ def audit(base_url: str, output: Path) -> int:
     (output / "report.md").write_text(
         "\n".join(text) + "\n", encoding="utf-8"
     )
+    for failure in result["failures"]:
+        print("UX FAIL:", json.dumps(failure, ensure_ascii=False))
     print(
         f"Public UX audit: {result['checked']} views, "
         f"{result['failed']} failed; report={output / 'report.md'}"
