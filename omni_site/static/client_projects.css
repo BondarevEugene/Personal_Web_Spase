@@ -52,3 +52,11 @@
 .client-projects-page .cp-upload input[type=file]{width:100%;max-width:100%;background:#1a2433;color:#e4edfa;border:1px solid #53647a;border-radius:6px;padding:9px;font-size:12px}
 .client-projects-page .cp-upload button{justify-self:start}
 @media(max-width:650px){.client-projects-page .cp-attachments .cp-project{display:grid;grid-template-columns:1fr;gap:9px}.client-projects-page .cp-attachments .button{justify-self:start}}
+
+/* Formal customer review and rework decision in client project acceptance. */
+.client-projects-page .cp-review-revision{margin:16px 0 12px;display:grid;gap:10px;padding:14px;border:1px solid #6f657e;border-radius:9px;background:#1c1b29}
+.client-projects-page .cp-review-revision label{display:grid;gap:7px;font-size:12px;font-weight:600;color:#e5def0}
+.client-projects-page .cp-review-revision textarea{background:#0e101a;color:#eef1fa;min-height:105px;padding:11px 12px;border-radius:6px;border:1px solid #726a88;line-height:1.5}
+.client-projects-page .cp-review-revision button{justify-self:start;border-color:#a996c2;color:#f0e4fb}
+.client-projects-page .cp-review-revision textarea:focus-visible{outline:2px solid #c7aee1;outline-offset:2px}
+@media(max-width:620px){.client-projects-page .cp-review-revision button{width:100%}}
