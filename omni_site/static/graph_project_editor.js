@@ -57,18 +57,19 @@
             if (option.target === old) option.target = value;
           }
         }
-        if (project.positions[old]) {
+        if (project.positions && project.positions[old]) {
           project.positions[value] = project.positions[old];
           delete project.positions[old];
         }
       }));
       if ("text" in node) panel.append(field("Текст", node.text,
         value => { node.text = value; }, true));
-      if (node.next !== null && node.next !== undefined) {
+      if (node.kind !== "end" && node.kind !== "choice" &&
+          node.kind !== "condition") {
         panel.append(field("Следующий блок", node.next,
           value => { node.next = value || null; }));
       }
-      if (node.variable) panel.append(field("Переменная", node.variable,
+      if ("variable" in node) panel.append(field("Переменная", node.variable,
         value => { node.variable = value; }));
       for (const [index, option] of (node.options || []).entries()) {
         panel.append(field("Кнопка " + (index + 1), option.label,
@@ -116,7 +117,7 @@
     if (!canvas) return;
     canvas.replaceChildren();
     const nodes = project.scenario.nodes;
-    const positions = project.positions;
+    const positions = project.positions || (project.positions = {});
     nodes.forEach((node, index) => {
       if (!positions[node.id]) {
         positions[node.id] = {x: 30 + (index % 3) * 255,
@@ -379,64 +380,100 @@
       validation.append(line);
     }
   };
-  const runSimulation = async () => {
-    simulation.textContent = "Выполняется безопасная симуляция…";
+  // Every interaction replays deterministically from the beginning with all
+  // prior choices and inputs. The server never executes external integrations.
+  const debugSession = {choices: {}, inputs: {}, scenario: null};
+  const resetDebug = () => {
+    debugSession.choices = {};
+    debugSession.inputs = {};
+    debugSession.scenario = JSON.parse(JSON.stringify(project.scenario));
+    return advanceDebug();
+  };
+  const advanceDebug = async () => {
+    simulation.textContent = "Проверяем сценарий…";
     const response = await fetch("/api/v1/builder/simple/simulate", {
       method: "POST", credentials: "same-origin",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({scenario: project.scenario, choices: {}, inputs: {}})
+      body: JSON.stringify({
+        scenario: debugSession.scenario,
+        choices: debugSession.choices,
+        inputs: debugSession.inputs
+      })
     });
     const result = await response.json();
     simulation.replaceChildren();
     if (!response.ok) {
-      simulation.textContent = "Ошибка: " + JSON.stringify(result.detail || result);
+      simulation.textContent = "Ошибка сценария: " +
+        JSON.stringify(result.detail || result);
       return;
     }
-    const summary = document.createElement("p");
-    summary.textContent = "Результат: " + result.status + " · шагов: " + result.steps;
-    simulation.append(summary);
+    const title = document.createElement("h3");
+    title.textContent = "Отладка · " + result.status + " · " + result.steps + " шагов";
+    simulation.append(title);
+    const trace = document.createElement("ol");
     for (const step of result.trace || []) {
-      const row = document.createElement("p");
-      row.textContent = step.id + " [" + step.kind + "] → " + (step.next || "стоп");
-      simulation.append(row);
+      const item = document.createElement("li");
+      const before = JSON.stringify(step.variables_before || {});
+      const after = JSON.stringify(step.variables_after || {});
+      item.textContent = step.id + " · " + step.kind +
+        " → " + (step.next || "стоп") + " | " + before + " → " + after;
+      trace.append(item);
     }
+    simulation.append(trace);
     if (result.status === "awaiting_choice") {
       for (const option of result.options || []) {
-        simulation.append(makeButton(option.label, async () => {
-          await simulateWith({[result.at]: option.index}, {});
+        simulation.append(makeButton(option.label, () => {
+          debugSession.choices[result.at] = option.index;
+          advanceDebug().catch(error => { simulation.textContent = error.message; });
         }));
       }
-    }
-    if (result.status === "awaiting_input") {
+    } else if (result.status === "awaiting_input") {
       const answer = document.createElement("input");
       answer.placeholder = "Введите ответ";
-      simulation.append(answer, makeButton("Продолжить", async () => {
-        await simulateWith({}, {[result.at]: answer.value});
+      answer.maxLength = 300;
+      simulation.append(answer, makeButton("Отправить", () => {
+        debugSession.inputs[result.at] = answer.value;
+        advanceDebug().catch(error => { simulation.textContent = error.message; });
       }));
     }
+    simulation.append(makeButton("Начать заново", () => {
+      resetDebug().catch(error => { simulation.textContent = error.message; });
+    }));
   };
-  const simulateWith = async (choices, inputs) => {
-    const response = await fetch("/api/v1/builder/simple/simulate", {
+  const exportProject = async () => {
+    if (!project) return;
+    status.textContent = "Проверяем и формируем Python ZIP…";
+    const response = await fetch("/api/v1/builder/simple/export", {
       method: "POST", credentials: "same-origin",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({scenario: project.scenario, choices, inputs})
+      body: JSON.stringify(project.scenario)
     });
-    const result = await response.json();
-    simulation.replaceChildren();
-    const summary = document.createElement("p");
-    summary.textContent = "Результат: " + result.status + " · шагов: " + result.steps;
-    simulation.append(summary);
-    for (const step of result.trace || []) {
-      const row = document.createElement("p");
-      row.textContent = step.id + " → " + (step.next || "стоп");
-      simulation.append(row);
+    if (!response.ok) {
+      const details = await response.json().catch(() => ({}));
+      status.textContent = "Экспорт отклонён: " +
+        JSON.stringify(details.detail || details);
+      return;
     }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "omnifactory-telegram-bot.zip";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    status.textContent = "ZIP сформирован из текущей схемы. Telegram-бот не запущен.";
   };
   palette.before(makeButton("Проверить схему", () => {
     runAnalysis().catch(error => { validation.textContent = error.message; });
   }));
   palette.before(makeButton("Тестовый запуск", () => {
-    runSimulation().catch(error => { simulation.textContent = error.message; });
+    resetDebug().catch(error => { simulation.textContent = error.message; });
+  }));
+
+  palette.before(makeButton("Экспорт Python / aiogram ZIP", () => {
+    exportProject().catch(error => { status.textContent = error.message; });
   }));
 
   const load = async () => {
@@ -444,6 +481,8 @@
       encodeURIComponent(projectId), {credentials: "same-origin", cache: "no-store"});
     if (!response.ok) throw new Error("Не удалось открыть сохранённый проект");
     project = await response.json();
+    project.positions ||= {};
+    project.groups ||= [];
     render();
     status.textContent = "Проект загружен. Изменения пока не сохранены.";
   };
