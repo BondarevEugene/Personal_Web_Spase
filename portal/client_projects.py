@@ -156,6 +156,7 @@ def request_project_changes(
         if user is None:
             return RedirectResponse("/account/login", status_code=303)
         project = customer_project(db, user, id)
+        db.refresh(project, with_for_update=True)
         if user.role != "owner":
             raise HTTPException(403, "Доработку может запросить владелец организации")
         if project.status != "review":
@@ -180,6 +181,7 @@ def accept_project(request: Request, id: str, csrf_token: str = Form("")):
         if not user:
             return RedirectResponse("/account/login", status_code=303)
         project = customer_project(db, user, id)
+        db.refresh(project, with_for_update=True)
         if user.role != "owner":
             raise HTTPException(403, "Для приёмки требуется владелец организации")
         if project.status != "review":
@@ -284,6 +286,7 @@ def update_status(request: Request, id: str, csrf_token: str = Form(""),
     with session_factory()() as db:
         operator = require_operator(request, db)
         project = operator_project(db, id)
+        db.refresh(project, with_for_update=True)
         if status not in NEXT.get(project.status, set()):
             raise HTTPException(409, "Недопустимый переход статуса")
         if len(note.strip()) > 1000:
