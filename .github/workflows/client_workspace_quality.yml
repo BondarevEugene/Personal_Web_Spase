@@ -10,6 +10,7 @@ on:
       - "tests/test_client_workspace_center.py"
       - "tests/test_client_decisions.py"
       - "tests/test_project_dialogue.py"
+      - "tests/test_project_revision_gate.py"
       - ".github/workflows/client_workspace_quality.yml"
   workflow_dispatch:
 
@@ -34,7 +35,7 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install "pytest>=8,<10" "ruff>=0.9,<1"
       - name: Ruff workspace and regression tests
-        run: python -m ruff check portal/workspace_center.py portal/client_decisions.py portal/project_dialogue.py tests/test_project_dialogue.py tests/test_client_workspace_center.py tests/test_client_decisions.py tests/test_project_dialogue.py
+        run: python -m ruff check portal/workspace_center.py portal/client_decisions.py portal/project_dialogue.py tests/test_project_revision_gate.py tests/test_project_dialogue.py tests/test_client_workspace_center.py tests/test_client_decisions.py tests/test_project_dialogue.py tests/test_project_revision_gate.py
       - name: Alembic migrations
         run: python -m alembic -c portal_alembic.ini upgrade head
       - name: Client workspace regressions
