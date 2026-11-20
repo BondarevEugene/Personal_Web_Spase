@@ -19,6 +19,7 @@
 <script defer src="/studio-assets/site.js?v=3"></script>
 <link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
 <link rel="stylesheet" href="/studio-assets/public_growth.css?v=1">
+<link rel="stylesheet" href="/studio-assets/case_home.css?v=1">
 <script defer src="/studio-assets/public_growth.js?v=1"></script>
 </head>
 <body class="platform-app has-section-rail">
@@ -51,6 +52,8 @@
 <a href="#workspace">Обзор</a>
 <a href="#products">Инструменты</a>
 <a href="#benefit">Экономия времени</a>
+<a href="#journal">Журнал</a>
+<a href="/cases">Кейсы</a>
 <a href="#founders">Основатели</a>
 <a href="#status">Состояние платформы</a>
 </nav>
@@ -93,6 +96,13 @@
 <p>Оцените потенциальный эффект автоматизации на собственных цифрах. Это сценарный расчёт, а не обещание экономии или готовая коммерческая смета.</p></div>
 <div class="growth-grid">
 <form class="growth-calculator" id="growth-calculator">
+<div class="growth-preset">
+<span>Иллюстративные сценарии — не фактические показатели проектов:</span>
+<div class="growth-preset-buttons" role="group" aria-label="Примеры для калькулятора">
+<button type="button" data-growth-preset="food" aria-pressed="false">Food_Porn · обработка заказа</button>
+<button type="button" data-growth-preset="crm" aria-pressed="false">CRM · обработка заявок</button>
+<button type="button" data-growth-preset="bot" aria-pressed="false">Graph Studio · диалоги</button>
+</div></div>
 <div class="growth-fields">
 <label for="growth-volume">Повторяющихся операций в месяц
 <input type="number" id="growth-volume" name="operations" min="1" max="1000000" step="1" value="300" required inputmode="numeric"></label>
@@ -165,20 +175,31 @@
     <div class="pf-status-data"><span id="pf-health" role="status">Проверяем подключение…</span><small id="pf-health-description">GET /health</small><a href="/dashboard">Подробности <span aria-hidden="true">↗</span></a></div>
   </div>
 </div></section>
+<section class="container case-home" aria-labelledby="case-home-title"><div class="case-home-top"><div><span class="eyebrow">REAL PRODUCT ENGINEERING / PROOF OF WORK</span><h2 id="case-home-title">Посмотрите, <span class="gradient-text">что внутри наших продуктов.</span></h2><p>Публичная библиотека фактических возможностей и ограничений с исходным кодом. Схемы — пояснения архитектуры, не поддельные скриншоты.</p></div><a class="button button-line" href="/cases">Смотреть все кейсы ↗</a></div><div class="case-home-links"><a href="/cases/graph-studio"><span>01 / CONSTRUCTOR</span><strong>Graph Studio</strong><small>Сценарии → Python / aiogram</small><b>Разобрать кейс ↗</b></a><a href="/cases/client-workspace"><span>02 / DELIVERY</span><strong>Client Workspace</strong><small>Этапы → документы → приёмка</small><b>Разобрать кейс ↗</b></a><a href="/cases/food-porn"><span>03 / TELEGRAM</span><strong>Food_Porn</strong><small>Диалоги → материалы → цифровой продукт</small><b>Разобрать кейс ↗</b></a></div></section>
+<section class="container growth-journal" id="journal" aria-labelledby="growth-journal-title">
+<div class="growth-journal-head"><div><span class="eyebrow">03 / OMNIFACTORY ENGINEERING JOURNAL</span>
+<h2 id="growth-journal-title">Реальные проекты.<br><span class="gradient-text">Инженерные решения.</span></h2>
+<p>Показываем не придуманные кейсы, а устройство наших Python-продуктов: сценарии, данные, ограничения и то, как проверяется работоспособность.</p></div>
+<a class="button button-line" href="/journal">Все инженерные разборы ↗</a></div>
+<div class="growth-journal-grid">
+<a class="growth-journal-tile" href="/journal/graph-studio-python-export"><span>01 / GRAPH STUDIO</span><strong>От визуального сценария до Python-бота</strong><small>aiogram · Pydantic · тестирование экспорта</small><b>Читать разбор ↗</b></a>
+<a class="growth-journal-tile" href="/journal/client-workspace-project-acceptance"><span>02 / CLIENT WORKSPACE</span><strong>Как устроена настоящая приёмка цифрового проекта</strong><small>FastAPI · PostgreSQL · версии документов</small><b>Читать разбор ↗</b></a>
+<a class="growth-journal-tile" href="/journal/food-porn-telegram-digital-products"><span>03 / FOOD_PORN</span><strong>Цифровые подарки и управляемый Telegram-диалог</strong><small>aiogram · цифровое меню · серверные проверки</small><b>Читать разбор ↗</b></a>
+</div></section>
 <section class="container growth-delivery" aria-labelledby="growth-delivery-title">
-<div class="growth-delivery-intro"><span class="eyebrow">03 / FROM IDEA TO ENGINEERING</span>
+<div class="growth-delivery-intro"><span class="eyebrow">04 / FROM IDEA TO ENGINEERING</span>
 <h2 id="growth-delivery-title">Не продаём магию.<br><span class="gradient-text">Строим понятный процесс.</span></h2></div>
 <div class="growth-delivery-steps">
 <article><span>01 / DISCOVER</span><h3>Разбираем задачу</h3><p>Что тормозит работу, какие сервисы уже используются и какой результат нужен бизнесу.</p></article>
 <article><span>02 / ARCHITECT</span><h3>Проектируем систему</h3><p>Сценарии, данные, интеграции, права доступа и измеримые критерии приёмки.</p></article>
 <article><span>03 / DELIVER</span><h3>Проверяем результат</h3><p>Рабочий продукт, тестирование, документация и понятный процесс дальнейшего развития.</p></article>
 </div>
-<div class="growth-delivery-cta"><p>Есть процесс, который хочется упростить?</p>
+<div class="growth-delivery-cta"><div><span class="eyebrow">START A CONVERSATION / NO MAGIC PROMISES</span><p>Есть процесс, который хочется упростить?</p><small>Опишите задачу, текущие инструменты и результат — мы начнём с архитектуры, а не с обещаний.</small></div>
 <a href="/studio#contact" class="button button-primary">Расскажите о задаче <span aria-hidden="true">↗</span></a></div>
 </section>
 <section class="section container pf-section"><div class="section-intro"><span class="eyebrow">03 / ACCESS MODEL</span><span class="section-rule"></span></div><div class="pf-note"><h2>Публичная Studio и инженерная платформа — единый бренд.</h2><p>Клиентский кабинет и его защита развиваются отдельно от публичного каталога. Административные функции нельзя считать защищёнными только потому, что их нет в основном меню.</p><a class="text-link" href="/studio">Перейти на сайт студии <span>↗</span></a></div></section>
 </main>
-<footer class="site-footer"><div class="container"><div class="footer-hero"><div><span class="eyebrow">OMNIFACTORY / CONTINUE</span><p>Создавай систему.<br><span>Развивай её дальше.</span></p></div><a class="footer-round" href="/studio#contact" aria-label="Обсудить проект">↗</a></div><div class="footer-divider"></div><div class="pf-footer-links"><a href="/studio">Studio</a><a href="/bots/lab">Bot Lab</a><a href="/architect">Конструктор</a><a href="/dashboard">Состояние</a><a href="/projects">Проекты</a><a href="/robotization">Автоматизация</a><a href="/techkillers">Технологии</a><a href="/docs">API</a></div><div class="footer-bottom"><span>© OMNIFACTORY / PYTHON ENGINEERING</span><span>DESIGN / CODE / SYSTEMS</span><a href="#workspace">НАВЕРХ ↑</a></div></div></footer>
+<footer class="site-footer"><div class="container"><div class="footer-hero"><div><span class="eyebrow">OMNIFACTORY / CONTINUE</span><p>Создавай систему.<br><span>Развивай её дальше.</span></p></div><a class="footer-round" href="/studio#contact" aria-label="Обсудить проект">↗</a></div><div class="footer-divider"></div><div class="pf-footer-links"><a href="/studio">Studio</a><a href="/journal">Инженерный журнал</a><a href="/cases">Кейсы и проекты</a><a href="/bots/lab">Bot Lab</a><a href="/architect">Конструктор</a><a href="/dashboard">Состояние</a><a href="/projects">Проекты</a><a href="/robotization">Автоматизация</a><a href="/techkillers">Технологии</a><a href="/docs">API</a></div><div class="footer-bottom"><span>© OMNIFACTORY / PYTHON ENGINEERING</span><span>DESIGN / CODE / SYSTEMS</span><a href="#workspace">НАВЕРХ ↑</a></div></div></footer>
 <script>
 (function(){
  const status=document.getElementById("pf-health");
