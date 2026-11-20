@@ -56,6 +56,8 @@ EXPECTED_TABLES = (
     "portal_support_tickets",
     "portal_support_messages",
     "portal_support_events",
+    "portal_public_article_revisions",
+    "portal_public_search_metrics",
 )
 
 
