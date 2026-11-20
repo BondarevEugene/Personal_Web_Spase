@@ -10,6 +10,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 
 def cors_origins_from_env() -> list[str]:
@@ -26,6 +27,29 @@ def cors_origins_from_env() -> list[str]:
     return list(dict.fromkeys(origins))
 
 
+class SecurityResponseHeaders(BaseHTTPMiddleware):
+    """Restrict caching/framing on private application surfaces.
+
+    Keep this narrow: no blanket CSP which would break existing editor assets.
+    """
+
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        private = request.url.path.startswith((
+            "/account", "/support", "/api/v1/builder/projects",
+        ))
+        if private:
+            response.headers.setdefault("Cache-Control", "private, no-store")
+            response.headers.setdefault("Referrer-Policy", "no-referrer")
+            response.headers.setdefault("X-Frame-Options", "DENY")
+        if request.url.scheme == "https":
+            response.headers.setdefault(
+                "Strict-Transport-Security", "max-age=31536000",
+            )
+        return response
+
+
 def setup_middleware(app: FastAPI) -> None:
     """Configure compression and CORS once at app creation."""
     origins = cors_origins_from_env()
@@ -37,3 +61,4 @@ def setup_middleware(app: FastAPI) -> None:
         allow_headers=["Authorization", "Content-Type", "X-CSRF-Token"],
     )
     app.add_middleware(GZipMiddleware, minimum_size=1024)
+    app.add_middleware(SecurityResponseHeaders)
