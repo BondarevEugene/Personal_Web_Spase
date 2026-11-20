@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
 
 from portal.db import engine, session_factory
 from portal.release_doctor import (
@@ -128,3 +129,23 @@ def test_route_contract_includes_customer_delivery_and_graph_studio():
     report = assess(production=False, database=False, routes=True, env={})
     assert report["ready"] is True
     assert report["failed"] == 0
+
+
+def test_security_headers_on_private_pages_and_https():
+    from server import app
+
+    with TestClient(app) as client:
+        response = client.get("/account/login")
+        assert response.status_code == 200
+        assert "no-store" in response.headers["cache-control"]
+        assert response.headers["x-content-type-options"] == "nosniff"
+        assert response.headers["x-frame-options"] == "DENY"
+        assert response.headers["referrer-policy"] == "no-referrer"
+        assert "strict-transport-security" not in response.headers
+        health = client.get("/health")
+        assert health.headers["x-content-type-options"] == "nosniff"
+
+    with TestClient(app, base_url="https://testserver") as client:
+        response = client.get("/account/login")
+        assert response.status_code == 200
+        assert response.headers["strict-transport-security"] == "max-age=31536000"
