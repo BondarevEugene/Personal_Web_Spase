@@ -53,6 +53,7 @@ from portal.project_dialogue import (
     customer_router as project_dialogue_customer_router,
     operator_router as project_dialogue_operator_router,
 )
+from portal.project_archive import router as project_archive_router
 from portal.workspace_center import router as workspace_center_router
 from portal.routes import router as customer_portal_router
 from portal.account_security import router as account_security_router
@@ -127,6 +128,7 @@ app.include_router(graph_operations_router)
 app.include_router(railway_fleet_router)
 app.include_router(customer_portal_router)
 app.include_router(workspace_center_router)
+app.include_router(project_archive_router)
 app.include_router(project_dialogue_customer_router)
 app.include_router(project_dialogue_operator_router)
 app.include_router(client_decisions_router)
