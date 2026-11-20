@@ -7,7 +7,6 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 
-from portal.client_projects import customer_project
 from portal.db import session_factory
 from portal.models import ClientProject, ClientProjectApproval, ClientProjectDocument
 from portal.routes import current_customer, form_page
