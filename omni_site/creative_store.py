@@ -5,7 +5,8 @@ technical scope, disclaimers, slugs, and source references remain immutable.
 """
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
+from html import escape
 from datetime import datetime
 
 from sqlalchemy.exc import OperationalError
@@ -15,8 +16,53 @@ from omni_site.services_catalog import SERVICES, SERVICE_BY_SLUG
 from portal.models import PublicPageRevision, utcnow
 
 
+@dataclass(frozen=True)
+class HomeHero:
+    title: str
+    summary: str
+
+
+HOME_HERO = HomeHero(
+    title="Ваш бизнес. | Меньше рутины. Больше возможностей.",
+    summary=(
+        "Разрабатываем CRM, Telegram-ботов и автоматизацию процессов "
+        "на Python. Показываем реальные инструменты и помогаем превратить "
+        "вашу задачу в понятный технический проект."
+    ),
+)
+
+HOME_HERO_ORIGINAL = (
+    '<h1>Ваш бизнес.<br><span class="gradient-text">'
+    'Меньше рутины. Больше возможностей.</span></h1>'
+)
+HOME_SUMMARY_ORIGINAL = "<p>" + HOME_HERO.summary + "</p>"
+
+
+def render_home_hero(source_html: str, copy: tuple[str, str] | None) -> str:
+    """Replace exact authored hero spans with escaped editorial copy."""
+    if copy is None:
+        return source_html
+    title, summary = copy
+    first, sep, second = title.partition("|")
+    if sep and first.strip() and second.strip():
+        headline = (
+            "<h1>" + escape(first.strip()) +
+            '<br><span class="gradient-text">' +
+            escape(second.strip()) + "</span></h1>"
+        )
+    else:
+        headline = '<h1><span class="gradient-text">' + escape(title) + "</span></h1>"
+    if HOME_HERO_ORIGINAL not in source_html or HOME_SUMMARY_ORIGINAL not in source_html:
+        # Fail closed if the checked-in markup changes. No global substitutions.
+        return source_html
+    return source_html.replace(HOME_HERO_ORIGINAL, headline, 1).replace(
+        HOME_SUMMARY_ORIGINAL, "<p>" + escape(summary) + "</p>", 1,
+    )
+
+
 def catalog():
     return {
+        "home:hero": HOME_HERO,
         **{"service:" + item.slug: item for item in SERVICES},
         **{"case:" + item.slug: item for item in CASES},
     }
