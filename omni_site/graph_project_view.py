@@ -75,6 +75,7 @@ def open_graph_project(request: Request, id: str):
         '<section id="graph-validation" aria-live="polite"></section>'
         '<section id="graph-lifecycle" aria-label="Управление проектом"></section>'
         '<section id="graph-deployment" aria-label="Центр публикации"></section>'
+        '<section id="graph-release" aria-label="Проверка релиза"></section>'
         '<section id="graph-simulation" aria-label="Проверка сценария"></section>'
         '<div id="graph-editor-fields"></div>'
         '<button type="button" id="graph-save">Сохранить изменения</button>'
