@@ -48,6 +48,7 @@ from portal.billing_routes import router as customer_billing_router
 from portal.finance_center import router as customer_finance_router
 from portal.support_admin import router as support_admin_router
 from portal.public_content_admin import router as public_content_router
+from portal.creative_studio_admin import router as creative_studio_router
 from portal.client_projects import router as client_projects_router, operator_router as operator_projects_router
 from portal.project_attachments import (customer_router as customer_attachments_router,
                                        operator_router as operator_attachments_router)
@@ -111,6 +112,7 @@ app.include_router(customer_billing_router)
 app.include_router(customer_finance_router)
 app.include_router(support_admin_router)
 app.include_router(public_content_router)
+app.include_router(creative_studio_router)
 app.include_router(client_projects_router)
 app.include_router(operator_projects_router)
 app.include_router(project_documents_router)

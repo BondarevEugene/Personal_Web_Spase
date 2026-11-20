@@ -8,8 +8,8 @@ from fastapi.templating import Jinja2Templates
 from omni_site.editorial import ARTICLES, ARTICLE_BY_SLUG
 from omni_site.content_store import public_articles, published_article
 from portal.db import session_factory
-from omni_site.case_library import CASES, CASE_BY_SLUG, CATEGORIES
-from omni_site.services_catalog import SERVICES, SERVICE_BY_SLUG
+from omni_site.case_library import CATEGORIES
+from omni_site.creative_store import public_items, public_item
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
 
 BASE = Path(__file__).resolve().parent
@@ -50,40 +50,48 @@ def engineering_article(request: Request, slug: str):
 
 @router.get("/cases", response_class=HTMLResponse, name="public_case_library")
 def public_case_library(request: Request):
+    with session_factory()() as db:
+        cases = public_items(db, "cases")
     return templates.TemplateResponse(
         request=request, name="case_library.html",
-        context={"cases": CASES, "categories": CATEGORIES},
+        context={"cases": cases, "categories": CATEGORIES},
     )
 
 
 @router.get("/cases/{slug}", response_class=HTMLResponse, name="public_case_detail")
 def public_case_detail(request: Request, slug: str):
-    item = CASE_BY_SLUG.get(slug)
+    with session_factory()() as db:
+        item = public_item(db, "cases", slug)
+        cases = public_items(db, "cases")
     if item is None:
         raise HTTPException(status_code=404, detail="Case not found")
     return templates.TemplateResponse(
         request=request, name="case_detail.html",
-        context={"item": item, "cases": CASES},
+        context={"item": item, "cases": cases},
     )
 
 
 @router.get("/services", response_class=HTMLResponse, name="services_directory")
 def services_directory(request: Request):
     """Real public service directory; no production or ROI promises."""
+    with session_factory()() as db:
+        services = public_items(db, "services")
     return templates.TemplateResponse(
         request=request, name="service_directory.html",
-        context={"services": SERVICES},
+        context={"services": services},
     )
 
 
 @router.get("/services/{slug}", response_class=HTMLResponse, name="service_detail")
 def service_detail(request: Request, slug: str):
-    service = SERVICE_BY_SLUG.get(slug)
+    with session_factory()() as db:
+        service = public_item(db, "services", slug)
+        services = public_items(db, "services")
     if service is None:
         raise HTTPException(status_code=404, detail="Service not found")
     return templates.TemplateResponse(
         request=request, name="service_detail.html",
-        context={"service": service, "services": SERVICES},
+        context={"service": service, "services": services},
     )
 
 
