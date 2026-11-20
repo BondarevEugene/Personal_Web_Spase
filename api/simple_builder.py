@@ -54,9 +54,10 @@ class ScenarioNode(BaseModel):
             media = (self.media or "").strip()
             if not (media.startswith("https://") and " " not in media or FILE_ID.fullmatch(media)):
                 raise ValueError("Для фото/документа нужен HTTPS URL или Telegram file_id")
-        if self.kind in {"input", "condition", "set_variable"}:
-            if not self.variable or not NODE_ID.fullmatch(self.variable):
-                raise ValueError("Invalid variable name")
+        if self.kind in {"input", "condition", "set_variable"} and (
+            not self.variable or not NODE_ID.fullmatch(self.variable)
+        ):
+            raise ValueError("Invalid variable name")
         if self.kind == "condition":
             if not self.true_target or not self.false_target:
                 raise ValueError("Condition requires true and false targets")
@@ -216,9 +217,9 @@ def simulate_scenario(request: SimulationRequest):
             item["media"] = node.media
         trace.append(item)
 
-        def step_done(next_id: str | None = None):
-            item["variables_after"] = dict(variables)
-            item["next"] = next_id
+        def step_done(next_id: str | None = None, *, row: dict = item):
+            row["variables_after"] = dict(variables)
+            row["next"] = next_id
 
         if node.kind == "end":
             step_done()
