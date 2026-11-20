@@ -14,8 +14,14 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from api.simple_builder import (Scenario, analyze_scenario, export_scenario,
-                                release_preflight, simulate_scenario, SimulationRequest)
+from api.simple_builder import (
+    Scenario,
+    SimulationRequest,
+    analyze_scenario,
+    export_scenario,
+    release_preflight,
+    simulate_scenario,
+)
 from automation.deployment import DeploymentSpec, build_plan
 from portal.models import CloudDeployment
 from portal.db import session_factory
