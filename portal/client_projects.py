@@ -138,7 +138,8 @@ def project_detail(request: Request, id: str):
             return RedirectResponse("/account/login", status_code=303)
         project = customer_project(db, user, id)
         return form_page(request, "client_project_detail.html", user=user,
-                         project=project, **project_context(db, project))
+                         project=project, workspace_operator=False,
+                         **project_context(db, project))
 
 
 @router.post("/{id}/request-changes")
@@ -251,7 +252,7 @@ def operator_detail(request: Request, id: str):
             ClientProject.updated_at.desc()).limit(150)).all()
         return form_page(request, "client_project_operator.html",
                          user=operator, projects=rows, project=project,
-                         **project_context(db, project))
+                         workspace_operator=True, **project_context(db, project))
 
 
 @operator_router.post("/{id}/assignment")
