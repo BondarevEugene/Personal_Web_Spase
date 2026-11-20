@@ -16,7 +16,7 @@ from urllib.parse import urlsplit
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 
-from portal.db import database_url, migration_url
+from portal.db import database_url
 
 ROOT = Path(__file__).resolve().parent.parent
 REQUIRED_ASSETS = (
@@ -98,7 +98,7 @@ def assess_config(*, production: bool, env: dict[str, str] | None = None,
         "cors_policy", "*" not in origins and all(
             (parsed.scheme == "https" if production else parsed.scheme in {"http", "https"})
             and bool(parsed.netloc) and not parsed.username and not parsed.password
-            for value in origins if (parsed := urlsplit(value))
+            for value in origins for parsed in (urlsplit(value),)
         ),
         "Only explicit trusted CORS origins; never wildcard or embedded credentials.",
     ))
@@ -121,9 +121,6 @@ def assess_database() -> list[Check]:
     from alembic.config import Config
     from alembic.script import ScriptDirectory
     from sqlalchemy import inspect
-
-    from portal.db import Base
-    import portal.models  # noqa: F401
 
     output: list[Check] = []
     script = ScriptDirectory.from_config(Config(str(ROOT / "portal_alembic.ini")))
