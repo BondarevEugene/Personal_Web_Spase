@@ -49,6 +49,10 @@ from api.telegram_runtime import router as telegram_runtime_router
 from api.graph_operations import router as graph_operations_router
 from api.railway_fleet import router as railway_fleet_router
 from portal.client_decisions import router as client_decisions_router
+from portal.project_dialogue import (
+    customer_router as project_dialogue_customer_router,
+    operator_router as project_dialogue_operator_router,
+)
 from portal.workspace_center import router as workspace_center_router
 from portal.routes import router as customer_portal_router
 from portal.account_security import router as account_security_router
