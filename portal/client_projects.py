@@ -136,6 +136,41 @@ def project_detail(request: Request, id: str):
                          project=project, **project_context(db, project))
 
 
+@router.post("/{id}/request-changes")
+def request_project_changes(
+    request: Request, id: str, csrf_token: str = Form(""),
+    comment: str = Form(""),
+):
+    """Return delivery to implementation with a traceable client decision.
+
+    Only the customer organization's owner may reject delivery; the existing
+    milestones remain available for the operator to reopen or revise.
+    """
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    comment = comment.strip()
+    if not 15 <= len(comment) <= 2000:
+        raise HTTPException(422, "Укажите замечания: 15–2000 символов")
+    with session_factory()() as db:
+        user = current_customer(request, db)
+        if user is None:
+            return RedirectResponse("/account/login", status_code=303)
+        project = customer_project(db, user, id)
+        if user.role != "owner":
+            raise HTTPException(403, "Доработку может запросить владелец организации")
+        if project.status != "review":
+            raise HTTPException(409, "Проект не находится на приёмке")
+        previous = project.status
+        project.status, project.updated_at = "in_progress", utcnow()
+        activity(db, project.id, user.id, "revision_requested",
+                 "Клиент вернул на доработку: " + comment)
+        activity(db, project.id, user.id, "status",
+                 previous + " → in_progress")
+        notify_org(db, project, "Клиент запросил доработку: " + project.title)
+        db.commit()
+    return RedirectResponse("/account/projects/" + project.id, status_code=303)
+
+
 @router.post("/{id}/accept")
 def accept_project(request: Request, id: str, csrf_token: str = Form("")):
     secure_request(request)
