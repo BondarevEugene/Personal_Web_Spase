@@ -863,6 +863,48 @@
     update().catch(error => { output.textContent = error.message; });
   }
 
+  const fleetPanel = document.getElementById("graph-fleet");
+  if (fleetPanel) {
+    const heading = document.createElement("h3");
+    heading.textContent = "Railway Fleet · подключённые сервисы";
+    const description = document.createElement("p");
+    description.textContent = "Просмотр состояния Railway. Статус деплоя не доказывает, что Telegram-бот отвечает.";
+    const output = document.createElement("div");
+    output.setAttribute("role", "status");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Проверить Railway сейчас";
+    const add = (parent, text) => {
+      const p = document.createElement("p");
+      p.textContent = text;
+      parent.append(p);
+    };
+    const refresh = async live => {
+      output.textContent = live ? "Запрашиваем Railway…" : "Загружаем сохранённые данные…";
+      const response = await fetch("/api/v1/cloud/fleet/services" +
+        (live ? "?refresh=true" : ""), {credentials: "same-origin", cache: "no-store"});
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(JSON.stringify(data.detail || response.status));
+      output.replaceChildren();
+      if (!data.services.length) add(output, "Нет привязанных Railway BYOC-сервисов.");
+      for (const service of data.services) {
+        const panel = document.createElement("section");
+        panel.style.cssText = "border:1px solid #53627b;border-radius:12px;padding:12px;margin:10px 0";
+        add(panel, service.plan_name + " · " + service.plan_status);
+        add(panel, "Railway: " + (service.provider_status || "нет данных") +
+          (service.provider_live ? " · проверено сейчас" : " · сохранённый статус"));
+        if (service.provider_error) add(panel, "Ошибка: " + service.provider_error);
+        add(panel, "Telegram: доставка сообщений не подтверждена");
+        output.append(panel);
+      }
+    };
+    button.addEventListener("click", () => {
+      refresh(true).catch(error => { output.textContent = error.message; });
+    });
+    fleetPanel.append(heading, description, button, output);
+    refresh(false).catch(error => { output.textContent = error.message; });
+  }
+
   const load = async () => {
     const response = await fetch("/api/v1/builder/projects/" +
       encodeURIComponent(projectId), {credentials: "same-origin", cache: "no-store"});
