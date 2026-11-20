@@ -5,7 +5,7 @@ import os
 from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse, Response
 
 router = APIRouter(tags=["Public Search Discovery"])
@@ -35,7 +35,7 @@ def canonical_origin(value: str) -> str | None:
 def robots():
     origin = canonical_origin(os.getenv("OMNI_PUBLIC_BASE_URL", ""))
     lines = ["User-agent: *"]
-    lines.extend("Disallow: " + prefix + "/" for prefix in PRIVATE_PREFIXES)
+    lines.extend("Disallow: " + prefix for prefix in PRIVATE_PREFIXES)
     lines.extend(["Allow: /", ""])
     if origin:
         lines.append("Sitemap: " + origin + "/sitemap.xml")
