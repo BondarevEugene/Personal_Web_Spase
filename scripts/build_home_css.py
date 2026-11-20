@@ -6,7 +6,6 @@ Use --check in CI to fail on a stale committed bundle.
 from __future__ import annotations
 
 import argparse
-import hashlib
 from pathlib import Path
 
 STATIC = Path(__file__).resolve().parents[1] / "omni_site" / "static"
@@ -35,9 +34,8 @@ def build() -> str:
             raise ValueError(
                 f"{name} contains @import; bundle order must be reviewed"
             )
-        digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
         pieces.append(
-            f"\n/* BEGIN {name} SHA256:{digest} */\n"
+            f"\n/* BEGIN {name} */\n"
             + payload.rstrip()
             + f"\n/* END {name} */\n"
         )
