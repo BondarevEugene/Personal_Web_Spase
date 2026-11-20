@@ -67,7 +67,9 @@ def test_browser_quality_workflow_is_defined_and_not_production_tracking():
     workflow = (
         root / ".github/workflows/public_browser_quality.yml"
     ).read_text(encoding="utf-8")
-    assert "python -m ruff check ." in workflow
+    assert "python -m ruff check" in workflow
+    assert "scripts/public_ux_audit.py" in workflow
+    assert "scripts/public_asset_budget.py" in workflow
     assert "python -m scripts.public_asset_budget" in workflow
     assert "python -m scripts.public_ux_audit" in workflow
     assert "upload-artifact@v4" in workflow
