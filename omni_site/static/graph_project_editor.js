@@ -887,6 +887,8 @@
       if (!response.ok) throw new Error(JSON.stringify(data.detail || response.status));
       output.replaceChildren();
       if (!data.services.length) add(output, "Нет привязанных Railway BYOC-сервисов.");
+      if (data.summary) add(output, "Всего сервисов: " + data.summary.total +
+        " · требуют внимания: " + data.summary.attention);
       for (const service of data.services) {
         const panel = document.createElement("section");
         panel.style.cssText = "border:1px solid #53627b;border-radius:12px;padding:12px;margin:10px 0";
@@ -894,6 +896,14 @@
         add(panel, "Railway: " + (service.provider_status || "нет данных") +
           (service.provider_live ? " · проверено сейчас" : " · сохранённый статус"));
         if (service.provider_error) add(panel, "Ошибка: " + service.provider_error);
+        if (service.reconciliation) {
+          const names = {stale: "Данные устарели", provider_failure: "Ошибка Railway",
+            provider_unavailable: "Railway недоступен", deploying: "Развёртывание",
+            deployed_unverified: "Развёрнут, Telegram не проверен",
+            not_deployed: "Нет развёртывания", unknown: "Неизвестный статус"};
+          add(panel, "Диагностика: " +
+            (names[service.reconciliation.state] || service.reconciliation.state));
+        }
         add(panel, "Telegram: доставка сообщений не подтверждена");
         output.append(panel);
       }
