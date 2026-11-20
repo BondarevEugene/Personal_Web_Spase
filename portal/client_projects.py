@@ -200,6 +200,14 @@ def accept_project(request: Request, id: str, csrf_token: str = Form("")):
             ))
             if approved_latest is None:
                 raise HTTPException(409, "Актуальная версия технического задания не согласована")
+        # A completed order must have an actual published delivery artifact.
+        # Approving milestones alone must not produce an empty handover archive.
+        latest_delivery = db.scalar(select(ClientProjectDocument.id).where(
+            ClientProjectDocument.project_id == project.id,
+            ClientProjectDocument.document_kind == "delivery",
+        ).order_by(ClientProjectDocument.version.desc()).limit(1))
+        if latest_delivery is None:
+            raise HTTPException(409, "Опубликуйте описание результата перед приёмкой")
         has_stage = db.scalar(select(ClientProjectMilestone.id).where(
             ClientProjectMilestone.project_id == project.id
         ).limit(1))
@@ -320,6 +328,13 @@ def update_status(request: Request, id: str, csrf_token: str = Form(""),
         if len(note.strip()) > 1000:
             raise HTTPException(422, "Комментарий слишком длинный")
         if status == "review":
+            from portal.models import ClientProjectDocument
+            published_delivery = db.scalar(select(ClientProjectDocument.id).where(
+                ClientProjectDocument.project_id == project.id,
+                ClientProjectDocument.document_kind == "delivery",
+            ).limit(1))
+            if published_delivery is None:
+                raise HTTPException(409, "Опубликуйте описание результата перед приёмкой")
             require_fresh_delivery_after_revision(db, project.id)
             # A published specification must be acknowledged at its newest
             # revision before delivery can be submitted for acceptance.
