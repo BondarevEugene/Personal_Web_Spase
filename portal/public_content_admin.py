@@ -7,7 +7,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from omni_site.content_store import (
-    overlay, parse_sections, publish, published_article,
+    parse_sections, publish, published_article,
     restore_original, save_draft, section_json,
 )
 from omni_site.editorial import ARTICLES, ARTICLE_BY_SLUG
