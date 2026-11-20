@@ -7,16 +7,17 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request
 from itsdangerous import BadSignature, URLSafeTimedSerializer
+from pydantic import BaseModel, Field, field_validator
+
 from portal.db import session_factory
 from portal.routes import current_customer
 from portal.security import secure_request, verify_csrf
-from pydantic import BaseModel, Field, field_validator
 
 router = APIRouter(prefix="/api/v1/product-factory", tags=["Product Factory"])
 ProductKind = Literal["telegram_bot", "crm", "web_portal", "automation"]
@@ -165,7 +166,7 @@ def decision_receipt(decision: BlueprintDecision, customer_id: str) -> dict:
         "decision": "approved_with_open_questions" if decision.accepted and blueprint["open_questions"] else ("approved" if decision.accepted else "changes_requested"),
         "open_questions": blueprint["open_questions"],
         "comment": decision.comment,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "automatic_implementation_started": False,
     }
 
