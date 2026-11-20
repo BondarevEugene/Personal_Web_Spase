@@ -10,6 +10,7 @@ from sqlalchemy import select
 
 from portal.db import session_factory
 from portal.models import ClientProject, ClientProjectEvent, ClientProjectMilestone, ClientProjectNotification, Customer, utcnow
+from portal.project_progress import milestone_progress
 from portal.routes import current_customer, form_page
 from portal.security import secure_request, verify_csrf
 from portal.support_admin import operator_ids, require_operator
@@ -82,7 +83,8 @@ def project_context(db, project):
     ).order_by(ClientProjectEvent.created_at, ClientProjectEvent.id).limit(200)).all()
     from portal.project_attachments import attachment_context
     from portal.project_documents import documents_context
-    return {"milestones": milestones, "events": events, "statuses": STATES,
+    return {"milestones": milestones, "progress": milestone_progress(milestones),
+            "events": events, "statuses": STATES,
             "milestone_labels": MILESTONES, **documents_context(db, project),
             **attachment_context(db, project)}
 
