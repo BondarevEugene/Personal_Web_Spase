@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Request
 from sqlalchemy import select
 
 from automation.railway_inspection import RailwayInspectError, inspect_binding
+from automation.railway_reconciliation import classify, summarize
 from automation.railway_oauth import OAuthConfigurationError, decrypt
 from portal.db import session_factory
 from portal.models import CloudDeployment, CloudOAuthConnection, CloudRailwayBinding, utcnow
@@ -28,6 +29,8 @@ def capabilities():
         "remote_stop_enabled": False,
         "remote_rollback_enabled": False,
         "live_provisioning_enabled": False,
+        "fleet_reconciliation": True,
+        "status_freshness_minutes": 15,
     }
 
 
@@ -59,6 +62,7 @@ def services(request: Request, refresh: bool = False):
             except OAuthConfigurationError:
                 raise HTTPException(503, "Railway OAuth configuration unavailable")
         rows = []
+        now = utcnow()
         for binding in bindings:
             plan = plans.get(binding.deployment_id)
             if plan is None:
@@ -91,15 +95,25 @@ def services(request: Request, refresh: bool = False):
                     entry["healthcheck_configured"] = provider["instance"][
                         "healthcheck_configured"]
                     binding.last_checked_at = utcnow()
+                    entry["last_checked_at"] = binding.last_checked_at.isoformat() + "Z"
                     binding.last_provider_status = entry["provider_status"]
                     binding.updated_at = utcnow()
                 except RailwayInspectError:
                     entry["provider_error"] = "Provider inspection unavailable"
+            status = classify(
+                provider_status=entry["provider_status"],
+                last_checked_at=binding.last_checked_at if not entry["provider_live"]
+                else now,
+                now=now,
+                inspection_failed=bool(entry["provider_error"]),
+            )
+            entry["reconciliation"] = status
             rows.append(entry)
         if refresh:
             db.commit()
         return {
             "services": rows,
+            "summary": summarize([row["reconciliation"] for row in rows]),
             "source": "railway_live" if refresh else "database_cache",
             "online_status_verified": False,
             "provider_mutations_enabled": False,
