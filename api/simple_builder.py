@@ -532,6 +532,8 @@ async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
         node_id = node.get("next")
         if not node_id:
             CURSORS.pop(cursor_key, None)
+            VALUES.pop(cursor_key, None)
+            save_state(cursor_key)
             return
     CURSORS.pop(cursor_key, None)
     VALUES.pop(cursor_key, None)
