@@ -41,8 +41,7 @@ def open_graph_project(request: Request, id: str):
         '<!doctype html><html lang="ru"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>' + title + ' · OMNIFACTORY</title>'
-        '<style>body{font:16px system-ui;background:#090e19;color:#eef3ff;
-        'max-width:900px;margin:auto;padding:clamp(20px,5vw,64px)}'
+        '<style>body{font:16px system-ui;background:#090e19;color:#eef3ff;'\n        'max-width:900px;margin:auto;padding:clamp(20px,5vw,64px)}'
         'a{color:#c3b3ff}li{padding:15px;margin:12px 0;'
         'background:#182237;border:1px solid #394862;border-radius:12px}'
         'h1{font-size:clamp(28px,5vw,52px)}'
@@ -65,7 +64,7 @@ def open_graph_project(request: Request, id: str):
         + str(len(nodes)) + ' блоков</p><ol>' + items + '</ol>'
         '<p>Для изменения узлов откройте Graph Studio. '
         'Это защищённый просмотр, а не режим редактирования.</p>'
-        '<section id="graph-editor" data-project-id="' + escape(project["id"]) + '">' 
+        '<section id="graph-editor" data-project-id="' + escape(project["id"]) + '">'
         '<h2>Редактор сценария</h2><p>Изменяйте тексты, названия и переходы блоков. '
         'Проверка графа выполняется сервером перед сохранением.</p>'
         '<div id="graph-toolbar"><button type="button" id="graph-add-message">+ Сообщение</button> '
