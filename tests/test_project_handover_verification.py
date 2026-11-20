@@ -5,7 +5,23 @@ import zipfile
 
 from portal.project_archive import archive_bytes
 from scripts.verify_project_archive import verify_archive
-from tests.test_project_archive import fixture_project
+from datetime import datetime
+from types import SimpleNamespace
+
+
+def fixture_project():
+    stamp = datetime(2026, 11, 20)
+    project = SimpleNamespace(
+        id="00000000-0000-0000-0000-000000000001",
+        title="Customer project", brief="Delivery specification",
+        status="accepted", created_at=stamp, updated_at=stamp, due_date=None,
+    )
+    document = SimpleNamespace(
+        id="00000000-0000-0000-0000-000000000002",
+        document_kind="delivery", title="Final result", version=2,
+        body="A verified result.",
+    )
+    return project, document
 
 
 def test_generated_handover_verifies(tmp_path):
