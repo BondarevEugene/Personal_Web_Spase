@@ -6,15 +6,16 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Literal
+import os
 from datetime import datetime, timezone
+from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 from portal.db import session_factory
 from portal.routes import current_customer
-from portal.security import secure_request
+from portal.security import secure_request, verify_csrf
 from pydantic import BaseModel, Field, field_validator
 
 router = APIRouter(prefix="/api/v1/product-factory", tags=["Product Factory"])
@@ -130,6 +131,7 @@ class BlueprintDecision(BaseModel):
     brief: ProductBrief
     blueprint_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     accepted: bool
+    acknowledged_open_questions: bool = False
     comment: str = Field(default="", max_length=1500)
 
 
@@ -149,7 +151,7 @@ def decision_receipt(decision: BlueprintDecision, customer_id: str) -> dict:
             "message": "Техническое задание изменилось. Проверьте новую версию.",
             "current_sha256": actual,
         })
-    if decision.accepted and blueprint["open_questions"]:
+    if decision.accepted and blueprint["open_questions"] and not decision.acknowledged_open_questions:
         raise HTTPException(422, detail={
             "code": "UNRESOLVED_REQUIREMENTS",
             "message": "До утверждения ответьте на открытые вопросы.",
@@ -160,7 +162,8 @@ def decision_receipt(decision: BlueprintDecision, customer_id: str) -> dict:
         "customer_id": customer_id,
         "blueprint_sha256": actual,
         "brief_sha256": blueprint["brief_sha256"],
-        "decision": "approved" if decision.accepted else "changes_requested",
+        "decision": "approved_with_open_questions" if decision.accepted and blueprint["open_questions"] else ("approved" if decision.accepted else "changes_requested"),
+        "open_questions": blueprint["open_questions"],
         "comment": decision.comment,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "automatic_implementation_started": False,
@@ -171,14 +174,13 @@ def decision_receipt(decision: BlueprintDecision, customer_id: str) -> dict:
 def review_blueprint(decision: BlueprintDecision, request: Request):
     """Authenticated review receipt, not a deployment or persistent approval."""
     secure_request(request)
+    verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
     with session_factory()() as db:
         customer = current_customer(request, db)
         if customer is None:
             raise HTTPException(401, "Войдите в кабинет для согласования")
         receipt = decision_receipt(decision, str(customer.id))
-    secret = request.app.state.product_factory_signing_key if hasattr(
-        request.app.state, "product_factory_signing_key"
-    ) else None
+    secret = os.environ.get("OMNI_PRODUCT_FACTORY_SIGNING_KEY")
     if not secret:
         raise HTTPException(503, "Подпись согласований не настроена")
     signed = URLSafeTimedSerializer(secret, salt="omni-product-factory-v1").dumps(receipt)
@@ -194,7 +196,7 @@ def verify_receipt(token: str, request: Request):
         customer = current_customer(request, db)
         if customer is None:
             raise HTTPException(401, "Войдите в кабинет")
-        secret = getattr(request.app.state, "product_factory_signing_key", None)
+        secret = os.environ.get("OMNI_PRODUCT_FACTORY_SIGNING_KEY")
         if not secret:
             raise HTTPException(503, "Подпись согласований не настроена")
         try:
