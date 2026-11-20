@@ -22,6 +22,8 @@ def upgrade():
         sa.Column("published_summary", sa.String(800)),
         sa.Column("published_at", sa.DateTime()),
         sa.Column("scheduled_for", sa.DateTime()),
+        sa.Column("scheduled_title", sa.String(180)),
+        sa.Column("scheduled_summary", sa.String(800)),
         sa.Column("updated_by_id", sa.String(36),
                   sa.ForeignKey("portal_customers.id")),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
