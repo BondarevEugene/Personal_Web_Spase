@@ -57,7 +57,8 @@ jobs:
             tests/test_public_trust_center.py \
             tests/test_public_solution_experience.py \
             tests/test_public_design_system_navigation.py \
-            tests/test_public_visual_excellence.py
+            tests/test_public_visual_excellence.py \
+            tests/test_public_qa_contract.py
 
       - name: Apply portal SQLite migrations for isolated QA run
         run: python -m alembic -c portal_alembic.ini upgrade head
