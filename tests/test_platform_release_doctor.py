@@ -60,6 +60,18 @@ def test_production_config_requires_real_database_and_shared_csrf():
     assert "portal_dev.sqlite3" not in output
 
 
+def test_production_gate_cannot_pass_with_database_and_routes_skipped():
+    result = assess(production=True, database=False, routes=False,
+                    env=valid_production_config())
+    assert result["ready"] is False
+    assert result["failed"] == 2
+    statuses = names([
+        type("Result", (), item)() for item in result["checks"]
+    ])
+    assert statuses["database_probe_requested"] == "fail"
+    assert statuses["route_probe_requested"] == "fail"
+
+
 def test_local_development_mode_does_not_force_neon():
     report = assess(production=False, database=False, env={})
     assert report["mode"] == "development"
