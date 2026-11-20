@@ -68,7 +68,7 @@ def archive_bytes(project, documents, milestones, events, approvals) -> bytes:
         "Содержит текстовые редакции, этапы, журнал и согласования.\n"
         "Согласования — подтверждения в кабинете, не электронная подпись.\n"
         "Вложения (PDF/изображения) скачиваются отдельно из карточки проекта.\n"
-    ).encode("utf-8")
+    ).encode()
     if sum(map(len, payloads.values())) > MAX_ARCHIVE_BYTES:
         raise HTTPException(413, "Архив слишком велик; скачайте документы отдельно")
     manifest = {
