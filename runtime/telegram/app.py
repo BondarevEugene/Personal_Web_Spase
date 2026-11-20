@@ -189,6 +189,22 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str,
                 "telegram_delivery_verified": False,
                 "persistent_state": store is not None}
 
+    @app.get("/ready")
+    async def ready():
+        """Local storage readiness; no secrets or conversation content."""
+        if store is None:
+            return JSONResponse({"ready": True, "mode": "volatile",
+                                 "telegram_delivery_verified": False})
+        try:
+            healthy = store.check()
+        except Exception:
+            healthy = False
+        return JSONResponse(
+            {"ready": healthy, "mode": "persistent",
+             "telegram_delivery_verified": False},
+            status_code=200 if healthy else 503,
+        )
+
     @app.post("/telegram/webhook")
     async def webhook(request: Request):
         supplied = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
