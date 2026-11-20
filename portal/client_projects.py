@@ -9,7 +9,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 
 from portal.db import session_factory
-from portal.models import ClientProject, ClientProjectEvent, ClientProjectMilestone, ClientProjectNotification, Customer, utcnow
+from portal.models import (
+    ClientProject,
+    ClientProjectEvent,
+    ClientProjectMilestone,
+    ClientProjectNotification,
+    Customer,
+    utcnow,
+)
 from portal.routes import current_customer, form_page
 from portal.security import secure_request, verify_csrf
 from portal.support_admin import operator_ids, require_operator
