@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -64,6 +64,7 @@ def summarize(rows: list[dict]) -> dict:
 
 
 def audit(base_url: str, output: Path) -> int:
+    from playwright.sync_api import Error as PlaywrightError
     from playwright.sync_api import sync_playwright
 
     output.mkdir(parents=True, exist_ok=True)
@@ -82,10 +83,10 @@ def audit(base_url: str, output: Path) -> int:
             for route in ROUTES:
                 page = context.new_page()
                 exceptions = []
-                page.on(
-                    "pageerror",
-                    lambda error: exceptions.append(str(error)),
-                )
+                def collect_page_error(error, target=exceptions):
+                    target.append(str(error))
+
+                page.on("pageerror", collect_page_error)
                 issues = []
                 try:
                     response = page.goto(
@@ -200,7 +201,7 @@ def audit(base_url: str, output: Path) -> int:
                             full_page=True,
                             animations="disabled",
                         )
-                except Exception as exc:
+                except (PlaywrightError, ValueError, RuntimeError) as exc:
                     issues.append(
                         "browser exception: " + str(exc)[:240]
                     )
@@ -220,7 +221,7 @@ def audit(base_url: str, output: Path) -> int:
         browser.close()
     result = summarize(rows)
     result["generated_at_utc"] = datetime.now(
-        timezone.utc
+        UTC
     ).isoformat()
     result["limits"] = (
         "Browser smoke, layout overflow, navigation and JS exceptions. "
