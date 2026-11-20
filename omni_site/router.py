@@ -14,6 +14,7 @@ from omni_site.creative_store import public_items, public_item
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
 from omni_site.solution_journeys import JOURNEYS, BY_SLUG
 from omni_site.blueprint_specification import compile_specification
+from omni_site.blueprint_delivery import make_delivery_package
 from omni_site.blueprint_studio import (
     INTEGRATIONS, PRIORITIES, PROCESSES, SECTORS, TEAMS, make_blueprint,
 )
@@ -199,6 +200,37 @@ def download_blueprint_specification(
         headers={
             "Content-Disposition": (
                 f'attachment; filename="omnifactory-spec-{spec.revision}.md"'
+            ),
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, nofollow",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
+
+@router.post("/demo/blueprint/package", name="download_blueprint_package")
+def download_blueprint_package(
+    sector: str = Form(..., max_length=20),
+    team: str = Form(..., max_length=20),
+    process: str = Form(..., max_length=20),
+    priority: str = Form(..., max_length=20),
+    integration: list[str] | None = Form(None),
+):
+    """Download a complete offline handoff package without persistence."""
+    try:
+        package = make_delivery_package(
+            sector=sector, team=team, process=process, priority=priority,
+            integrations=tuple(integration or ()),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return Response(
+        content=package.content,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="omnifactory-blueprint-{package.revision}.zip"'
             ),
             "Cache-Control": "no-store",
             "X-Robots-Tag": "noindex, nofollow",
