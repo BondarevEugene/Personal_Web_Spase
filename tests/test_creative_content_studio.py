@@ -199,4 +199,5 @@ def test_unknown_slug_is_never_editable(db_ready, monkeypatch):
         "csrf_token": csrf(client, "/support/creative"),
         "title": "Long enough headline", "summary": "A" * 70,
     }).status_code == 404
-    assert read_override(session_factory()(), "unknown:slug") is None
+    with session_factory()() as db:
+        assert read_override(db, "unknown:slug") is None
