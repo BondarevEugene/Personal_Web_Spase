@@ -2,7 +2,6 @@
 import ast
 import json
 import sqlite3
-from pathlib import Path
 
 from api.simple_builder import _RUNTIME_SOURCE
 
