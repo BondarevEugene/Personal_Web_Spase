@@ -7,8 +7,14 @@ from __future__ import annotations
 import hashlib
 import json
 from typing import Literal
+from datetime import datetime, timezone
+from uuid import uuid4
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Request
+from itsdangerous import BadSignature, URLSafeTimedSerializer
+from portal.db import session_factory
+from portal.routes import current_customer
+from portal.security import secure_request
 from pydantic import BaseModel, Field, field_validator
 
 router = APIRouter(prefix="/api/v1/product-factory", tags=["Product Factory"])
@@ -118,3 +124,85 @@ def capabilities():
 @router.post("/blueprint")
 def blueprint(brief: ProductBrief):
     return build_blueprint(brief)
+
+
+class BlueprintDecision(BaseModel):
+    brief: ProductBrief
+    blueprint_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    accepted: bool
+    comment: str = Field(default="", max_length=1500)
+
+
+def blueprint_digest(blueprint: dict) -> str:
+    return hashlib.sha256(
+        json.dumps(blueprint, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    ).hexdigest()
+
+
+def decision_receipt(decision: BlueprintDecision, customer_id: str) -> dict:
+    """Issue an auditable signed receipt, without claiming database persistence."""
+    blueprint = build_blueprint(decision.brief)
+    actual = blueprint_digest(blueprint)
+    if actual != decision.blueprint_sha256:
+        raise HTTPException(409, detail={
+            "code": "BLUEPRINT_CHANGED",
+            "message": "Техническое задание изменилось. Проверьте новую версию.",
+            "current_sha256": actual,
+        })
+    if decision.accepted and blueprint["open_questions"]:
+        raise HTTPException(422, detail={
+            "code": "UNRESOLVED_REQUIREMENTS",
+            "message": "До утверждения ответьте на открытые вопросы.",
+            "questions": blueprint["open_questions"],
+        })
+    return {
+        "receipt_id": str(uuid4()),
+        "customer_id": customer_id,
+        "blueprint_sha256": actual,
+        "brief_sha256": blueprint["brief_sha256"],
+        "decision": "approved" if decision.accepted else "changes_requested",
+        "comment": decision.comment,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "automatic_implementation_started": False,
+    }
+
+
+@router.post("/review")
+def review_blueprint(decision: BlueprintDecision, request: Request):
+    """Authenticated review receipt, not a deployment or persistent approval."""
+    secure_request(request)
+    with session_factory()() as db:
+        customer = current_customer(request, db)
+        if customer is None:
+            raise HTTPException(401, "Войдите в кабинет для согласования")
+        receipt = decision_receipt(decision, str(customer.id))
+    secret = request.app.state.product_factory_signing_key if hasattr(
+        request.app.state, "product_factory_signing_key"
+    ) else None
+    if not secret:
+        raise HTTPException(503, "Подпись согласований не настроена")
+    signed = URLSafeTimedSerializer(secret, salt="omni-product-factory-v1").dumps(receipt)
+    return {"receipt": receipt, "signed_receipt": signed,
+            "persistent_storage": False}
+
+
+@router.get("/review/verify")
+def verify_receipt(token: str, request: Request):
+    """Verify signed review receipt with a 30-day expiry."""
+    secure_request(request)
+    with session_factory()() as db:
+        customer = current_customer(request, db)
+        if customer is None:
+            raise HTTPException(401, "Войдите в кабинет")
+        secret = getattr(request.app.state, "product_factory_signing_key", None)
+        if not secret:
+            raise HTTPException(503, "Подпись согласований не настроена")
+        try:
+            receipt = URLSafeTimedSerializer(
+                secret, salt="omni-product-factory-v1"
+            ).loads(token, max_age=30 * 86400)
+        except BadSignature as exc:
+            raise HTTPException(422, "Недействительная или просроченная подпись") from exc
+        if receipt.get("customer_id") != str(customer.id):
+            raise HTTPException(403, "Документ принадлежит другому аккаунту")
+        return {"valid": True, "receipt": receipt}
