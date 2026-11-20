@@ -1,0 +1,108 @@
+name: OMNIFACTORY public browser quality gate
+
+on:
+  pull_request:
+    branches:
+      - feat/founders-omni-editorial-20261116
+    paths:
+      - "index.html"
+      - "omni_site/**"
+      - "routers/home.py"
+      - "scripts/public_ux_audit.py"
+      - "scripts/public_asset_budget.py"
+      - "tests/test_public_*.py"
+      - ".github/workflows/public_browser_quality.yml"
+  push:
+    branches:
+      - feat/founders-omni-editorial-20261116
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OMNI_PORTAL_DATABASE_URL: sqlite:///./public_quality_portal.sqlite3
+      OMNI_PORTAL_MIGRATION_URL: sqlite:///./public_quality_portal.sqlite3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install application, browser and quality dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install "pytest>=8,<10" "ruff>=0.9,<1" "playwright>=1.50,<2"
+          python -m playwright install --with-deps chromium
+
+      - name: Ruff new public QA modules
+        run: |
+          python -m ruff check \
+            scripts/public_ux_audit.py \
+            scripts/public_asset_budget.py \
+            tests/test_public_qa_contract.py
+
+      - name: Public product regressions
+        run: |
+          python -m pytest -q --tb=short \
+            tests/test_public_growth_experience.py \
+            tests/test_public_case_library.py \
+            tests/test_public_engineering_journal.py \
+            tests/test_public_services_conversion.py \
+            tests/test_public_trust_center.py \
+            tests/test_public_solution_experience.py \
+            tests/test_public_design_system_navigation.py \
+            tests/test_public_visual_excellence.py \
+            tests/test_public_qa_contract.py
+
+      - name: Apply portal SQLite migrations for isolated QA run
+        run: python -m alembic -c portal_alembic.ini upgrade head
+
+      - name: Public CSS and JS size and integrity report
+        run: python -m scripts.public_asset_budget
+
+      - name: Start local FastAPI
+        shell: bash
+        run: |
+          python -m uvicorn server:app --host 127.0.0.1 --port 8765 > /tmp/omni-public-server.log 2>&1 &
+          echo $! > /tmp/omni-public-server.pid
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8765/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/omni-public-server.log
+          exit 1
+
+      - name: Chromium mobile and desktop public UX audit
+        run: |
+          python -m scripts.public_ux_audit \
+            --base-url http://127.0.0.1:8765
+
+      - name: Upload reports and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnifactory-public-quality
+          path: |
+            artifacts/public-assets/**
+            artifacts/public-ux/**
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Print FastAPI log on failure
+        if: failure()
+        run: |
+          if [ -f /tmp/omni-public-server.log ]; then
+            tail -n 160 /tmp/omni-public-server.log
+          fi
