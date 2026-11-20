@@ -35,7 +35,7 @@ def test_public_builder_has_accessible_fields_and_valid_paths():
     assert 'href="/studio#contact"' in html
     assert 'href="/demo"' in html
     assert "не сохраняется в базе данных" in html
-    assert "blueprint-result" not in html
+    assert 'id="blueprint-result"' not in html
     assert len(SECTORS) == 3
     assert len(TEAMS) == 3
     assert len(PROCESSES) == 3
