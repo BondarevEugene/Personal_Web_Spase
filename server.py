@@ -29,6 +29,7 @@ from routers.admin import router as admin_router
 from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 from omni_site.router import router as studio_router
+from omni_site.blueprint_export import router as blueprint_export_router
 from omni_site.search_discovery import router as public_search_router
 from omni_site.telegram_leads import router as studio_leads_router
 from api.simple_builder import router as simple_builder_router
@@ -92,6 +93,7 @@ app.mount(
 )
 
 app.include_router(studio_router)
+app.include_router(blueprint_export_router)
 app.include_router(public_search_router)
 app.include_router(studio_leads_router)
 app.include_router(simple_builder_router)
