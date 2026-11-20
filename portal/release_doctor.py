@@ -44,6 +44,18 @@ EXPECTED_TABLES = (
     "portal_client_project_approvals",
     "portal_client_project_notifications",
     "portal_client_project_attachments",
+    "portal_registration_events",
+    "portal_plans",
+    "portal_subscriptions",
+    "portal_invoices",
+    "portal_payments",
+    "portal_gateway_events",
+    "portal_builder_projects",
+    "portal_automation_workflows",
+    "portal_automation_runs",
+    "portal_support_tickets",
+    "portal_support_messages",
+    "portal_support_events",
 )
 
 
@@ -224,6 +236,16 @@ def assess(*, production: bool = False, database: bool = False,
         checks.extend(assess_database())
     if routes:
         checks.extend(assess_routes())
+    if production and not database:
+        checks.append(check(
+            "database_probe_requested", False,
+            "Production gate requires --database (read-only SQL checks).",
+        ))
+    if production and not routes:
+        checks.append(check(
+            "route_probe_requested", False,
+            "Production gate requires --routes (FastAPI contract checks).",
+        ))
     failed = sum(item.status == "fail" for item in checks)
     return {
         "service": "omni-client-workspace",
