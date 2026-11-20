@@ -54,9 +54,10 @@ class ScenarioNode(BaseModel):
             media = (self.media or "").strip()
             if not (media.startswith("https://") and " " not in media or FILE_ID.fullmatch(media)):
                 raise ValueError("Для фото/документа нужен HTTPS URL или Telegram file_id")
-        if self.kind in {"input", "condition", "set_variable"}:
-            if not self.variable or not NODE_ID.fullmatch(self.variable):
-                raise ValueError("Invalid variable name")
+        if self.kind in {"input", "condition", "set_variable"} and (
+            not self.variable or not NODE_ID.fullmatch(self.variable)
+        ):
+            raise ValueError("Invalid variable name")
         if self.kind == "condition":
             if not self.true_target or not self.false_target:
                 raise ValueError("Condition requires true and false targets")
@@ -216,9 +217,9 @@ def simulate_scenario(request: SimulationRequest):
             item["media"] = node.media
         trace.append(item)
 
-        def step_done(next_id: str | None = None):
-            item["variables_after"] = dict(variables)
-            item["next"] = next_id
+        def step_done(next_id: str | None = None, *, row: dict = item):
+            row["variables_after"] = dict(variables)
+            row["next"] = next_id
 
         if node.kind == "end":
             step_done()
@@ -273,6 +274,53 @@ def simulate_scenario(request: SimulationRequest):
     return finish("step_limit")
 
 
+def _guaranteed_variables(scenario: Scenario, reachable: set[str]) -> dict[str, set[str]]:
+    """Variables initialized on every path reaching each node.
+
+    A forward must-analysis with intersection at joins. Interactive choices
+    and conditions create branches; only input/set_variable initialize values.
+    """
+    nodes = {node.id: node for node in scenario.nodes}
+    predecessors: dict[str, set[str]] = {node_id: set() for node_id in reachable}
+    all_variables = {
+        node.variable for node in scenario.nodes
+        if node.kind in {"input", "set_variable"} and node.variable
+    }
+    for node in scenario.nodes:
+        if node.id not in reachable:
+            continue
+        targets = (
+            [option.target for option in node.options] if node.kind == "choice"
+            else [node.true_target, node.false_target] if node.kind == "condition"
+            else [node.next]
+        )
+        for target in targets:
+            if target in reachable:
+                predecessors[target].add(node.id)
+    before = {node_id: set(all_variables) for node_id in reachable}
+    before[scenario.start] = set()
+    after = {node_id: set(all_variables) for node_id in reachable}
+    changed = True
+    while changed:
+        changed = False
+        for node_id in sorted(reachable):
+            parents = predecessors[node_id]
+            incoming = (
+                set.intersection(*(after[parent] for parent in parents))
+                if parents else set()
+            )
+            if node_id == scenario.start:
+                incoming = set()
+            outgoing = incoming.copy()
+            node = nodes[node_id]
+            if node.kind in {"input", "set_variable"} and node.variable:
+                outgoing.add(node.variable)
+            if incoming != before[node_id] or outgoing != after[node_id]:
+                before[node_id], after[node_id] = incoming, outgoing
+                changed = True
+    return before
+
+
 def analyze_scenario(scenario: Scenario) -> dict:
     """Actionable, non-mutating graph diagnostics used by both UI and API."""
     reachable = _reachable(scenario)
@@ -284,6 +332,7 @@ def analyze_scenario(scenario: Scenario) -> dict:
 
     assigned = {node.variable for node in scenario.nodes
                 if node.kind in {"input", "set_variable"} and node.variable}
+    guaranteed = _guaranteed_variables(scenario, reachable)
     placeholders = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
     for node in scenario.nodes:
         if node.id not in reachable:
@@ -293,9 +342,15 @@ def analyze_scenario(scenario: Scenario) -> dict:
             report(node.id, "dead_end",
                    f"Блок {node.id}: нет следующего перехода", "error")
         if node.id in reachable:
-            for name in sorted(set(placeholders.findall(node.text)) - assigned):
+            referenced = set(placeholders.findall(node.text))
+            if node.kind in {"set_variable", "condition"}:
+                referenced.update(placeholders.findall(node.value))
+            for name in sorted(referenced - assigned):
                 report(node.id, "undefined_variable",
                        f"Блок {node.id}: переменная {{{{{name}}}}} нигде не задаётся")
+            for name in sorted((referenced & assigned) - guaranteed[node.id]):
+                report(node.id, "variable_may_be_unset",
+                       f"Блок {node.id}: переменная {{{{{name}}}}} не задана на всех путях")
 
     # Fully automatic cycles may exhaust the runtime's 50-step guard.
     # Interactive choice/input nodes are excluded as they wait for the user.
