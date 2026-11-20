@@ -14,7 +14,9 @@ from omni_site.blueprint_specification import compile_specification
 from portal.client_projects import activity, notify_org
 from portal.db import session_factory
 from portal.models import (
-    ClientProject, ClientProjectDocument, utcnow,
+    ClientProject,
+    ClientProjectDocument,
+    utcnow,
 )
 from portal.routes import current_customer
 from portal.security import secure_request, verify_csrf
