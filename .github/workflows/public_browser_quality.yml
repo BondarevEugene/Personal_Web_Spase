@@ -9,6 +9,7 @@ on:
       - "omni_site/**"
       - "routers/home.py"
       - "scripts/public_ux_audit.py"
+      - "scripts/build_home_css.py"
       - "scripts/public_asset_budget.py"
       - "tests/test_public_*.py"
       - ".github/workflows/public_browser_quality.yml"
@@ -49,7 +50,12 @@ jobs:
           python -m ruff check \
             scripts/public_ux_audit.py \
             scripts/public_asset_budget.py \
-            tests/test_public_qa_contract.py
+            scripts/build_home_css.py \
+            tests/test_public_qa_contract.py \
+            tests/test_public_home_css_bundle.py
+
+      - name: Verify generated homepage CSS is current
+        run: python -m scripts.build_home_css --check
 
       - name: Public product regressions
         run: |

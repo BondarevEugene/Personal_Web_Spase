@@ -26,7 +26,7 @@ def test_public_homepage_has_product_first_hero_and_real_conversion_routes():
     assert 'id="growth-money"' in body
     assert 'id="growth-solution"' in body
     assert 'href="/automation/studio"' in body
-    assert 'public_growth.css?v=1' in body
+    assert 'home_features.bundle.css?v=1' in body
     assert 'public_growth.js?v=1' in body
     assert 'name="description"' in body
     assert 'property="og:title"' in body
