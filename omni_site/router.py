@@ -1,6 +1,6 @@
 """Public software studio pages. Mount via app.include_router(router)."""
 from pathlib import Path
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -12,6 +12,9 @@ from omni_site.case_library import CATEGORIES
 from omni_site.creative_store import public_items, public_item
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
 from omni_site.solution_journeys import JOURNEYS, BY_SLUG
+from omni_site.blueprint_studio import (
+    INTEGRATIONS, PRIORITIES, PROCESSES, SECTORS, TEAMS, make_blueprint,
+)
 
 BASE = Path(__file__).resolve().parent
 router = APIRouter(tags=["Studio Website"])
@@ -123,6 +126,52 @@ def interactive_solution_demo(request: Request):
         request=request, name="solution_demo.html",
         context={"journeys": JOURNEYS},
     )
+
+
+
+@router.get("/demo/blueprint", response_class=HTMLResponse,
+            name="blueprint_studio")
+def blueprint_studio(request: Request):
+    """Public opt-in architectural questionnaire with no persistence."""
+    return templates.TemplateResponse(
+        request=request, name="blueprint_studio.html",
+        context={
+            "sectors": SECTORS, "teams": TEAMS, "processes": PROCESSES,
+            "priorities": PRIORITIES, "integrations": INTEGRATIONS,
+            "blueprint": None,
+        },
+    )
+
+
+@router.post("/demo/blueprint", response_class=HTMLResponse,
+             name="create_blueprint")
+def create_blueprint(
+    request: Request,
+    sector: str = Form(..., max_length=20),
+    team: str = Form(..., max_length=20),
+    process: str = Form(..., max_length=20),
+    priority: str = Form(..., max_length=20),
+    integration: list[str] | None = Form(None),
+):
+    """Purely derive an outline from public option IDs; never store a brief."""
+    try:
+        blueprint = make_blueprint(
+            sector=sector, team=team, process=process, priority=priority,
+            integrations=tuple(integration or ()),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    response = templates.TemplateResponse(
+        request=request, name="blueprint_studio.html",
+        context={
+            "sectors": SECTORS, "teams": TEAMS, "processes": PROCESSES,
+            "priorities": PRIORITIES, "integrations": INTEGRATIONS,
+            "blueprint": blueprint,
+        },
+    )
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    return response
 
 
 @router.get("/demo/{slug}", response_class=HTMLResponse,
