@@ -1,6 +1,7 @@
 """Public software studio pages. Mount via app.include_router(router)."""
 from pathlib import Path
 from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi.responses import Response
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -12,6 +13,7 @@ from omni_site.case_library import CATEGORIES
 from omni_site.creative_store import public_items, public_item
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
 from omni_site.solution_journeys import JOURNEYS, BY_SLUG
+from omni_site.blueprint_specification import compile_specification
 from omni_site.blueprint_studio import (
     INTEGRATIONS, PRIORITIES, PROCESSES, SECTORS, TEAMS, make_blueprint,
 )
@@ -172,6 +174,37 @@ def create_blueprint(
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Robots-Tag"] = "noindex, nofollow"
     return response
+
+
+
+@router.post("/demo/blueprint/specification", name="download_blueprint_specification")
+def download_blueprint_specification(
+    sector: str = Form(..., max_length=20),
+    team: str = Form(..., max_length=20),
+    process: str = Form(..., max_length=20),
+    priority: str = Form(..., max_length=20),
+    integration: list[str] | None = Form(None),
+):
+    """Download a deterministic Markdown technical draft; no server persistence."""
+    try:
+        spec = compile_specification(
+            sector=sector, team=team, process=process, priority=priority,
+            integrations=tuple(integration or ()),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return Response(
+        content=spec.markdown,
+        media_type="text/markdown; charset=utf-8",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="omnifactory-spec-{spec.revision}.md"'
+            ),
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, nofollow",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @router.get("/demo/{slug}", response_class=HTMLResponse,
