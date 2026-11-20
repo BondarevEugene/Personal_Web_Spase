@@ -65,9 +65,7 @@ def test_production_gate_cannot_pass_with_database_and_routes_skipped():
                     env=valid_production_config())
     assert result["ready"] is False
     assert result["failed"] == 2
-    statuses = names([
-        type("Result", (), item)() for item in result["checks"]
-    ])
+    statuses = {item["name"]: item["status"] for item in result["checks"]}
     assert statuses["database_probe_requested"] == "fail"
     assert statuses["route_probe_requested"] == "fail"
 
