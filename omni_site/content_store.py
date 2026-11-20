@@ -9,6 +9,7 @@ import json
 from dataclasses import replace
 
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
 
 from omni_site.editorial import ARTICLES, ARTICLE_BY_SLUG, Article, Section
 from portal.models import PublicArticleRevision
@@ -51,7 +52,12 @@ def published_article(db, slug: str) -> Article | None:
     original = ARTICLE_BY_SLUG.get(slug)
     if original is None:
         return None
-    revision = db.get(PublicArticleRevision, slug)
+    try:
+        revision = db.get(PublicArticleRevision, slug)
+    except OperationalError:
+        # Retain checked-in articles while a local development DB is not migrated.
+        db.rollback()
+        return original
     if revision is None or revision.published_at is None:
         return original
     if not all((
