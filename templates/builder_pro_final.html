@@ -65,6 +65,15 @@
  <button id="btn-cloud-delete" type="button" class="button button-line">Удалить</button>
  <a href="/account/login" class="cloud-login-link">Войти в кабинет ↗</a>
 </section>
+<section class="builder-cloud" id="builder-release-workflow" aria-label="Готовность сохранённого бота">
+ <div class="builder-cloud-title"><strong>МАРШРУТ К ЗАПУСКУ</strong><small id="builder-workflow-state" role="status" aria-live="polite">Выберите сохранённый проект</small></div>
+ <p>Проверка выполняется по последней <strong>сохранённой</strong> версии. Несохранённые изменения сначала отправьте в аккаунт.</p>
+ <button id="btn-workflow-check" type="button" class="button button-line">Проверить готовность</button>
+ <ol id="builder-workflow-stages" aria-label="Этапы выпуска"></ol>
+ <div id="builder-workflow-errors" role="status" aria-live="polite"></div>
+ <a id="builder-workflow-export" class="button button-primary" hidden href="#">Скачать проверенный ZIP</a>
+ <p><small>Публикация в Railway пока выполняется вручную; эта проверка не запускает бота.</small></p>
+</section>
 <p id="graph-workspace-help" class="graph-workspace-helper">Рабочий режим освобождает место для схемы. Чтобы увидеть описание возможностей, переключи режим просмотра.</p>
 <div class="builder-guide" aria-label="Как создать бота"><span><b>1</b> Новый бот или пример</span><span><b>2</b> Настрой узлы и связи</span><span><b>3</b> Проверь схему</span><span><b>4</b> Тестируй маршрут</span><span><b>5</b> Экспортируй ZIP</span></div>
 <div class="integration-information" id="integration-information" hidden aria-live="polite"></div>
@@ -134,4 +143,67 @@
  </div>
  <div class="builder-footer-bottom"><span>© 2026 OMNIFACTORY · BUILT FOR WHAT'S NEXT.</span><span>GRAPH STUDIO / PYTHON ENGINEERING / HUMAN-CENTERED AUTOMATION</span></div>
 </footer>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const select = document.getElementById('cloud-project-list');
+  const check = document.getElementById('btn-workflow-check');
+  const state = document.getElementById('builder-workflow-state');
+  const stages = document.getElementById('builder-workflow-stages');
+  const errors = document.getElementById('builder-workflow-errors');
+  const download = document.getElementById('builder-workflow-export');
+  const names = {created:'Создан', saved:'Сохранён', validated:'Проверен',
+    simulated:'Симуляция', export:'Экспорт', deployment:'Запуск'};
+  function reset() {
+    stages.replaceChildren();
+    errors.replaceChildren();
+    download.hidden = true;
+    download.removeAttribute('href');
+    state.textContent = 'Нажмите «Проверить готовность»';
+  }
+  select.addEventListener('change', reset);
+  check.addEventListener('click', async () => {
+    reset();
+    const id = select.value;
+    if (!/^[0-9a-f-]{36}$/i.test(id)) {
+      state.textContent = 'Сначала сохраните проект в аккаунте и выберите его';
+      return;
+    }
+    check.disabled = true;
+    state.textContent = 'Проверяем сохранённую ревизию…';
+    try {
+      const response = await fetch('/api/v1/builder/projects/' +
+        encodeURIComponent(id) + '/workflow', {credentials:'same-origin'});
+      if (!response.ok) {
+        state.textContent = response.status === 401 ?
+          'Войдите в аккаунт для проверки' : 'Не удалось проверить проект: HTTP ' + response.status;
+        return;
+      }
+      const report = await response.json();
+      if (select.value !== id) return;
+      for (const step of report.stages || []) {
+        const li = document.createElement('li');
+        li.textContent = (names[step.id] || step.id) + ' — ' + step.status;
+        stages.appendChild(li);
+      }
+      for (const issue of (report.preflight?.issues || []).filter(x => x.severity === 'error')) {
+        const p = document.createElement('p');
+        p.textContent = issue.node_id + ': ' + issue.message;
+        errors.appendChild(p);
+      }
+      state.textContent = report.export_available ?
+        'Готов к экспорту · ревизия ' + report.revision.slice(0, 8) :
+        'Есть ошибки, экспорт заблокирован';
+      if (report.export_available && report.export_url &&
+          report.export_url === '/api/v1/builder/projects/' + id + '/export') {
+        download.href = report.export_url;
+        download.hidden = false;
+      }
+    } catch (_error) {
+      state.textContent = 'Нет связи с сервером. Повторите проверку.';
+    } finally {
+      check.disabled = false;
+    }
+  });
+});
+</script>
 </body></html>
