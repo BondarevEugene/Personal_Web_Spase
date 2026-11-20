@@ -14,7 +14,8 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from api.simple_builder import Scenario, analyze_scenario, export_scenario
+from api.simple_builder import (Scenario, analyze_scenario, export_scenario,
+                                release_preflight, simulate_scenario, SimulationRequest)
 from automation.deployment import DeploymentSpec, build_plan
 from portal.models import CloudDeployment
 from portal.db import session_factory
@@ -246,6 +247,51 @@ def project_diagnostics(id: str, request: Request):
             raise HTTPException(404, "Project not found")
         scenario = Scenario.model_validate_json(row.scenario_json)
     return analyze_scenario(scenario)
+
+
+def workflow_report(scenario: Scenario, project: BuilderProject) -> dict:
+    """Single truthful workflow snapshot for the persisted project revision."""
+    preflight = release_preflight(scenario)
+    simulation = simulate_scenario(SimulationRequest(scenario=scenario))
+    return {
+        "project_id": project.id,
+        "revision": project_revision(project),
+        "stages": [
+            {"id": "created", "status": "complete"},
+            {"id": "saved", "status": "complete"},
+            {"id": "validated", "status": "complete" if preflight["ready"] else "blocked"},
+            {"id": "simulated", "status": simulation["status"]},
+            {"id": "export", "status": "ready" if preflight["ready"] else "blocked"},
+            {"id": "deployment", "status": "manual"},
+        ],
+        "preflight": preflight,
+        "simulation": simulation,
+        "export_available": preflight["ready"],
+        "export_url": f"/api/v1/builder/projects/{project.id}/export"
+        if preflight["ready"] else None,
+        "live_deployment_enabled": False,
+        "instructions": (
+            "Сценарий готов к экспорту. Для запуска нужен BOT_TOKEN "
+            "и настроенный Python-хостинг."
+            if preflight["ready"]
+            else "Исправьте ошибки preflight и сохраните новую ревизию."
+        ),
+    }
+
+
+@router.get("/{id}/workflow")
+def project_workflow(id: str, request: Request):
+    """One customer-scoped read-only endpoint for the whole builder journey."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+        return workflow_report(scenario, row)
 
 
 @router.get("/{id}/export")
