@@ -637,3 +637,31 @@ class PublicPageRevision(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(), nullable=False, default=utcnow,
     )
+
+
+class ClientProjectTask(Base):
+    """Dated work item; parent must belong to the same project (enforced by API)."""
+
+    __tablename__ = "portal_client_project_tasks"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    parent_id: Mapped[str | None] = mapped_column(ForeignKey("portal_client_project_tasks.id"))
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="planned")
+    assignee_id: Mapped[str | None] = mapped_column(ForeignKey("portal_customers.id"))
+    start_on: Mapped[datetime | None] = mapped_column(DateTime())
+    due_on: Mapped[datetime | None] = mapped_column(DateTime())
+    estimate_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class ClientProjectTimeEntry(Base):
+    """Append-only operator time entries; integer minutes avoid floating drift."""
+
+    __tablename__ = "portal_client_project_time_entries"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    task_id: Mapped[str] = mapped_column(ForeignKey("portal_client_project_tasks.id"), index=True, nullable=False)
+    actor_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    note: Mapped[str] = mapped_column(String(500), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
