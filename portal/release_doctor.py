@@ -70,6 +70,24 @@ def check(name: str, ok: bool, explanation: str) -> Check:
     return Check(name, "pass" if ok else "fail", explanation)
 
 
+def valid_origin(value: str, *, production: bool = True) -> bool:
+    """Return False for malformed URLs, never echo the configured value."""
+    try:
+        parsed = urlsplit(value)
+        allowed = {"https"} if production else {"http", "https"}
+        return (
+            parsed.scheme in allowed
+            and bool(parsed.hostname)
+            and parsed.username is None
+            and parsed.password is None
+            and parsed.path in {"", "/"}
+            and not parsed.query
+            and not parsed.fragment
+        )
+    except ValueError:
+        return False
+
+
 def assess_config(*, production: bool, env: dict[str, str] | None = None,
                   root: Path = ROOT) -> list[Check]:
     """Pure config/files checks. Do not display values of credentials."""
@@ -99,7 +117,7 @@ def assess_config(*, production: bool, env: dict[str, str] | None = None,
         ))
         result.append(check(
             "https_external_url",
-            config.get("OMNI_PUBLIC_BASE_URL", "").startswith("https://"),
+            valid_origin(config.get("OMNI_PUBLIC_BASE_URL", ""), production=True),
             "Configure OMNI_PUBLIC_BASE_URL with the public HTTPS origin.",
         ))
     else:
@@ -108,9 +126,7 @@ def assess_config(*, production: bool, env: dict[str, str] | None = None,
                if v.strip()]
     result.append(check(
         "cors_policy", "*" not in origins and all(
-            (parsed.scheme == "https" if production else parsed.scheme in {"http", "https"})
-            and bool(parsed.netloc) and not parsed.username and not parsed.password
-            for value in origins for parsed in (urlsplit(value),)
+            valid_origin(value, production=production) for value in origins
         ),
         "Only explicit trusted CORS origins; never wildcard or embedded credentials.",
     ))
