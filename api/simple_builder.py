@@ -700,10 +700,10 @@ Type /start in your Telegram bot to begin the conversation.
 ## Scope / limitations
 - Messages, inline-button choices, photos/documents by HTTPS URL or Telegram
   file_id, and terminal nodes are supported.
-- Text input, per-user in-memory variables, {{variable}} substitutions,
+- Text input, per-user variables, {{variable}} substitutions,
   setting values and IF/ELSE comparisons are supported.
-- Dialogue positions and variables are stored only in process memory and reset on restart.
-- Deploy/hosting, persistent user records, media file upload and CRM integration
+- Dialogue positions and variables are persisted in a local SQLite database (bot_state.sqlite3).\n- Set OMNI_STATE_DB to a writable persistent file path if the hosting filesystem is ephemeral.\n- SQLite persistence is local to one bot instance; do not run multiple replicas against separate local files.
+- Deploy/hosting, CRM user profiles, media file upload and CRM integration
   are not part of this export.
 - Avoid unconditional message-to-message loops (there is a 50-step guard).
 """
