@@ -20,7 +20,8 @@ def storage_functions(tmp_path):
         "NODES": {"ask": {}, "end": {}},
     }
     module = ast.Module(body=functions, type_ignores=[])
-    exec(compile(ast.fix_missing_locations(module), "<generated-storage>", "exec"), namespace)
+    # Test-only execution of fixed functions extracted from our own runtime template.
+    exec(compile(ast.fix_missing_locations(module), "<generated-storage>", "exec"), namespace)  # noqa: S102
     return namespace
 
 
