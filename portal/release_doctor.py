@@ -116,6 +116,44 @@ def assess_config(*, production: bool, env: dict[str, str] | None = None,
     return result
 
 
+def assess_routes() -> list[Check]:
+    """Check the published contract for the main customer and studio flows."""
+    from server import app
+
+    routes = {
+        (route.path, method)
+        for route in app.routes
+        for method in getattr(route, "methods", set())
+    }
+    required = {
+        ("/health", "GET"),
+        ("/account", "GET"),
+        ("/account/login", "GET"),
+        ("/account/register", "GET"),
+        ("/account/security", "GET"),
+        ("/account/security/password", "POST"),
+        ("/account/projects", "GET"),
+        ("/account/projects/{id}", "GET"),
+        ("/account/projects/{id}/accept", "POST"),
+        ("/account/projects/{id}/request-changes", "POST"),
+        ("/account/projects/{id}/attachments", "POST"),
+        ("/account/notifications", "GET"),
+        ("/account/finance", "GET"),
+        ("/account/finance/export.csv", "GET"),
+        ("/support/projects", "GET"),
+        ("/support/projects/{id}/status", "POST"),
+        ("/architect", "GET"),
+        ("/api/v1/builder/simple/export", "POST"),
+    }
+    missing = sorted(required - routes)
+    return [check(
+        "public_route_contract", not missing,
+        "Client, operator, and Graph Studio routes are registered."
+        if not missing else
+        "Missing routes: " + ", ".join(f"{method} {path}" for path, method in missing),
+    )]
+
+
 def assess_database() -> list[Check]:
     """Read-only DB version/structure probe with no SQL or URL leaks."""
     from alembic.config import Config
@@ -179,11 +217,13 @@ def assess_database() -> list[Check]:
 
 
 def assess(*, production: bool = False, database: bool = False,
-           env: dict[str, str] | None = None, root: Path = ROOT) -> dict:
+           routes: bool = False, env: dict[str, str] | None = None, root: Path = ROOT) -> dict:
     checks = assess_config(production=production, env=env, root=root)
     if database:
         # DB probe only when explicitly requested; prevents accidental access.
         checks.extend(assess_database())
+    if routes:
+        checks.extend(assess_routes())
     failed = sum(item.status == "fail" for item in checks)
     return {
         "service": "omni-client-workspace",
@@ -200,9 +240,12 @@ def main() -> int:
     parser.add_argument("--production", action="store_true")
     parser.add_argument("--database", action="store_true",
                         help="Explicitly perform a read-only database probe.")
+    parser.add_argument("--routes", action="store_true",
+                        help="Check FastAPI route registration (imports the app).")
     parser.add_argument("--json", action="store_true", help="Machine-readable output.")
     args = parser.parse_args()
-    report = assess(production=args.production, database=args.database)
+    report = assess(production=args.production, database=args.database,
+                    routes=args.routes)
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
