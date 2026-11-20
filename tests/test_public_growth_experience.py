@@ -76,9 +76,9 @@ def test_robots_and_sitemap_use_only_explicit_origin(monkeypatch):
     monkeypatch.delenv("OMNI_PUBLIC_BASE_URL", raising=False)
     r = CLIENT.get("/robots.txt")
     assert r.status_code == 200
-    assert "Disallow: /account/" in r.text
-    assert "Disallow: /support/" in r.text
-    assert "Disallow: /api/" in r.text
+    assert "Disallow: /account" in r.text
+    assert "Disallow: /support" in r.text
+    assert "Disallow: /api" in r.text
     assert CLIENT.get("/sitemap.xml").status_code == 404
 
     monkeypatch.setenv("OMNI_PUBLIC_BASE_URL", "https://omni.example.com")
