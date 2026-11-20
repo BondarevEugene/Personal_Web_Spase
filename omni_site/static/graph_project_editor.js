@@ -973,6 +973,48 @@
     backupPanel.append(heading, note, download, input, restore, feedback);
   }
 
+  const queuePanel = document.getElementById("graph-queue-health");
+  if (queuePanel) {
+    const title = document.createElement("h3");
+    title.textContent = "Очередь публикаций · диагностика";
+    const description = document.createElement("p");
+    description.textContent = "Только ваши задачи. Это очередь проверок, а не реальное развёртывание.";
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Обновить очередь";
+    const result = document.createElement("div");
+    result.setAttribute("role", "status");
+    const update = async () => {
+      result.textContent = "Проверяем очередь…";
+      const response = await fetch("/api/v1/cloud/provision/queue-health", {
+        credentials: "same-origin", cache: "no-store"
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(JSON.stringify(data.detail || response.status));
+      result.replaceChildren();
+      const labels = {queued: "Ожидают", running: "Выполняются",
+        simulated: "Проверены", failed: "Ошибки", cancelled: "Отменены"};
+      for (const [key, label] of Object.entries(labels)) {
+        const row = document.createElement("p");
+        row.textContent = label + ": " + (data.counts[key] || 0);
+        result.append(row);
+      }
+      const stale = document.createElement("strong");
+      stale.textContent = "Зависших проверок (30+ мин): " + data.abandoned_dry_runs;
+      result.append(stale);
+      if (data.sample_truncated) {
+        const note = document.createElement("p");
+        note.textContent = "Показаны данные только по последним 500 задачам.";
+        result.append(note);
+      }
+    };
+    button.addEventListener("click", () => {
+      update().catch(error => { result.textContent = error.message; });
+    });
+    queuePanel.append(title, description, button, result);
+    update().catch(error => { result.textContent = error.message; });
+  }
+
   const load = async () => {
     const response = await fetch("/api/v1/builder/projects/" +
       encodeURIComponent(projectId), {credentials: "same-origin", cache: "no-store"});
