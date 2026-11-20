@@ -27,6 +27,19 @@ def upgrade():
         sa.Column("updated_at", sa.DateTime(), nullable=False),
     )
 
+    op.create_table(
+        "portal_public_search_metrics",
+        sa.Column("date", sa.String(10), primary_key=True),
+        sa.Column("path", sa.String(240), primary_key=True),
+        sa.Column("clicks", sa.Integer(), nullable=False),
+        sa.Column("impressions", sa.Integer(), nullable=False),
+        sa.Column("position", sa.Float(), nullable=True),
+        sa.Column("imported_at", sa.DateTime(), nullable=False),
+        sa.CheckConstraint("clicks >= 0 AND impressions >= clicks",
+                           name="ck_search_metric_valid_counts"),
+    )
+
 
 def downgrade():
+    op.drop_table("portal_public_search_metrics")
     op.drop_table("portal_public_article_revisions")
