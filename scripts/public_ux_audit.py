@@ -26,7 +26,6 @@ ROUTES = (
     "/demo/telegram",
 )
 VIEWPORTS = (360, 430, 768, 1440)
-BUDGET_BYTES = 1_200_000
 
 
 def validate_base_url(value: str) -> str:
@@ -192,12 +191,12 @@ def audit(base_url: str, output: Path) -> int:
                     ) or (
                         route == "/demo" and width == 360
                     ):
+                        name = (
+                            (route.replace("/", "_") or "home")
+                            + "_" + str(width) + ".png"
+                        )
                         page.screenshot(
-                            path=str(
-                                screenshots /
-                                (route.replace("/", "_") or "home")
-                                + "_" + str(width) + ".png"
-                            ),
+                            path=str(screenshots / name),
                             full_page=True,
                             animations="disabled",
                         )
