@@ -1,0 +1,24 @@
+name: OMNIFACTORY Project Workspace planning
+on:
+  pull_request:
+    paths:
+      - "portal/models.py"
+      - "portal/client_projects.py"
+      - "portal/project_work.py"
+      - "portal/templates/_project_work_plan.html"
+      - "portal/migrations/versions/20261120_portal_18.py"
+      - "tests/test_project_work_planning.py"
+      - ".github/workflows/project_workspace_planning.yml"
+  workflow_dispatch:
+jobs:
+  planning:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pip install "pytest>=8,<10" "ruff>=0.9,<1"
+      - run: python -m ruff check portal/project_work.py tests/test_project_work_planning.py portal/migrations/versions/20261120_portal_18.py
+      - run: python -m pytest -q --tb=short tests/test_project_work_planning.py tests/test_project_workspace_progress.py
