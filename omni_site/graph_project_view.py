@@ -77,6 +77,7 @@ def open_graph_project(request: Request, id: str):
         '<section id="graph-deployment" aria-label="Центр публикации"></section>'
         '<section id="graph-release" aria-label="Проверка релиза"></section>'
         '<section id="graph-operations" aria-label="Операционный центр"></section>'
+        '<section id="graph-fleet" aria-label="Railway Fleet"></section>'
         '<section id="graph-simulation" aria-label="Проверка сценария"></section>'
         '<div id="graph-editor-fields"></div>'
         '<button type="button" id="graph-save">Сохранить изменения</button>'
