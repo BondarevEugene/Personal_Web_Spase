@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from uuid import UUID
+from datetime import timedelta
 
 from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -76,6 +77,8 @@ def capabilities():
         "worker": "separate_process", "railway_mutations_enabled": False,
         "provider_quote_verified": False,
         "supported_job_modes": ["dry_run"],
+        "abandoned_job_recovery": True,
+        "operator_queue_diagnostics": True,
         "requires_real_deploy_for_online_status": True,
     }
 
@@ -180,3 +183,30 @@ def cancel_job(job_id: str, request: Request):
                                    created_at=utcnow()))
         db.commit()
         return details(row)
+
+
+
+@router.get("/queue-health")
+def queue_health(request: Request):
+    """Owner-scoped aggregate queue health without exposing other tenants."""
+    with session_factory()() as db:
+        user = logged_in(request, db)
+        rows = db.scalars(select(CloudProvisionJob).where(
+            CloudProvisionJob.customer_id == user.id,
+        ).order_by(CloudProvisionJob.created_at.desc()).limit(500)).all()
+        cutoff = utcnow() - timedelta(minutes=30)
+        counts = {status: 0 for status in (
+            "queued", "running", "simulated", "failed", "cancelled")}
+        stale = 0
+        for row in rows:
+            counts[row.status] = counts.get(row.status, 0) + 1
+            if (row.status == "running" and row.mode == "dry_run"
+                    and row.updated_at < cutoff):
+                stale += 1
+        return {
+            "counts": counts, "abandoned_dry_runs": stale,
+            "sample_limit": 500, "sample_truncated": len(rows) == 500,
+            "worker_mode": "manual_dry_run",
+            "provider_mutations_enabled": False,
+            "health_status": "attention" if stale else "no_abandoned_jobs_in_sample",
+        }
