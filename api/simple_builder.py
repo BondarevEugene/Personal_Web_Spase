@@ -210,7 +210,8 @@ def simulate_scenario(request: SimulationRequest):
     for _ in range(50):
         node = by_id[current]
         item = {
-            "id": node.id, "kind": node.kind, "text": node.text,
+            "id": node.id, "kind": node.kind,
+            "text": substitute(node.text, variables),
             "variables_before": dict(variables),
         }
         if node.kind in {"photo", "document"}:
@@ -234,7 +235,7 @@ def simulate_scenario(request: SimulationRequest):
             if value is None:
                 step_done()
                 return finish("awaiting_input", at=node.id, variable=node.variable)
-            if len(value) > 300:
+            if not value.strip() or len(value) > 300:
                 step_done()
                 return finish("invalid_input", at=node.id)
             variables[node.variable] = value
