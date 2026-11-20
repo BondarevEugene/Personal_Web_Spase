@@ -57,7 +57,7 @@
       const project = await response.json();
       feedback.replaceChildren(document.createTextNode("Сценарий сохранён. "));
       const link = document.createElement("a");
-      link.href = "/builder-pro";
+      link.href = "/account/graph-project/" + encodeURIComponent(project.id);
       link.textContent = "Открыть Graph Studio";
       feedback.append(link);
       feedback.dataset.projectId = project.id;
