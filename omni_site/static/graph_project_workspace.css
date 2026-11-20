@@ -39,3 +39,5 @@ body>ol li{flex:0 0 210px;max-height:90px;overflow:hidden;line-height:1.4;margin
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
 
 #graph-backup{grid-column:2;min-width:0;background:linear-gradient(150deg,#142239,#0d1729);border:1px solid var(--omni-line);border-radius:16px;padding:18px;margin:0 0 16px;overflow-wrap:anywhere}#graph-backup a,#graph-backup input,#graph-backup button{display:block;margin:12px 0;max-width:100%}#graph-backup a{color:var(--omni-sky)}@media(max-width:900px){#graph-backup{grid-column:1}}
+
+#graph-queue-health{grid-column:2;min-width:0;background:linear-gradient(150deg,#142239,#0d1729);border:1px solid var(--omni-line);border-radius:16px;padding:18px;margin:0 0 16px}@media(max-width:900px){#graph-queue-health{grid-column:1}}
