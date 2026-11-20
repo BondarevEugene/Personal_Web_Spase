@@ -25,7 +25,7 @@
 {% if project_documents %}<div class="cp-list">{% for doc in project_documents %}
 <details class="cp-document"><summary><strong>{{ t(document_kinds.get(doc.document_kind, doc.document_kind)) }} · {{ doc.title }}</strong>
 <span class="cp-status">v{{ doc.version }} · {{ t("Согласовано") if doc.id in approved_documents else t("Не согласовано") }}</span></summary>
-<p class="cp-brief">{{ doc.body }}</p><small>{{ doc.created_at.strftime("%d.%m.%Y %H:%M") }}</small>
+<p class="cp-brief">{{ doc.body }}</p>{% if doc.version > 1 %}<p><a class="button button-line" href="/account/projects/{{ project.id }}/documents/{{ doc.id }}/compare">{{ t("Сравнить с предыдущей редакцией") }}</a></p>{% endif %}<small>{{ doc.created_at.strftime("%d.%m.%Y %H:%M") }}</small>
 {% if user.role == "owner" and doc.id not in approved_documents and latest_documents[doc.document_kind].id == doc.id and project.status not in ["accepted", "cancelled"] %}
 <form method="post" action="/account/projects/{{ project.id }}/documents/{{ doc.id }}/approve"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 <button type="submit" class="button button-primary">{{ t("Согласовать эту версию") }}</button></form>{% endif %}

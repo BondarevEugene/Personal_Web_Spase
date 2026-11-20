@@ -57,6 +57,7 @@ from portal.creative_studio_admin import router as creative_studio_router
 from portal.client_projects import router as client_projects_router, operator_router as operator_projects_router
 from portal.project_attachments import (customer_router as customer_attachments_router,
                                        operator_router as operator_attachments_router)
+from portal.project_diff import router as project_diff_router
 from portal.project_documents import (customer_router as project_documents_router,
                                       operator_router as project_documents_operator_router,
                                       inbox_router as customer_inbox_router)
@@ -126,6 +127,7 @@ app.include_router(creative_studio_router)
 app.include_router(client_projects_router)
 app.include_router(operator_projects_router)
 app.include_router(project_documents_router)
+app.include_router(project_diff_router)
 app.include_router(project_documents_operator_router)
 app.include_router(customer_inbox_router)
 app.include_router(customer_attachments_router)
