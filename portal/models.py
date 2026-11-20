@@ -582,3 +582,23 @@ class ClientProjectAttachment(Base):
     sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     data: Mapped[bytes] = mapped_column(LargeBinary(), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class PublicArticleRevision(Base):
+    """Operator-edited journal metadata; originals remain immutable in source."""
+
+    __tablename__ = "portal_public_article_revisions"
+    slug: Mapped[str] = mapped_column(String(120), primary_key=True)
+    draft_title: Mapped[str] = mapped_column(String(180), nullable=False)
+    draft_excerpt: Mapped[str] = mapped_column(String(450), nullable=False)
+    draft_sections: Mapped[str] = mapped_column(Text, nullable=False)
+    published_title: Mapped[str | None] = mapped_column(String(180))
+    published_excerpt: Mapped[str | None] = mapped_column(String(450))
+    published_sections: Mapped[str | None] = mapped_column(Text)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime())
+    updated_by_id: Mapped[str | None] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=True,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(), default=utcnow, nullable=False,
+    )
