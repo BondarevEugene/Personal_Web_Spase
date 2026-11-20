@@ -328,6 +328,13 @@ def update_status(request: Request, id: str, csrf_token: str = Form(""),
         if len(note.strip()) > 1000:
             raise HTTPException(422, "Комментарий слишком длинный")
         if status == "review":
+            from portal.models import ClientProjectDocument
+            published_delivery = db.scalar(select(ClientProjectDocument.id).where(
+                ClientProjectDocument.project_id == project.id,
+                ClientProjectDocument.document_kind == "delivery",
+            ).limit(1))
+            if published_delivery is None:
+                raise HTTPException(409, "Опубликуйте описание результата перед приёмкой")
             require_fresh_delivery_after_revision(db, project.id)
             # A published specification must be acknowledged at its newest
             # revision before delivery can be submitted for acceptance.
