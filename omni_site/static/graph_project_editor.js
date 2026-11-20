@@ -359,10 +359,10 @@
   };
   const runAnalysis = async () => {
     validation.textContent = "Проверяем граф…";
-    const response = await fetch("/api/v1/builder/simple/analyze", {
+    const response = await fetch("/api/v1/builder/simple/validate", {
       method: "POST", credentials: "same-origin",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({scenario: project.scenario})
+      body: JSON.stringify(project.scenario)
     });
     const result = await response.json();
     validation.replaceChildren();
