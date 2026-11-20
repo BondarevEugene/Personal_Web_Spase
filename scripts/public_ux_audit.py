@@ -24,6 +24,7 @@ ROUTES = (
     "/trust",
     "/demo",
     "/demo/telegram",
+    "/demo/blueprint",
 )
 VIEWPORTS = (360, 430, 768, 1440)
 
@@ -157,7 +158,7 @@ def audit(base_url: str, output: Path) -> int:
                                     issues.append(
                                         "mobile navigation failed to open"
                                     )
-                    if route.startswith("/demo"):
+                    if route in ("/demo", "/demo/telegram"):
                         if page.locator(
                             "[data-demo-tab]"
                         ).count() != 3:
@@ -181,6 +182,20 @@ def audit(base_url: str, output: Path) -> int:
                             ).inner_text()
                             if heading != "Условия":
                                 issues.append("demo inspector stale")
+                    if route == "/demo/blueprint":
+                        if page.locator("#blueprint-form").count() != 1:
+                            issues.append("Blueprint form missing")
+                        else:
+                            page.locator("#blueprint-form button[type=submit]").click()
+                            page.locator("#blueprint-result").wait_for(
+                                timeout=8_000,
+                            )
+                            if not page.locator("#blueprint-output").input_value():
+                                issues.append("Blueprint result text missing")
+                            if page.locator(
+                                ".blueprint-content-grid .blueprint-block"
+                            ).count() != 4:
+                                issues.append("Blueprint architecture panels missing")
                     if route == "/services" and not page.locator(
                         'a[href="/services/custom-crm"]'
                     ).count():
