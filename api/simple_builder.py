@@ -712,12 +712,14 @@ Type /start in your Telegram bot to begin the conversation.
 @router.post("/export")
 def export_scenario(scenario: Scenario):
     """Return a fixed-template ZIP, never executing user content as Python."""
-    diagnosis = analyze_scenario(scenario)
-    if not diagnosis["ok"]:
+    diagnosis = release_preflight(scenario)
+    if not diagnosis["ready"]:
         raise HTTPException(status_code=422, detail={
-            "message": "Исправьте ошибки графа перед экспортом",
+            "message": "Исправьте ошибки сценария перед экспортом",
+            "code": "RELEASE_PREFLIGHT_FAILED",
             "issues": [issue for issue in diagnosis["issues"]
                        if issue["severity"] == "error"],
+            "checks": diagnosis["checks"],
         })
     # Bound file sizes: max 80 nodes, constrained text and options via Pydantic.
     payload = json.dumps(scenario.model_dump(mode="json"), ensure_ascii=False, indent=2)
