@@ -11,6 +11,7 @@ from portal.db import session_factory
 from omni_site.case_library import CATEGORIES
 from omni_site.creative_store import public_items, public_item
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
+from omni_site.solution_journeys import JOURNEYS, BY_SLUG
 
 BASE = Path(__file__).resolve().parent
 router = APIRouter(tags=["Studio Website"])
@@ -112,4 +113,25 @@ def public_trust_detail(request: Request, slug: str):
     return templates.TemplateResponse(
         request=request, name="trust_detail.html",
         context={"page": page, "pages": PAGES},
+    )
+
+
+@router.get("/demo", response_class=HTMLResponse, name="interactive_solution_demo")
+def interactive_solution_demo(request: Request):
+    """Educational product visualization, not a live service execution."""
+    return templates.TemplateResponse(
+        request=request, name="solution_demo.html",
+        context={"journeys": JOURNEYS},
+    )
+
+
+@router.get("/demo/{slug}", response_class=HTMLResponse,
+            name="interactive_solution_detail")
+def interactive_solution_detail(request: Request, slug: str):
+    journey = BY_SLUG.get(slug)
+    if journey is None:
+        raise HTTPException(status_code=404, detail="Unknown scenario")
+    return templates.TemplateResponse(
+        request=request, name="solution_demo.html",
+        context={"journeys": JOURNEYS, "selected": journey},
     )

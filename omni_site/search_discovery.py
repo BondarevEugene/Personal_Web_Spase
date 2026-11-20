@@ -11,11 +11,12 @@ from omni_site.editorial import ARTICLES
 from omni_site.case_library import CASES
 from omni_site.services_catalog import SERVICES
 from omni_site.trust_content import PAGES
+from omni_site.solution_journeys import JOURNEYS
 from fastapi.responses import PlainTextResponse, Response
 
 router = APIRouter(tags=["Public Search Discovery"])
 PUBLIC_PATHS = (
-    "/", "/studio", "/projects", "/robotization", "/techkillers", "/journal", "/cases", "/services", "/trust",
+    "/", "/studio", "/projects", "/robotization", "/techkillers", "/journal", "/cases", "/services", "/trust", "/demo",
 )
 PRIVATE_PREFIXES = (
     "/account", "/support", "/api", "/bots", "/admin", "/cloud",
@@ -55,7 +56,8 @@ def sitemap():
     paths = (*PUBLIC_PATHS, *(f"/journal/{article.slug}" for article in ARTICLES),
              *(f"/cases/{item.slug}" for item in CASES),
              *(f"/services/{service.slug}" for service in SERVICES),
-             *(f"/trust/{page.slug}" for page in PAGES))
+             *(f"/trust/{page.slug}" for page in PAGES),
+             *(f"/demo/{journey.slug}" for journey in JOURNEYS))
     urls = "\n".join(
         "  <url><loc>" + escape(origin + path) + "</loc></url>"
         for path in paths
