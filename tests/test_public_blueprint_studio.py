@@ -5,7 +5,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 from omni_site.blueprint_studio import (
-    INTEGRATIONS, PRIORITIES, PROCESSES, SECTORS, TEAMS, make_blueprint,
+    INTEGRATIONS,
+    PRIORITIES,
+    PROCESSES,
+    SECTORS,
+    TEAMS,
+    make_blueprint,
 )
 from server import app
 
