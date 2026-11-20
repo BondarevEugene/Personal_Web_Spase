@@ -406,6 +406,7 @@ import asyncio
 import json
 import os
 import re
+import sqlite3
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F, Router
@@ -415,9 +416,48 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 SCENARIO = json.loads((Path(__file__).parent / "scenario.json").read_text(encoding="utf-8"))
 NODES = {item["id"]: item for item in SCENARIO["nodes"]}
 router = Router()
-# A demo-grade, in-memory dialogue cursor. Redis/DB persistence is a later step.
+# Persist dialogue state across process restarts; SQLite is local to this bot.
+DB_PATH = Path(os.environ.get("OMNI_STATE_DB", str(Path(__file__).parent / "bot_state.sqlite3")))
 CURSORS: dict[tuple[int, int], str] = {}
 VALUES: dict[tuple[int, int], dict[str, str]] = {}
+
+
+def init_state() -> None:
+    with sqlite3.connect(DB_PATH) as db:
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS conversations ("
+            "chat_id INTEGER NOT NULL, user_id INTEGER NOT NULL, "
+            "cursor TEXT, variables TEXT NOT NULL, "
+            "PRIMARY KEY (chat_id, user_id))"
+        )
+        for chat_id, user_id, cursor, raw in db.execute(
+            "SELECT chat_id, user_id, cursor, variables FROM conversations"
+        ):
+            key = (chat_id, user_id)
+            if cursor in NODES:
+                CURSORS[key] = cursor
+            try:
+                values = json.loads(raw)
+                if isinstance(values, dict):
+                    VALUES[key] = {str(k): str(v) for k, v in values.items()}
+            except (ValueError, TypeError):
+                VALUES[key] = {}
+
+
+def save_state(key: tuple[int, int]) -> None:
+    with sqlite3.connect(DB_PATH) as db:
+        if key not in CURSORS and key not in VALUES:
+            db.execute(
+                "DELETE FROM conversations WHERE chat_id=? AND user_id=?", key
+            )
+        else:
+            db.execute(
+                "INSERT INTO conversations(chat_id,user_id,cursor,variables) "
+                "VALUES(?,?,?,?) ON CONFLICT(chat_id,user_id) DO UPDATE SET "
+                "cursor=excluded.cursor, variables=excluded.variables",
+                (*key, CURSORS.get(key), json.dumps(VALUES.get(key, {}))),
+            )
+
 PLACEHOLDER = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
 
 
@@ -446,12 +486,14 @@ async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
         node = NODES.get(node_id)
         if node is None:
             CURSORS.pop(cursor_key, None)
+            save_state(cursor_key)
             await bot.send_message(chat_id, "Ошибка сценария: блок не найден.")
             return
         kind = node["kind"]
         text = render_text(node.get("text") or "", values)
         if kind == "set_variable":
             values[node["variable"]] = render_text(node.get("value", ""), values)
+            save_state(cursor_key)
             node_id = node["next"]
             continue
         if kind == "condition":
@@ -462,6 +504,7 @@ async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
             continue
         if kind == "input":
             CURSORS[cursor_key] = node_id
+            save_state(cursor_key)
             await bot.send_message(chat_id, text)
             return
         if kind == "choice":
@@ -470,6 +513,7 @@ async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
                 for i, choice in enumerate(node["options"])
             ])
             CURSORS[cursor_key] = node_id
+            save_state(cursor_key)
             await bot.send_message(chat_id, text, reply_markup=keyboard)
             return
         if kind == "message":
@@ -482,12 +526,16 @@ async def send_node(bot: Bot, chat_id: int, user_id: int, node_id: str) -> None:
             if text:
                 await bot.send_message(chat_id, text)
             CURSORS.pop(cursor_key, None)
+            VALUES.pop(cursor_key, None)
+            save_state(cursor_key)
             return
         node_id = node.get("next")
         if not node_id:
             CURSORS.pop(cursor_key, None)
             return
     CURSORS.pop(cursor_key, None)
+    VALUES.pop(cursor_key, None)
+    save_state(cursor_key)
     await bot.send_message(chat_id, "Обнаружен слишком длинный автоматический цикл. Проверьте схему.")
 
 
@@ -497,6 +545,7 @@ async def start(message: Message) -> None:
         return
     CURSORS.pop((message.chat.id, message.from_user.id), None)
     VALUES.pop((message.chat.id, message.from_user.id), None)
+    save_state((message.chat.id, message.from_user.id))
     await send_node(message.bot, message.chat.id, message.from_user.id, SCENARIO["start"])
 
 
@@ -522,6 +571,7 @@ async def choose(call: CallbackQuery) -> None:
     # Consume the pending choice *before* awaiting network I/O.
     # Repeated callback taps must not execute the same branch twice.
     CURSORS.pop(cursor_key, None)
+    save_state(cursor_key)
     await call.answer()
     await send_node(call.bot, call.message.chat.id, call.from_user.id, target)
 
@@ -540,6 +590,7 @@ async def text_not_expected(message: Message) -> None:
             return
         VALUES.setdefault(key, {})[node["variable"]] = value
         CURSORS.pop(key, None)
+        save_state(key)
         await send_node(message.bot, message.chat.id, message.from_user.id, node["next"])
         return
     await message.answer("Для выбора используйте кнопки выше либо отправьте /start.")
@@ -549,6 +600,7 @@ async def main() -> None:
     token = os.environ.get("BOT_TOKEN", "").strip()
     if not token:
         raise RuntimeError("Set BOT_TOKEN in your environment before starting bot.py")
+    init_state()
     dp = Dispatcher()
     dp.include_router(router)
     bot = Bot(token=token)
