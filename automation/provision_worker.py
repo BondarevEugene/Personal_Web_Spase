@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+from datetime import timedelta
 
 from sqlalchemy import select, update
 
@@ -80,11 +81,54 @@ def execute_once(limit: int = 25) -> int:
     return completed
 
 
+
+
+
+def recover_stale_jobs(timeout_minutes: int = 30, limit: int = 100) -> int:
+    """Fail abandoned dry-run jobs so they do not remain running forever.
+
+    A failed simulation can be requeued by its owner with a new idempotency key.
+    Never auto-retry billable provider actions.
+    """
+    if not 1 <= timeout_minutes <= 1440:
+        raise ValueError("timeout_minutes must be between 1 and 1440")
+    if not 1 <= limit <= 1000:
+        raise ValueError("limit must be between 1 and 1000")
+    cutoff = utcnow() - timedelta(minutes=timeout_minutes)
+    recovered = 0
+    with session_factory()() as db:
+        ids = db.scalars(select(CloudProvisionJob.id).where(
+            CloudProvisionJob.status == "running",
+            CloudProvisionJob.mode == "dry_run",
+            CloudProvisionJob.updated_at < cutoff,
+        ).order_by(CloudProvisionJob.updated_at).limit(limit)).all()
+        for job_id in ids:
+            changed = db.execute(update(CloudProvisionJob).where(
+                CloudProvisionJob.id == job_id,
+                CloudProvisionJob.status == "running",
+                CloudProvisionJob.mode == "dry_run",
+                CloudProvisionJob.updated_at < cutoff,
+            ).values(status="failed", error_code="WORKER_TIMEOUT",
+                     updated_at=utcnow()))
+            if changed.rowcount:
+                emit(db, job_id, "worker_timeout",
+                     "Dry-run worker stopped before completing; no provider mutations")
+                recovered += 1
+        db.commit()
+    return recovered
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--once", action="store_true", required=True)
+    parser.add_argument("--once", action="store_true")
+    parser.add_argument("--recover", action="store_true")
+    parser.add_argument("--timeout-minutes", type=int, default=30)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
+    if not args.once and not args.recover:
+        parser.error("Specify --once and/or --recover")
+    if args.recover:
+        log.info("Recovered %s abandoned simulations",
+                 recover_stale_jobs(timeout_minutes=args.timeout_minutes))
     if args.once:
         log.info("Completed %s provisioning simulations", execute_once())
 
