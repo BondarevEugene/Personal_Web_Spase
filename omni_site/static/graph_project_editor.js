@@ -9,6 +9,9 @@
   const save = document.getElementById("graph-save");
   const canvas = document.getElementById("graph-canvas");
   let project = null;
+  let selectedNodeId = null;
+  let connectingFrom = null;
+  let zoom = 1;
 
   const field = (label, value, update, multiline = false) => {
     const wrapper = document.createElement("label");
@@ -30,6 +33,7 @@
   const render = () => {
     fields.replaceChildren();
     renderCanvas();
+    renderWorkbench();
     fields.append(field("Название проекта", project.scenario.name,
       value => { project.scenario.name = value; }));
     fields.append(field("Начальный блок", project.scenario.start,
@@ -159,6 +163,16 @@
       body.textContent = node.text || node.kind;
       body.style.cssText = "font-size:12px;overflow:hidden;max-height:55px";
       tile.append(heading, body);
+      tile.addEventListener("click", () => {
+        if (connectingFrom && connectingFrom !== node.id) {
+          connectNodes(connectingFrom, node.id);
+          connectingFrom = null;
+          render();
+          return;
+        }
+        selectedNodeId = node.id;
+        renderWorkbench();
+      });
       tile.addEventListener("pointerdown", event => {
         if (event.button !== 0) return;
         const initialX = event.clientX;
@@ -185,6 +199,7 @@
       });
       canvas.append(tile);
     }
+    canvas.style.zoom = String(zoom);
     canvas.style.minWidth = width + "px";
     canvas.style.minHeight = height + "px";
   };
@@ -205,6 +220,224 @@
     "click", () => addNode("message"));
   document.getElementById("graph-add-end")?.addEventListener(
     "click", () => addNode("end"));
+
+  const kinds = [
+    ["message", "Сообщение"], ["choice", "Кнопки выбора"],
+    ["input", "Ввод данных"], ["condition", "Условие"],
+    ["set_variable", "Переменная"], ["photo", "Фото"],
+    ["document", "Документ"], ["end", "Завершение"]
+  ];
+  const palette = document.getElementById("graph-palette");
+  const inspector = document.getElementById("graph-inspector");
+  const validation = document.getElementById("graph-validation");
+  const simulation = document.getElementById("graph-simulation");
+  const makeButton = (label, action) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.style.cssText = "padding:9px 13px;margin:5px;border-radius:8px;" +
+      "background:#c3b3ff;color:#101526;border:0;cursor:pointer";
+    button.addEventListener("click", action);
+    return button;
+  };
+  const addKind = kind => {
+    if (!project || project.scenario.nodes.length >= 80) return;
+    let index = 1;
+    const ids = new Set(project.scenario.nodes.map(node => node.id));
+    while (ids.has("node" + index)) index++;
+    const id = "node" + index;
+    const defaults = {
+      message: {text: "Новое сообщение"},
+      choice: {text: "Выберите вариант", options: [
+        {label: "Продолжить", target: project.scenario.start}]},
+      input: {text: "Введите ответ", variable: "answer", next: project.scenario.start},
+      condition: {variable: "answer", operator: "equals", value: "да",
+        true_target: project.scenario.start, false_target: project.scenario.start},
+      set_variable: {variable: "answer", value: "значение",
+        next: project.scenario.start},
+      photo: {media: "https://example.com/photo.jpg"},
+      document: {media: "https://example.com/document.pdf"},
+      end: {}
+    };
+    project.scenario.nodes.push({id, kind, ...defaults[kind]});
+    selectedNodeId = id;
+    render();
+    status.textContent = "Блок добавлен. Настройте переходы и сохраните.";
+  };
+  const connectNodes = (fromId, toId) => {
+    const source = project.scenario.nodes.find(node => node.id === fromId);
+    if (!source || source.kind === "end") {
+      status.textContent = "Завершающий блок не имеет исходящих связей.";
+      return;
+    }
+    if (source.kind === "condition") {
+      source.true_target = toId;
+      status.textContent = "Ветка Да соединена. Ветку Нет настройте в инспекторе.";
+    } else if (source.kind === "choice") {
+      if (!source.options.length) source.options.push({label: "Далее", target: toId});
+      else source.options[0].target = toId;
+      status.textContent = "Первая кнопка соединена. Другие настройте в инспекторе.";
+    } else {
+      source.next = toId;
+      status.textContent = "Блоки соединены. Сохраните сценарий.";
+    }
+  };
+  const renderWorkbench = () => {
+    if (!project) return;
+    palette.replaceChildren();
+    const heading = document.createElement("h3");
+    heading.textContent = "Библиотека действий";
+    palette.append(heading);
+    for (const [kind, label] of kinds) {
+      palette.append(makeButton("+ " + label, () => addKind(kind)));
+    }
+    palette.append(makeButton("− Масштаб", () => {
+      zoom = Math.max(.5, +(zoom - .1).toFixed(2));
+      renderCanvas();
+    }));
+    palette.append(makeButton("+ Масштаб", () => {
+      zoom = Math.min(1.5, +(zoom + .1).toFixed(2));
+      renderCanvas();
+    }));
+    inspector.replaceChildren();
+    const node = project.scenario.nodes.find(item => item.id === selectedNodeId);
+    if (!node) {
+      inspector.textContent = "Нажмите на блок для настройки и соединения.";
+      return;
+    }
+    const h = document.createElement("h3");
+    h.textContent = "Инспектор · " + node.id + " (" + node.kind + ")";
+    inspector.append(h);
+    const edit = (label, key, multiline = false) => {
+      inspector.append(field(label, node[key] ?? "", value => {
+        node[key] = value || (key.endsWith("target") || key === "next" ? null : "");
+        if (key === "text") renderCanvas();
+      }, multiline));
+    };
+    if ("text" in node) edit("Текст", "text", true);
+    if ("media" in node) edit("HTTPS URL / Telegram file_id", "media");
+    if ("variable" in node) edit("Имя переменной", "variable");
+    if ("value" in node) edit("Значение", "value");
+    if ("operator" in node) {
+      const select = document.createElement("select");
+      for (const operator of ["equals", "not_equals", "contains", "not_empty"]) {
+        const option = document.createElement("option");
+        option.value = operator;
+        option.textContent = operator;
+        select.append(option);
+      }
+      select.value = node.operator;
+      select.addEventListener("change", () => { node.operator = select.value; });
+      inspector.append(select);
+    }
+    if ("true_target" in node) edit("Переход Да", "true_target");
+    if ("false_target" in node) edit("Переход Нет", "false_target");
+    if (node.kind !== "end" && node.kind !== "condition" && node.kind !== "choice") {
+      edit("Следующий блок", "next");
+    }
+    if (node.kind === "choice") {
+      for (const [index, option] of node.options.entries()) {
+        inspector.append(field("Кнопка " + (index + 1), option.label,
+          value => { option.label = value; }));
+        inspector.append(field("Цель кнопки " + (index + 1), option.target,
+          value => { option.target = value; }));
+      }
+      inspector.append(makeButton("+ Кнопка", () => {
+        if (node.options.length >= 8) return;
+        node.options.push({label: "Вариант", target: project.scenario.start});
+        renderWorkbench();
+      }));
+    }
+    inspector.append(makeButton("Соединить с другим блоком", () => {
+      connectingFrom = node.id;
+      status.textContent = "Нажмите на целевой блок на холсте.";
+    }));
+    inspector.append(makeButton("Сделать начальным", () => {
+      project.scenario.start = node.id;
+      render();
+    }));
+  };
+  const runAnalysis = async () => {
+    validation.textContent = "Проверяем граф…";
+    const response = await fetch("/api/v1/builder/simple/analyze", {
+      method: "POST", credentials: "same-origin",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({scenario: project.scenario})
+    });
+    const result = await response.json();
+    validation.replaceChildren();
+    if (!response.ok) {
+      validation.textContent = "Ошибка проверки: " + JSON.stringify(result.detail || result);
+      return;
+    }
+    const summary = document.createElement("p");
+    summary.textContent = result.ok ? "Граф проверен" : "Обнаружены ошибки графа";
+    validation.append(summary);
+    for (const issue of result.issues || []) {
+      const line = document.createElement("p");
+      line.textContent = issue.severity + " · " + issue.node_id + ": " + issue.message;
+      validation.append(line);
+    }
+  };
+  const runSimulation = async () => {
+    simulation.textContent = "Выполняется безопасная симуляция…";
+    const response = await fetch("/api/v1/builder/simple/simulate", {
+      method: "POST", credentials: "same-origin",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({scenario: project.scenario, choices: {}, inputs: {}})
+    });
+    const result = await response.json();
+    simulation.replaceChildren();
+    if (!response.ok) {
+      simulation.textContent = "Ошибка: " + JSON.stringify(result.detail || result);
+      return;
+    }
+    const summary = document.createElement("p");
+    summary.textContent = "Результат: " + result.status + " · шагов: " + result.steps;
+    simulation.append(summary);
+    for (const step of result.trace || []) {
+      const row = document.createElement("p");
+      row.textContent = step.id + " [" + step.kind + "] → " + (step.next || "стоп");
+      simulation.append(row);
+    }
+    if (result.status === "awaiting_choice") {
+      for (const option of result.options || []) {
+        simulation.append(makeButton(option.label, async () => {
+          await simulateWith({[result.at]: option.index}, {});
+        }));
+      }
+    }
+    if (result.status === "awaiting_input") {
+      const answer = document.createElement("input");
+      answer.placeholder = "Введите ответ";
+      simulation.append(answer, makeButton("Продолжить", async () => {
+        await simulateWith({}, {[result.at]: answer.value});
+      }));
+    }
+  };
+  const simulateWith = async (choices, inputs) => {
+    const response = await fetch("/api/v1/builder/simple/simulate", {
+      method: "POST", credentials: "same-origin",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({scenario: project.scenario, choices, inputs})
+    });
+    const result = await response.json();
+    simulation.replaceChildren();
+    const summary = document.createElement("p");
+    summary.textContent = "Результат: " + result.status + " · шагов: " + result.steps;
+    simulation.append(summary);
+    for (const step of result.trace || []) {
+      const row = document.createElement("p");
+      row.textContent = step.id + " → " + (step.next || "стоп");
+      simulation.append(row);
+    }
+  };
+  palette.before(makeButton("Проверить схему", () => {
+    runAnalysis().catch(error => { validation.textContent = error.message; });
+  }));
+  palette.before(makeButton("Тестовый запуск", () => {
+    runSimulation().catch(error => { simulation.textContent = error.message; });
+  }));
 
   const load = async () => {
     const response = await fetch("/api/v1/builder/projects/" +
