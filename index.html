@@ -4,13 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#050811">
-<meta name="description" content="OmniFactory — платформа разработки, автоматизации и управления Python-продуктами.">
-<title>OmniFactory — платформа управления и разработки</title>
+<meta name="description" content="OMNIFACTORY: разрабатываем CRM, Telegram-ботов и автоматизацию бизнес-процессов на Python. Изучите рабочие инструменты и обсудите свой проект.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OMNIFACTORY — CRM, Telegram-боты и автоматизация на Python">
+<meta property="og:description" content="От идеи и сценария до рабочей цифровой системы. Graph Studio, клиентский кабинет и разработка под бизнес-задачи.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OMNIFACTORY — Python Engineering">
+<meta name="twitter:description" content="CRM, автоматизация и Telegram-боты для бизнеса.">
+<title>OMNIFACTORY — CRM, Telegram-боты и автоматизация для бизнеса</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/platform.css?v=1">
 <link rel="stylesheet" href="/studio-assets/founders.css?v=1">
 <script defer src="/studio-assets/site.js?v=3"></script>
 <link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
+<link rel="stylesheet" href="/studio-assets/public_growth.css?v=1">
+<script defer src="/studio-assets/public_growth.js?v=1"></script>
 </head>
 <body class="platform-app has-section-rail">
 <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -41,6 +50,7 @@
 <strong>НА ЭТОЙ СТРАНИЦЕ</strong>
 <a href="#workspace">Обзор</a>
 <a href="#products">Инструменты</a>
+<a href="#benefit">Экономия времени</a>
 <a href="#founders">Основатели</a>
 <a href="#status">Состояние платформы</a>
 </nav>
@@ -49,14 +59,14 @@
   <div class="pf-hero-grid">
     <div class="pf-hero-copy">
       <div class="eyebrow"><span class="live-dot"></span> OMNIFACTORY / WORKSPACE</div>
-      <h1>Одна платформа.<br><span class="gradient-text">Связанные инструменты.</span></h1>
-      <p>Проектируй сценарии ботов, управляй проектами и проверяй состояние сервисов в одном рабочем пространстве. Публичная Studio — витрина; здесь находится инженерная платформа.</p>
+      <h1>Ваш бизнес.<br><span class="gradient-text">Меньше рутины. Больше возможностей.</span></h1>
+      <p>Разрабатываем CRM, Telegram-ботов и автоматизацию процессов на Python. Показываем реальные инструменты и помогаем превратить вашу задачу в понятный технический проект.</p>
       <div class="pf-actions">
-        <a class="button button-primary" href="/account/register">Создать аккаунт <span aria-hidden="true">↗</span></a>
+        <a class="button button-primary" href="/studio#contact">Обсудить проект <span aria-hidden="true">↗</span></a>
         <a class="button button-line" href="/architect">Создать Telegram-бота <span aria-hidden="true">↗</span></a>
-        <a class="button button-line" href="#products">Все инструменты <span aria-hidden="true">↓</span></a>
+        <a class="button button-line" href="#benefit">Рассчитать эффект <span aria-hidden="true">↓</span></a>
       </div>
-      <div class="pf-hero-meta"><span>PYTHON-FIRST</span><span>FASTAPI</span><span>WORKFLOW BUILDER</span></div>
+      <div class="pf-hero-meta"><span>PYTHON-FIRST</span><span>CRM & BOTS</span><span>WORKFLOW AUTOMATION</span></div>
     </div>
     <div class="pf-stage" aria-label="Структура платформы">
       <div class="pf-stage-head"><span class="live-dot"></span> OMNIFACTORY / SYSTEM MAP <span>01 / 03</span></div>
@@ -78,6 +88,42 @@
 </div>
 <div class="omni-idea-actions"><button type="button" id="omni-idea-next" class="button button-line">Ещё идея ↻</button><a href="/account/tickets#new-ticket" class="button button-primary">Обсудить проект ↗</a></div>
 </section>
+<section class="container growth-workbench" id="benefit" aria-labelledby="growth-title">
+<div class="growth-head"><span class="eyebrow">01 / BUSINESS IMPACT LAB</span><h2 id="growth-title">Сколько времени забирает <span class="gradient-text">ваша рутина?</span></h2>
+<p>Оцените потенциальный эффект автоматизации на собственных цифрах. Это сценарный расчёт, а не обещание экономии или готовая коммерческая смета.</p></div>
+<div class="growth-grid">
+<form class="growth-calculator" id="growth-calculator">
+<div class="growth-fields">
+<label for="growth-volume">Повторяющихся операций в месяц
+<input type="number" id="growth-volume" name="operations" min="1" max="1000000" step="1" value="300" required inputmode="numeric"></label>
+<label for="growth-minutes">Минут на одну операцию
+<input type="number" id="growth-minutes" name="minutes" min="1" max="480" step="1" value="8" required inputmode="numeric"></label>
+<label for="growth-rate">Стоимость рабочего часа, грн
+<input type="number" id="growth-rate" name="hourly_rate" min="0" max="100000" step="1" value="250" required inputmode="numeric"></label>
+<label for="growth-share">Доля операций, которую можно автоматизировать, %
+<input type="range" id="growth-share" name="share" min="0" max="100" step="5" value="60">
+<output for="growth-share" id="growth-share-value">60%</output></label></div>
+<p class="growth-assumption">Расчёт предполагает, что указанную долю операций удастся автоматизировать полностью. Внедрение, поддержка, контроль качества и исключения здесь не учтены.</p>
+</form>
+<div class="growth-result" aria-live="polite" aria-atomic="true">
+<span class="growth-result-kicker">ПРИМЕРНЫЙ ПОТЕНЦИАЛ В МЕСЯЦ</span>
+<strong><output id="growth-hours">24</output><small>часов</small></strong>
+<div class="growth-result-financial"><output id="growth-money">6 000</output><span>грн / месяц</span></div>
+<p id="growth-method">300 операций × 8 минут × 60% = 24 часа.</p>
+<a href="/studio#contact" class="button button-primary">Обсудить автоматизацию <span aria-hidden="true">↗</span></a>
+</div>
+</div>
+<div class="growth-picker" id="solutions" aria-labelledby="growth-picker-title">
+<div><span class="eyebrow">02 / SOLUTION PATHS</span><h3 id="growth-picker-title">С чего начать именно вам?</h3><p>Выберите задачу — увидите подходящее направление и прямой путь к действующему разделу.</p></div>
+<div class="growth-choice" role="group" aria-label="Выбор бизнес-задачи">
+<button type="button" class="growth-choice-button" data-solution="clients" aria-pressed="true">Заявки и клиенты</button>
+<button type="button" class="growth-choice-button" data-solution="dialogues" aria-pressed="false">Диалоги и Telegram</button>
+<button type="button" class="growth-choice-button" data-solution="processes" aria-pressed="false">Повторяемые процессы</button>
+</div>
+<div class="growth-solution" id="growth-solution" role="status"><strong id="growth-solution-title">CRM и управление заказами</strong><p id="growth-solution-desc">Единый реестр проектов, этапов, документов и клиентских согласований.</p>
+<a id="growth-solution-link" href="/account/projects">Посмотреть рабочий кабинет ↗</a><a href="/studio#contact">Обсудить разработку ↗</a></div>
+</div>
+</section>
 <div class="proof-ribbon"><div class="container proof-inner"><span class="proof-label">ONE ENGINEERING ECOSYSTEM</span><div><strong>SCENARIOS</strong><strong>PYTHON RUNTIME</strong><strong>PROJECTS</strong><strong>INTEGRATIONS</strong></div></div></div>
 <section id="products" class="section container pf-section">
   <div class="section-intro"><span class="eyebrow">01 / WORKSPACE MODULES</span><span class="section-rule"></span><span class="section-index">CHOOSE A TOOL</span></div>
@@ -85,13 +131,13 @@
   <div class="pf-module-grid">
     <a class="pf-module pf-module-primary" href="/architect"><span class="pf-module-index">01 / SCENARIO DESIGN</span><span class="pf-module-icon">◇</span><h3>Визуальный конструктор ботов</h3><p>Создавай сценарии в блоках, проверяй переходы и экспортируй проект на Python.</p><span class="pf-module-footer">Открыть конструктор <b>↗</b></span></a>
     <a class="pf-module" href="/bots/lab"><span class="pf-module-index">02 / BOT OPERATIONS</span><span class="pf-module-icon">◎</span><h3>Bot Lab · лаборатория ботов</h3><p>Сохранённые боты, автоматизации, планы облачного размещения и доступные ресурсы Railway — в одной рабочей панели.</p><span class="pf-module-footer">Открыть лабораторию <b>↗</b></span></a>
-    <a class="pf-module" href="/projects"><span class="pf-module-index">02 / PORTFOLIO</span><span class="pf-module-icon">▦</span><h3>Проекты</h3><p>Единый обзор продуктов и направлений: Graph Studio, Food_Porn, CRM, архивы и развитие платформы.</p><span class="pf-module-footer">Открыть проекты <b>↗</b></span></a>
-    <a class="pf-module" href="/dashboard"><span class="pf-module-index">03 / CONTROL</span><span class="pf-module-icon">⌁</span><h3>Состояние платформы</h3><p>Проверка доступности API и основных маршрутов без имитации телеметрии.</p><span class="pf-module-footer">Проверить систему <b>↗</b></span></a>
-    <a class="pf-module" href="/automation/studio"><span class="pf-module-index">04 / AUTOMATION ENGINE</span><span class="pf-module-icon">⌘</span><h3>Инженерные модули</h3><p>Визуальные Python-процессы: переменные, условия, HTTP, журналы запусков и безопасный dry-run.</p><span class="pf-module-footer">Открыть модуль <b>↗</b></span></a>
-    <a class="pf-module" href="/techkillers"><span class="pf-module-index">05 / STACK</span><span class="pf-module-icon">{ }</span><h3>Технологии</h3><p>Используемые направления, технологические решения и архитектурные подходы.</p><span class="pf-module-footer">Изучить стек <b>↗</b></span></a>
-    <a class="pf-module" href="/studio"><span class="pf-module-index">06 / STUDIO</span><span class="pf-module-icon">✦</span><h3>Инженерная студия</h3><p>Услуги, портфолио и контактная форма для обсуждения бизнес-задачи.</p><span class="pf-module-footer">Открыть студию <b>↗</b></span></a>
-    <a class="pf-module" href="/account"><span class="pf-module-index">07 / CUSTOMER PORTAL</span><span class="pf-module-icon">◎</span><h3>Клиентский кабинет</h3><p>Вход, регистрация и настройки профиля. Для доступа нужна авторизация.</p><span class="pf-module-footer">Войти в кабинет <b>↗</b></span></a>
-    <a class="pf-module" href="/docs"><span class="pf-module-index">08 / DEVELOPERS</span><span class="pf-module-icon">API</span><h3>API платформы</h3><p>Документированные маршруты FastAPI, в том числе API конструктора.</p><span class="pf-module-footer">Открыть документацию <b>↗</b></span></a>
+    <a class="pf-module" href="/projects"><span class="pf-module-index">03 / PORTFOLIO</span><span class="pf-module-icon">▦</span><h3>Проекты</h3><p>Единый обзор продуктов и направлений: Graph Studio, Food_Porn, CRM, архивы и развитие платформы.</p><span class="pf-module-footer">Открыть проекты <b>↗</b></span></a>
+    <a class="pf-module" href="/dashboard"><span class="pf-module-index">04 / CONTROL</span><span class="pf-module-icon">⌁</span><h3>Состояние платформы</h3><p>Проверка доступности API и основных маршрутов без имитации телеметрии.</p><span class="pf-module-footer">Проверить систему <b>↗</b></span></a>
+    <a class="pf-module" href="/automation/studio"><span class="pf-module-index">05 / AUTOMATION ENGINE</span><span class="pf-module-icon">⌘</span><h3>Инженерные модули</h3><p>Визуальные Python-процессы: переменные, условия, HTTP, журналы запусков и безопасный dry-run.</p><span class="pf-module-footer">Открыть модуль <b>↗</b></span></a>
+    <a class="pf-module" href="/techkillers"><span class="pf-module-index">06 / STACK</span><span class="pf-module-icon">{ }</span><h3>Технологии</h3><p>Используемые направления, технологические решения и архитектурные подходы.</p><span class="pf-module-footer">Изучить стек <b>↗</b></span></a>
+    <a class="pf-module" href="/studio"><span class="pf-module-index">07 / STUDIO</span><span class="pf-module-icon">✦</span><h3>Инженерная студия</h3><p>Услуги, портфолио и контактная форма для обсуждения бизнес-задачи.</p><span class="pf-module-footer">Открыть студию <b>↗</b></span></a>
+    <a class="pf-module" href="/account"><span class="pf-module-index">08 / CUSTOMER PORTAL</span><span class="pf-module-icon">◎</span><h3>Клиентский кабинет</h3><p>Вход, регистрация и настройки профиля. Для доступа нужна авторизация.</p><span class="pf-module-footer">Войти в кабинет <b>↗</b></span></a>
+    <a class="pf-module" href="/docs"><span class="pf-module-index">09 / DEVELOPERS</span><span class="pf-module-icon">API</span><h3>API платформы</h3><p>Документированные маршруты FastAPI, в том числе API конструктора.</p><span class="pf-module-footer">Открыть документацию <b>↗</b></span></a>
   </div>
 </section>
 <section class="section container omni-founders" id="founders" aria-labelledby="founders-heading">
@@ -119,9 +165,20 @@
     <div class="pf-status-data"><span id="pf-health" role="status">Проверяем подключение…</span><small id="pf-health-description">GET /health</small><a href="/dashboard">Подробности <span aria-hidden="true">↗</span></a></div>
   </div>
 </div></section>
+<section class="container growth-delivery" aria-labelledby="growth-delivery-title">
+<div class="growth-delivery-intro"><span class="eyebrow">03 / FROM IDEA TO ENGINEERING</span>
+<h2 id="growth-delivery-title">Не продаём магию.<br><span class="gradient-text">Строим понятный процесс.</span></h2></div>
+<div class="growth-delivery-steps">
+<article><span>01 / DISCOVER</span><h3>Разбираем задачу</h3><p>Что тормозит работу, какие сервисы уже используются и какой результат нужен бизнесу.</p></article>
+<article><span>02 / ARCHITECT</span><h3>Проектируем систему</h3><p>Сценарии, данные, интеграции, права доступа и измеримые критерии приёмки.</p></article>
+<article><span>03 / DELIVER</span><h3>Проверяем результат</h3><p>Рабочий продукт, тестирование, документация и понятный процесс дальнейшего развития.</p></article>
+</div>
+<div class="growth-delivery-cta"><p>Есть процесс, который хочется упростить?</p>
+<a href="/studio#contact" class="button button-primary">Расскажите о задаче <span aria-hidden="true">↗</span></a></div>
+</section>
 <section class="section container pf-section"><div class="section-intro"><span class="eyebrow">03 / ACCESS MODEL</span><span class="section-rule"></span></div><div class="pf-note"><h2>Публичная Studio и инженерная платформа — единый бренд.</h2><p>Клиентский кабинет и его защита развиваются отдельно от публичного каталога. Административные функции нельзя считать защищёнными только потому, что их нет в основном меню.</p><a class="text-link" href="/studio">Перейти на сайт студии <span>↗</span></a></div></section>
 </main>
-<footer class="site-footer"><div class="container"><div class="footer-hero"><div><span class="eyebrow">OMNIFACTORY / CONTINUE</span><p>Создавай систему.<br><span>Развивай её дальше.</span></p></div><a class="footer-round" href="/architect" aria-label="К конструктору">↗</a></div><div class="footer-divider"></div><div class="pf-footer-links"><a href="/studio">Studio</a><a href="/bots/lab">Bot Lab</a><a href="/architect">Конструктор</a><a href="/dashboard">Состояние</a><a href="/projects">Проекты</a><a href="/robotization">Автоматизация</a><a href="/techkillers">Технологии</a><a href="/docs">API</a></div><div class="footer-bottom"><span>© OMNIFACTORY / PYTHON ENGINEERING</span><span>DESIGN / CODE / SYSTEMS</span><a href="#workspace">НАВЕРХ ↑</a></div></div></footer>
+<footer class="site-footer"><div class="container"><div class="footer-hero"><div><span class="eyebrow">OMNIFACTORY / CONTINUE</span><p>Создавай систему.<br><span>Развивай её дальше.</span></p></div><a class="footer-round" href="/studio#contact" aria-label="Обсудить проект">↗</a></div><div class="footer-divider"></div><div class="pf-footer-links"><a href="/studio">Studio</a><a href="/bots/lab">Bot Lab</a><a href="/architect">Конструктор</a><a href="/dashboard">Состояние</a><a href="/projects">Проекты</a><a href="/robotization">Автоматизация</a><a href="/techkillers">Технологии</a><a href="/docs">API</a></div><div class="footer-bottom"><span>© OMNIFACTORY / PYTHON ENGINEERING</span><span>DESIGN / CODE / SYSTEMS</span><a href="#workspace">НАВЕРХ ↑</a></div></div></footer>
 <script>
 (function(){
  const status=document.getElementById("pf-health");
