@@ -57,18 +57,19 @@
             if (option.target === old) option.target = value;
           }
         }
-        if (project.positions[old]) {
+        if (project.positions && project.positions[old]) {
           project.positions[value] = project.positions[old];
           delete project.positions[old];
         }
       }));
       if ("text" in node) panel.append(field("Текст", node.text,
         value => { node.text = value; }, true));
-      if (node.next !== null && node.next !== undefined) {
+      if (node.kind !== "end" && node.kind !== "choice" &&
+          node.kind !== "condition") {
         panel.append(field("Следующий блок", node.next,
           value => { node.next = value || null; }));
       }
-      if (node.variable) panel.append(field("Переменная", node.variable,
+      if ("variable" in node) panel.append(field("Переменная", node.variable,
         value => { node.variable = value; }));
       for (const [index, option] of (node.options || []).entries()) {
         panel.append(field("Кнопка " + (index + 1), option.label,
@@ -116,7 +117,7 @@
     if (!canvas) return;
     canvas.replaceChildren();
     const nodes = project.scenario.nodes;
-    const positions = project.positions;
+    const positions = project.positions || (project.positions = {});
     nodes.forEach((node, index) => {
       if (!positions[node.id]) {
         positions[node.id] = {x: 30 + (index % 3) * 255,
@@ -480,6 +481,8 @@
       encodeURIComponent(projectId), {credentials: "same-origin", cache: "no-store"});
     if (!response.ok) throw new Error("Не удалось открыть сохранённый проект");
     project = await response.json();
+    project.positions ||= {};
+    project.groups ||= [];
     render();
     status.textContent = "Проект загружен. Изменения пока не сохранены.";
   };
