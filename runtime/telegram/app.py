@@ -6,13 +6,11 @@ and deduplication are implemented.
 """
 from __future__ import annotations
 
-import base64
-import json
+import asyncio
 import os
 import re
 import secrets
 from contextlib import asynccontextmanager
-from typing import Any
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.filters import CommandStart
@@ -21,9 +19,10 @@ from aiogram.types import (CallbackQuery, InlineKeyboardButton,
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-TOKEN_PATTERN = re.compile(r"^[0-9]{5,15}:[A-Za-z0-9_-]{30,100}$")
 from scenario import BODY_LIMIT, read_scenario
 from state import DialogueStore
+
+TOKEN_PATTERN = re.compile(r"^[0-9]{5,15}:[A-Za-z0-9_-]{30,100}$")
 PLACEHOLDER = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
 
 def substitute(value: str, variables: dict[str, str]) -> str:
@@ -46,6 +45,7 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str,
     router = Router()
     cursor: dict[tuple[int, int], str] = {}
     values: dict[tuple[int, int], dict[str, str]] = {}
+    conversation_locks: dict[tuple[int, int], asyncio.Lock] = {}
 
     def load(key: tuple[int, int]) -> None:
         if store is not None:
@@ -222,8 +222,23 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str,
             raise HTTPException(400, "Invalid Telegram update")
         if store is not None and not store.claim_update(event.update_id):
             return JSONResponse({"ok": True, "duplicate": True})
+        # Serialize updates for one conversation to avoid lost cursor/variable writes.
+        # Single-replica only: multiple replicas need a shared distributed lock.
+        if event.message is not None and event.message.from_user is not None:
+            key = (event.message.chat.id, event.message.from_user.id)
+        elif (event.callback_query is not None
+              and event.callback_query.message is not None):
+            key = (event.callback_query.message.chat.id,
+                   event.callback_query.from_user.id)
+        else:
+            key = None
         try:
-            await dp.feed_update(bot, event)
+            if key is None:
+                await dp.feed_update(bot, event)
+            else:
+                lock = conversation_locks.setdefault(key, asyncio.Lock())
+                async with lock:
+                    await dp.feed_update(bot, event)
         except Exception:
             if store is not None:
                 store.forget_update(event.update_id)
