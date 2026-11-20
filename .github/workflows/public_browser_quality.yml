@@ -52,7 +52,9 @@ jobs:
             scripts/public_asset_budget.py \
             scripts/build_home_css.py \
             omni_site/blueprint_studio.py \
+            omni_site/blueprint_specification.py \
             tests/test_public_blueprint_studio.py \
+            tests/test_public_blueprint_specification.py \
             tests/test_public_qa_contract.py \
             tests/test_public_home_css_bundle.py \
             tests/test_public_blueprint_studio.py
@@ -71,7 +73,8 @@ jobs:
             tests/test_public_solution_experience.py \
             tests/test_public_design_system_navigation.py \
             tests/test_public_visual_excellence.py \
-            tests/test_public_qa_contract.py
+            tests/test_public_qa_contract.py \
+            tests/test_public_blueprint_specification.py
 
       - name: Apply portal SQLite migrations for isolated QA run
         run: python -m alembic -c portal_alembic.ini upgrade head
