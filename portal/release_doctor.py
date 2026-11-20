@@ -59,6 +59,7 @@ EXPECTED_TABLES = (
     "portal_public_article_revisions",
     "portal_public_search_metrics",
     "portal_public_page_revisions",
+    "portal_public_page_revisions",
 )
 
 
