@@ -2,11 +2,11 @@
 import io
 import json
 import zipfile
+from datetime import datetime
+from types import SimpleNamespace
 
 from portal.project_archive import archive_bytes
 from scripts.verify_project_archive import verify_archive
-from datetime import datetime
-from types import SimpleNamespace
 
 
 def fixture_project():
@@ -35,13 +35,12 @@ def test_modified_archive_is_rejected(tmp_path):
     project, document = fixture_project()
     original = archive_bytes(project, [document], [], [], [])
     output = io.BytesIO()
-    with zipfile.ZipFile(io.BytesIO(original)) as source:
-        with zipfile.ZipFile(output, "w") as target:
-            for name in source.namelist():
-                data = source.read(name)
-                if name.endswith(".txt") and name.startswith("documents/"):
-                    data = b"Tampered document"
-                target.writestr(name, data)
+    with zipfile.ZipFile(io.BytesIO(original)) as source, zipfile.ZipFile(output, "w") as target:
+        for name in source.namelist():
+            data = source.read(name)
+            if name.endswith(".txt") and name.startswith("documents/"):
+                data = b"Tampered document"
+            target.writestr(name, data)
     archive_path = tmp_path / "tampered.zip"
     archive_path.write_bytes(output.getvalue())
     assert any("SHA-256 mismatch" in error for error in verify_archive(archive_path))
