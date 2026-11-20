@@ -1,0 +1,39 @@
+name: OMNIFACTORY client workspace quality
+
+on:
+  pull_request:
+    branches:
+      - feat/founders-omni-editorial-20261116
+    paths:
+      - "portal/**"
+      - "server.py"
+      - "tests/test_client_workspace_center.py"
+      - ".github/workflows/client_workspace_quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  workspace-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OMNI_PORTAL_DATABASE_URL: sqlite:///./workspace_quality.sqlite3
+      OMNI_PORTAL_MIGRATION_URL: sqlite:///./workspace_quality.sqlite3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install "pytest>=8,<10" "ruff>=0.9,<1"
+      - name: Ruff workspace and regression tests
+        run: python -m ruff check portal/workspace_center.py tests/test_client_workspace_center.py
+      - name: Alembic migrations
+        run: python -m alembic -c portal_alembic.ini upgrade head
+      - name: Client workspace regressions
+        run: python -m pytest -q --tb=short tests/test_client_workspace_center.py
