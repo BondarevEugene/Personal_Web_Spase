@@ -134,18 +134,18 @@ def test_route_contract_includes_customer_delivery_and_graph_studio():
 def test_security_headers_on_private_pages_and_https():
     from server import app
 
-    with TestClient(app) as client:
-        response = client.get("/account/login")
-        assert response.status_code == 200
-        assert "no-store" in response.headers["cache-control"]
-        assert response.headers["x-content-type-options"] == "nosniff"
-        assert response.headers["x-frame-options"] == "DENY"
-        assert response.headers["referrer-policy"] == "no-referrer"
-        assert "strict-transport-security" not in response.headers
-        health = client.get("/health")
-        assert health.headers["x-content-type-options"] == "nosniff"
+    client = TestClient(app)
+    response = client.get("/account/login")
+    assert response.status_code == 200
+    assert "no-store" in response.headers["cache-control"]
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert response.headers["referrer-policy"] == "no-referrer"
+    assert "strict-transport-security" not in response.headers
+    health = client.get("/health")
+    assert health.headers["x-content-type-options"] == "nosniff"
 
-    with TestClient(app, base_url="https://testserver") as client:
-        response = client.get("/account/login")
-        assert response.status_code == 200
-        assert response.headers["strict-transport-security"] == "max-age=31536000"
+    secure_client = TestClient(app, base_url="https://testserver")
+    secure_response = secure_client.get("/account/login")
+    assert secure_response.status_code == 200
+    assert secure_response.headers["strict-transport-security"] == "max-age=31536000"
