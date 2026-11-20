@@ -4,6 +4,7 @@
 <main class="container client-projects-page"><nav class="account-breadcrumb"><a href="/account">{{ t("Кабинет") }}</a><span>/</span><a href="/account/projects">{{ t("Заказы") }}</a><span>/</span><span>{{ t("Карточка") }}</span></nav>
 <div class="cp-heading"><div><span class="eyebrow">PROJECT / {{ project.id[:8] }}</span><h1>{{ project.title }}</h1><span class="cp-status">{{ t(statuses.get(project.status, project.status)) }}</span><p>Запрос создан {{ project.created_at.strftime("%d.%m.%Y") }}. Дата сдачи: {{ project.due_date.strftime("%d.%m.%Y") if project.due_date else "не назначена" }}.</p></div></div>
 {% include "_project_workspace_overview.html" %}
+{% include "_project_work_plan.html" %}
 <div class="cp-grid"><section class="account-panel"><h2>{{ t("Техническое задание") }}</h2><p class="cp-brief">{{ project.brief }}</p></section><section class="account-panel"><h2>{{ t("Этапы работы") }}</h2>
 {% if milestones %}<ol class="cp-stages">{% for stage in milestones %}<li><strong>{{ stage.title }}</strong><small>{{ t(milestone_labels.get(stage.status, stage.status)) }}</small><p>{{ stage.details }}</p></li>{% endfor %}</ol>{% else %}<p class="account-empty">{{ t("План работ ещё не утверждён оператором.") }}</p>{% endif %}
 </section></div>
