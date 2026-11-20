@@ -679,7 +679,8 @@
       } catch (error) {
         state.textContent = error.message;
       } finally {
-        submit.disabled = false;
+        if (!submit.disabled) return;
+        await refreshReadiness().catch(() => {});
       }
     });
     const refresh = document.createElement("button");
