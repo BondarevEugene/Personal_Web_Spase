@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 
-from api.simple_builder import Scenario
+from api.simple_builder import Scenario, analyze_scenario, export_scenario
 from portal.db import session_factory
 from portal.models import BuilderProject, utcnow
 from portal.routes import current_customer
@@ -208,3 +208,67 @@ def delete_project(id: str, request: Request):
             db.rollback()
             raise HTTPException(503, "Apply portal Alembic migrations before saving")
     return Response(status_code=204)
+
+
+@router.get("/{id}/diagnostics")
+def project_diagnostics(id: str, request: Request):
+    """Validate the persisted version, not unsaved browser state."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+    return analyze_scenario(scenario)
+
+
+@router.get("/{id}/export")
+def export_saved_project(id: str, request: Request):
+    """Export a customer's saved graph without accepting arbitrary graph payloads."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+    return export_scenario(scenario)
+
+
+@router.post("/{id}/duplicate", status_code=201)
+def duplicate_project(id: str, request: Request):
+    """Create an independent revision candidate with its own ID and layout."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
+        source = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if source is None:
+            raise HTTPException(404, "Project not found")
+        count = db.scalar(select(func.count()).select_from(BuilderProject).where(
+            BuilderProject.customer_id == user.id,
+        )) or 0
+        if count >= 50:
+            raise HTTPException(409, "Maximum 50 saved projects per account")
+        scenario = Scenario.model_validate_json(source.scenario_json)
+        scenario.name = (scenario.name[:92] + " · копия")[:100]
+        now = utcnow()
+        copy = BuilderProject(
+            customer_id=user.id,
+            name=scenario.name,
+            scenario_json=scenario.model_dump_json(),
+            layout_json=source.layout_json,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(copy)
+        db.commit()
+        db.refresh(copy)
+        return serialize(copy)
