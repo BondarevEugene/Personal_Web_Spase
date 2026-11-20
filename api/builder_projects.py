@@ -11,9 +11,11 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import func, select
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
-from api.simple_builder import Scenario
+from api.simple_builder import Scenario, analyze_scenario, export_scenario
+from automation.deployment import DeploymentSpec, build_plan
+from portal.models import CloudDeployment
 from portal.db import session_factory
 from portal.models import BuilderProject, utcnow
 from portal.routes import current_customer
@@ -208,3 +210,172 @@ def delete_project(id: str, request: Request):
             db.rollback()
             raise HTTPException(503, "Apply portal Alembic migrations before saving")
     return Response(status_code=204)
+
+
+@router.get("/{id}/diagnostics")
+def project_diagnostics(id: str, request: Request):
+    """Validate the persisted version, not unsaved browser state."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+    return analyze_scenario(scenario)
+
+
+@router.get("/{id}/export")
+def export_saved_project(id: str, request: Request):
+    """Export a customer's saved graph without accepting arbitrary graph payloads."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+    return export_scenario(scenario)
+
+
+@router.post("/{id}/duplicate", status_code=201)
+def duplicate_project(id: str, request: Request):
+    """Create an independent revision candidate with its own ID and layout."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
+        source = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if source is None:
+            raise HTTPException(404, "Project not found")
+        count = db.scalar(select(func.count()).select_from(BuilderProject).where(
+            BuilderProject.customer_id == user.id,
+        )) or 0
+        if count >= 50:
+            raise HTTPException(409, "Maximum 50 saved projects per account")
+        scenario = Scenario.model_validate_json(source.scenario_json)
+        scenario.name = (scenario.name[:92] + " · копия")[:100]
+        now = utcnow()
+        copy = BuilderProject(
+            customer_id=user.id,
+            name=scenario.name,
+            scenario_json=scenario.model_dump_json(),
+            layout_json=source.layout_json,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(copy)
+        db.commit()
+        db.refresh(copy)
+        return serialize(copy)
+
+
+class GraphDeploymentRequest(BaseModel):
+    name: str = Field(min_length=3, max_length=40)
+    mode: str = Field(default="managed")
+    transport: str = Field(default="worker")
+    max_monthly_usd: int = Field(ge=5, le=10000)
+
+
+@router.get("/{id}/deployment-readiness")
+def graph_deployment_readiness(id: str, request: Request):
+    """Report truthful deployment readiness for an owned saved graph."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+        report = analyze_scenario(scenario)
+        plans = db.scalars(select(CloudDeployment).where(
+            CloudDeployment.customer_id == user.id,
+        ).order_by(CloudDeployment.created_at.desc()).limit(50)).all()
+        linked = []
+        for plan in plans:
+            try:
+                manifest = json.loads(plan.manifest_json)
+            except (ValueError, TypeError):
+                continue
+            if manifest.get("version") == "graph-" + row.id:
+                linked.append({
+                    "id": plan.id, "name": plan.name, "status": plan.status,
+                    "manifest_sha256": plan.manifest_sha256,
+                })
+        return {
+            "project_id": row.id, "scenario_valid": report["ok"],
+            "diagnostics": report, "saved_plans": linked,
+            "live_deployment_enabled": False,
+            "token_collection_enabled": False,
+            "next_step": "Экспортировать aiogram ZIP или сохранить dry-run план",
+        }
+
+
+@router.post("/{id}/deployment-plan", status_code=201)
+def create_graph_deployment_plan(
+    id: str, request: Request, body: GraphDeploymentRequest,
+):
+    """Create an auditable plan, never provision or collect credentials."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+        report = analyze_scenario(scenario)
+        if not report["ok"]:
+            raise HTTPException(422, detail={
+                "message": "Исправьте ошибки сценария перед планированием",
+                "issues": report["issues"],
+            })
+        spec = DeploymentSpec(
+            name=body.name, runtime="telegram_aiogram",
+            mode=body.mode, provider="railway",
+            transport=body.transport, version="graph-" + row.id,
+            max_monthly_usd=body.max_monthly_usd,
+            secret_refs=["BOT_TOKEN"],
+        )
+        plan = build_plan(spec)
+        existing = db.scalar(select(CloudDeployment).where(
+            CloudDeployment.customer_id == user.id,
+            CloudDeployment.manifest_sha256 == plan.manifest_sha256,
+        ))
+        if existing is not None:
+            return {"id": existing.id, "status": existing.status,
+                    "manifest_sha256": existing.manifest_sha256,
+                    "already_exists": True}
+        count = db.scalar(select(func.count()).select_from(CloudDeployment).where(
+            CloudDeployment.customer_id == user.id,
+        )) or 0
+        if count >= 25:
+            raise HTTPException(409, "Maximum 25 deployment plans per account")
+        now = utcnow()
+        new = CloudDeployment(
+            customer_id=user.id, name=spec.name, mode=spec.mode,
+            provider=spec.provider, manifest_json=spec.model_dump_json(),
+            manifest_sha256=plan.manifest_sha256,
+            request_key="graph-" + plan.manifest_sha256[:32],
+            status="planned", created_at=now, updated_at=now,
+        )
+        db.add(new)
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(409, "План создан параллельным запросом. Обновите страницу.")
+        db.refresh(new)
+        return {"id": new.id, "status": new.status,
+                "manifest_sha256": new.manifest_sha256,
+                "already_exists": False, "warnings": plan.warnings}

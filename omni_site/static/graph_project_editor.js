@@ -193,6 +193,7 @@
           tile.removeEventListener("pointerup", finish);
           tile.removeEventListener("pointercancel", finish);
           renderCanvas();
+          markDirty();
         };
         tile.addEventListener("pointermove", move);
         tile.addEventListener("pointerup", finish);
@@ -215,6 +216,7 @@
       ? {id, kind: "end"}
       : {id, kind: "message", text: "Новое сообщение", next: null});
     render();
+    markDirty();
     status.textContent = "Блок добавлен. Соедините его переходом и сохраните.";
   };
   document.getElementById("graph-add-message")?.addEventListener(
@@ -263,6 +265,7 @@
     project.scenario.nodes.push({id, kind, ...defaults[kind]});
     selectedNodeId = id;
     render();
+    markDirty();
     status.textContent = "Блок добавлен. Настройте переходы и сохраните.";
   };
   const connectNodes = (fromId, toId) => {
@@ -271,6 +274,7 @@
       status.textContent = "Завершающий блок не имеет исходящих связей.";
       return;
     }
+    markDirty();
     if (source.kind === "condition") {
       source.true_target = toId;
       status.textContent = "Ветка Да соединена. Ветку Нет настройте в инспекторе.";
@@ -356,6 +360,7 @@
     inspector.append(makeButton("Сделать начальным", () => {
       project.scenario.start = node.id;
       render();
+      markDirty();
     }));
   };
   const runAnalysis = async () => {
@@ -476,6 +481,324 @@
     exportProject().catch(error => { status.textContent = error.message; });
   }));
 
+  const lifecycle = document.getElementById("graph-lifecycle");
+  let dirty = false;
+  const markDirty = () => {
+    dirty = true;
+    if (status) status.textContent = "Есть несохранённые изменения.";
+  };
+  root.addEventListener("input", markDirty);
+  root.addEventListener("change", markDirty);
+  const csrfHeaders = async () => {
+    const response = await fetch("/api/v1/builder/projects/csrf", {
+      credentials: "same-origin", cache: "no-store"
+    });
+    if (!response.ok) throw new Error("Сессия истекла. Войдите повторно.");
+    const data = await response.json();
+    return {"X-Omni-CSRF": data.csrf_token};
+  };
+  const projectAction = async (suffix, method) => {
+    const response = await fetch("/api/v1/builder/projects/" +
+      encodeURIComponent(projectId) + suffix, {
+      method, credentials: "same-origin", headers: await csrfHeaders()
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(JSON.stringify(body.detail || "Ошибка " + response.status));
+    }
+    return method === "DELETE" ? null : response.json();
+  };
+  const lifecycleButton = (label, action) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.style.cssText = "padding:10px 14px;margin:5px;border:1px solid #7184b0;" +
+      "border-radius:9px;background:#243552;color:#fff;cursor:pointer";
+    button.addEventListener("click", () => {
+      Promise.resolve().then(action).catch(error => {
+        status.textContent = error.message || "Не удалось выполнить действие";
+      });
+    });
+    lifecycle.append(button);
+  };
+  if (lifecycle) {
+    const heading = document.createElement("h3");
+    heading.textContent = "Управление сохранённым проектом";
+    lifecycle.append(heading);
+    lifecycleButton("Создать независимую копию", async () => {
+      if (dirty && !confirm("Копия будет создана из последней сохранённой версии. Продолжить?")) return;
+      const copy = await projectAction("/duplicate", "POST");
+      window.location.assign("/account/graph-project/" + encodeURIComponent(copy.id));
+    });
+    lifecycleButton("Проверить сохранённую версию", async () => {
+      const response = await fetch("/api/v1/builder/projects/" +
+        encodeURIComponent(projectId) + "/diagnostics", {
+        credentials: "same-origin", cache: "no-store"
+      });
+      if (!response.ok) throw new Error("Не удалось проверить сохранённый граф");
+      const report = await response.json();
+      validation.replaceChildren();
+      const heading = document.createElement("h3");
+      heading.textContent = report.ok ? "Сохранённый граф проверен" : "Есть ошибки";
+      validation.append(heading);
+      for (const issue of report.issues || []) {
+        const line = document.createElement("p");
+        line.textContent = issue.node_id + " · " + issue.message;
+        validation.append(line);
+      }
+    });
+    lifecycleButton("Экспортировать сохранённую версию", async () => {
+      if (dirty && !confirm("Экспортируется последняя сохранённая версия. Продолжить?")) return;
+      const response = await fetch("/api/v1/builder/projects/" +
+        encodeURIComponent(projectId) + "/export", {
+        credentials: "same-origin", cache: "no-store"
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(JSON.stringify(body.detail || "Экспорт отклонён"));
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "omnifactory-saved-telegram-bot.zip";
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.textContent = "Сохранённый проект экспортирован.";
+    });
+    lifecycleButton("Удалить проект", async () => {
+      if (!confirm("Безвозвратно удалить сохранённый проект?")) return;
+      await projectAction("", "DELETE");
+      window.location.assign("/account");
+    });
+  }
+  window.addEventListener("beforeunload", event => {
+    if (!dirty) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
+
+  const deployment = document.getElementById("graph-deployment");
+  if (deployment) {
+    const heading = document.createElement("h3");
+    heading.textContent = "Deployment Center · Telegram";
+    const notice = document.createElement("p");
+    notice.textContent = "Подготовка к публикации: реальный запуск в облаке пока отключён. " +
+      "Токены Telegram и платёжные данные здесь не запрашиваются.";
+    const state = document.createElement("div");
+    state.setAttribute("role", "status");
+    const form = document.createElement("form");
+    const name = document.createElement("input");
+    name.placeholder = "Имя сервиса: my-telegram-bot";
+    name.required = true;
+    name.pattern = "[a-z][a-z0-9-]{2,38}";
+    name.maxLength = 40;
+    name.style.cssText = "padding:12px;margin:6px;background:#111b2e;color:white";
+    const budget = document.createElement("input");
+    budget.type = "number";
+    budget.min = "5";
+    budget.max = "10000";
+    budget.value = "10";
+    budget.required = true;
+    budget.setAttribute("aria-label", "Месячный лимит USD");
+    budget.style.cssText = name.style.cssText;
+    const mode = document.createElement("select");
+    mode.setAttribute("aria-label", "Режим размещения");
+    for (const [value, label] of [
+      ["managed", "Управляемое размещение (план)"],
+      ["byoc", "Свой Railway (план)"]
+    ]) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      mode.append(option);
+    }
+    const transport = document.createElement("select");
+    transport.setAttribute("aria-label", "Транспорт Telegram");
+    for (const value of ["worker", "webhook"]) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      transport.append(option);
+    }
+    const submit = document.createElement("button");
+    submit.type = "submit";
+    submit.textContent = "Сохранить план публикации";
+    form.append(name, budget, mode, transport, submit);
+    const refreshReadiness = async () => {
+      const response = await fetch("/api/v1/builder/projects/" +
+        encodeURIComponent(projectId) + "/deployment-readiness", {
+        credentials: "same-origin", cache: "no-store"
+      });
+      if (!response.ok) throw new Error("Не удалось загрузить готовность проекта");
+      const data = await response.json();
+      state.replaceChildren();
+      const line = document.createElement("p");
+      line.textContent = data.scenario_valid
+        ? "Сохранённая схема проходит проверку."
+        : "Сохранённая схема требует исправлений.";
+      state.append(line);
+      for (const issue of data.diagnostics.issues || []) {
+        const item = document.createElement("p");
+        item.textContent = issue.severity + " · " + issue.node_id + ": " + issue.message;
+        state.append(item);
+      }
+      const plans = document.createElement("ul");
+      for (const plan of data.saved_plans) {
+        const item = document.createElement("li");
+        item.textContent = plan.name + " · " + plan.status + " · " + plan.id;
+        plans.append(item);
+      }
+      state.append(plans);
+      submit.disabled = !data.scenario_valid;
+    };
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (dirty && !confirm("План строится по сохранённой версии графа. Продолжить?")) return;
+      submit.disabled = true;
+      state.textContent = "Создаём план…";
+      try {
+        const response = await fetch("/api/v1/builder/projects/" +
+          encodeURIComponent(projectId) + "/deployment-plan", {
+          method: "POST", credentials: "same-origin",
+          headers: {"Content-Type": "application/json", ...await csrfHeaders()},
+          body: JSON.stringify({
+            name: name.value, max_monthly_usd: Number(budget.value),
+            mode: mode.value, transport: transport.value
+          })
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(JSON.stringify(error.detail || "Не удалось создать план"));
+        }
+        const result = await response.json();
+        await refreshReadiness();
+        status.textContent = "План " + result.id +
+          " сохранён. Это не запуск Telegram-бота и не разрешение на списания.";
+      } catch (error) {
+        state.textContent = error.message;
+      } finally {
+        if (!submit.disabled) return;
+        await refreshReadiness().catch(() => {});
+      }
+    });
+    const refresh = document.createElement("button");
+    refresh.type = "button";
+    refresh.textContent = "Обновить готовность";
+    refresh.addEventListener("click", () => {
+      refreshReadiness().catch(error => { state.textContent = error.message; });
+    });
+    deployment.append(heading, notice, form, refresh, state);
+    refreshReadiness().catch(error => { state.textContent = error.message; });
+  }
+
+  const releaseConsole = document.getElementById("graph-release");
+  if (releaseConsole) {
+    const heading = document.createElement("h3");
+    heading.textContent = "Release Gate · проверка перед публикацией";
+    const explanation = document.createElement("p");
+    explanation.textContent = "Здесь проверяется сохранённый граф, Railway, " +
+      "Telegram и неизменяемый релиз. Запрос проверки не запускает бота и не разрешает списания.";
+    const content = document.createElement("div");
+    const reviewStatus = document.createElement("div");
+    reviewStatus.setAttribute("role", "status");
+    const refresh = document.createElement("button");
+    refresh.type = "button";
+    refresh.textContent = "Проверить готовность релиза";
+    const fetchJson = async path => {
+      const response = await fetch(path, {
+        credentials: "same-origin", cache: "no-store"
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(JSON.stringify(data.detail || response.status));
+      return data;
+    };
+    const addLine = (parent, label, value) => {
+      const p = document.createElement("p");
+      p.textContent = label + ": " + value;
+      parent.append(p);
+    };
+    const refreshRelease = async () => {
+      content.textContent = "Проверяем сохранённый проект…";
+      const base = "/api/v1/builder/projects/" + encodeURIComponent(projectId);
+      const [readiness, runtime, railway] = await Promise.all([
+        fetchJson(base + "/deployment-readiness"),
+        fetchJson("/api/v1/cloud/runtime/preflight/" + encodeURIComponent(projectId)),
+        fetchJson("/api/v1/cloud/railway/status")
+      ]);
+      content.replaceChildren();
+      addLine(content, "Граф", readiness.scenario_valid ? "проверен" : "есть ошибки");
+      addLine(content, "Telegram runtime",
+        runtime.scenario_compatible ? "совместим" : runtime.issue || "несовместим");
+      addLine(content, "Railway OAuth", railway.connected ? "подключён" : "не подключён");
+      addLine(content, "Реальная публикация", "отключена до прохождения release gate");
+      const plans = readiness.saved_plans || [];
+      if (!plans.length) {
+        addLine(content, "Планы", "Сначала создайте план в Deployment Center");
+        return;
+      }
+      for (const plan of plans) {
+        const panel = document.createElement("section");
+        panel.style.cssText = "border:1px solid #50617d;padding:12px;margin:10px 0";
+        addLine(panel, "План", plan.name + " · " + plan.status);
+        const check = document.createElement("button");
+        check.type = "button";
+        check.textContent = "Проверить условия релиза";
+        check.addEventListener("click", async () => {
+          try {
+            const result = await fetchJson("/api/v1/cloud/releases/preflight/" +
+              encodeURIComponent(projectId) + "/" + encodeURIComponent(plan.id));
+            reviewStatus.replaceChildren();
+            addLine(reviewStatus, "Готовность", result.ready_for_review
+              ? "можно запросить проверку" : "есть блокирующие условия");
+            for (const [key, value] of Object.entries(result)) {
+              if (key === "ready_for_review" || typeof value === "object") continue;
+              addLine(reviewStatus, key, String(value));
+            }
+            if (result.ready_for_review) {
+              const request = document.createElement("button");
+              request.type = "button";
+              request.textContent = "Запросить проверку релиза (без публикации)";
+              request.addEventListener("click", async () => {
+                request.disabled = true;
+                try {
+                  const response = await fetch("/api/v1/cloud/releases/reviews", {
+                    method: "POST", credentials: "same-origin",
+                    headers: {"Content-Type": "application/json",
+                      "Idempotency-Key": "graph-" + projectId + "-" + plan.id,
+                      ...await csrfHeaders()},
+                    body: JSON.stringify({
+                      bot_project_id: projectId, cloud_plan_id: plan.id,
+                      confirmation: "REQUEST RELEASE REVIEW"
+                    })
+                  });
+                  const data = await response.json().catch(() => ({}));
+                  if (!response.ok) throw new Error(JSON.stringify(data.detail || response.status));
+                  reviewStatus.textContent = "Запрос проверки создан: " + data.id +
+                    ". Это не публикация и не разрешение расходов.";
+                } catch (error) {
+                  reviewStatus.textContent = error.message;
+                  request.disabled = false;
+                }
+              });
+              reviewStatus.append(request);
+            }
+          } catch (error) {
+            reviewStatus.textContent = error.message;
+          }
+        });
+        panel.append(check);
+        content.append(panel);
+      }
+    };
+    refresh.addEventListener("click", () => {
+      refreshRelease().catch(error => { content.textContent = error.message; });
+    });
+    releaseConsole.append(heading, explanation, refresh, content, reviewStatus);
+    refreshRelease().catch(error => { content.textContent = error.message; });
+  }
+
   const load = async () => {
     const response = await fetch("/api/v1/builder/projects/" +
       encodeURIComponent(projectId), {credentials: "same-origin", cache: "no-store"});
@@ -484,6 +807,7 @@
     project.positions ||= {};
     project.groups ||= [];
     render();
+    dirty = false;
     status.textContent = "Проект загружен. Изменения пока не сохранены.";
   };
 
@@ -511,6 +835,7 @@
         throw new Error(typeof details.detail === "string"
           ? details.detail : "Сервер отклонил изменения (" + response.status + ")");
       }
+      dirty = false;
       status.textContent = "Изменения сохранены. Можно закрыть и снова открыть проект.";
     } catch (error) {
       status.textContent = error.message || "Не удалось сохранить изменения";
