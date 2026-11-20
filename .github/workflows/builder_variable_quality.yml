@@ -1,0 +1,33 @@
+name: OMNIFACTORY builder variable quality
+
+on:
+  pull_request:
+    branches:
+      - feat/founders-omni-editorial-20261116
+    paths:
+      - "api/simple_builder.py"
+      - "tests/test_builder_path_variables.py"
+      - ".github/workflows/builder_variable_quality.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  builder-variable-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install "pytest>=8,<10" "ruff>=0.9,<1"
+      - name: Ruff
+        run: python -m ruff check api/simple_builder.py tests/test_builder_path_variables.py
+      - name: Graph regression
+        run: python -m pytest -q --tb=short tests/test_builder_path_variables.py
