@@ -8,6 +8,7 @@ from fastapi.templating import Jinja2Templates
 from omni_site.editorial import ARTICLES, ARTICLE_BY_SLUG
 from omni_site.case_library import CASES, CASE_BY_SLUG, CATEGORIES
 from omni_site.services_catalog import SERVICES, SERVICE_BY_SLUG
+from omni_site.trust_content import PAGES, PAGE_BY_SLUG
 
 BASE = Path(__file__).resolve().parent
 router = APIRouter(tags=["Studio Website"])
@@ -77,4 +78,24 @@ def service_detail(request: Request, slug: str):
     return templates.TemplateResponse(
         request=request, name="service_detail.html",
         context={"service": service, "services": SERVICES},
+    )
+
+
+@router.get("/trust", response_class=HTMLResponse, name="public_trust_center")
+def public_trust_center(request: Request):
+    """Public evidence-based transparency and project onboarding."""
+    return templates.TemplateResponse(
+        request=request, name="trust_center.html",
+        context={"pages": PAGES},
+    )
+
+
+@router.get("/trust/{slug}", response_class=HTMLResponse, name="public_trust_detail")
+def public_trust_detail(request: Request, slug: str):
+    page = PAGE_BY_SLUG.get(slug)
+    if page is None:
+        raise HTTPException(status_code=404, detail="Trust topic not found")
+    return templates.TemplateResponse(
+        request=request, name="trust_detail.html",
+        context={"page": page, "pages": PAGES},
     )
