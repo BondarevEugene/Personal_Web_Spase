@@ -70,7 +70,7 @@ def test_mobile_contact_is_real_and_respects_safe_areas():
 
 def test_excellence_does_not_add_javascript_or_fake_results():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
-    assert 'visual_excellence.css?v=1' in html
+    assert 'home_features.bundle.css?v=1' in html
     assert 'visual_excellence.js' not in html
     assert 'https://fonts.googleapis.com' in html
     assert 'https://fonts.gstatic.com' in html
