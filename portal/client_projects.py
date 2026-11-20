@@ -278,6 +278,34 @@ def assign_project(request: Request, id: str, csrf_token: str = Form(""),
     return RedirectResponse("/support/projects/" + project.id, status_code=303)
 
 
+def require_fresh_delivery_after_revision(db, project_id: str) -> None:
+    """Block repeat acceptance until a revised delivery is actually published.
+
+    A client revision request starts a new acceptance cycle. An operator
+    must publish a newer delivery document after that request, rather than
+    resubmitting the unchanged previous result.
+    """
+    from portal.models import ClientProjectDocument
+
+    latest_request = db.scalar(select(ClientProjectEvent).where(
+        ClientProjectEvent.project_id == project_id,
+        ClientProjectEvent.event_type == "revision_requested",
+    ).order_by(ClientProjectEvent.created_at.desc(), ClientProjectEvent.id.desc()).limit(1))
+    if latest_request is None:
+        return
+    revised_delivery = db.scalar(select(ClientProjectDocument.id).where(
+        ClientProjectDocument.project_id == project_id,
+        ClientProjectDocument.document_kind == "delivery",
+        ClientProjectDocument.created_at > latest_request.created_at,
+    ).limit(1))
+    if revised_delivery is None:
+        raise HTTPException(
+            409,
+            "После замечаний клиента опубликуйте новую редакцию результата "
+            "перед повторной приёмкой",
+        )
+
+
 @operator_router.post("/{id}/status")
 def update_status(request: Request, id: str, csrf_token: str = Form(""),
                   status: str = Form(""), note: str = Form("")):
@@ -292,6 +320,7 @@ def update_status(request: Request, id: str, csrf_token: str = Form(""),
         if len(note.strip()) > 1000:
             raise HTTPException(422, "Комментарий слишком длинный")
         if status == "review":
+            require_fresh_delivery_after_revision(db, project.id)
             # A published specification must be acknowledged at its newest
             # revision before delivery can be submitted for acceptance.
             from portal.models import ClientProjectApproval, ClientProjectDocument
