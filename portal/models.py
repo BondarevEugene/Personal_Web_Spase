@@ -616,3 +616,22 @@ class PublicSearchMetric(Base):
     imported_at: Mapped[datetime] = mapped_column(
         DateTime(), default=utcnow, nullable=False,
     )
+
+
+class PublicPageRevision(Base):
+    """Staged creative copy for vetted services and cases only."""
+
+    __tablename__ = "portal_public_page_revisions"
+    page_key: Mapped[str] = mapped_column(String(160), primary_key=True)
+    draft_title: Mapped[str] = mapped_column(String(180), nullable=False)
+    draft_summary: Mapped[str] = mapped_column(String(800), nullable=False)
+    published_title: Mapped[str | None] = mapped_column(String(180))
+    published_summary: Mapped[str | None] = mapped_column(String(800))
+    published_at: Mapped[datetime | None] = mapped_column(DateTime())
+    scheduled_for: Mapped[datetime | None] = mapped_column(DateTime())
+    updated_by_id: Mapped[str | None] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=True,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(), nullable=False, default=utcnow,
+    )
