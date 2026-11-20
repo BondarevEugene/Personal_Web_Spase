@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Request
 from portal.db import session_factory
+from omni_site.creative_store import read_override, render_home_hero
 from portal.routes import current_customer
 from portal.security import secure_request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
@@ -17,7 +18,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 async def home(request: Request):
     index_file = BASE_DIR / "index.html"
     if index_file.exists():
-        response = FileResponse(index_file)
+        with session_factory()() as db:
+            home_copy = read_override(db, "home:hero")
+        if home_copy is not None:
+            html = render_home_hero(
+                index_file.read_text(encoding="utf-8"), home_copy,
+            )
+            response = HTMLResponse(html)
+        else:
+            response = FileResponse(index_file)
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Omni-UI"] = "studio-v3-platform"
         return response
