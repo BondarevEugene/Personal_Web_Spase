@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
-from portal.client_projects import activity, customer_project, notify_org, operator_project
+from portal.client_projects import activity, customer_project, notify_org, operator_project, project_key
 from portal.db import session_factory
 from portal.models import (ClientProjectApproval, ClientProjectDocument,
                            ClientProjectNotification, utcnow)
@@ -118,6 +118,57 @@ def approve_document(request: Request, id: str, document_id: str,
         project.updated_at = utcnow()
         activity(db, project.id, user.id, "document_approval",
                  "Согласован документ «" + doc.title + "», версия " + str(doc.version))
+        db.commit()
+    return RedirectResponse("/account/projects/" + project.id, status_code=303)
+
+
+
+@customer_router.post("/{id}/documents/{document_id}/request-revision")
+def request_document_revision(
+    request: Request, id: str, document_id: str,
+    csrf_token: str = Form(""), comment: str = Form(""),
+):
+    """Request changes to the latest specification without approving it."""
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    comment = comment.strip()
+    if not 15 <= len(comment) <= 2000:
+        raise HTTPException(422, "Укажите замечания: 15–2000 символов")
+    with session_factory()() as db:
+        user = current_customer(request, db)
+        if user is None:
+            return RedirectResponse("/account/login", status_code=303)
+        project = customer_project(db, user, id)
+        db.refresh(project, with_for_update=True)
+        if user.role != "owner":
+            raise HTTPException(403, "Изменения запрашивает владелец организации")
+        if project.status in {"accepted", "cancelled"}:
+            raise HTTPException(409, "Проект закрыт")
+        doc = db.scalar(select(ClientProjectDocument).where(
+            ClientProjectDocument.id == project_key(document_id),
+            ClientProjectDocument.project_id == project.id,
+            ClientProjectDocument.document_kind == "specification",
+        ))
+        if doc is None:
+            raise HTTPException(404, "Техническое задание не найдено")
+        latest = db.scalar(select(func.max(ClientProjectDocument.version)).where(
+            ClientProjectDocument.project_id == project.id,
+            ClientProjectDocument.document_kind == "specification",
+        ))
+        if doc.version != latest:
+            raise HTTPException(409, "Запросить изменения можно только к актуальной версии")
+        approved = db.scalar(select(ClientProjectApproval.id).where(
+            ClientProjectApproval.document_id == doc.id,
+            ClientProjectApproval.org_id == user.org_id,
+        ))
+        if approved is not None:
+            raise HTTPException(409, "Версия уже согласована; запросите новую редакцию через поддержку")
+        if project.status == "review":
+            project.status = "in_progress"
+        project.updated_at = utcnow()
+        activity(db, project.id, user.id, "specification_revision_requested",
+                 f"Замечания к ТЗ v{doc.version}: {comment}")
+        notify_org(db, project, f"Клиент запросил изменения ТЗ v{doc.version}: {project.title}")
         db.commit()
     return RedirectResponse("/account/projects/" + project.id, status_code=303)
 
