@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 
 from omni_site.editorial import ARTICLES, ARTICLE_BY_SLUG
 from omni_site.case_library import CASES, CASE_BY_SLUG, CATEGORIES
+from omni_site.services_catalog import SERVICES, SERVICE_BY_SLUG
 
 BASE = Path(__file__).resolve().parent
 router = APIRouter(tags=["Studio Website"])
@@ -56,4 +57,24 @@ def public_case_detail(request: Request, slug: str):
     return templates.TemplateResponse(
         request=request, name="case_detail.html",
         context={"item": item, "cases": CASES},
+    )
+
+
+@router.get("/services", response_class=HTMLResponse, name="services_directory")
+def services_directory(request: Request):
+    """Real public service directory; no production or ROI promises."""
+    return templates.TemplateResponse(
+        request=request, name="service_directory.html",
+        context={"services": SERVICES},
+    )
+
+
+@router.get("/services/{slug}", response_class=HTMLResponse, name="service_detail")
+def service_detail(request: Request, slug: str):
+    service = SERVICE_BY_SLUG.get(slug)
+    if service is None:
+        raise HTTPException(status_code=404, detail="Service not found")
+    return templates.TemplateResponse(
+        request=request, name="service_detail.html",
+        context={"service": service, "services": SERVICES},
     )
