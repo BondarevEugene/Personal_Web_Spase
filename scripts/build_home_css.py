@@ -25,8 +25,8 @@ OUTPUT = "home_features.bundle.css"
 
 def build() -> str:
     pieces = [
-        "/* GENERATED FILE — do not edit. Run "
-        "python -m scripts.build_home_css instead. */\n",
+        ("/* GENERATED FILE — do not edit. Run "
+         "python -m scripts.build_home_css instead. */\n"),
     ]
     for name in SOURCES:
         payload = (STATIC / name).read_text(encoding="utf-8")
