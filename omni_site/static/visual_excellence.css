@@ -71,3 +71,15 @@
 @media(prefers-reduced-transparency:reduce){
 .platform-app .pf-stage::before{opacity:.12}
 }
+
+/* Browser audit: desktop header exceeded 1440px by 14px because its
+   fixed-size brand, eight links and two CTAs did not flex at mid widths.
+   Reduce internal spacing rather than hiding the page overflow. */
+@media(min-width:1001px) and (max-width:1550px){
+.platform-app .header-inner{gap:clamp(14px,1.5vw,23px)}
+.platform-app .nav-links{gap:clamp(9px,1vw,15px)}
+.platform-app .nav-links>a{font-size:11px}
+.platform-app .nav-actions{gap:9px}
+.platform-app .header-contact{padding:11px 12px}
+.platform-app .header-contact span{margin-left:8px}
+}
