@@ -905,6 +905,74 @@
     refresh(false).catch(error => { output.textContent = error.message; });
   }
 
+  const backupPanel = document.getElementById("graph-backup");
+  if (backupPanel) {
+    const heading = document.createElement("h3");
+    heading.textContent = "Версии и резервные копии";
+    const note = document.createElement("p");
+    note.textContent = "Скачайте JSON-копию проекта или восстановите ранее сохранённую. " +
+      "Восстановление заменяет текущую сохранённую версию, но не изменяет работающего бота.";
+    const download = document.createElement("a");
+    download.href = "/api/v1/builder/projects/" +
+      encodeURIComponent(projectId) + "/backup";
+    download.textContent = "Скачать резервную копию JSON";
+    download.setAttribute("download", "omnifactory-graph-backup.json");
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json,application/json";
+    input.setAttribute("aria-label", "Выберите резервную копию JSON");
+    const restore = document.createElement("button");
+    restore.type = "button";
+    restore.textContent = "Восстановить выбранную копию";
+    const feedback = document.createElement("p");
+    feedback.setAttribute("role", "status");
+    restore.addEventListener("click", async () => {
+      if (!project || !input.files || !input.files[0]) {
+        feedback.textContent = "Сначала выберите JSON-файл.";
+        return;
+      }
+      if (input.files[0].size > 300000) {
+        feedback.textContent = "Файл слишком большой.";
+        return;
+      }
+      if (!window.confirm("Заменить текущий сохранённый сценарий резервной копией?")) return;
+      restore.disabled = true;
+      try {
+        const raw = JSON.parse(await input.files[0].text());
+        if (raw.format !== "omnifactory.graph-project.backup" ||
+            raw.version !== 1 || !raw.project) {
+          throw new Error("Неподдерживаемый формат резервной копии");
+        }
+        const csrf = await fetch("/api/v1/builder/projects/csrf",
+          {credentials: "same-origin", cache: "no-store"});
+        if (!csrf.ok) throw new Error("Не удалось проверить сессию");
+        const {csrf_token} = await csrf.json();
+        const response = await fetch("/api/v1/builder/projects/" +
+          encodeURIComponent(projectId) + "/restore", {
+          method: "POST", credentials: "same-origin",
+          headers: {"Content-Type": "application/json",
+            "X-Omni-CSRF": csrf_token, "If-Match": project.revision},
+          body: JSON.stringify(raw)
+        });
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          throw new Error(response.status === 409
+            ? "Версия проекта изменилась. Обновите страницу перед восстановлением."
+            : JSON.stringify(error.detail || response.status));
+        }
+        project = await response.json();
+        dirty = false;
+        render();
+        feedback.textContent = "Копия восстановлена. Сценарий обновлён.";
+      } catch (error) {
+        feedback.textContent = error.message;
+      } finally {
+        restore.disabled = false;
+      }
+    });
+    backupPanel.append(heading, note, download, input, restore, feedback);
+  }
+
   const load = async () => {
     const response = await fetch("/api/v1/builder/projects/" +
       encodeURIComponent(projectId), {credentials: "same-origin", cache: "no-store"});
@@ -929,7 +997,8 @@
       const response = await fetch("/api/v1/builder/projects/" +
         encodeURIComponent(projectId), {
           method: "PUT", credentials: "same-origin",
-          headers: {"Content-Type": "application/json", "X-Omni-CSRF": csrf_token},
+          headers: {"Content-Type": "application/json", "X-Omni-CSRF": csrf_token,
+            "If-Match": project.revision},
           body: JSON.stringify({
             scenario: project.scenario,
             positions: project.positions,
@@ -938,9 +1007,13 @@
         });
       if (!response.ok) {
         const details = await response.json().catch(() => ({}));
-        throw new Error(typeof details.detail === "string"
+        throw new Error(response.status === 409
+          ? "Конфликт версий: проект изменён в другой вкладке. Скачайте резервную копию и обновите страницу."
+          : typeof details.detail === "string"
           ? details.detail : "Сервер отклонил изменения (" + response.status + ")");
       }
+      const saved = await response.json();
+      project.revision = saved.revision;
       dirty = false;
       status.textContent = "Изменения сохранены. Можно закрыть и снова открыть проект.";
     } catch (error) {
