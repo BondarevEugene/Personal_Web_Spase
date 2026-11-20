@@ -84,6 +84,17 @@
 
   // Telegram lead submission. No client-side token or chat_id: secrets stay on server.
   const leadForm = $('#lead-form');
+  // Allow service-specific calls to action to preselect only existing options.
+  // Never copy untrusted URL text into the form or submit anything automatically.
+  const leadTopic = new URLSearchParams(window.location.search).get('topic');
+  const topicSelect = leadForm?.querySelector('select[name="topic"]');
+  if (topicSelect && leadTopic) {
+    const matchingOption = Array.from(topicSelect.options).find(
+      option => option.value === leadTopic && option.value !== ''
+    );
+    if (matchingOption) topicSelect.value = matchingOption.value;
+  }
+
   const status = $('#lead-status');
   const submit = leadForm?.querySelector('button[type="submit"]');
   const setStatus = (message, kind = '') => {
