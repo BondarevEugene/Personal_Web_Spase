@@ -5,8 +5,8 @@ on mutations. No arbitrary user code, bot tokens or OAuth connections run here.
 """
 from __future__ import annotations
 
-import json
 import hashlib
+import json
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -23,9 +23,8 @@ from api.simple_builder import (
     simulate_scenario,
 )
 from automation.deployment import DeploymentSpec, build_plan
-from portal.models import CloudDeployment
 from portal.db import session_factory
-from portal.models import BuilderProject, utcnow
+from portal.models import BuilderProject, CloudDeployment, utcnow
 from portal.routes import current_customer
 from portal.security import issue_csrf, secure_request, verify_csrf
 
