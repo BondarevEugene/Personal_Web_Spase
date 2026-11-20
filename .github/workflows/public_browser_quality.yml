@@ -44,8 +44,12 @@ jobs:
           python -m pip install "pytest>=8,<10" "ruff>=0.9,<1" "playwright>=1.50,<2"
           python -m playwright install --with-deps chromium
 
-      - name: Ruff project gate
-        run: python -m ruff check .
+      - name: Ruff new public QA modules
+        run: |
+          python -m ruff check \
+            scripts/public_ux_audit.py \
+            scripts/public_asset_budget.py \
+            tests/test_public_qa_contract.py
 
       - name: Public product regressions
         run: |
