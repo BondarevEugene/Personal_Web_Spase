@@ -36,3 +36,15 @@
 @media(max-width:750px){.platform-app .growth-grid,.platform-app .growth-picker{grid-template-columns:1fr}.platform-app .growth-picker>div:first-child{grid-column:auto}}
 @media(max-width:480px){.platform-app .growth-fields{grid-template-columns:1fr}.platform-app .growth-fields label:last-child{grid-column:auto}.platform-app .growth-result>strong small{display:block;margin-left:0;font-size:16px}}
 @media(prefers-reduced-motion:reduce){.platform-app .growth-choice-button,.platform-app .growth-result *{transition:none!important;animation:none!important}}
+
+/* Explain the end-to-end delivery method without inventing client metrics. */
+.platform-app .growth-delivery{padding-top:clamp(64px,8vw,115px);padding-bottom:clamp(70px,8vw,120px)}
+.platform-app .growth-delivery-intro h2{font-size:clamp(28px,4vw,49px);letter-spacing:-.045em;line-height:1.16;max-width:730px;margin:12px 0 25px}
+.platform-app .growth-delivery-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.platform-app .growth-delivery-steps article{border:1px solid #3a475b;background:#101722;border-radius:10px;padding:clamp(18px,2.6vw,27px)}
+.platform-app .growth-delivery-steps article span{font-size:10px;font-weight:750;letter-spacing:.1em;color:#b6a5d6}
+.platform-app .growth-delivery-steps h3{font-size:20px;letter-spacing:-.025em;margin:14px 0 10px}
+.platform-app .growth-delivery-steps p{font-size:12px;line-height:1.75;color:#b4c2d7;margin:0}
+.platform-app .growth-delivery-cta{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:17px;background:#1a2230;border:1px solid #42516a;border-radius:10px;padding:clamp(16px,2.5vw,25px)}
+.platform-app .growth-delivery-cta p{font:600 19px var(--display);margin:0;letter-spacing:-.02em}
+@media(max-width:800px){.platform-app .growth-delivery-steps{grid-template-columns:1fr}}
