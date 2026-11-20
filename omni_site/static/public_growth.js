@@ -41,6 +41,32 @@
       number.format(count) + " операций × " + number.format(minutes) +
       " минут × " + number.format(share) + "% = " + number.format(hours) + " часа(ов).";
   }
+  // Hypothetical starting inputs: these are NOT measured project outcomes.
+  const presets = Object.freeze({
+    food: { count: 120, minutes: 12, rate: 250, share: 50 },
+    crm: { count: 450, minutes: 6, rate: 300, share: 65 },
+    bot: { count: 300, minutes: 5, rate: 240, share: 70 }
+  });
+  document.querySelectorAll("[data-growth-preset]").forEach(function(button) {
+    button.addEventListener("click", function () {
+      const preset = presets[button.dataset.growthPreset];
+      if (!preset) return;
+      document.getElementById("growth-volume").value = String(preset.count);
+      document.getElementById("growth-minutes").value = String(preset.minutes);
+      document.getElementById("growth-rate").value = String(preset.rate);
+      document.getElementById("growth-share").value = String(preset.share);
+      document.querySelectorAll("[data-growth-preset]").forEach(function(item) {
+        item.setAttribute("aria-pressed", String(item === button));
+      });
+      recalculate();
+    });
+  });
+  form.addEventListener("input", function (event) {
+    // Any manual change makes the values the visitor's own scenario.
+    if (event.isTrusted) document.querySelectorAll("[data-growth-preset]").forEach(function(item) {
+      item.setAttribute("aria-pressed", "false");
+    });
+  });
   form.addEventListener("input", recalculate);
   form.addEventListener("submit", function(event){event.preventDefault();recalculate();});
   recalculate();

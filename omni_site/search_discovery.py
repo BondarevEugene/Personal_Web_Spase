@@ -6,11 +6,13 @@ from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
 
 from fastapi import APIRouter
+
+from omni_site.editorial import ARTICLES
 from fastapi.responses import PlainTextResponse, Response
 
 router = APIRouter(tags=["Public Search Discovery"])
 PUBLIC_PATHS = (
-    "/", "/studio", "/projects", "/robotization", "/techkillers",
+    "/", "/studio", "/projects", "/robotization", "/techkillers", "/journal",
 )
 PRIVATE_PREFIXES = (
     "/account", "/support", "/api", "/bots", "/admin", "/cloud",
@@ -47,9 +49,10 @@ def sitemap():
     origin = canonical_origin(os.getenv("OMNI_PUBLIC_BASE_URL", ""))
     if origin is None:
         return Response(status_code=404)
+    paths = (*PUBLIC_PATHS, *(f"/journal/{article.slug}" for article in ARTICLES))
     urls = "\n".join(
         "  <url><loc>" + escape(origin + path) + "</loc></url>"
-        for path in PUBLIC_PATHS
+        for path in paths
     )
     body = '<?xml version="1.0" encoding="UTF-8"?>\n'
     body += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
