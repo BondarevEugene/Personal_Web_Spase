@@ -72,6 +72,31 @@
         panel.append(field("Переход кнопки " + (index + 1), option.target,
           value => { option.target = value; }));
       }
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "Удалить блок";
+      remove.disabled = project.scenario.nodes.length <= 1;
+      remove.addEventListener("click", () => {
+        if (node.id === project.scenario.start) {
+          status.textContent = "Начальный блок нельзя удалить. Сначала выберите другой старт.";
+          return;
+        }
+        const incoming = project.scenario.nodes.some(other => other.id !== node.id &&
+          (other.next === node.id || other.true_target === node.id ||
+            other.false_target === node.id ||
+            (other.options || []).some(option => option.target === node.id)));
+        if (incoming) {
+          status.textContent = "Сначала перенаправьте входящие связи блока " + node.id;
+          return;
+        }
+        project.scenario.nodes = project.scenario.nodes.filter(item => item.id !== node.id);
+        delete project.positions[node.id];
+        project.groups = (project.groups || []).map(group => ({...group,
+          node_ids: group.node_ids.filter(id => id !== node.id)}))
+          .filter(group => group.node_ids.length);
+        render();
+      });
+      panel.append(remove);
       fields.append(panel);
     }
   };
