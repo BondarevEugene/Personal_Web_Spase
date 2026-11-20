@@ -19,7 +19,7 @@ class BlueprintInput(BaseModel):
     sector: Literal["crm", "telegram", "automation"]
     team: Literal["solo", "growth", "enterprise"]
     process: Literal["new", "manual", "legacy"]
-    priority: Literal["control", "speed", "scale"]
+    priority: Literal["control", "speed", "experience"]
     integrations: list[str] = Field(default_factory=list, max_length=4)
 
 
