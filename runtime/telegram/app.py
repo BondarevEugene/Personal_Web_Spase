@@ -23,6 +23,7 @@ from fastapi.responses import JSONResponse
 
 TOKEN_PATTERN = re.compile(r"^[0-9]{5,15}:[A-Za-z0-9_-]{30,100}$")
 from scenario import BODY_LIMIT, read_scenario
+from state import DialogueStore
 PLACEHOLDER = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
 
 def substitute(value: str, variables: dict[str, str]) -> str:
@@ -38,12 +39,29 @@ def matches(actual: str, operator: str, expected: str) -> bool:
     }[operator]()
 
 
-def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
+def build_runtime(scenario: dict, bot: Bot, webhook_secret: str,
+                  store: DialogueStore | None = None) -> FastAPI:
     nodes = {node["id"]: node for node in scenario["nodes"]}
     dp = Dispatcher()
     router = Router()
     cursor: dict[tuple[int, int], str] = {}
     values: dict[tuple[int, int], dict[str, str]] = {}
+
+    def load(key: tuple[int, int]) -> None:
+        if store is not None:
+            current_cursor, current_values = store.read(key)
+            if current_cursor is not None:
+                cursor[key] = current_cursor
+            else:
+                cursor.pop(key, None)
+            values[key] = current_values
+
+    def persist(key: tuple[int, int]) -> None:
+        if store is not None:
+            if key in cursor:
+                store.write(key, cursor[key], values.get(key, {}))
+            else:
+                store.clear(key)
 
     async def walk(chat_id: int, user_id: int, target: str) -> None:
         key = (chat_id, user_id)
@@ -53,6 +71,7 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
             if node is None:
                 cursor.pop(key, None)
                 values.pop(key, None)
+                persist(key)
                 return
             kind = node["kind"]
             text = substitute(node.get("text") or "", current)
@@ -75,6 +94,7 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
                         for i, option in enumerate(node["options"])]
                     await bot.send_message(chat_id, text,
                         reply_markup=InlineKeyboardMarkup(inline_keyboard=keys))
+                persist(key)
                 return
             if kind == "message":
                 if text:
@@ -88,14 +108,17 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
                     await bot.send_message(chat_id, text)
                 cursor.pop(key, None)
                 values.pop(key, None)
+                persist(key)
                 return
             target = node.get("next")
             if target is None:
                 cursor.pop(key, None)
                 values.pop(key, None)
+                persist(key)
                 return
         cursor.pop(key, None)
         values.pop(key, None)
+        persist(key)
         await bot.send_message(chat_id, "Сценарий содержит слишком длинный цикл.")
 
     @router.message(CommandStart())
@@ -104,6 +127,7 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
             key = (message.chat.id, message.from_user.id)
             cursor.pop(key, None)
             values.pop(key, None)
+            persist(key)
             await walk(*key, scenario["start"])
 
     @router.callback_query(F.data.startswith("omni:"))
@@ -111,6 +135,7 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
         try:
             _, node_id, number = (call.data or "").split(":", 2)
             key = (call.message.chat.id, call.from_user.id)
+            load(key)
             node = nodes[node_id]
             if (node["kind"] != "choice" or cursor.get(key) != node_id or
                     not number.isascii() or not number.isdecimal()):
@@ -120,6 +145,8 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
         except (AttributeError, TypeError, ValueError, KeyError, IndexError):
             await call.answer("Выбор устарел. Используй /start.", show_alert=True)
             return
+        cursor.pop(key, None)
+        persist(key)
         await call.answer()
         await walk(*key, target)
 
@@ -128,6 +155,7 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
         if message.from_user is None:
             return
         key = (message.chat.id, message.from_user.id)
+        load(key)
         target = cursor.get(key)
         node = nodes.get(target) if target else None
         if not node or node["kind"] != "input":
@@ -137,6 +165,8 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
             await message.answer("Отправь текст до 300 символов.")
             return
         values.setdefault(key, {})[node["variable"]] = message.text.strip()
+        cursor.pop(key, None)
+        persist(key)
         await walk(*key, node["next"])
 
     dp.include_router(router)
@@ -147,6 +177,8 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
             yield
         finally:
             await bot.session.close()
+            if store is not None:
+                store.close()
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -154,7 +186,8 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
     async def health():
         # This proves the local runtime process is serving, NOT Telegram delivery.
         return {"service": "omni-telegram-runtime", "status": "process_ready",
-                "telegram_delivery_verified": False}
+                "telegram_delivery_verified": False,
+                "persistent_state": store is not None}
 
     @app.post("/telegram/webhook")
     async def webhook(request: Request):
@@ -171,7 +204,14 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str) -> FastAPI:
             event = Update.model_validate_json(payload, context={"bot": bot})
         except (ValueError, TypeError):
             raise HTTPException(400, "Invalid Telegram update")
-        await dp.feed_update(bot, event)
+        if store is not None and not store.claim_update(event.update_id):
+            return JSONResponse({"ok": True, "duplicate": True})
+        try:
+            await dp.feed_update(bot, event)
+        except Exception:
+            if store is not None:
+                store.forget_update(event.update_id)
+            raise
         return JSONResponse({"ok": True})
 
     return app
@@ -189,7 +229,9 @@ def load_app() -> FastAPI:
         scenario = read_scenario(encoded)
     except ValueError as exc:
         raise RuntimeError("Invalid runtime scenario") from exc
-    return build_runtime(scenario, Bot(token), webhook_secret)
+    state_path = os.getenv("OMNI_STATE_SQLITE_PATH", "").strip()
+    store = DialogueStore(state_path) if state_path else None
+    return build_runtime(scenario, Bot(token), webhook_secret, store)
 
 
 app = load_app() if os.getenv("OMNI_RUNTIME_BOOT") == "1" else FastAPI(
