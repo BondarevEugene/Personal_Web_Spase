@@ -108,11 +108,13 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str,
                     await bot.send_message(chat_id, text)
                 cursor.pop(key, None)
                 values.pop(key, None)
+                persist(key)
                 return
             target = node.get("next")
             if target is None:
                 cursor.pop(key, None)
                 values.pop(key, None)
+                persist(key)
                 return
         cursor.pop(key, None)
         values.pop(key, None)
