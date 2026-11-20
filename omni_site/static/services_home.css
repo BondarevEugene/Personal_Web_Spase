@@ -1,0 +1,15 @@
+/* Compact services introduction on public homepage. */
+.platform-app .services-home{padding-top:clamp(60px,7vw,100px);padding-bottom:clamp(65px,8vw,110px)}
+.platform-app .services-home-head{max-width:830px;margin-bottom:26px}
+.platform-app .services-home-head h2{font:600 clamp(29px,4.8vw,56px)/1.13 var(--display);letter-spacing:-.055em;margin:14px 0}
+.platform-app .services-home-head p{font-size:13px;line-height:1.75;color:#bac8dc}
+.platform-app .services-home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:19px}
+.platform-app .services-home-grid a{display:flex;flex-direction:column;gap:14px;min-height:214px;padding:clamp(18px,2.8vw,29px);border-radius:11px;border:1px solid #4b5472;background:linear-gradient(135deg,#282240,#111928)}
+.platform-app .services-home-grid a:nth-child(2){background:linear-gradient(135deg,#17414b,#111928)}
+.platform-app .services-home-grid a:nth-child(3){background:linear-gradient(135deg,#203d31,#111928)}
+.platform-app .services-home-grid span{font-size:10px;letter-spacing:.1em;color:#b4c5e1;font-weight:750}
+.platform-app .services-home-grid strong{font:600 clamp(21px,2.4vw,29px)/1.2 var(--display);letter-spacing:-.035em}
+.platform-app .services-home-grid small{font-size:12px;color:#beccdd;line-height:1.5;flex:1}
+.platform-app .services-home-grid b{font-size:12px;color:#beeae6}
+.platform-app .services-home-grid a:hover,.platform-app .services-home-grid a:focus-visible{border-color:#c5b5e8;outline-offset:3px}
+@media(max-width:900px){.platform-app .services-home-grid{grid-template-columns:1fr}.platform-app .services-home-grid a{min-height:155px}}
