@@ -602,3 +602,17 @@ class PublicArticleRevision(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(), default=utcnow, nullable=False,
     )
+
+
+class PublicSearchMetric(Base):
+    """Aggregated Search Console page/day performance (no visitor identities)."""
+
+    __tablename__ = "portal_public_search_metrics"
+    date: Mapped[str] = mapped_column(String(10), primary_key=True)
+    path: Mapped[str] = mapped_column(String(240), primary_key=True)
+    clicks: Mapped[int] = mapped_column(Integer, nullable=False)
+    impressions: Mapped[int] = mapped_column(Integer, nullable=False)
+    position: Mapped[float | None] = mapped_column(nullable=True)
+    imported_at: Mapped[datetime] = mapped_column(
+        DateTime(), default=utcnow, nullable=False,
+    )
