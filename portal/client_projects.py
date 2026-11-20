@@ -9,7 +9,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 
 from portal.db import session_factory
-from portal.models import ClientProject, ClientProjectEvent, ClientProjectMilestone, ClientProjectNotification, Customer, utcnow
+from portal.models import (
+    ClientProject,
+    ClientProjectEvent,
+    ClientProjectMilestone,
+    ClientProjectNotification,
+    Customer,
+    utcnow,
+)
 from portal.routes import current_customer, form_page
 from portal.security import secure_request, verify_csrf
 from portal.support_admin import operator_ids, require_operator
@@ -208,6 +215,14 @@ def accept_project(request: Request, id: str, csrf_token: str = Form("")):
         ).order_by(ClientProjectDocument.version.desc()).limit(1))
         if latest_delivery is None:
             raise HTTPException(409, "Опубликуйте описание результата перед приёмкой")
+        delivery_approval = db.scalar(select(ClientProjectApproval.id).where(
+            ClientProjectApproval.document_id == latest_delivery,
+            ClientProjectApproval.org_id == user.org_id,
+        ))
+        if delivery_approval is None:
+            raise HTTPException(
+                409, "Сначала согласуйте последнюю редакцию описания результата"
+            )
         has_stage = db.scalar(select(ClientProjectMilestone.id).where(
             ClientProjectMilestone.project_id == project.id
         ).limit(1))
