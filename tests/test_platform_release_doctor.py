@@ -9,7 +9,8 @@ from alembic.config import Config
 
 from portal.db import engine, session_factory
 from portal.release_doctor import (
-    EXPECTED_TABLES, REQUIRED_ASSETS, assess, assess_config, assess_database, main,
+    EXPECTED_TABLES, REQUIRED_ASSETS, assess, assess_config, assess_database,
+    assess_routes, main,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -119,3 +120,11 @@ def test_cli_returns_nonzero_for_unready_prod(monkeypatch, capsys):
     assert result["ready"] is False
     assert result["failed"] > 0
     assert result["mode"] == "production"
+
+
+def test_route_contract_includes_customer_delivery_and_graph_studio():
+    result = assess_routes()
+    assert names(result)["public_route_contract"] == "pass", result
+    report = assess(production=False, database=False, routes=True, env={})
+    assert report["ready"] is True
+    assert report["failed"] == 0
