@@ -16,7 +16,7 @@ from fastapi.responses import PlainTextResponse, Response
 
 router = APIRouter(tags=["Public Search Discovery"])
 PUBLIC_PATHS = (
-    "/", "/studio", "/projects", "/robotization", "/techkillers", "/journal", "/cases", "/services", "/trust", "/demo",
+    "/", "/studio", "/projects", "/robotization", "/techkillers", "/journal", "/cases", "/services", "/trust", "/demo", "/demo/blueprint",
 )
 PRIVATE_PREFIXES = (
     "/account", "/support", "/api", "/bots", "/admin", "/cloud",
