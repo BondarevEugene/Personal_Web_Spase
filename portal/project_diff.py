@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from html import escape
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -56,8 +57,6 @@ def compare_document(request: Request, id: str, document_id: str):
         ))
         if previous is None:
             raise HTTPException(409, "Предыдущая редакция не найдена")
-        from html import escape
-
         lines = compare_text(previous.body, current.body)
         parts = [
             '<!doctype html><html lang="ru"><head><meta charset="utf-8">',
