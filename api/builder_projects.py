@@ -400,3 +400,65 @@ def create_graph_deployment_plan(
         return {"id": new.id, "status": new.status,
                 "manifest_sha256": new.manifest_sha256,
                 "already_exists": False, "warnings": plan.warnings}
+
+
+
+@router.get("/{id}/backup")
+def download_project_backup(id: str, request: Request):
+    """Export a self-contained editable graph, never credentials."""
+    from fastapi.responses import JSONResponse
+
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        data = serialize(row, full=True)
+        return JSONResponse({
+            "format": "omnifactory.graph-project.backup",
+            "version": 1,
+            "revision": data["revision"],
+            "project": {
+                "scenario": data["scenario"],
+                "positions": data["positions"],
+                "groups": data["groups"],
+            },
+        }, headers={
+            "Cache-Control": "no-store",
+            "Content-Disposition": 'attachment; filename="omnifactory-graph-backup.json"',
+            "X-Content-Type-Options": "nosniff",
+        })
+
+
+class RestoreRequest(BaseModel):
+    format: str
+    version: int
+    project: ProjectData
+
+
+@router.post("/{id}/restore")
+def restore_project_backup(id: str, request: Request, body: RestoreRequest):
+    """Restore an owned backup with an explicit revision precondition."""
+    if body.format != "omnifactory.graph-project.backup" or body.version != 1:
+        raise HTTPException(422, "Unsupported backup format or version")
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        verify_csrf(request, request.headers.get("X-Omni-CSRF", ""))
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        if not request.headers.get("If-Match"):
+            raise HTTPException(428, "If-Match revision required for restore")
+        ensure_revision(request, row)
+        row.name = body.project.scenario.name
+        row.scenario_json = body.project.scenario.model_dump_json()
+        row.layout_json = pack_layout(body.project)
+        row.updated_at = utcnow()
+        db.commit()
+        return serialize(row, full=True)
