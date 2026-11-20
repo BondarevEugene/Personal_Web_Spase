@@ -397,6 +397,73 @@ def analyze_scenario(scenario: Scenario) -> dict:
     }
 
 
+def release_preflight(scenario: Scenario) -> dict:
+    """Check whether a valid graph can actually reach a terminal result.
+
+    Read-only release gate; it does not change existing validation or exports.
+    """
+    diagnosis = analyze_scenario(scenario)
+    reachable = _reachable(scenario)
+    by_id = {node.id: node for node in scenario.nodes}
+    predecessors: dict[str, set[str]] = {node_id: set() for node_id in reachable}
+    for node_id in reachable:
+        node = by_id[node_id]
+        targets = (
+            [choice.target for choice in node.options] if node.kind == "choice"
+            else [node.true_target, node.false_target] if node.kind == "condition"
+            else [node.next]
+        )
+        for target in targets:
+            if target in reachable:
+                predecessors[target].add(node_id)
+
+    terminals = {node_id for node_id in reachable if by_id[node_id].kind == "end"}
+    can_finish = set(terminals)
+    pending = list(terminals)
+    while pending:
+        current = pending.pop()
+        for previous in predecessors[current] - can_finish:
+            can_finish.add(previous)
+            pending.append(previous)
+
+    issues = list(diagnosis["issues"])
+    if not terminals:
+        issues.append({
+            "node_id": scenario.start, "code": "no_terminal",
+            "severity": "error",
+            "message": "В сценарии нет достижимого завершающего блока",
+        })
+    for node_id in sorted(reachable - can_finish):
+        if by_id[node_id].kind != "end":
+            issues.append({
+                "node_id": node_id, "code": "no_path_to_end",
+                "severity": "error",
+                "message": f"Блок {node_id}: нет пути к завершающему блоку",
+            })
+    issues.sort(key=lambda issue: (issue["node_id"], issue["code"]))
+    errors = [issue for issue in issues if issue["severity"] == "error"]
+    return {
+        "ready": not errors,
+        "terminal_count": len(terminals),
+        "nodes_with_path_to_end": len(can_finish),
+        "reachable_nodes": len(reachable),
+        "issues": issues,
+        "error_count": len(errors),
+        "warning_count": len(issues) - len(errors),
+        "checks": {
+            "graph_validation": diagnosis["ok"],
+            "reachable_terminal": bool(terminals),
+            "all_reachable_nodes_can_finish": reachable <= can_finish,
+        },
+    }
+
+
+@router.post("/preflight")
+def preflight_scenario(scenario: Scenario):
+    """Release readiness report, independent of dry-run and live deployment."""
+    return release_preflight(scenario)
+
+
 @router.post("/validate")
 def validate_scenario(scenario: Scenario):
     return analyze_scenario(scenario)
