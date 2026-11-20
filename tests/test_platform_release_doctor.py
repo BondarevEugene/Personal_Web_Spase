@@ -80,6 +80,7 @@ def test_local_development_mode_does_not_force_neon():
 @pytest.mark.parametrize("bad_origins", [
     "*", "https://safe.test,*", "ftp://host.test",
     "https://user:password@host.test", "http://not-secure.test",
+    "https://[broken-host", "https://host.test/path",
 ])
 def test_production_rejects_unsafe_cors(bad_origins):
     conf = valid_production_config()
@@ -159,3 +160,15 @@ def test_security_headers_on_private_pages_and_https():
     secure_response = secure_client.get("/account/login")
     assert secure_response.status_code == 200
     assert secure_response.headers["strict-transport-security"] == "max-age=31536000"
+
+
+def test_production_public_origin_rejects_malformed_or_embedded_credentials():
+    for candidate in (
+        "https://[bad-host", "https://user:secret@site.example",
+        "https://site.example/private", "https://site.example?token=secret",
+    ):
+        conf = valid_production_config()
+        conf["OMNI_PUBLIC_BASE_URL"] = candidate
+        assert names(assess_config(production=True, env=conf))[
+            "https_external_url"
+        ] == "fail"
