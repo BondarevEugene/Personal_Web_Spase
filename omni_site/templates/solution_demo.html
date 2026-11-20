@@ -41,7 +41,7 @@
 <div class="demo-flow-label"><span>SCENARIO / {{ journey.slug|upper }}</span><span>ILLUSTRATIVE PROCESS / NOT LIVE</span></div>
 <div class="demo-flow-nodes">
 {% for step in journey.steps %}
-<button type="button" class="demo-node demo-node-{{ step.node_type }}" data-demo-step="{{ loop.index0 }}" aria-pressed="{{ 'true' if loop.first else 'false' }}" aria-controls="demo-inspector-{{ journey.slug }}">
+<button type="button" class="demo-node demo-node-{{ step.node_type }}" data-demo-step="{{ loop.index0 }}" data-step-explanation="{{ step.explanation }}" data-step-title="{{ step.title }}" data-step-number="{{ step.code }}" aria-pressed="{{ 'true' if loop.first else 'false' }}" aria-controls="demo-inspector-{{ journey.slug }}">
 <span class="demo-node-index">{{ step.code }} / {{ step.node_type|upper }}</span>
 <strong>{{ step.title }}</strong>
 <span class="demo-node-connector" aria-hidden="true">→</span>
