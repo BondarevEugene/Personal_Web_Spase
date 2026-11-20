@@ -53,6 +53,13 @@ def open_graph_project(request: Request, id: str):
         + str(len(nodes)) + ' блоков</p><ol>' + items + '</ol>'
         '<p>Для изменения узлов откройте Graph Studio. '
         'Это защищённый просмотр, а не режим редактирования.</p>'
+        '<section id="graph-editor" data-project-id="' + escape(project["id"]) + '">' 
+        '<h2>Редактор сценария</h2><p>Изменяйте тексты, названия и переходы блоков. '
+        'Проверка графа выполняется сервером перед сохранением.</p>'
+        '<div id="graph-editor-fields"></div>'
+        '<button type="button" id="graph-save">Сохранить изменения</button>'
+        '<p id="graph-editor-status" role="status" aria-live="polite"></p>'
+        '</section><script defer src="/studio-assets/graph_project_editor.js"></script>'
         '</body></html>'
     )
     return HTMLResponse(
