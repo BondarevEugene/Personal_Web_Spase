@@ -6,6 +6,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from omni_site.editorial import ARTICLES, ARTICLE_BY_SLUG
+from omni_site.content_store import public_articles, published_article
+from portal.db import session_factory
 from omni_site.case_library import CASES, CASE_BY_SLUG, CATEGORIES
 from omni_site.services_catalog import SERVICES, SERVICE_BY_SLUG
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
@@ -23,22 +25,26 @@ def studio_home(request: Request):
 @router.get("/journal", response_class=HTMLResponse, name="engineering_journal")
 def engineering_journal(request: Request):
     """Static, source-grounded engineering journal with no customer claims."""
+    with session_factory()() as db:
+        articles = public_articles(db)
     return templates.TemplateResponse(
         request=request,
         name="engineering_journal.html",
-        context={"articles": ARTICLES},
+        context={"articles": articles},
     )
 
 
 @router.get("/journal/{slug}", response_class=HTMLResponse, name="engineering_article")
 def engineering_article(request: Request, slug: str):
-    article = ARTICLE_BY_SLUG.get(slug)
-    if article is None:
+    if slug not in ARTICLE_BY_SLUG:
         raise HTTPException(status_code=404, detail="Article not found")
+    with session_factory()() as db:
+        article = published_article(db, slug)
+        articles = public_articles(db)
     return templates.TemplateResponse(
         request=request,
         name="engineering_article.html",
-        context={"article": article, "articles": ARTICLES},
+        context={"article": article, "articles": articles},
     )
 
 
