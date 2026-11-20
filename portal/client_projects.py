@@ -9,7 +9,10 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 
 from portal.db import session_factory
-from portal.models import ClientProject, ClientProjectEvent, ClientProjectMilestone, ClientProjectNotification, Customer, utcnow
+from portal.project_work import task_context, validate_task_dates
+from portal.models import (ClientProject, ClientProjectEvent, ClientProjectMilestone,
+                           ClientProjectNotification, ClientProjectTask,
+                           ClientProjectTimeEntry, Customer, utcnow)
 from portal.project_progress import milestone_progress
 from portal.routes import current_customer, form_page
 from portal.security import secure_request, verify_csrf
@@ -86,7 +89,7 @@ def project_context(db, project):
     return {"milestones": milestones, "progress": milestone_progress(milestones),
             "events": events, "statuses": STATES,
             "milestone_labels": MILESTONES, **documents_context(db, project),
-            **attachment_context(db, project)}
+            **attachment_context(db, project), **task_context(db, project.id)}
 
 
 @router.get("", response_class=HTMLResponse)
@@ -135,7 +138,8 @@ def project_detail(request: Request, id: str):
             return RedirectResponse("/account/login", status_code=303)
         project = customer_project(db, user, id)
         return form_page(request, "client_project_detail.html", user=user,
-                         project=project, **project_context(db, project))
+                         project=project, workspace_operator=False,
+                         **project_context(db, project))
 
 
 @router.post("/{id}/request-changes")
@@ -248,7 +252,7 @@ def operator_detail(request: Request, id: str):
             ClientProject.updated_at.desc()).limit(150)).all()
         return form_page(request, "client_project_operator.html",
                          user=operator, projects=rows, project=project,
-                         **project_context(db, project))
+                         workspace_operator=True, **project_context(db, project))
 
 
 @operator_router.post("/{id}/assignment")
@@ -428,3 +432,109 @@ def update_milestone(request: Request, id: str, stage_id: str,
                  stage.title + ": " + old + " → " + status)
         db.commit()
     return RedirectResponse("/support/projects/" + project.id, status_code=303)
+
+
+@operator_router.post("/{id}/tasks")
+def create_work_task(
+    request: Request, id: str, csrf_token: str = Form(""),
+    title: str = Form(""), parent_id: str = Form(""),
+    assignee_id: str = Form(""), start_on: str = Form(""),
+    due_on: str = Form(""), estimate_hours: int = Form(0),
+):
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    title = title.strip()
+    if not 3 <= len(title) <= 160 or not 0 <= estimate_hours <= 10000:
+        raise HTTPException(422, "Некорректная задача или оценка")
+    try:
+        start = datetime.strptime(start_on, "%Y-%m-%d") if start_on else None
+        due = datetime.strptime(due_on, "%Y-%m-%d") if due_on else None
+        validate_task_dates(start, due)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc))
+    with session_factory()() as db:
+        actor = require_operator(request, db)
+        project = operator_project(db, id)
+        db.refresh(project, with_for_update=True)
+        if project.status in {"accepted", "cancelled"}:
+            raise HTTPException(409, "Проект закрыт")
+        if db.query(ClientProjectTask).filter_by(project_id=project.id).count() >= 200:
+            raise HTTPException(409, "Максимум 200 задач")
+        parent = None
+        if parent_id:
+            parent = db.get(ClientProjectTask, project_key(parent_id))
+            if parent is None or parent.project_id != project.id or parent.parent_id:
+                raise HTTPException(422, "Родитель должен быть корневой задачей этого проекта")
+        assignee = None
+        if assignee_id:
+            assignee = project_key(assignee_id)
+            if assignee.lower() not in operator_ids():
+                raise HTTPException(403, "Назначать можно только операторов")
+            member = db.get(Customer, assignee)
+            if member is None or not member.is_active:
+                raise HTTPException(422, "Исполнитель не найден")
+        task = ClientProjectTask(project_id=project.id, parent_id=parent.id if parent else None,
+                                 title=title, assignee_id=assignee, start_on=start,
+                                 due_on=due, estimate_minutes=estimate_hours * 60)
+        db.add(task)
+        project.updated_at = utcnow()
+        activity(db, project.id, actor.id, "task", "Добавлена задача: " + title)
+        db.commit()
+    return RedirectResponse("/support/projects/" + project.id + "#project-work", status_code=303)
+
+
+@operator_router.post("/{id}/tasks/{task_id}/status")
+def change_work_task_status(request: Request, id: str, task_id: str,
+                            csrf_token: str = Form(""), status: str = Form("")):
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    transitions = {"planned": {"in_progress"}, "in_progress": {"planned", "completed"},
+                   "completed": {"in_progress"}}
+    with session_factory()() as db:
+        actor = require_operator(request, db)
+        project = operator_project(db, id)
+        db.refresh(project, with_for_update=True)
+        if project.status in {"accepted", "cancelled"}:
+            raise HTTPException(409, "Проект закрыт")
+        task = db.get(ClientProjectTask, project_key(task_id))
+        if task is None or task.project_id != project.id:
+            raise HTTPException(404, "Задача не найдена")
+        if status not in transitions.get(task.status, set()):
+            raise HTTPException(409, "Недопустимый переход статуса")
+        if status == "completed" and db.scalar(select(ClientProjectTask.id).where(
+            ClientProjectTask.parent_id == task.id,
+            ClientProjectTask.status != "completed",
+        ).limit(1)):
+            raise HTTPException(409, "Сначала завершите подзадачи")
+        task.status = status
+        project.updated_at = utcnow()
+        activity(db, project.id, actor.id, "task", task.title + ": " + status)
+        db.commit()
+    return RedirectResponse("/support/projects/" + project.id + "#project-work", status_code=303)
+
+
+@operator_router.post("/{id}/tasks/{task_id}/time")
+def log_work_time(request: Request, id: str, task_id: str,
+                  csrf_token: str = Form(""), minutes: int = Form(0),
+                  note: str = Form("")):
+    secure_request(request)
+    verify_csrf(request, csrf_token)
+    note = note.strip()
+    if not 1 <= minutes <= 1440 or not 3 <= len(note) <= 500:
+        raise HTTPException(422, "Укажите 1–1440 минут и описание работы")
+    with session_factory()() as db:
+        actor = require_operator(request, db)
+        project = operator_project(db, id)
+        db.refresh(project, with_for_update=True)
+        if project.status in {"accepted", "cancelled"}:
+            raise HTTPException(409, "Проект закрыт")
+        task = db.get(ClientProjectTask, project_key(task_id))
+        if task is None or task.project_id != project.id:
+            raise HTTPException(404, "Задача не найдена")
+        db.add(ClientProjectTimeEntry(task_id=task.id, actor_id=actor.id,
+                                      minutes=minutes, note=note))
+        project.updated_at = utcnow()
+        activity(db, project.id, actor.id, "worklog",
+                 f"Учтено {minutes} мин: {task.title}")
+        db.commit()
+    return RedirectResponse("/support/projects/" + project.id + "#project-work", status_code=303)
