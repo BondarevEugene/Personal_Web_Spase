@@ -11,8 +11,8 @@ import zipfile
 from dataclasses import dataclass
 from hashlib import sha256
 
-from omni_site.blueprint_specification import compile_specification
 from omni_site.blueprint_project_plan import build_project_plan
+from omni_site.blueprint_specification import compile_specification
 
 
 @dataclass(frozen=True)
