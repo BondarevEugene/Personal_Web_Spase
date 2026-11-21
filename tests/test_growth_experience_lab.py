@@ -49,7 +49,7 @@ def test_ai_scenario_is_explicitly_non_live_and_requires_human_review():
     assert "не обращается" in " ".join(journey.constraints)
     assert "человек" in " ".join(journey.constraints)
     brief = make_blueprint("ai", "solo", "manual", "experience")
-    assert any("подтвержден" in item for item in brief.acceptance)
+    assert any("подтверждения" in item for item in brief.acceptance)
     assert any("качества" in item for item in brief.components)
 
 
