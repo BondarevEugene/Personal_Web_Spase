@@ -19,11 +19,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
-from automation.engine import RunRequest, WorkflowDefinition, bounded, execute
 from automation.diagnostics import analyze
+from automation.engine import RunRequest, WorkflowDefinition, bounded, execute
 from omni_site.automation_flagship import BY_SLUG, template_definition
 from portal.db import session_factory
-from portal.models import AutomationRun, AutomationWorkflow, AutomationSchedule, utcnow
+from portal.models import AutomationRun, AutomationSchedule, AutomationWorkflow, utcnow
 from portal.routes import current_customer
 from portal.security import secure_request, verify_csrf
 
@@ -510,9 +510,9 @@ async def incoming_webhook(workflow_id: str, request: Request,
     try:
         data = json.loads(chunks)
         if not isinstance(data, dict):
-            raise ValueError("Payload must be an object")
+            raise TypeError("Payload must be an object")
         bounded(data)
-    except (ValueError, UnicodeDecodeError):
+    except (TypeError, ValueError, UnicodeDecodeError):
         raise HTTPException(422, "Invalid JSON webhook payload")
     with session_factory()() as db:
         row = db.get(AutomationWorkflow, parse_id(workflow_id))
