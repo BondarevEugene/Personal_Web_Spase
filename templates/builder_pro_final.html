@@ -114,6 +114,16 @@
   <p id="release-plan-status" role="status" aria-live="polite"></p>
  </form>
  <div id="release-plan-history"></div>
+ <section id="release-runtime-queue" aria-label="Очередь проверки облачного развёртывания">
+  <h3>Проверка плана перед публикацией</h3>
+  <p>Запустите безопасную dry-run проверку плана. Очередь не создаёт ресурсы Railway и не списывает средства.</p>
+  <label for="release-runtime-plan">Сохранённый план</label>
+  <select id="release-runtime-plan"><option value="">Сначала проверьте проект</option></select>
+  <button type="button" id="release-runtime-run" class="button button-line" disabled>Запустить dry-run проверку</button>
+  <button type="button" id="release-runtime-refresh" class="button button-line">Обновить задания</button>
+  <p id="release-runtime-status" role="status" aria-live="polite"></p>
+  <div id="release-runtime-jobs"></div>
+ </section>
  <a id="release-center-download" class="button button-primary" hidden>Скачать Python-бот ZIP</a>
  <p><small>Выпуск не означает, что бот запущен. Подключение Railway и подтверждение онлайн-статуса не выполняются.</small></p>
 </section>
@@ -260,6 +270,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <link rel="stylesheet" href="/studio-assets/graph_release_inspector.css?v=3">
 <script defer src="/studio-assets/graph_release_inspector.js?v=3"></script>
-<script defer src="/studio-assets/graph_release_center.js?v=2"></script>
+<script defer src="/studio-assets/graph_release_center.js?v=3"></script>
 <link rel="stylesheet" href="/studio-assets/graph_release_center.css?v=1">
 </body></html>
