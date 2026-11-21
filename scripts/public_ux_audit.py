@@ -141,7 +141,7 @@ def audit(base_url: str, output: Path) -> int:
                     if route == "/":
                         if page.locator(
                             ".omni-hero-pathways a"
-                        ).count() != 3:
+                        ).count() != 4:
                             issues.append("hero business routes missing")
                         if width <= 430:
                             contact = page.locator(".omni-mobile-contact")
