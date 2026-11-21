@@ -1,6 +1,5 @@
 """Provider diagnostics never leak tokens and never infer Meta permissions."""
 import json
-from types import SimpleNamespace
 
 from cryptography.fernet import Fernet
 from sqlalchemy import create_engine
