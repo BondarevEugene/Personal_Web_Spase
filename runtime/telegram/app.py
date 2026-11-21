@@ -272,11 +272,19 @@ def load_app() -> FastAPI:
     except ValueError as exc:
         raise RuntimeError("Invalid runtime scenario") from exc
     state_path = os.getenv("OMNI_STATE_SQLITE_PATH", "").strip()
-    if os.getenv("OMNI_RUNTIME_PRODUCTION") == "1":
+    if os.getenv("OMNI_RUNTIME_PRODUCTION") == "1" and os.getenv("OMNI_RUNTIME_STORAGE") != "postgresql":
         if not state_path or not os.path.isabs(state_path):
             raise RuntimeError("Production requires absolute persistent SQLite path")
         if os.getenv("WEB_CONCURRENCY", "1") != "1":
             raise RuntimeError("Production requires a single worker")
+    if os.getenv("OMNI_RUNTIME_STORAGE") == "postgresql":
+        if not os.getenv("OMNI_RUNTIME_DATABASE_URL") or not os.getenv("OMNI_BOT_INSTANCE_ID"):
+            raise RuntimeError("PostgreSQL mode requires runtime DSN and bot instance ID")
+        if __package__:
+            from .postgres_webhook import build_postgres_runtime
+        else:
+            from postgres_webhook import build_postgres_runtime
+        return build_postgres_runtime(scenario, Bot(token), webhook_secret)
     store = DialogueStore(state_path) if state_path else None
     return build_runtime(scenario, Bot(token), webhook_secret, store)
 
