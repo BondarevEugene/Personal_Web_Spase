@@ -2,7 +2,7 @@
 import json
 import os
 from pathlib import Path
-from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -17,6 +17,7 @@ from omni_site.creative_store import public_items, public_item
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
 from omni_site.solution_journeys import JOURNEYS, BY_SLUG
 from omni_site.blueprint_specification import compile_specification
+from omni_site.blueprint_plan_import import MAX_BYTES, PlanValidationError, validate_plan
 from omni_site.blueprint_project_plan import build_project_plan
 from omni_site.blueprint_delivery import make_delivery_package
 from omni_site.blueprint_studio import (
@@ -282,6 +283,33 @@ def download_blueprint_plan(
             "Content-Disposition": (
                 f'attachment; filename="omnifactory-plan-{spec.revision}.json"'
             ),
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, nofollow",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
+@router.post("/demo/blueprint/preview", name="preview_blueprint_plan")
+async def preview_blueprint_plan(
+    plan_file: UploadFile = File(...),
+):
+    """Inspect a user-selected JSON plan without persisting or executing it."""
+    if plan_file.content_type not in ("application/json", "text/plain", "application/octet-stream"):
+        raise HTTPException(status_code=415, detail="JSON file required")
+    try:
+        content = await plan_file.read(MAX_BYTES + 1)
+        preview = validate_plan(content)
+    except PlanValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        await plan_file.close()
+    return Response(
+        content=json.dumps(
+            preview.as_dict(), ensure_ascii=False, sort_keys=True, indent=2,
+        ) + "\n",
+        media_type="application/json",
+        headers={
             "Cache-Control": "no-store",
             "X-Robots-Tag": "noindex, nofollow",
             "X-Content-Type-Options": "nosniff",
