@@ -6,3 +6,9 @@
 .graph-release-center-manual,.graph-release-center-not_verified{border-left:4px solid #8795a9!important}
 #release-center-instructions{max-width:750px}
 #release-center-instructions li{margin:.4rem 0}
+
+#release-runtime-queue{margin-top:1.2rem;padding-top:1rem;border-top:1px solid rgba(120,150,185,.3)}
+#release-runtime-queue select{display:block;width:min(100%,440px);padding:.65rem;margin:.5rem 0 1rem;border:1px solid rgba(120,150,185,.4);border-radius:9px;background:var(--panel,#1a2537);color:inherit}
+.graph-release-runtime-job{margin:.65rem 0;padding:.85rem;border:1px solid rgba(120,150,185,.28);border-radius:12px}
+.graph-release-runtime-job button{margin:.3rem .5rem .3rem 0}
+.graph-release-runtime-job ol{overflow-wrap:anywhere}
