@@ -115,7 +115,8 @@ async def _test_exported_bot_user_journey_and_callback_replay(tmp_path):
 
     await module.start(message)
     assert module.CURSORS[user_key] == "choose"
-    assert user_key not in module.VALUES
+    # A new session starts with an empty variable dictionary.
+    assert module.VALUES[user_key] == {}
 
 
 async def _test_exported_bot_other_choice_finishes_without_input(tmp_path):
