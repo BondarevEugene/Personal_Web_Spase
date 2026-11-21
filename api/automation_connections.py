@@ -13,8 +13,13 @@ from sqlalchemy.exc import IntegrityError
 
 from api.automation import csrf, require_user
 from portal.db import session_factory
-from portal.models import (AutomationConnection, AutomationConnectionEvent,
-                           AutomationCredential, AutomationOAuthState, utcnow)
+from portal.models import (
+    AutomationConnection,
+    AutomationConnectionEvent,
+    AutomationCredential,
+    AutomationOAuthState,
+    utcnow,
+)
 
 router = APIRouter(prefix="/api/v1/automation/connections", tags=["Automation Connections"])
 PROVIDERS = {
