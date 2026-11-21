@@ -6,7 +6,7 @@
 .services-page .services-hero{max-width:950px;margin-bottom:39px}
 .services-page .services-hero h1{font:600 clamp(33px,5.6vw,72px)/1.1 var(--display);letter-spacing:-.062em;margin:16px 0}
 .services-page .services-hero p{font-size:15px;line-height:1.75;color:#bfcce0;max-width:820px;margin:0 0 23px}
-.services-page .services-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.services-page .services-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
 .services-page .services-card{display:flex;flex-direction:column;gap:14px;min-width:0;border:1px solid #44516a;background:linear-gradient(135deg,#29233b,#101826);border-radius:12px;padding:clamp(18px,2.7vw,30px)}
 .services-page .services-card-cyan{background:linear-gradient(145deg,#173c44,#111924)}
 .services-page .services-card-mint{background:linear-gradient(145deg,#213a30,#111924)}
