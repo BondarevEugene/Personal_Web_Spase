@@ -1,8 +1,7 @@
 """OmniFactory Telegram runtime v1: webhook and bounded dialogue execution.
 
-This runtime does NOT set Telegram's webhook automatically and does not
-claim persistent state. Deploy with ONE replica until Redis-backed state
-and deduplication are implemented.
+This runtime does NOT set Telegram's webhook automatically. Deploy with ONE
+replica and a persistent SQLite volume; multi-replica execution is unsupported.
 """
 from __future__ import annotations
 
@@ -10,12 +9,18 @@ import asyncio
 import os
 import re
 import secrets
+import sqlite3
 from contextlib import asynccontextmanager
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.filters import CommandStart
-from aiogram.types import (CallbackQuery, InlineKeyboardButton,
-                           InlineKeyboardMarkup, Message, Update)
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+    Update,
+)
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
@@ -197,7 +202,7 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str,
                                  "telegram_delivery_verified": False})
         try:
             healthy = store.check()
-        except Exception:
+        except (sqlite3.Error, OSError, ValueError):
             healthy = False
         return JSONResponse(
             {"ready": healthy, "mode": "persistent",
@@ -243,6 +248,8 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str,
             if store is not None:
                 store.forget_update(event.update_id)
             raise
+        if store is not None:
+            store.complete_update(event.update_id)
         return JSONResponse({"ok": True})
 
     return app
@@ -261,6 +268,11 @@ def load_app() -> FastAPI:
     except ValueError as exc:
         raise RuntimeError("Invalid runtime scenario") from exc
     state_path = os.getenv("OMNI_STATE_SQLITE_PATH", "").strip()
+    if os.getenv("OMNI_RUNTIME_PRODUCTION") == "1":
+        if not state_path or not os.path.isabs(state_path):
+            raise RuntimeError("Production requires absolute persistent SQLite path")
+        if os.getenv("WEB_CONCURRENCY", "1") != "1":
+            raise RuntimeError("Production requires a single worker")
     store = DialogueStore(state_path) if state_path else None
     return build_runtime(scenario, Bot(token), webhook_secret, store)
 
