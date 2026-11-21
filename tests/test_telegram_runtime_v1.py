@@ -134,3 +134,28 @@ def test_real_webhook_runtime_secret(monkeypatch):
                       content=b"not-json").status_code == 400
     finally:
         sys.path.remove(str(Path(__file__).resolve().parents[1] / "runtime/telegram"))
+
+
+def test_internal_telemetry_requires_configured_operator_secret(monkeypatch):
+    pytest.importorskip("aiogram")
+    import sys
+    from importlib import import_module
+    root = str(Path(__file__).resolve().parents[1] / "runtime/telegram")
+    sys.path.insert(0, root)
+    try:
+        runtime = import_module("runtime.telegram.app")
+        bot = runtime.Bot("123456789:" + "A" * 35)
+        runtime_app = runtime.build_runtime(read_scenario(encoded(SCENARIO)),
+                                            bot, "trusted-webhook-secret-0123456789")
+        c = TestClient(runtime_app)
+        monkeypatch.delenv("OMNI_RUNTIME_OBSERVABILITY_TOKEN", raising=False)
+        assert c.get("/internal/state").status_code == 404
+        monkeypatch.setenv("OMNI_RUNTIME_OBSERVABILITY_TOKEN", "X" * 40)
+        assert c.get("/internal/state").status_code == 403
+        assert c.get("/internal/state", headers={
+            "X-Omni-Operator-Token": "wrong"}).status_code == 403
+        # No production DB was started: even an authorized request must fail closed.
+        assert c.get("/internal/state", headers={
+            "X-Omni-Operator-Token": "X" * 40}).status_code == 503
+    finally:
+        sys.path.remove(root)

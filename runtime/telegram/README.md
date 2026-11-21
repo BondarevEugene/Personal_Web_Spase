@@ -28,3 +28,17 @@ PostgreSQL/Redis state, auditing, idempotent update receipts and cost controls.
 
 Do not deploy this container to real clients until it passes threat modelling,
 reproducible image/SBOM/vulnerability checks and full Telegram E2E testing.
+
+
+## PostgreSQL durable dialogue state (next phase)
+
+Production runtime now requires `OMNI_RUNTIME_DATABASE_URL` and `OMNI_BOT_INSTANCE_ID`.
+All dialogue and inbound update records are namespaced by the bot instance ID.
+Apply schema separately using `runtime/telegram/state.py` DDL before starting,
+or explicitly opt in with `OMNI_RUNTIME_BOOTSTRAP_SCHEMA=1` **on a test database only**.
+Missing PostgreSQL makes runtime startup fail closed; no fallback in-memory mode in production.
+
+An inbound update is marked claimed before any outgoing Telegram API call;
+repeated updates are suppressed. Failed or interrupted updates have uncertain
+external side effects and are quarantined rather than blindly replayed.
+This is **not exactly-once delivery** and still uses a single replica.
