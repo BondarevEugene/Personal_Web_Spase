@@ -49,7 +49,7 @@ def exported_module(tmp_path):
         names = set(archive.namelist())
         assert names == {"bot.py", "scenario.json", "requirements.txt",
                          ".env.example", "README.md",
-                         "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md"}
+                         "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md", "smoke.py"}
         for name in names:
             (tmp_path / name).write_bytes(archive.read(name))
     assert json.loads((tmp_path / "scenario.json").read_text(
