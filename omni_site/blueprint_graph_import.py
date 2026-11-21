@@ -48,24 +48,41 @@ def build_editable_graph(content: bytes, name: str) -> ProjectData:
                 queue.append(target)
     if len(ordered) != len(components):
         raise PlanValidationError("Disconnected or cyclic architecture")
-    if any(len(targets) > 1 for targets in successors.values()):
-        raise PlanValidationError("Branching plans require manual graph design")
-    if len(architecture["links"]) != len(components) - 1:
-        raise PlanValidationError("Only linear architecture can be imported safely")
+    # A choice is a real, editable Telegram button block. Reject graphs
+    # exceeding the builder's supported eight choices per decision.
+    if any(len(targets) > 8 for targets in successors.values()):
+        raise PlanValidationError("Maximum eight branches per component")
+    node_ids = {key: f"step{index + 1:03d}" for index, key in enumerate(ordered)}
     nodes = []
     positions = {}
     for index, key in enumerate(ordered):
         label = by_id[key]["label"]
-        if not label.strip():
+        if not isinstance(label, str) or not label.strip():
             raise PlanValidationError("Empty architecture component")
-        node_id = f"step{index + 1:03d}"
-        next_id = f"step{index + 2:03d}" if index + 1 < len(ordered) else "finish"
-        nodes.append({
-            "id": node_id,
-            "kind": "message",
-            "text": f"Этап проекта: {label}"[:1500],
-            "next": next_id,
-        })
+        node_id = node_ids[key]
+        targets = successors[key]
+        if len(targets) > 1:
+            # Button labels are explicit placeholders, not inferred business rules.
+            node = {
+                "id": node_id,
+                "kind": "choice",
+                "text": f"Выберите маршрут: {label}"[:1500],
+                "options": [
+                    {
+                        "label": f"Вариант {number}: {by_id[target]['label']}"[:64],
+                        "target": node_ids[target],
+                    }
+                    for number, target in enumerate(targets, 1)
+                ],
+            }
+        else:
+            node = {
+                "id": node_id,
+                "kind": "message",
+                "text": f"Этап проекта: {label}"[:1500],
+                "next": node_ids[targets[0]] if targets else "finish",
+            }
+        nodes.append(node)
         positions[node_id] = {
             "x": 80 + (index % 3) * 300,
             "y": 100 + (index // 3) * 170,
