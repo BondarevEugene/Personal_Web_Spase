@@ -5,7 +5,7 @@ import zipfile
 from fastapi.testclient import TestClient
 
 from server import app
-from tests.test_builder_projects import BASE, SCENARIO, csrf, db_ready, register
+from test_builder_projects import BASE, SCENARIO, csrf, db_ready, register
 
 
 def test_saved_export_requires_revision_and_rejects_stale_or_foreign(db_ready):
