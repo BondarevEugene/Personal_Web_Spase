@@ -17,6 +17,7 @@ from omni_site.creative_store import public_items, public_item
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
 from omni_site.solution_journeys import JOURNEYS, BY_SLUG
 from omni_site.blueprint_specification import compile_specification
+from omni_site.blueprint_graph_draft import graph_draft
 from omni_site.blueprint_plan_import import MAX_BYTES, PlanValidationError, validate_plan
 from omni_site.blueprint_project_plan import build_project_plan
 from omni_site.blueprint_delivery import make_delivery_package
@@ -351,6 +352,37 @@ async def preview_blueprint_plan_html(
     response.headers["X-Robots-Tag"] = "noindex, nofollow"
     response.headers["X-Content-Type-Options"] = "nosniff"
     return response
+
+
+@router.post("/demo/blueprint/graph-draft", name="export_blueprint_graph_draft")
+async def export_blueprint_graph_draft(
+    plan_file: UploadFile = File(...),
+):
+    """Download an inert graph design from a validated JSON plan."""
+    if plan_file.content_type not in (
+        "application/json", "text/plain", "application/octet-stream",
+    ):
+        raise HTTPException(status_code=415, detail="JSON file required")
+    try:
+        content = await plan_file.read(MAX_BYTES + 1)
+        draft = graph_draft(content)
+    except PlanValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        await plan_file.close()
+    return Response(
+        content=json.dumps(draft, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        media_type="application/json",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="omnifactory-graph-draft-'
+                f'{draft["source_revision"]}.json"'
+            ),
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, nofollow",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @router.get("/demo/{slug}", response_class=HTMLResponse,
