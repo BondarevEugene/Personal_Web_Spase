@@ -1,0 +1,32 @@
+name: Automation Connection Health
+on:
+  pull_request:
+    paths:
+      - "automation/connection_health.py"
+      - "api/automation_connections.py"
+      - "tests/test_connection_health.py"
+      - ".github/workflows/automation-health.yml"
+  push:
+    branches:
+      - "feat/automation-connection-health-20261121"
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install -r requirements.txt
+          python -m pip install pytest ruff
+      - name: Ruff
+        run: python -m ruff check automation/connection_health.py api/automation_connections.py tests/test_connection_health.py
+      - name: Compile
+        run: python -m py_compile automation/connection_health.py api/automation_connections.py tests/test_connection_health.py
+      - name: Tests
+        run: python -m pytest -q tests/test_connection_health.py tests/test_automation_oauth.py tests/test_automation_connections.py
+      - name: Alembic
+        env:
+          OMNI_PORTAL_DATABASE_URL: sqlite:///./health_ci.sqlite3
+        run: python -m alembic -c portal_alembic.ini upgrade head
