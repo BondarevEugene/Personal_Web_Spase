@@ -170,6 +170,67 @@ class BuilderProject(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, onupdate=utcnow, nullable=False)
 
 
+class AutomationConnection(Base):
+    """Tenant-owned connector registry. Never stores raw provider tokens."""
+
+    __tablename__ = "portal_automation_connections"
+    __table_args__ = (
+        UniqueConstraint("customer_id", "provider", "label",
+                         name="uq_automation_connection_label"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    provider: Mapped[str] = mapped_column(String(40), nullable=False)
+    label: Mapped[str] = mapped_column(String(100), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="pending_setup")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationConnectionEvent(Base):
+    """Append-only connection audit; event codes only, never secrets."""
+
+    __tablename__ = "portal_automation_connection_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    connection_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_connections.id"), index=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    actor_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationCredential(Base):
+    """Encrypted OAuth/connector secret; accessible only to backend workers."""
+
+    __tablename__ = "portal_automation_credentials"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    connection_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_connections.id"), unique=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    ciphertext: Mapped[bytes] = mapped_column(LargeBinary(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationOAuthState(Base):
+    """One-use OAuth CSRF state: only SHA256 of nonce is persisted."""
+
+    __tablename__ = "portal_automation_oauth_states"
+    nonce_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    pkce_verifier_ciphertext: Mapped[bytes | None] = mapped_column(LargeBinary(), nullable=True)
+    connection_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_connections.id"), index=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+
+
 class AutomationWorkflow(Base):
     """Owned workflow definition with immutable revision counter."""
 
