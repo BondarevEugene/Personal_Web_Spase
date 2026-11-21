@@ -1,5 +1,8 @@
 """Public software studio pages. Mount via app.include_router(router)."""
+import os
 from pathlib import Path
+
+from omni_site.search_discovery import canonical_origin
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import Response
 from fastapi.responses import HTMLResponse
@@ -22,6 +25,11 @@ from omni_site.blueprint_studio import (
 BASE = Path(__file__).resolve().parent
 router = APIRouter(tags=["Studio Website"])
 templates = Jinja2Templates(directory=str(BASE / "templates"))
+
+
+def public_origin() -> str | None:
+    """Configured canonical site origin; never trust a request Host header."""
+    return canonical_origin(os.getenv("OMNI_PUBLIC_BASE_URL", ""))
 
 @router.get('/studio', response_class=HTMLResponse, name='studio_home')
 def studio_home(request: Request):
@@ -51,7 +59,7 @@ def engineering_article(request: Request, slug: str):
     return templates.TemplateResponse(
         request=request,
         name="engineering_article.html",
-        context={"article": article, "articles": articles},
+        context={"article": article, "articles": articles, "seo_origin": public_origin()},
     )
 
 
@@ -74,7 +82,7 @@ def public_case_detail(request: Request, slug: str):
         raise HTTPException(status_code=404, detail="Case not found")
     return templates.TemplateResponse(
         request=request, name="case_detail.html",
-        context={"item": item, "cases": cases},
+        context={"item": item, "cases": cases, "seo_origin": public_origin()},
     )
 
 
@@ -98,7 +106,7 @@ def service_detail(request: Request, slug: str):
         raise HTTPException(status_code=404, detail="Service not found")
     return templates.TemplateResponse(
         request=request, name="service_detail.html",
-        context={"service": service, "services": services},
+        context={"service": service, "services": services, "seo_origin": public_origin()},
     )
 
 
