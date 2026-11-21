@@ -157,3 +157,27 @@ def disconnect(connection_id: str, request: Request):
             db.commit()
             db.refresh(row)
         return visible(row)
+
+
+@router.post("/{connection_id}/health")
+def connection_health(connection_id: str, request: Request):
+    """Explicit owner-triggered probe; never expose tokens or raw provider responses."""
+    from automation.connection_health import check_connection
+
+    with session_factory()() as db:
+        user = owner(request, db)
+        csrf(request)
+        row = connection_for(db, user.id, connection_id)
+        result = check_connection(db, row)
+        if row.status != "disconnected":
+            new_status = result["health"]
+            if new_status in {"healthy", "reauthorization_required",
+                              "missing_permissions", "authorized_unverified"}:
+                row.status = new_status
+                row.updated_at = utcnow()
+                db.add(AutomationConnectionEvent(
+                    connection_id=row.id, customer_id=user.id,
+                    actor_id=user.id, action="health_" + new_status,
+                ))
+                db.commit()
+        return {"connection_id": row.id, **result}
