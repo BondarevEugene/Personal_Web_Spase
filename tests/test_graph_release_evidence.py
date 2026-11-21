@@ -125,3 +125,23 @@ def test_graph_release_runtime_queue_contract():
     assert "/api/v1/cloud/provision/jobs" in js
     assert "job.status === 'queued'" in js
     assert "window.confirm" in js
+
+
+def test_graph_cloud_release_review_ui_contract():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "templates/builder_pro_final.html").read_text(encoding="utf-8")
+    js = (root / "omni_site/static/graph_release_center.js").read_text(encoding="utf-8")
+    for identifier in ("release-plan-mode", "release-gate-check",
+                       "release-gate-status", "release-gate-checks",
+                       "release-gate-request", "release-gate-review-status"):
+        assert f'id="{identifier}"' in html
+        assert f"$('{identifier}')" in js
+    assert 'mode: planMode.value' in js
+    assert "/api/v1/cloud/releases/preflight/" in js
+    assert "/api/v1/cloud/releases/reviews" in js
+    assert "'REQUEST RELEASE REVIEW'" in js
+    assert "'X-Omni-CSRF'" in js
+    assert "result.ready_for_paid_deployment" in js
+    assert "window.confirm" in js

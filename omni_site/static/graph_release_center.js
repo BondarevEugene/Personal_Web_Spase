@@ -15,11 +15,18 @@
   const planHistory = $('release-plan-history');
   const planName = $('release-plan-name');
   const planBudget = $('release-plan-budget');
+  const planMode = $('release-plan-mode');
   const runtimePlan = $('release-runtime-plan');
   const runtimeRun = $('release-runtime-run');
   const runtimeRefresh = $('release-runtime-refresh');
   const runtimeStatus = $('release-runtime-status');
   const runtimeJobs = $('release-runtime-jobs');
+  const gateCheck = $('release-gate-check');
+  const gateStatus = $('release-gate-status');
+  const gateChecks = $('release-gate-checks');
+  const gateRequest = $('release-gate-request');
+  const gateReviewStatus = $('release-gate-review-status');
+  let releaseGate = null;
   let inspected = null;
   let sequence = 0;
   const reset = () => {
@@ -35,6 +42,12 @@
     runtimeRun.disabled = true;
     runtimeJobs.replaceChildren();
     runtimeStatus.textContent = '';
+    releaseGate = null;
+    gateCheck.disabled = true;
+    gateRequest.disabled = true;
+    gateStatus.textContent = '';
+    gateReviewStatus.textContent = '';
+    gateChecks.replaceChildren();
     steps.replaceChildren();
     summary.replaceChildren();
     instructions.replaceChildren();
@@ -68,6 +81,10 @@
         ' · заданий: ' + plan.jobs.length + ' · согласований: ' + plan.reviews.length));
     }
     runtimeRun.disabled = !runtimePlan.value;
+    gateCheck.disabled = !runtimePlan.value;
+    releaseGate = null;
+    gateRequest.disabled = true;
+    gateChecks.replaceChildren();
     planHistory.append(item('p', 'Планы не подтверждают работающий Telegram-бот.'));
     await loadJobs(id, ticket);
   }
@@ -90,7 +107,7 @@
         body: JSON.stringify({
           revision: current.revision,
           name: planName.value.trim(),
-          mode: 'managed',
+          mode: planMode.value,
           transport: 'worker',
           max_monthly_usd: Number(planBudget.value)
         })
@@ -202,6 +219,81 @@
       runtimeStatus.textContent = 'Ошибка очереди: ' + error.message;
     } finally {
       runtimeRun.disabled = !runtimePlan.value;
+    }
+  });
+  runtimePlan.addEventListener('change', () => {
+    releaseGate = null;
+    gateRequest.disabled = true;
+    gateCheck.disabled = !runtimePlan.value || !inspected || !inspected.ready;
+    gateChecks.replaceChildren();
+    gateStatus.textContent = 'Для нового плана выполните проверку допуска.';
+  });
+  gateCheck.addEventListener('click', async () => {
+    if (!inspected || !inspected.ready || !runtimePlan.value) return;
+    const current = inspected;
+    const planId = runtimePlan.value;
+    gateCheck.disabled = true;
+    gateRequest.disabled = true;
+    releaseGate = null;
+    gateChecks.replaceChildren();
+    gateStatus.textContent = 'Проверяем защищённый релизный контур…';
+    try {
+      const url = '/api/v1/cloud/releases/preflight/' +
+        encodeURIComponent(current.id) + '/' + encodeURIComponent(planId);
+      const response = await fetch(url, {credentials: 'same-origin'});
+      if (!response.ok) throw Error('HTTP ' + response.status);
+      const result = await response.json();
+      if (!inspected || inspected.revision !== current.revision ||
+          runtimePlan.value !== planId) return;
+      for (const check of result.checks || [])
+        gateChecks.append(item('li', (check.ok ? '✓ ' : '✕ ') +
+          check.message));
+      gateChecks.append(item('li', 'Подтверждённый образ: ' +
+        (result.approved_image ? 'задан оператором' : 'не задан')));
+      gateChecks.append(item('li', 'Платный запуск: ' +
+        (result.ready_for_paid_deployment ? 'допущен' : 'заблокирован')));
+      gateStatus.textContent = result.ready_for_review ?
+        'Предварительная проверка пройдена. Можно запросить согласование.' :
+        'Публикация заблокирована: устраните замечания.';
+      if (result.ready_for_review) {
+        releaseGate = {projectId: current.id, planId, revision: current.revision};
+        gateRequest.disabled = false;
+      }
+    } catch (error) {
+      gateStatus.textContent = 'Проверка допуска недоступна: ' + error.message;
+    } finally {
+      gateCheck.disabled = !runtimePlan.value;
+    }
+  });
+  gateRequest.addEventListener('click', async () => {
+    if (!releaseGate || !inspected || releaseGate.revision !== inspected.revision ||
+        releaseGate.planId !== runtimePlan.value) return;
+    if (!window.confirm('Запросить согласование релиза? Это НЕ запускает Railway и не подтверждает расходы.')) return;
+    const current = releaseGate;
+    gateRequest.disabled = true;
+    gateReviewStatus.textContent = 'Регистрируем запрос согласования…';
+    try {
+      const csrfResponse = await fetch('/api/v1/builder/projects/csrf',
+        {credentials: 'same-origin'});
+      if (!csrfResponse.ok) throw Error('CSRF HTTP ' + csrfResponse.status);
+      const token = (await csrfResponse.json()).csrf_token;
+      const response = await fetch('/api/v1/cloud/releases/reviews', {
+        method: 'POST', credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json', 'X-Omni-CSRF': token,
+          'Idempotency-Key': 'graph-review-' + current.planId.replace(/-/g, '') +
+            '-' + Date.now().toString(36)},
+        body: JSON.stringify({bot_project_id: current.projectId,
+          cloud_plan_id: current.planId, confirmation: 'REQUEST RELEASE REVIEW'})
+      });
+      if (!response.ok) throw Error('HTTP ' + response.status);
+      const result = await response.json();
+      if (inspected && inspected.revision === current.revision)
+        gateReviewStatus.textContent = 'Запрос согласования: ' + result.id +
+          ' · ' + result.status + '. Публикация не выполнялась.';
+    } catch (error) {
+      gateReviewStatus.textContent = 'Запрос не создан: ' + error.message;
+    } finally {
+      gateRequest.disabled = !releaseGate;
     }
   });
   project.addEventListener('change', reset);
