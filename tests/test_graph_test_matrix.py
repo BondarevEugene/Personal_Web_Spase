@@ -118,3 +118,24 @@ def test_matrix_rejects_invalid_case_limits():
     for limit in (0, -1, 201):
         with pytest.raises(ValueError, match="max_cases"):
             dialogue_matrix(scenario, max_cases=limit)
+
+
+def test_release_lab_visual_coverage_contract():
+    html = (ROOT / "templates/builder_pro_final.html").read_text(encoding="utf-8")
+    js = (ROOT / "omni_site/static/graph_release_inspector.js").read_text(encoding="utf-8")
+    css = (ROOT / "omni_site/static/graph_release_inspector.css").read_text(encoding="utf-8")
+    for identifier in (
+        "release-inspect-coverage", "release-inspect-readiness",
+        "release-inspect-edges",
+    ):
+        assert f'id="{identifier}"' in html
+        assert f"$('{identifier}')" in js
+    for status in ("graph-release-blocker", "graph-release-untested",
+                   "graph-release-unreachable"):
+        assert status in js
+        assert status in css
+    assert "matrix.uncovered_edges" in js
+    assert "matrix.untested_choice_options" in js
+    assert "evidence.export_ready" in js
+    assert "evidence.revision !== matrix.revision" in js
+    assert "textContent" in js
