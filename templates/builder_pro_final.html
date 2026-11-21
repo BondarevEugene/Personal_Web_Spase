@@ -108,6 +108,11 @@
   <h3>План Railway — без создания облачных ресурсов</h3>
   <label for="release-plan-name">Название развёртывания</label>
   <input id="release-plan-name" name="name" minlength="3" maxlength="40" required placeholder="Мой Telegram-бот">
+  <label for="release-plan-mode">Режим Railway</label>
+  <select id="release-plan-mode" name="mode">
+   <option value="managed">Managed — только планирование</option>
+   <option value="byoc">BYOC — существующий сервис клиента</option>
+  </select>
   <label for="release-plan-budget">Месячный лимит бюджета, USD</label>
   <input id="release-plan-budget" name="budget" type="number" min="5" max="10000" value="10" required>
   <button type="submit" id="release-plan-create" class="button button-line">Сохранить dry-run план</button>
