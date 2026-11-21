@@ -1,7 +1,6 @@
 """SEO metadata rendering regression tests without database dependencies."""
 
 import json
-import re
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -26,13 +25,10 @@ def test_shared_metadata_uses_explicit_origin_and_valid_jsonld():
     )
     assert 'rel="canonical" href="https://omnifactory.example/services/crm"' in rendered
     assert 'property="og:url"' in rendered
-    match = re.search(
-        r'<script type="application/ld\\+json">(.*?)</script>',
-        rendered,
-        re.DOTALL,
-    )
-    assert match is not None
-    data = json.loads(match.group(1))
+    payload = rendered.split('<script type="application/ld+json">', 1)[1].split(
+        "</script>", 1
+    )[0]
+    data = json.loads(payload)
     assert data["@type"] == "Service"
     assert data["headline"] == 'CRM "Enterprise"'
     assert data["publisher"]["name"] == "OMNIFACTORY"
