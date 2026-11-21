@@ -145,3 +145,17 @@ def test_graph_cloud_release_review_ui_contract():
     assert "'X-Omni-CSRF'" in js
     assert "result.ready_for_paid_deployment" in js
     assert "window.confirm" in js
+
+
+def test_graph_cloud_plan_is_revision_pinned_across_release_and_operations():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    builder = (root / "api/builder_projects.py").read_text(encoding="utf-8")
+    releases = (root / "api/cloud_releases.py").read_text(encoding="utf-8")
+    operations = (root / "api/graph_operations.py").read_text(encoding="utf-8")
+    assert '"-r" + body.revision[:48]' in builder
+    assert '"-r" + project_revision(bot)[:48]' in releases
+    assert "Graph plan revision changed; create a new plan" in releases
+    assert 'startswith("graph-" + row.id + "-r")' in builder
+    assert '"graph-" + project.id + "-r"' in operations

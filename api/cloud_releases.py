@@ -56,6 +56,13 @@ def snapshot(db, owner_id: str, bot_id: str, plan_id: str):
     if bot is None or plan is None:
         raise HTTPException(404, "Bot or cloud plan not found in this account")
     spec = DeploymentSpec.model_validate_json(plan.manifest_json)
+    # Graph Studio plans must identify the exact saved revision. Legacy
+    # unpinned graph plans remain readable but cannot authorize a release.
+    if spec.version.startswith("graph-"):
+        from api.builder_projects import project_revision
+        expected = "graph-" + bot.id + "-r" + project_revision(bot)[:48]
+        if spec.version != expected:
+            raise HTTPException(409, "Graph plan revision changed; create a new plan")
     if spec.runtime != "telegram_aiogram":
         raise HTTPException(409, "This release gate supports Telegram bots only")
     if plan.status != "planned" or build_plan(spec).manifest_sha256 != plan.manifest_sha256:
