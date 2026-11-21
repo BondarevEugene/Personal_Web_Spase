@@ -100,6 +100,39 @@ def build_editable_graph(content: bytes, name: str) -> ProjectData:
     )
 
 
+@router.post("/api/v1/blueprint/import-graph/preview")
+async def preview_editable_blueprint_graph(
+    plan_file: UploadFile = File(...),
+    name: str = Form(..., min_length=2, max_length=100),
+):
+    """Read-only preview of the exact scenario that would be persisted."""
+    if plan_file.content_type not in (
+        "application/json", "text/plain", "application/octet-stream",
+    ):
+        raise HTTPException(415, "JSON file required")
+    try:
+        content = await plan_file.read(MAX_BYTES + 1)
+        project = build_editable_graph(content, name)
+    except PlanValidationError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    finally:
+        await plan_file.close()
+    scenario = project.scenario
+    return {
+        "status": "preview_only",
+        "saved": False,
+        "deployable": False,
+        "requires_review": True,
+        "scenario": scenario.model_dump(),
+        "positions": project.checked_positions(),
+        "summary": {
+            "nodes": len(scenario.nodes),
+            "choices": sum(node.kind == "choice" for node in scenario.nodes),
+            "messages": sum(node.kind == "message" for node in scenario.nodes),
+        },
+    }
+
+
 @router.post("/api/v1/blueprint/import-graph", status_code=201)
 async def import_blueprint_graph(
     request: Request,
