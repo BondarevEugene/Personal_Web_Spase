@@ -233,6 +233,39 @@ async function listWorkflows(){
   status('Сервер доступен: '+body.workflows.length+' сохранённых workflows.');
  }catch(err){status(err.message,true);}
 }
+async function listTemplates(){
+ const picker=$('auto-templates');
+ if(!picker)return;
+ try{
+  const body=await request('/templates');
+  picker.replaceChildren();
+  const empty=el('option','','— Выбрать шаблон —');empty.value='';picker.append(empty);
+  for(const item of body.templates){
+   const option=el('option','',item.title);option.value=item.slug;picker.append(option);
+  }
+  const requested=new URLSearchParams(window.location.search).get('template');
+  if(requested && body.templates.some(item=>item.slug===requested)){
+   picker.value=requested;
+   status('Шаблон выбран. Нажми «Установить в аккаунт», чтобы создать свою копию.');
+  }
+ }catch(err){status('Шаблоны недоступны: '+err.message,true);}
+}
+async function installTemplate(){
+ const picker=$('auto-templates'),slug=picker?.value;
+ if(!slug)return status('Выбери шаблон.',true);
+ if(!window.confirm('Создать отдельную копию шаблона в вашем аккаунте? Текущий граф останется в локальном резерве.'))return;
+ try{
+  const result=await request('/templates/'+encodeURIComponent(slug)+'/install',{
+   method:'POST',headers:{'X-Omni-CSRF':await csrf()}
+  });
+  try{localStorage.setItem(SAVE+':backup',JSON.stringify({workflow,positions,cloudId,revision}));}catch(_){}
+  workflow=result.definition;cloudId=result.id;revision=result.revision;
+  positions={};selected=workflow.start;counter=1;pending=null;
+  $('auto-name').value=workflow.name;render();inspector();persist();
+  await listWorkflows();void loadRuns();void refreshSchedule();
+  status('Шаблон установлен в аккаунт: '+workflow.name+'. Внешние действия не запускались.');
+ }catch(err){status('Не удалось установить шаблон: '+err.message,true);}
+}
 async function saveWorkflow(){
  try{
   workflow.name=$('auto-name').value.trim();
@@ -356,6 +389,7 @@ async function webhook(){
 }
 $('auto-new').addEventListener('click',()=>newFlow(fresh));
 $('auto-demo').addEventListener('click',()=>newFlow(demo));
+$('auto-install-template').addEventListener('click',installTemplate);
 $('auto-save').addEventListener('click',saveWorkflow);
 $('auto-load').addEventListener('click',loadWorkflow);
 $('auto-analyze').addEventListener('click',analyzeWorkflow);
@@ -377,5 +411,5 @@ try{
 }catch(_){}
 selected=workflow.start;$('auto-name').value=workflow.name;render();inspector();
 status('Локальный граф готов. Сохрани его в аккаунте для запуска на сервере.');
-void listWorkflows();
+void listWorkflows();void listTemplates();
 })();
