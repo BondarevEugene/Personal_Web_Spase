@@ -15,8 +15,12 @@ from aiogram.types import Update
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from runtime.telegram.postgres_state import AmbiguousDelivery, Conversation, PostgresStateStore
-from runtime.telegram.scenario import BODY_LIMIT
+try:
+    from runtime.telegram.postgres_state import AmbiguousDelivery, Conversation, PostgresStateStore
+    from runtime.telegram.scenario import BODY_LIMIT
+except ModuleNotFoundError:
+    from postgres_state import AmbiguousDelivery, Conversation, PostgresStateStore
+    from scenario import BODY_LIMIT
 
 PLACEHOLDER = re.compile(r"\\{\\{([A-Za-z][A-Za-z0-9_-]{0,39})\\}\\}")
 
@@ -135,7 +139,10 @@ def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresSta
 
     @app.get("/outbox/health")
     async def outbox_health():
-        from runtime.telegram.outbox import counters
+        try:
+            from runtime.telegram.outbox import counters
+        except ModuleNotFoundError:
+            from outbox import counters
         try:
             return {"outbox": await counters(active_store()), "delivery_verified": False}
         except Exception:
