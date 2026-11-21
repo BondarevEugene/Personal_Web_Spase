@@ -73,7 +73,7 @@ def test_browser_quality_workflow_is_defined_and_not_production_tracking():
     assert "python -m scripts.public_asset_budget" in workflow
     assert "python -m scripts.public_ux_audit" in workflow
     assert "upload-artifact@v4" in workflow
-    assert "feat/founders-omni-editorial-20261116" in workflow
+    assert "feat/graph-runtime-incident-triage-20261121" in workflow
     script = (
         root / "scripts/public_ux_audit.py"
     ).read_text(encoding="utf-8")
