@@ -60,7 +60,6 @@ def dialogue_matrix(scenario: Scenario, *, max_cases: int = 24) -> dict:
             node_id = result["at"]
             queue.append((dict(selected), dict(entered, **{node_id: "Тест"})))
     all_nodes = {node.id for node in scenario.nodes}
-    by_id = {node.id: node for node in scenario.nodes}
     expected_edges = set()
     for node in scenario.nodes:
         if node.next:
