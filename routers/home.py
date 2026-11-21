@@ -76,6 +76,18 @@ async def automation_studio(request: Request):
     return render(request, "automation_studio.html")
 
 
+@router.get("/automation/control", response_class=HTMLResponse)
+async def automation_control(request: Request):
+    """Authenticated operational console backed by Automation Engine API."""
+    secure_request(request)
+    with session_factory()() as db:
+        if current_customer(request, db) is None:
+            return RedirectResponse("/account/login", status_code=303)
+    response = render(request, "automation_control.html")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @router.get("/robotization", response_class=HTMLResponse)
 @router.get("/pages/robotization.html", response_class=HTMLResponse)
 async def robotization(request: Request):
