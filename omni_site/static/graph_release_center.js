@@ -326,6 +326,13 @@
         panel.append(item('p', 'Состояние: ' +
           service.reconciliation.state +
           ' · проверено: ' + (service.last_checked_at || 'никогда')));
+        if (service.incident) {
+          panel.append(item('p', 'Диагностика: ' + service.incident.incident_code +
+            ' · ' + service.incident.severity));
+          panel.append(item('p', 'Рекомендуемое действие: ' + service.incident.next_action));
+          for (const finding of service.incident.findings || [])
+            panel.append(item('p', 'Замечание: ' + finding));
+        }
         if (service.provider_error)
           panel.append(item('p', 'Ошибка: ' + service.provider_error));
         panel.append(item('p', 'Работа Telegram-бота: не подтверждена'));
