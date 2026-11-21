@@ -1,16 +1,13 @@
 """Protected growth lead inbox and conversion overview for platform operators."""
 
 from collections import Counter
-from pathlib import Path
-
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 
 from portal.db import session_factory
 from portal.models import GrowthLead, utcnow
-from portal.security import verify_csrf
+from portal.routes import form_page\nfrom portal.security import verify_csrf
 from portal.support_admin import require_operator
 
 router = APIRouter(prefix="/support/growth", tags=["Growth CRM"])
@@ -28,18 +25,7 @@ def growth_inbox(request: Request, status: str = ""):
         counts = dict(Counter(lead.status for lead in leads))
         sources = dict(Counter(lead.utm_source or "direct / unknown" for lead in leads))
         visible = [lead for lead in leads if lead.status == status] if status in STATUSES else leads
-        from portal.security import csrf_token
-        return templates.TemplateResponse(
-            request=request,
-            name="growth_inbox.html",
-            context={
-                "operator": operator, "leads": visible,
-                "counts": counts, "sources": sources,
-                "statuses": STATUSES, "filter_status": status,
-                "csrf_token": csrf_token(request),
-            },
-            headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"},
-        )
+        response = form_page(\n            request, "growth_inbox.html", user=operator, leads=visible,\n            counts=counts, sources=sources, statuses=STATUSES,\n            filter_status=status,\n        )\n        response.headers["X-Robots-Tag"] = "noindex"\n        return response
 
 
 @router.post("/{lead_id}/status")
