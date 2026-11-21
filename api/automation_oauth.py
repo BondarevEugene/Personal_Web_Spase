@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import json
 
+import httpx
+
 from fastapi import APIRouter, HTTPException, Request
 from sqlalchemy import select
 
@@ -62,7 +64,7 @@ def callback(request: Request, state: str = "", code: str = "", error: str = "")
         try:
             tokens = exchange_code(connection.provider, code, verifier)
             encrypted = seal(json.dumps(tokens, separators=(",", ":"))).ciphertext
-        except Exception:
+        except (httpx.HTTPError, ValueError, TypeError, RuntimeError, KeyError):
             # Never disclose provider errors or token payloads.
             raise HTTPException(502, "OAuth exchange failed")
         credential = db.scalar(select(AutomationCredential).where(
