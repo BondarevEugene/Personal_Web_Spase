@@ -10,6 +10,7 @@ from sqlalchemy import select
 
 from automation.railway_inspection import RailwayInspectError, inspect_binding
 from automation.railway_reconciliation import classify, summarize
+from automation.runtime_incidents import diagnose
 from automation.railway_oauth import OAuthConfigurationError, decrypt
 from portal.db import session_factory
 from portal.models import CloudDeployment, CloudOAuthConnection, CloudRailwayBinding, utcnow
@@ -30,6 +31,8 @@ def capabilities():
         "remote_rollback_enabled": False,
         "live_provisioning_enabled": False,
         "fleet_reconciliation": True,
+        "incident_triage": True,
+        "automatic_recovery_enabled": False,
         "status_freshness_minutes": 15,
     }
 
@@ -108,6 +111,13 @@ def services(request: Request, refresh: bool = False):
                 inspection_failed=bool(entry["provider_error"]),
             )
             entry["reconciliation"] = status
+            entry["incident"] = diagnose(
+                provider_status=entry["provider_status"],
+                checked_at=binding.last_checked_at if not entry["provider_live"] else now,
+                now=now, provider_error=bool(entry["provider_error"]),
+                healthcheck_configured=entry.get("healthcheck_configured"),
+                replicas=entry.get("replicas"),
+            )
             rows.append(entry)
         if refresh:
             db.commit()
