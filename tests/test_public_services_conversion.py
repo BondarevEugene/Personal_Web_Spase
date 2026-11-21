@@ -12,7 +12,7 @@ CLIENT = TestClient(app)
 
 
 def test_services_are_unique_and_have_relevant_existing_case_links():
-    assert len(SERVICES) == 3
+    assert len(SERVICES) == 4
     assert len(SERVICE_BY_SLUG) == len(SERVICES)
     for service in SERVICES:
         assert service.case_url.startswith("/cases/")
@@ -21,6 +21,7 @@ def test_services_are_unique_and_have_relevant_existing_case_links():
             "CRM / управление бизнесом",
             "Telegram Bot / Mini App",
             "AI / автоматизация",
+            "AI / интеллектуальные системы",
         }
         assert len(service.deliverables) >= 4
         assert len(service.process) >= 4
@@ -30,7 +31,7 @@ def test_services_are_unique_and_have_relevant_existing_case_links():
         assert CLIENT.get(service.journal_url).status_code == 200
 
 
-def test_directory_and_three_pages_serve_unique_seo_copy():
+def test_directory_and_four_pages_serve_unique_seo_copy():
     index = CLIENT.get("/services")
     assert index.status_code == 200
     assert "Решение вашей задачи" in index.text
