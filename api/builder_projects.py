@@ -380,7 +380,8 @@ def graph_deployment_readiness(id: str, request: Request):
                 manifest = json.loads(plan.manifest_json)
             except (ValueError, TypeError):
                 continue
-            if manifest.get("version") == "graph-" + row.id:
+            if (manifest.get("version") == "graph-" + row.id or
+                    str(manifest.get("version", "")).startswith("graph-" + row.id + "-r")):
                 linked.append({
                     "id": plan.id, "name": plan.name, "status": plan.status,
                     "manifest_sha256": plan.manifest_sha256,
@@ -424,7 +425,7 @@ def create_graph_deployment_plan(
         spec = DeploymentSpec(
             name=body.name, runtime="telegram_aiogram",
             mode=body.mode, provider="railway",
-            transport=body.transport, version="graph-" + row.id,
+            transport=body.transport, version="graph-" + row.id + "-r" + body.revision,
             max_monthly_usd=body.max_monthly_usd,
             secret_refs=["BOT_TOKEN"],
         )
