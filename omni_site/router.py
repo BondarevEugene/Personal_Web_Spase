@@ -317,6 +317,42 @@ async def preview_blueprint_plan(
     )
 
 
+@router.post("/demo/blueprint/preview/html", response_class=HTMLResponse,
+             name="preview_blueprint_plan_html")
+async def preview_blueprint_plan_html(
+    request: Request,
+    plan_file: UploadFile = File(...),
+):
+    """Render a safe, human-readable project preview without storing the upload."""
+    if plan_file.content_type not in (
+        "application/json", "text/plain", "application/octet-stream",
+    ):
+        raise HTTPException(status_code=415, detail="JSON file required")
+    try:
+        content = await plan_file.read(MAX_BYTES + 1)
+        preview = validate_plan(content)
+        plan = json.loads(content)
+    except PlanValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        await plan_file.close()
+    response = templates.TemplateResponse(
+        request=request,
+        name="blueprint_plan_preview.html",
+        context={
+            "preview": preview,
+            "architecture": plan["architecture"],
+            "milestones": plan["milestones"]["items"],
+            "checks": plan["verification"]["checks"],
+            "risks": plan["risks"]["items"],
+        },
+    )
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Robots-Tag"] = "noindex, nofollow"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
 @router.get("/demo/{slug}", response_class=HTMLResponse,
             name="interactive_solution_detail")
 def interactive_solution_detail(request: Request, slug: str):
