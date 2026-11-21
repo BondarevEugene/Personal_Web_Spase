@@ -19,6 +19,7 @@
   };
   const clear = () => {
     serial++;
+    run.disabled = false;
     for (const node of [summary, issues, cases, trace]) node.replaceChildren();
     state.textContent = 'Выберите сохранённый проект и запустите проверку.';
     for (const node of document.querySelectorAll('.graph-release-focus'))
