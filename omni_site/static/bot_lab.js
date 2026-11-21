@@ -77,7 +77,8 @@ function renderDetail(){
   $('lab-selected-summary').textContent='Сценарий сохранён в аккаунте. Данные о развернутом Railway-сервисе ещё не связаны с этим проектом.';
   fact(facts,'Тип','Telegram Bot');fact(facts,'Состояние','Сохранён, не опубликован');
   fact(facts,'Последнее изменение',prettyDate(info.updated_at));fact(facts,'Источник','Graph Studio');
-  acts.append(action('Открыть конструктор','/architect',true),
+  acts.append(action('Редактировать сценарий','/architect?project='+encodeURIComponent(info.id),true),
+              action('Скачать Python ZIP','/api/v1/builder/projects/'+encodeURIComponent(info.id)+'/export'),
               action('Подготовить деплой','/cloud/deploy'));
   void refreshSecurity(info.id);
  }else if(info.entity==='shared'){
