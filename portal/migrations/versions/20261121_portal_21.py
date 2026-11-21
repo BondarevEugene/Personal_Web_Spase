@@ -3,8 +3,8 @@
 Revision ID: 20261121_portal_21
 Revises: 20261121_portal_20
 """
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 
 revision = "20261121_portal_21"
 down_revision = "20261121_portal_20"
