@@ -23,6 +23,7 @@ from api.simple_builder import (
     simulate_scenario,
 )
 from automation.deployment import DeploymentSpec, build_plan
+from api.graph_release_evidence import release_evidence
 from portal.db import session_factory
 from portal.models import BuilderProject, CloudDeployment, utcnow
 from portal.routes import current_customer
@@ -513,3 +514,18 @@ def restore_project_backup(id: str, request: Request, body: RestoreRequest):
         row.updated_at = utcnow()
         db.commit()
         return serialize(row, full=True)
+
+
+@router.get("/{id}/release-evidence")
+def saved_graph_release_evidence(id: str, request: Request):
+    """Evidence is scoped to the logged-in owner and exact persisted revision."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+        return release_evidence(scenario, row.id, project_revision(row))
