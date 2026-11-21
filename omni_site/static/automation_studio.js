@@ -246,6 +246,22 @@ async function saveWorkflow(){
   await listWorkflows();void refreshSchedule();status('Сценарий сохранён: версия '+revision);
  }catch(err){status('Ошибка сохранения: '+err.message,true);}
 }
+async function installTemplate(){
+ const slug=$('auto-template').value;
+ if(!/^[a-z0-9-]+$/.test(slug))return status('Недопустимый шаблон.',true);
+ if(!window.confirm('Создать отдельный workflow по готовому шаблону? Текущий черновик сохранится локально.'))return;
+ try{
+  localStorage.setItem(SAVE+':backup',JSON.stringify({workflow,positions,cloudId,revision}));
+  const result=await request('/templates/'+encodeURIComponent(slug)+'/install',{
+   method:'POST',headers:{'X-Omni-CSRF':await csrf()}
+  });
+  cloudId=result.id;revision=result.revision;workflow=result.definition;
+  selected=workflow.start;positions={};counter=1;
+  $('auto-name').value=workflow.name;render();inspector();persist();
+  await listWorkflows();void loadRuns();void refreshSchedule();
+  status('Шаблон установлен в аккаунт: '+workflow.name+' · версия '+revision);
+ }catch(err){status('Не удалось установить шаблон: '+err.message,true);}
+}
 async function loadWorkflow(){
  const id=$('auto-workflows').value;
  if(!id)return status('Выбери сценарий.',true);
@@ -356,6 +372,7 @@ async function webhook(){
 }
 $('auto-new').addEventListener('click',()=>newFlow(fresh));
 $('auto-demo').addEventListener('click',()=>newFlow(demo));
+$('auto-install-template').addEventListener('click',installTemplate);
 $('auto-save').addEventListener('click',saveWorkflow);
 $('auto-load').addEventListener('click',loadWorkflow);
 $('auto-analyze').addEventListener('click',analyzeWorkflow);
