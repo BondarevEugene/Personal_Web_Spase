@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index,follow">
+<meta name="description" content="Интерактивная демонстрация OMNIFACTORY: от задачи бизнеса к архитектуре CRM, Telegram-бота или автоматизации. Схемы, этапы, технические решения и честные ограничения.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OMNIFACTORY · Интерактивная инженерная демонстрация">
+<title>Интерактивная демонстрация CRM, Telegram и автоматизации · OMNIFACTORY</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3">
+<link rel="stylesheet" href="/studio-assets/journal.css?v=1">
+<link rel="stylesheet" href="/studio-assets/solution_demo.css?v=1">
+<link rel="stylesheet" href="/studio-assets/blueprint_entry.css?v=1">
+<script defer src="/studio-assets/solution_demo.js?v=1"></script>
+<link rel="stylesheet" href="/studio-assets/public_shell.css?v=1"></head>
+<body class="platform-app solution-demo-page">
+<a href="#main" class="skip-link">К содержанию</a>
+{% include "_public_header.html" %}
+<main id="main" class="container demo-shell">
+<div class="demo-hero"><div><span class="eyebrow">ENGINEERING, MADE VISIBLE / 01</span>
+<h1>ИДЕЯ →<br><span>АРХИТЕКТУРА.</span><br>РЕЗУЛЬТАТ.</h1>
+<p>Выберите знакомую бизнес-проблему. Проследите её путь от входных данных до цифровой системы. Это интерактивная схема наших инженерных подходов, а не симуляция запущенного сервиса.</p>
+</div><div class="demo-hero-symbol" aria-hidden="true"><span>INPUT</span><b>◈</b><span>OUTPUT</span></div></div>
+<div class="demo-disclaimer" role="note"><strong>ДЕМОНСТРАЦИОННАЯ МОДЕЛЬ</strong><span>Структура процесса основана на реальных модулях и проектах. Здесь не выполняются API-запросы, оплата, AI-генерация или создание заказов.</span></div>
+<div class="demo-selector" role="group" aria-label="Выберите направление">
+{% for journey in journeys %}
+<button type="button" class="demo-tab" data-demo-tab="{{ journey.slug }}" aria-pressed="{{ 'true' if (selected.slug if selected else journeys[0].slug) == journey.slug else 'false' }}">
+<span>0{{ loop.index }} / {{ journey.category }}</span><strong>{{ journey.title }}</strong><small>Исследовать процесс ↗</small>
+</button>
+{% endfor %}
+</div>
+{% for journey in journeys %}
+<section class="demo-journey" data-demo-panel="{{ journey.slug }}" {% if (selected.slug if selected else journeys[0].slug) != journey.slug %}hidden{% endif %} aria-labelledby="demo-heading-{{ journey.slug }}">
+<div class="demo-project-intro"><span class="eyebrow">{{ journey.category }} / SYSTEM MAP</span>
+<h2 id="demo-heading-{{ journey.slug }}">{{ journey.title }}</h2>
+<div class="demo-problem-outcome"><div><small>БИЗНЕС-ПРОБЛЕМА</small><p>{{ journey.challenge }}</p></div><div><small>ЦЕЛЕВОЙ РЕЗУЛЬТАТ</small><p>{{ journey.result }}</p></div></div>
+</div>
+<div class="demo-workspace">
+<div class="demo-flow" role="group" aria-label="Этапы схематичного процесса">
+<div class="demo-flow-label"><span>SCENARIO / {{ journey.slug|upper }}</span><span>ILLUSTRATIVE PROCESS / NOT LIVE</span></div>
+<div class="demo-flow-nodes">
+{% for step in journey.steps %}
+<button type="button" class="demo-node demo-node-{{ step.node_type }}" data-demo-step="{{ loop.index0 }}" data-step-explanation="{{ step.explanation }}" data-step-title="{{ step.title }}" data-step-number="{{ step.code }}" aria-pressed="{{ 'true' if loop.first else 'false' }}" aria-controls="demo-inspector-{{ journey.slug }}">
+<span class="demo-node-index">{{ step.code }} / {{ step.node_type|upper }}</span>
+<strong>{{ step.title }}</strong>
+<span class="demo-node-connector" aria-hidden="true">→</span>
+</button>
+{% endfor %}
+</div>
+<div class="demo-flow-progress"><div class="demo-progress-track"><div data-demo-progress style="width:{{ (100 / journey.steps|length)|round(1) }}%"></div></div><span data-demo-counter>01 / {{ "%02d"|format(journey.steps|length) }}</span></div>
+</div>
+<div class="demo-inspector" id="demo-inspector-{{ journey.slug }}" aria-live="polite" aria-atomic="true">
+<div class="demo-inspector-header"><span>ENGINEERING INSPECTOR</span><span>READ-ONLY</span></div>
+<div class="demo-inspector-body">
+<span class="demo-inspector-number" data-demo-current-number>01</span>
+<h3 data-demo-current-title>{{ journey.steps[0].title }}</h3>
+<p data-demo-current-description>{{ journey.steps[0].explanation }}</p>
+<div class="demo-inspector-actions"><button type="button" data-demo-prev disabled>← Назад</button><button type="button" data-demo-next>Следующий этап →</button></div>
+</div>
+</div>
+</div>
+<div class="demo-facts"><div><span>ИЗ ИСХОДНОГО ПРОЕКТА</span><ul>{% for fact in journey.facts %}<li>{{ fact }}</li>{% endfor %}</ul></div><div><span>ГРАНИЦЫ РЕШЕНИЯ</span><ul>{% for limitation in journey.constraints %}<li>{{ limitation }}</li>{% endfor %}</ul></div></div>
+<div class="demo-proof-links"><div><strong>Не просто схема — изучите работающие части продукта.</strong><p>Перейдите к архитектурному кейсу, услуге или соответствующему рабочему разделу.</p></div>
+<div><a href="{{ journey.case_url }}">Проверить кейс ↗</a><a href="{{ journey.service_url }}">Услуга ↗</a><a href="{{ journey.product_url }}">Открыть инструмент ↗</a></div></div>
+</section>
+{% endfor %}
+<section class="blueprint-demo-entry" aria-labelledby="blueprint-demo-entry-title"><div><span class="eyebrow">NEXT LEVEL / BLUEPRINT STUDIO</span><h2 id="blueprint-demo-entry-title">НЕ ТОЛЬКО СМОТРЕТЬ.<br><em>СПРОЕКТИРОВАТЬ.</em></h2><p>После знакомства с архитектурой соберите собственный предварительный бриф: команда, текущий процесс, приоритеты и интеграции. Без регистрации, оплаты или хранения введённых данных.</p><a href="/demo/blueprint">Собрать мой архитектурный бриф ↗</a></div><div class="blueprint-demo-entry-sign" aria-hidden="true">◈</div></section>
+<section class="demo-final"><span class="eyebrow">YOUR PROJECT / NEXT STEP</span><h2>ОТ ВАШЕЙ ЗАДАЧИ —<br><em>К РЕАЛЬНОЙ СИСТЕМЕ.</em></h2><p>Опишите, какой процесс вы хотите изменить. Начнём с требований и проверяемой архитектуры, а не с шаблонных обещаний.</p>
+<a class="button button-primary" href="/studio#contact">Обсудить проект ↗</a></section>
+</main>{% include "_public_footer.html" %}
+</body></html>

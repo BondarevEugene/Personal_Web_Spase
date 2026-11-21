@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY EVO // ADMINISTRATIVE CONTROL CENTER</title>
+
+    <!-- Подключаем мягкие, читаемые и плавные шрифты экосистемы -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <!-- Зависимости runtime-библиотек платформы -->
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%237c3aed'/><text x='32' y='65' font-family='Orbitron, sans-serif' font-size='45' fill='%23ffffff' font-weight='bold'>O</text></svg>">
+
+    <style>
+        :root {
+            --bg-base: #0d0e12;
+            --bg-surface: #181a22;
+            --bg-element: #222531;
+            --border-soft: #2a2e3f;
+            --accent-purple: #7c3aed;
+            --accent-purple-glow: rgba(124, 58, 237, 0.15);
+            --accent-blue: #0ea5e9;
+            --accent-blue-glow: rgba(14, 165, 233, 0.15);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --status-ok: #10b981;
+            --status-critical: #f43f5e;
+            --status-warn: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* [ ВЕРХНЯЯ ПАНЕЛЬ СУПЕРВИЗОРА ] */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(24, 26, 34, 0.85);
+            border-bottom: 1px solid var(--border-soft);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            height: 52px;
+            padding: 0 24px;
+        }
+
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .top-menu-tabs {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .nav-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .nav-tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-tab-btn.active {
+            color: #fff;
+            background: var(--accent-purple-glow);
+            border-color: rgba(124, 58, 237, 0.3);
+        }
+
+        .panic-action-btn {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--status-critical);
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .panic-action-btn:hover {
+            background: var(--status-critical);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+        }
+
+        /* [ ЦЕНТРАЛЬНЫЙ КОНТЕЙНЕР ] */
+        .main-workspace {
+            flex: 1;
+            padding: 24px;
+            width: 100%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .view-section { display: none; flex-direction: column; gap: 20px; animation: smoothFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; flex-grow: 1; }
+        .view-section.active-view { display: flex; }
+        @keyframes smoothFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* [ СРЕДА РАЗРАБОТКИ BOT_BUILDER ] */
+        .ide-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            width: 100%;
+            height: calc(100vh - 125px);
+            border: 1px solid var(--border-soft);
+            background: var(--bg-surface);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .ide-panel-left { background: rgba(24, 26, 34, 0.6); border-right: 1px solid var(--border-soft); display: flex; flex-direction: column; overflow: hidden; }
+        .search-container input { width: 100%; padding: 14px 20px; background: transparent; border: none; border-bottom: 1px solid var(--border-soft); color: #fff; outline: none; font-size: 13px; }
+        .nodes-scroll-zone { overflow-y: auto; padding: 16px; flex-grow: 1; display: flex; flex-direction: column; gap: 14px; }
+
+        .category-header { font-size: 11px; color: var(--accent-blue); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+        .node-drag-item { background: var(--bg-element); border: 1px solid var(--border-soft); padding: 10px 14px; border-radius: 8px; cursor: grab; font-size: 13px; transition: all 0.2s ease; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .node-drag-item:hover { border-color: var(--accent-purple); background: rgba(124, 58, 237, 0.05); }
+
+        #drawflow { width: 100%; height: 100%; background-color: #0d0e12; background-image: radial-gradient(#1f2330 1.5px, transparent 1.5px); background-size: 30px 30px; position: relative; }
+
+        /* drawflow nodes smooth layout override */
+        .drawflow .drawflow-node { background: var(--bg-surface) !important; border: 1px solid var(--border-soft) !important; border-radius: 12px !important; color: #fff !important; padding: 12px !important; width: 170px !important; font-size: 12.5px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .drawflow .drawflow-node.selected { border-color: var(--accent-purple) !important; box-shadow: 0 0 0 3px var(--accent-purple-glow); }
+        .drawflow .connection .main-path { stroke: var(--accent-purple) !important; stroke-width: 3px !important; }
+        .drawflow .drawflow-node .input, .drawflow .drawflow-node .output { background: var(--border-soft) !important; border: 2px solid var(--bg-surface) !important; width: 10px !important; height: 10px !important; }
+        .drawflow .drawflow-node .input:hover, .drawflow .drawflow-node .output:hover { background: var(--accent-blue) !important; }
+
+        .ide-panel-right { background: rgba(24, 26, 34, 0.6); border-left: 1px solid var(--border-soft); display: flex; flex-direction: column; overflow: hidden; padding: 20px; }
+
+        .panel-card { background-color: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+        .prop-group { margin-bottom: 14px; }
+        .prop-group label { display: block; color: var(--text-muted); margin-bottom: 6px; font-size: 12px; font-weight: 500; }
+        .prop-group input { width: 100%; padding: 10px 12px; background: var(--bg-element); border: 1px solid var(--border-soft); color: #fff; border-radius: 8px; font-size: 13px; outline: none; transition: border 0.2s ease; }
+        .prop-group input:focus { border-color: var(--accent-purple); }
+
+        /* [ МОНИТОРИНГ И ИНТЕРФЕЙС ТАБЛИЦ ] */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .metric-card-smooth { background-color: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: 14px; padding: 20px; position: relative; }
+        .metric-card-smooth::after { content:''; position: absolute; left: 20px; top: 0; width: 30px; height: 3px; background: var(--accent-purple); border-radius: 0 0 2px 2px; }
+        .metric-card-smooth.blue::after { background: var(--accent-blue); }
+
+        .m-label { color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .m-value { font-size: 24px; font-weight: 700; color: #fff; font-family: 'Inter', sans-serif; }
+
+        .progress-bar-smooth { width: 100%; height: 6px; background: var(--bg-element); margin-top: 12px; border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); width: 0%; transition: width 0.5s ease; }
+
+        .ui-table-wrapper { background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: 14px; overflow: hidden; }
+        .modern-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+        .modern-table th { color: var(--text-muted); border-bottom: 1px solid var(--border-soft); padding: 14px 18px; font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.01); }
+        .modern-table td { padding: 14px 18px; border-bottom: 1px solid var(--border-soft); color: var(--text-main); }
+        .modern-table tr:last-child td { border-bottom: none; }
+
+        .terminal-container { background-color: #090a0f; border: 1px solid var(--border-soft); border-radius: 12px; padding: 16px; height: 160px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #34d399; line-height: 1.6; }
+
+        .action-submit-btn { background: var(--accent-purple); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s ease; font-family: inherit; }
+        .action-submit-btn:hover { background: #6d28d9; }
+
+        .status-badge-soft { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--status-ok); background: rgba(16, 185, 129, 0.08); padding: 4px 10px; border-radius: 12px; }
+        .status-badge-soft::before { content: ''; width: 6px; height: 6px; background: var(--status-ok); border-radius: 50%; }
+
+        /* [ ФУТЕР ] */
+        .system-footer { margin-top: auto; padding: 14px 24px; border-top: 1px solid var(--border-soft); background: var(--bg-surface); width: 100%; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); border-radius: 16px 16px 0 0; }
+    </style>
+</head>
+<body>
+
+    <!-- ЕДИНЫЙ ПЛАВНЫЙ ТОП-БАР -->
+    <header>
+        <div class="brand-block">
+            <svg width="20" height="20" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="url(#grad)" stroke-width="12"/>
+                <defs>
+                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span class="brand-logo-text">OMNIFACTORY EVO</span>
+        </div>
+
+        <div class="top-menu-tabs">
+            <button class="nav-tab-btn active" id="tab-builder" onclick="switchView('builder')">🚀 Бот-Строитель</button>
+            <button class="nav-tab-btn" id="tab-mainnode" onclick="switchView('mainnode')">🌐 Маршруты API</button>
+            <button class="nav-tab-btn" id="tab-robotization" onclick="switchView('robotization')">🤖 Docker-Контур</button>
+            <button class="nav-tab-btn" id="tab-ai-registry" onclick="switchView('ai-registry')">🧠 Агенты ИИ</button>
+            <button class="nav-tab-btn" id="tab-metrics" onclick="switchView('metrics')">📊 WSL2 Метрики</button>
+            <button class="nav-tab-btn" id="tab-users" onclick="switchView('users')">👥 Допуски RBAC</button>
+        </div>
+
+        <div>
+            <button class="panic-action-btn" onclick="app.togglePanic()">🚨 PANIC LOCK</button>
+        </div>
+    </header>
+
+    <main class="main-workspace">
+
+        <!-- СЕКЦИЯ 1: БОТ-БИЛДЕР (ОСНОВНОЙ ХОЛСТ DRAWFLOW) -->
+        <section id="view-builder" class="view-section active-view">
+            <div class="ide-grid">
+                <aside class="ide-panel-left">
+                    <div class="search-container"><input type="text" placeholder="Поиск функциональных узлов..."></div>
+                    <div class="nodes-scroll-zone">
+                        <div class="category-header">Входные триггеры</div>
+                        <div class="node-drag-item" draggable="true" ondragstart="drag(event)" data-node="webhook">🪝 Webhook Node</div>
+                        <div class="node-drag-item" draggable="true" ondragstart="drag(event)" data-node="cron">⏱️ Celery Cron Trigger</div>
+                        <div class="node-drag-item" draggable="true" ondragstart="drag(event)" data-node="tg_trigger">✈️ Telegram Event</div>
+
+                        <div class="category-header">Обработка данных</div>
+                        <div class="node-drag-item" draggable="true" ondragstart="drag(event)" data-node="http_req">🔗 HTTP Request</div>
+                        <div class="node-drag-item" draggable="true" ondragstart="drag(event)" data-node="switch">𔓓 Switch Router</div>
+                        <div class="node-drag-item" draggable="true" ondragstart="drag(event)" data-node="code">💻 Python Script Node</div>
+                        <div class="node-drag-item" draggable="true" ondragstart="drag(event)" data-node="openai">🧠 OpenAI Core GPT</div>
+                        <div class="node-drag-item" draggable="true" ondragstart="drag(event)" data-node="chromadb">🔍 Vector ChromaDB</div>
+                    </div>
+                </aside>
+
+                <div style="flex-grow:1; position:relative; overflow:hidden;">
+                    <div id="drawflow"></div>
+                    <button class="action-submit-btn" style="position:absolute; top:16px; right:16px; z-index:99; box-shadow: 0 10px 20px rgba(124,58,237,0.3);" onclick="deployGraph()">⚡ СКОМПИЛИРОВАТЬ В ZIP</button>
+                </div>
+
+                <aside class="ide-panel-right">
+                    <h3 style="font-size:14px; font-weight:600; margin-bottom:14px; color:var(--text-main);">📋 Инспектор Свойств</h3>
+                    <div id="inspector-ui" style="color:var(--text-muted); font-size:13px;">Выберите узел на холсте для настройки конфигурации параметров...</div>
+                </aside>
+            </div>
+        </section>
+        <!-- ============================================================================== -->
+<!-- ВКЛАДКА 2: DOCKER РОБОТИЗАЦИЯ И СРЕДЫ СБОРЩИКОВ (ИНТЕГРИРОВАНО ИСПРАВЛЕНИЕ) -->
+<!-- ============================================================================== -->
+<section id="view-robotization" class="view-section" style="display: none; flex-direction: column; gap: 24px;">
+    <div class="page-header" style="border-bottom: 1px solid var(--border-soft); padding-bottom: 15px;">
+        <div class="page-title">
+            <h1 style="font-family: 'Orbitron'; font-size: 22px; text-transform: uppercase; color: #fff;">► SaaS Docker-Контейнеризация</h1>
+            <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Изолированные среды выполнения сгенерированных ботов платформы и пулы WSL2.</p>
+        </div>
+    </div>
+
+    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+        <div class="metric-card" style="background: var(--bg-surface); border: 1px solid var(--border-soft); border-left: 4px solid var(--accent-purple); padding: 20px; border-radius: 12px;">
+            <div class="metric-label" style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase;">RAM ХОСТА (WSL2)</div>
+            <div class="metric-value" style="font-size: 24px; font-weight: 700; color: #fff; font-family: 'Orbitron'; margin-top: 5px;">3.45 / 8.0 GB</div>
+            <div class="mini-progress-bar" style="width: 100%; height: 4px; background: #09090b; margin-top: 10px; border-radius: 2px; overflow: hidden;">
+                <div class="mini-progress-fill" style="height: 100%; background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); width: 43%;"></div>
+            </div>
+        </div>
+        <div class="metric-card" style="background: var(--bg-surface); border: 1px solid var(--border-soft); border-left: 4px solid var(--accent-blue); padding: 20px; border-radius: 12px;">
+            <div class="metric-label" style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase;">АКТИВНЫЕ КОНТЕЙНЕРЫ</div>
+            <div class="metric-value" style="font-size: 24px; font-weight: 700; color: #fff; font-family: 'Orbitron'; margin-top: 5px;">2 RUNNING</div>
+            <div style="font-size: 12px; color: var(--status-ok); margin-top: 6px;">DOCKER_ENGINE: HEALTHY</div>
+        </div>
+    </div>
+
+    <div class="card" style="background: var(--bg-surface); border: 1px solid var(--border-soft); border-radius: 12px; padding: 24px;">
+        <h3 style="font-family: 'Orbitron'; font-size: 14px; color: #fff; margin-bottom: 16px; text-transform: uppercase;">Среды сборщиков (Docker Engine Pools)</h3>
+        <table class="tech-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+            <thead>
+                <tr style="color: var(--text-muted); border-bottom: 1px solid var(--border-soft);">
+                    <th style="padding: 12px 10px; font-size: 11px; text-transform: uppercase;">Контейнер ID</th>
+                    <th style="padding: 12px 10px; font-size: 11px; text-transform: uppercase;">Образ среды</th>
+                    <th style="padding: 12px 10px; font-size: 11px; text-transform: uppercase;">NVMe Объем</th>
+                    <th style="padding: 12px 10px; font-size: 11px; text-transform: uppercase;">Состояние</th>
+                    <th style="padding: 12px 10px; font-size: 11px; text-transform: uppercase;">Инжиниринг</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02); color: var(--text-main);">
+                    <td style="padding: 14px 10px;"><code>docker_node_84a2</code></td>
+                    <td style="padding: 14px 10px;"><code>omnifactory-flet-env:latest</code></td>
+                    <td style="padding: 14px 10px;">412 MB</td>
+                    <td style="padding: 14px 10px;"><span style="color: var(--status-ok); font-weight: bold;">RUNNING</span></td>
+                    <td style="padding: 14px 10px;"><button class="btn-table-action" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-soft); color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer;" onclick="pushTerminalLog('INFO', 'Контейнер 84a2 перезапущен.')">Restart</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+        <!-- СЕКЦИЯ 2: МАРШРУТЫ API -->
+        <section id="view-mainnode" class="view-section">
+            <div class="ui-table-wrapper">
+                <table class="modern-table">
+                    <thead><tr><th>Название Модуля</th><th>Маршрутизация (Route)</th><th>Уровень Доступа</th><th>Задержка</th><th>Статус</th></tr></thead>
+                    <tbody>
+                        <tr><td>FastAPI Core Gateway</td><td><code>/api/v1/registry</code></td><td>Публичный</td><td>1.1 ms</td><td><span class="status-badge-soft">ONLINE</span></td></tr>
+                        <tr><td>Numerology Compute Engine</td><td><code>/api/builder/generate</code></td><td>Авторизованный</td><td>0.7 ms</td><td><span class="status-badge-soft">ONLINE</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ 3: DOCKER КОНТУР -->
+        <section id="view-robotization" class="view-section">
+            <div class="dashboard-grid">
+                <div class="metric-card-smooth"><div class="m-label">Выделенная RAM (Docker)</div><div class="m-value">3.42 / 8.00 ГБ</div><div class="progress-bar-smooth"><div class="progress-bar-fill" style="width: 42.7%;"></div></div></div>
+                <div class="metric-card-smooth blue"><div class="m-label">Активные Контейнеры</div><div class="m-value">2 Запущено</div></div>
+            </div>
+            <div class="ui-table-wrapper" style="margin-top:10px;">
+                <table class="modern-table">
+                    <thead><tr><th>ID Контейнера</th><th>Образ Среды</th><th>Выделенный Порт</th><th>Объем NVMe</th><th>Рантайм</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>omnifactory_runtime_node_1</code></td><td><code>omnifactory-flet-env:latest</code></td><td><code>8088:8088</code></td><td>412 МБ</td><td><span style="color:var(--status-ok); font-weight:600;">Выполняется</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ 4: АГЕНТЫ ИИ -->
+        <section id="view-ai-registry" class="view-section">
+            <div class="ui-table-wrapper">
+                <table class="modern-table">
+                    <thead><tr><th>Идентификатор Агента</th><th>Базовая Модель</th><th>Контекстное Окно</th><th>Интенсивность Запросов</th><th>Latency</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Agent_Core_Supervisor</strong></td><td><code>GPT-4o (Omni)</code></td><td>34,102 / 128k токенов</td><td>1.4 req/s</td><td>180 ms</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-card">
+                <h3 style="font-size:14px; font-weight:600;">Инжекция системных директив промпта</h3>
+                <div class="prop-group">
+                    <input type="text" placeholder="Введите новые контекстные инструкции для весов нейроядра..." id="prompt-in">
+                </div>
+                <button class="action-submit-btn" style="width:140px;" onclick="pushTerminalLog('SUCCESS', 'Инструкции промпта успешно обновлены в кэше ядра.')">Сохранить</button>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ 5: WSL2 МЕТРИКИ -->
+        <section id="view-metrics" class="view-section">
+            <div class="dashboard-grid">
+                <div class="metric-card-smooth blue"><div class="m-label">Загрузка ЦП Хоста</div><div id="metric-cpu-val" class="m-value">0.0%</div><div class="progress-bar-smooth"><div id="progress-cpu" class="progress-bar-fill"></div></div></div>
+                <div class="metric-card-smooth"><div class="m-label">Использование памяти хоста</div><div id="metric-ram-val" class="m-value">0.00 GB</div><div class="progress-bar-smooth"><div id="progress-ram" class="progress-bar-fill"></div></div></div>
+            </div>
+            <div class="panel-card">
+                <div style="position: relative; height:200px; width:100%"><canvas id="resourceChart"></canvas></div>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ 6: RBAC ДОПУСКИ -->
+        <section id="view-users" class="view-section">
+            <div class="ui-table-wrapper">
+                <table class="modern-table">
+                    <thead><tr><th>Оператор Системы</th><th>Ролевая Модель</th><th>Область Видимости Модулей</th><th>Статус Сессии</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Eugene Bondarev</strong></td><td><span style="color:var(--accent-purple); font-weight:600;">Root_Supervisor</span></td><td><code>Полный доступ (*)</code></td><td><span class="status-badge-soft">БЕССРОЧНО</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ТЕРМИНАЛЬНЫЙ СТРИМ ЛОГОВ (ВСЕГДА ПОД КАРТАМИ) -->
+        <div style="margin-top:20px; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Логи супервизора в реальном времени</div>
+            <div id="terminal-stream" class="terminal-container"></div>
+        </div>
+
+    </main>
+
+    <!-- ПЛАВНЫЙ ЭРГОНОМИЧНЫЙ ФУТЕР -->
+    <footer class="system-footer">
+        <div id="footer-server-time" style="font-family:'JetBrains Mono', monospace; color: var(--accent-blue); font-weight:500;">--:--:--</div>
+        <div>OPERATOR: <span style="color:#fff; font-weight:500;">BONDAREV_E</span> | SYSTEM AUTOMATION MODULE © 2026</div>
+    </footer>
+
+<script>
+    // Настройка и запуск холста Drawflow
+    const container = document.getElementById("drawflow");
+    const editor = new Drawflow(container);
+    editor.start();
+
+    const MODULE_SCHEMAS = {
+        webhook: { title: "Webhook Node", color: "var(--accent-blue)", fields: { path: "Префикс пути URL", token: "Ключ авторизации (Bearer Token)" } },
+        cron: { title: "Celery Cron Trigger", color: "var(--accent-blue)", fields: { interval: "Период проверки (сек)" } },
+        openai: { title: "OpenAI Core GPT", color: "var(--accent-purple)", fields: { prompt: "Контекст системного промпта", tokens: "Максимум токенов ответа" } },
+        tg_trigger: { title: "Telegram Event", color: "var(--accent-blue)", fields: { bot_token: "Telegram Bot API Token" } },
+        http_req: { title: "HTTP Request", color: "#fff", fields: { url: "Целевой URL эндпоинта" } },
+        switch: { title: "Switch Router", color: "#fff", fields: { rules: "Правила условной маршрутизации" } },
+        code: { title: "Python Script Node", color: "#fff", fields: { script: "Тело Python скрипта" } },
+        chromadb: { title: "Vector ChromaDB", color: "var(--accent-purple)", fields: { collection: "Имя векторной коллекции" } }
+    };
+
+    window.allowDrop = (ev) => ev.preventDefault();
+    window.drag = (ev) => ev.dataTransfer.setData("nodeId", ev.target.getAttribute('data-node'));
+    container.addEventListener("dragover", window.allowDrop);
+
+    container.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        const nodeId = ev.dataTransfer.getData("nodeId");
+        const schema = MODULE_SCHEMAS[nodeId];
+        if(!schema) return;
+        const rect = container.getBoundingClientRect();
+        editor.addNode(nodeId, 1, 1, ev.clientX - rect.left, ev.clientY - rect.top, nodeId, { config: {} },
+            `<div style="font-size:9px; color:${schema.color}; font-weight:600; margin-bottom:2px;">// ${nodeId.toUpperCase()}</div><div style="font-weight:600; font-size:11.5px;">${schema.title}</div>`
+        );
+        pushTerminalLog("SUCCESS", `Узел функционального графа [${schema.title}] успешно инициализирован на холсте.`);
+    });
+
+    editor.on('nodeSelected', (id) => {
+        const node = editor.getNodeFromId(id);
+        const inspector = document.getElementById('inspector-ui');
+        const schema = MODULE_SCHEMAS[node.name];
+        if (!schema) return;
+        let html = `<div style="font-size:12px; color:${schema.color}; margin-bottom:12px; font-weight:600;">ID узла: #${id}</div>`;
+        for (const [key, label] of Object.entries(schema.fields)) {
+            const val = (node.data.config && node.data.config[key]) ? node.data.config[key] : '';
+            html += `<div class="prop-group"><label>${label}</label><input type="text" value="${val}" onchange="updateNodeData(${id}, '${key}', this.value)"></div>`;
+        }
+        inspector.innerHTML = html;
+    });
+
+    window.updateNodeData = (nodeId, key, value) => {
+        let node = editor.getNodeFromId(nodeId);
+        if (!node.data.config) node.data.config = {};
+        node.data.config[key] = value;
+        editor.updateNodeDataFromId(nodeId, node.data);
+    };
+
+    // Функция деплоя и скачивания ZIP
+    async function deployGraph() {
+        pushTerminalLog("INFO", "Сборка архитектуры: Подготовка пайплайна компиляции...");
+        const graphData = editor.export();
+        const nodes = graphData.drawflow.Home.data;
+        const selectedIds = Object.keys(nodes).map(key => nodes[key].name);
+
+        if(selectedIds.length === 0) {
+            pushTerminalLog("WARN", "Процесс прерван: Рабочая область пуста. Добавьте ноды на холст.");
+            return;
+        }
+
+        try {
+            const response = await fetch('http://127.0.0.1:8088/api/builder/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ selected_ids: selectedIds })
+            });
+            if (!response.ok) throw new Error(`Код ошибки сервера: ${response.status}`);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'omnifactory_bot.zip';
+            document.body.appendChild(a); a.click(); a.remove();
+            pushTerminalLog("SUCCESS", "Пакет скомпилирован! Архивация omnifactory_bot.zip выполнена успешно. ✅");
+        } catch(e) {
+            pushTerminalLog("ERROR", `Ошибка компиляции пакета: ${e.message}`);
+        }
+    }
+
+// Логика переключения представлений
+    function switchView(viewName) {
+        // Очищаем активные классы у секций и вкладок
+        document.querySelectorAll('.view-section').forEach(view => {
+            view.classList.remove('active-view');
+            view.style.display = 'none'; // Гарантированно скрываем
+        });
+        document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+
+        // Безопасное добавление классов с проверкой на существование элементов
+        const targetView = document.getElementById('view-' + viewName);
+        const targetTab = document.getElementById('tab-' + viewName);
+
+        if (targetView) {
+            targetView.classList.add('active-view');
+            // Если используешь flex-сетку для секций, восстанавливаем ее, иначе 'block'
+            targetView.style.display = 'flex';
+        }
+        if (targetTab) {
+            targetTab.classList.add('active');
+        }
+
+        pushTerminalLog("INFO", `Системный контур переключен на: //${viewName.toUpperCase()}_NODE`);
+    }
+
+    function pushTerminalLog(tag, text) {
+        const stream = document.getElementById('terminal-stream');
+        if (!stream) return;
+        let color = '#34d399';
+        if (tag === 'ERROR') color = '#f43f5e';
+        if (tag === 'WARN') color = '#f59e0b';
+        if (tag === 'INFO') color = '#0ea5e9';
+
+        stream.innerHTML += `<div style="color:${color}">[${new Date().toLocaleTimeString()}] [${tag}] &gt; ${text}</div>`;
+        stream.scrollTop = stream.scrollHeight;
+    }
+
+    const app = {
+        togglePanic() {
+            alert("Внимание: Системные порты и контуры инфраструктуры полностью изолированы.");
+        }
+    };
+
+    // Рантайм обновления графиков и телеметрии хоста
+    document.addEventListener("DOMContentLoaded", () => {
+        pushTerminalLog("SUCCESS", "Система контроля OMNIFACTORY EVO успешно развернута в буфере.");
+
+        // Синхронизация часов (работает как с footer-time, так и с footer-server-time)
+        setInterval(() => {
+            const timeStr = new Date().toLocaleTimeString();
+            const clockEl = document.getElementById('footer-time') || document.getElementById('footer-server-time');
+            if (clockEl) clockEl.innerText = timeStr;
+        }, 1000);
+
+        // Поллинг псевдо-метрики аппаратного уровня хоста
+        setInterval(() => {
+            const mockCpu = (Math.random() * 8 + 4).toFixed(1);
+            const mockRam = (Math.random() * 0.15 + 2.1).toFixed(2);
+
+            const cpuValEl = document.getElementById('metric-cpu-val');
+            const ramValEl = document.getElementById('metric-ram-val');
+            const progressCpuEl = document.getElementById('progress-cpu');
+            const progressRamEl = document.getElementById('progress-ram');
+
+            if (cpuValEl) cpuValEl.innerText = mockCpu + '%';
+            if (ramValEl) ramValEl.innerText = mockRam + ' GB';
+            if (progressCpuEl) progressCpuEl.style.width = mockCpu + '%';
+            if (progressRamEl) progressRamEl.style.width = (mockRam / 8 * 100) + '%';
+
+            // Обновление потока данных Chart.js
+            if (window.resourceChartInstance) {
+                const chart = window.resourceChartInstance;
+                chart.data.labels.push(new Date().toLocaleTimeString());
+                chart.data.datasets[0].data.push(mockCpu);
+                if (chart.data.labels.length > 10) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+                chart.update('none');
+            }
+        }, 3000);
+
+        // Инициализация холста графиков ресурсов кластера
+        const ctxEl = document.getElementById('resourceChart');
+        if (ctxEl) {
+            window.resourceChartInstance = new Chart(ctxEl.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['0s'],
+                    datasets: [{
+                        label: 'Загрузка ЦП (%)',
+                        data: [8],
+                        borderColor: '#7c3aed',
+                        borderWidth: 2,
+                        pointRadius: 1,
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(124,58,237,0.01)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.03)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

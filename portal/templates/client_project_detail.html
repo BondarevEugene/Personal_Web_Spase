@@ -1,0 +1,51 @@
+<!doctype html><html lang="{{ ui_lang }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ project.title }} — OMNIFACTORY</title><link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1"><link rel="stylesheet" href="/studio-assets/client_projects.css?v=4"><link rel="stylesheet" href="/studio-assets/client_workspace.css?v=2"></head>
+<body class="account-app"><header class="site-header"><div class="header-inner container"><a class="brand" href="/account">◈ OMNIFACTORY</a><nav class="account-header-links"><a href="/account">{{ t("Кабинет") }}</a><a href="/account/projects">{{ t("Все проекты") }}</a><a href="/account/tickets">{{ t("Поддержка") }}</a><a href="/account/billing">{{ t("Финансы") }}</a></nav></div></header>
+{% include "_workspace_nav.html" %}
+<main class="container client-projects-page"><nav class="account-breadcrumb"><a href="/account">{{ t("Кабинет") }}</a><span>/</span><a href="/account/projects">{{ t("Заказы") }}</a><span>/</span><span>{{ t("Карточка") }}</span></nav>
+<div class="cp-heading"><div><span class="eyebrow">PROJECT / {{ project.id[:8] }}</span><h1>{{ project.title }}</h1><span class="cp-status">{{ t(statuses.get(project.status, project.status)) }}</span><p>Запрос создан {{ project.created_at.strftime("%d.%m.%Y") }}. Дата сдачи: {{ project.due_date.strftime("%d.%m.%Y") if project.due_date else "не назначена" }}.</p></div></div>
+{% include "_project_workspace_overview.html" %}
+{% include "_project_work_plan.html" %}
+<div class="cp-grid"><section class="account-panel"><h2>{{ t("Техническое задание") }}</h2><p class="cp-brief">{{ project.brief }}</p></section><section class="account-panel"><h2>{{ t("Этапы работы") }}</h2>
+{% if milestones %}<ol class="cp-stages">{% for stage in milestones %}<li><strong>{{ stage.title }}</strong><small>{{ t(milestone_labels.get(stage.status, stage.status)) }}</small><p>{{ stage.details }}</p></li>{% endfor %}</ol>{% else %}<p class="account-empty">{{ t("План работ ещё не утверждён оператором.") }}</p>{% endif %}
+</section></div>
+<section class="account-panel cp-attachments" aria-label="Вложения проекта">
+<h2>{{ t("Файлы проекта") }}</h2><p>PDF, PNG, JPEG и TXT до {{ attachment_limit_mb }} МБ каждый. Максимум восемь вложений на проект. Файлы доступны только участникам организации и операторам платформы.</p>
+{% if project_attachments %}<div class="cp-list">{% for file in project_attachments %}
+<div class="cp-project"><span><strong>{{ file.filename }} · v{{ file.version }}</strong><small>{{ file.created_at.strftime("%d.%m.%Y %H:%M") }} · {{ "%.1f"|format(file.size_bytes/1024) }} КБ · SHA-256 {{ file.sha256[:12] }}…</small></span>
+<a class="button button-line" href="/account/projects/{{ project.id }}/attachments/{{ file.id }}">{{ t("Скачать ↗") }}</a></div>
+{% endfor %}</div>{% else %}<div class="account-empty">{{ t("Вложений ещё нет.") }}</div>{% endif %}
+{% if project.status not in ["accepted", "cancelled"] %}
+<form method="post" action="/account/projects/{{ project.id }}/attachments" enctype="multipart/form-data" class="cp-upload">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label for="cp-file-customer">{{ t("Добавить файл проекта") }}
+<input id="cp-file-customer" type="file" name="uploaded" accept=".pdf,.png,.jpg,.jpeg,.txt" required></label>
+<button class="button button-line" type="submit">{{ t("Загрузить файл ↗") }}</button>
+</form>{% endif %}
+</section>
+<section class="account-panel cp-documents"><h2>{{ t("Документы и согласования") }}</h2>
+<p>{{ t("Текстовые версии документов проекта. Согласование фиксирует конкретную редакцию и не является электронной подписью.") }}</p>
+{% if project_documents %}<div class="cp-list">{% for doc in project_documents %}
+<details class="cp-document"><summary><strong>{{ t(document_kinds.get(doc.document_kind, doc.document_kind)) }} · {{ doc.title }}</strong>
+<span class="cp-status">v{{ doc.version }} · {{ t("Согласовано") if doc.id in approved_documents else t("Не согласовано") }}</span></summary>
+<p class="cp-brief">{{ doc.body }}</p>{% if doc.version > 1 %}<p><a class="button button-line" href="/account/projects/{{ project.id }}/documents/{{ doc.id }}/compare">{{ t("Сравнить с предыдущей редакцией") }}</a></p>{% endif %}<small>{{ doc.created_at.strftime("%d.%m.%Y %H:%M") }}</small>
+{% if user.role == "owner" and doc.id not in approved_documents and latest_documents[doc.document_kind].id == doc.id and project.status not in ["accepted", "cancelled"] %}
+<form method="post" action="/account/projects/{{ project.id }}/documents/{{ doc.id }}/approve"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<button type="submit" class="button button-primary">{{ t("Согласовать эту версию") }}</button></form>{% endif %}
+{% if user.role == "owner" and doc.document_kind == "specification" and doc.id not in approved_documents and latest_documents[doc.document_kind].id == doc.id and project.status not in ["accepted", "cancelled"] %}
+<form method="post" action="/account/projects/{{ project.id }}/documents/{{ doc.id }}/request-revision" class="cp-review-revision"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>{{ t("Замечания к техническому заданию") }}<textarea name="comment" minlength="15" maxlength="2000" rows="4" required placeholder="{{ t('Опишите необходимые изменения') }}"></textarea></label><button type="submit" class="button button-line">{{ t("Запросить новую редакцию") }}</button></form>{% endif %}
+</details>{% endfor %}</div>
+{% else %}<p class="account-empty">{{ t("Документы ещё не опубликованы оператором.") }}</p>{% endif %}</section>
+<section class="account-panel" id="project-dialogue"><h2>{{ t("Обсуждение проекта") }}</h2><p>{{ t("Сообщения сохраняются в истории проекта и доступны участникам вашей организации и операторам.") }}</p>{% if project.status not in ["accepted", "cancelled"] %}<form method="post" action="/account/projects/{{ project.id }}/messages"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label>{{ t("Сообщение исполнителю") }}<textarea name="body" minlength="10" maxlength="2000" rows="4" required></textarea></label><button class="button button-primary" type="submit">{{ t("Отправить сообщение") }}</button></form>{% else %}<p>{{ t("Переписка закрыта после завершения проекта.") }}</p>{% endif %}</section>
+{% if project.status == "accepted" %}<section class="account-panel"><h2>{{ t("Итоговый архив проекта") }}</h2><p>{{ t("Скачайте текстовые редакции документов, этапы, журнал событий и подтверждения согласований в одном ZIP с контрольными суммами SHA-256. Загруженные файлы доступны отдельно.") }}</p><a class="button button-primary" href="/account/projects/{{ project.id }}/archive">{{ t("Скачать архив передачи (.zip) ↗") }}</a></section>{% endif %}
+<section class="account-panel cp-timeline" id="project-history"><h2>{{ t("История проекта") }}</h2>{% if events %}<ol class="cp-events">{% for event in events %}<li><time>{{ event.created_at.strftime("%d.%m.%Y %H:%M") }}</time><span>{{ event.summary }}</span></li>{% endfor %}</ol>{% else %}<p>{{ t("Событий пока нет.") }}</p>{% endif %}</section>
+{% if project.status == "review" %}<section class="account-panel cp-accept"><h2>{{ t("Приёмка результата") }}</h2><p>{{ t("Подтверждение завершает проект. Если требуются доработки, обратитесь к оператору через поддержку.") }}</p>
+{% if user.role == "owner" %}
+<form method="post" action="/account/projects/{{ project.id }}/request-changes" class="cp-review-revision">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label for="project-review-comment">{{ t("Замечания к результату") }}
+<textarea id="project-review-comment" name="comment" minlength="15" maxlength="2000" rows="4" required placeholder="{{ t('Опишите, что нужно исправить или дополнить') }}"></textarea></label>
+<button type="submit" class="button button-line">{{ t("Вернуть на доработку") }}</button>
+</form>
+<p>{{ t("Перед окончательной приёмкой согласуйте последнюю версию документа «Описание результата».") }}</p>
+<form method="post" action="/account/projects/{{ project.id }}/accept"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="button button-primary">{{ t("Подтвердить приёмку ↗") }}</button></form>{% else %}<p>{{ t("Приёмку подтверждает владелец организации.") }}</p>{% endif %}</section>{% endif %}
+</main></body></html>

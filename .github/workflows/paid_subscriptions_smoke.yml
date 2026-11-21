@@ -1,0 +1,30 @@
+name: OmniFactory Paid Subscription and Billing Tests
+
+on:
+  push:
+    branches:
+      - feat/paid-subscriptions-billing-neon-20261109
+  pull_request:
+    branches:
+      - feat/customer-portal-neon-foundation-20261109
+
+jobs:
+  subscription-billing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install isolated billing test requirements
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "fastapi~=0.136.1" "pydantic>=2,<3" "httpx>=0.27,<1" "SQLAlchemy>=2,<3" "Jinja2>=3,<4" "pytest>=8,<10" "argon2-cffi>=23,<26" "alembic>=1.14,<2" python-multipart
+      - name: Compile subscription Python
+        run: |
+          python -m py_compile portal/models.py portal/billing.py portal/billing_routes.py portal/billing_admin.py
+      - name: Execute billing and payment-state tests
+        run: python -m pytest -q tests/test_subscription_billing.py
+      - name: Run customer account and builder regression tests
+        run: python -m pytest -q tests/test_customer_portal.py tests/test_platform_routes.py tests/test_simple_builder.py tests/test_studio_platform_phase1.py

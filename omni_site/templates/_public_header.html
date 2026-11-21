@@ -1,0 +1,29 @@
+{# Unified secondary-public-page navigation. Keep / and /studio bespoke hero headers. #}
+<header class="journal-header omni-global-header">
+  <div class="container journal-header-inner omni-global-header-inner">
+    <a href="/" class="journal-brand omni-global-brand" aria-label="OMNIFACTORY — главная">
+      ◈ OMNIFACTORY <span>/ ENGINEERING PLATFORM</span>
+    </a>
+    <nav class="omni-global-desktop" aria-label="Основная навигация">
+      <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>Платформа</a>
+      <a href="/services" {% if request.url.path.startswith('/services') %}aria-current="page"{% endif %}>Услуги</a>
+      <a href="/cases" {% if request.url.path.startswith('/cases') %}aria-current="page"{% endif %}>Кейсы</a>
+      <a href="/demo" {% if request.url.path.startswith('/demo') %}aria-current="page"{% endif %}>Experience Lab</a>
+      <a href="/journal" {% if request.url.path.startswith('/journal') %}aria-current="page"{% endif %}>Журнал</a>
+      <a href="/trust" {% if request.url.path.startswith('/trust') %}aria-current="page"{% endif %}>Доверие</a>
+    </nav>
+    <a href="/studio#contact" class="omni-global-cta">Обсудить проект <span aria-hidden="true">↗</span></a>
+    <details class="omni-mobile-menu">
+      <summary aria-label="Открыть навигацию">Меню <span aria-hidden="true">☰</span></summary>
+      <nav aria-label="Мобильная навигация">
+        <a href="/">Платформа</a>
+        <a href="/services">Услуги</a>
+        <a href="/cases">Кейсы</a>
+        <a href="/demo">Experience Lab</a>
+        <a href="/journal">Инженерный журнал</a>
+        <a href="/trust">Центр доверия</a>
+        <a href="/studio#contact">Обсудить проект ↗</a>
+      </nav>
+    </details>
+  </div>
+</header>

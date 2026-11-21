@@ -1,0 +1,15 @@
+/* Cohesive trust section for the existing public homepage. */
+.platform-app .trust-home{padding-top:clamp(65px,7vw,105px);padding-bottom:clamp(60px,8vw,115px)}
+.platform-app .trust-home-heading{max-width:880px;margin-bottom:25px}
+.platform-app .trust-home-heading h2{font:600 clamp(30px,4.6vw,54px)/1.13 var(--display);letter-spacing:-.055em;margin:13px 0}
+.platform-app .trust-home-heading p{font-size:13px;line-height:1.75;color:#bac8dd}
+.platform-app .trust-home-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 22px}
+.platform-app .trust-home-links a{border-radius:12px;border:1px solid #4b5d79;background:linear-gradient(148deg,#29233e,#121928);padding:clamp(18px,2.7vw,28px);min-height:210px;display:flex;flex-direction:column;gap:13px}
+.platform-app .trust-home-links a:nth-child(2){background:linear-gradient(148deg,#18393d,#121928)}
+.platform-app .trust-home-links a:nth-child(3){background:linear-gradient(148deg,#2a303d,#121928)}
+.platform-app .trust-home-links span{font-size:10px;font-weight:750;letter-spacing:.12em;color:#bdcae0}
+.platform-app .trust-home-links strong{font:600 clamp(22px,2.6vw,31px)/1.2 var(--display);letter-spacing:-.037em}
+.platform-app .trust-home-links small{font-size:12px;line-height:1.55;color:#bdcbdd;flex:1}
+.platform-app .trust-home-links b{font-size:12px;color:#c3ebe5}
+.platform-app .trust-home-links a:hover,.platform-app .trust-home-links a:focus-visible{border-color:#c3b2e4;outline-offset:3px}
+@media(max-width:870px){.platform-app .trust-home-links{grid-template-columns:1fr}.platform-app .trust-home-links a{min-height:155px}}

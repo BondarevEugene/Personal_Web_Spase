@@ -1,0 +1,36 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050811"><title>Обработка заявки — OmniFactory</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1"></head>
+<body class="account-app"><header class="site-header"><div class="header-inner container">
+<a class="brand" href="/"><span class="brand-symbol">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>OPERATIONS / REQUEST REVIEW</small></span></a>
+<nav class="account-header-links"><a href="/">Платформа</a><a href="/support/desk">Очередь заявок</a><a href="/account">Кабинет</a></nav>
+</div></header>
+<main class="container account-dashboard"><nav class="account-breadcrumb"><a href="/support/desk">Очередь</a><span>/</span><span>Заявка</span></nav>
+<div class="eyebrow">REQUEST / {{ ticket.id[:8] }}</div><h1 class="account-ticket-heading">{{ ticket.subject }}</h1>
+<p class="account-dashboard-lede">{{ org.name }} · {{ statuses.get(ticket.status,ticket.status) }} · {{ ticket.created_at.strftime("%d.%m.%Y") }}</p>
+<div class="account-dashboard-grid">
+<section class="account-panel"><div class="eyebrow">01 / CUSTOMER REQUEST</div><h2>Описание задачи</h2>
+<p class="account-message-body">{{ ticket.description }}</p>
+<h3>Изменить статус</h3>
+{% if allowed %}<form action="/support/desk/{{ ticket.id }}/transition" method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>Новое состояние<select name="new_status" required>{% for status in allowed %}<option value="{{ status }}">{{ statuses.get(status,status) }}</option>{% endfor %}</select></label>
+<label>Ответственный<select name="assigned_to_id"><option value="">Без назначения</option>{% for employee in operators %}
+<option value="{{ employee.id }}" {% if ticket.assigned_to_id == employee.id %}selected{% endif %}>{{ employee.display_name }}</option>{% endfor %}</select></label>
+<label>Комментарий для клиента<textarea name="comment" rows="4" maxlength="2000" placeholder="Причина изменения статуса и дальнейшие действия"></textarea></label>
+<button type="submit" class="button button-primary account-submit">Сохранить изменение ↗</button></form>
+{% else %}<div class="account-empty">Для этого состояния нет доступных переходов.</div>{% endif %}
+</section>
+<section class="account-panel"><div class="eyebrow">02 / MESSAGES</div><h2>Обсуждение</h2>
+{% if messages %}<div class="account-thread">{% for m in messages %}<article class="account-thread-message"><small>{{ m.created_at.strftime("%d.%m.%Y %H:%M") }}</small><p class="account-message-body">{{ m.body }}</p></article>{% endfor %}</div>
+{% else %}<div class="account-empty">Сообщений пока нет.</div>{% endif %}
+<form action="/support/desk/{{ ticket.id }}/reply" method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label>Ответить клиенту<textarea name="body" maxlength="3000" rows="4" required></textarea></label>
+<button class="button button-primary account-submit" type="submit">Отправить ответ ↗</button></form>
+</section></div>
+<section class="account-panel" style="margin-top:22px"><div class="eyebrow">03 / AUDIT TRAIL</div><h2>История состояний</h2>
+{% if events %}<div class="account-ticket-list">{% for e in events %}
+<div class="account-ticket"><strong>{{ statuses.get(e.old_status,e.old_status) }} → {{ statuses.get(e.new_status,e.new_status) }}</strong>
+<span class="account-ticket-meta">{{ e.created_at.strftime("%d.%m.%Y %H:%M") }}</span></div>
+{% endfor %}</div>{% else %}<div class="account-empty">Заявка ещё не меняла состояние.</div>{% endif %}</section>
+</main></body></html>

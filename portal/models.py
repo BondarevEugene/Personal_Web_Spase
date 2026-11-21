@@ -1,0 +1,747 @@
+"""Portal entities. No credentials or sensitive payment card data are persisted."""
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from uuid import uuid4
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, LargeBinary, String, Text, UniqueConstraint, CheckConstraint
+from sqlalchemy.orm import Mapped, mapped_column
+
+from portal.db import Base
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
+def uuid() -> str:
+    return str(uuid4())
+
+
+class Organization(Base):
+    __tablename__ = "portal_organizations"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="UAH")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False, default=utcnow)
+
+
+class Customer(Base):
+    __tablename__ = "portal_customers"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(254), nullable=False, unique=True)
+    username: Mapped[str] = mapped_column(String(32), nullable=False, unique=True)
+    display_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    password_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    role: Mapped[str] = mapped_column(String(20), default="owner", nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=utcnow, nullable=False)
+
+
+class PortalSession(Base):
+    __tablename__ = "portal_sessions"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    customer_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), index=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=utcnow, nullable=False)
+
+
+class CustomerSettings(Base):
+    __tablename__ = "portal_settings"
+    customer_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), primary_key=True)
+    language: Mapped[str] = mapped_column(String(5), default="ru", nullable=False)
+    timezone: Mapped[str] = mapped_column(String(64), default="Europe/Kyiv", nullable=False)
+    marketing_opt_in: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+
+class RegistrationEvent(Base):
+    __tablename__ = "portal_registration_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), index=True, nullable=False)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    source: Mapped[str] = mapped_column(String(40), default="website", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=utcnow, nullable=False)
+
+
+class BillingPlan(Base):
+    """Catalog of monthly plans. Paid prices are explicitly configured by owner."""
+    __tablename__ = "portal_plans"
+    code: Mapped[str] = mapped_column(String(40), primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    price_minor: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="UAH")
+    period_months: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    is_public: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+    __table_args__ = (
+        CheckConstraint("price_minor IS NULL OR price_minor >= 0", name="ck_portal_plan_nonnegative"),
+        CheckConstraint("period_months > 0", name="ck_portal_plan_period"),
+    )
+
+
+class PlanPriceChange(Base):
+    """Append-only record of operator catalogue edits (not customer payments)."""
+    __tablename__ = "portal_plan_price_changes"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    plan_code: Mapped[str] = mapped_column(ForeignKey("portal_plans.code"), nullable=False)
+    old_price_minor: Mapped[int | None] = mapped_column(Integer)
+    new_price_minor: Mapped[int | None] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    actor: Mapped[str] = mapped_column(String(100), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class GatewayEvent(Base):
+    """Idempotency/audit ledger; only verified provider messages may enter."""
+    __tablename__ = "portal_gateway_events"
+    __table_args__ = (UniqueConstraint("provider", "event_id", name="uq_portal_gateway_event"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    provider: Mapped[str] = mapped_column(String(40), nullable=False)
+    event_id: Mapped[str] = mapped_column(String(180), nullable=False)
+    invoice_id: Mapped[str] = mapped_column(ForeignKey("portal_invoices.id"), nullable=False)
+    payment_id: Mapped[str] = mapped_column(ForeignKey("portal_payments.id"), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    verified_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+
+
+class Subscription(Base):
+    __tablename__ = "portal_subscriptions"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    plan_code: Mapped[str] = mapped_column(String(40), default="free", nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="active", nullable=False)
+    price_minor: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), default="UAH", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=utcnow, nullable=False)
+    current_period_start: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    current_period_end: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    cancel_at_period_end: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+class Invoice(Base):
+    __tablename__ = "portal_invoices"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    amount_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="UAH")
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="draft")
+    description: Mapped[str] = mapped_column(String(255), default="", nullable=False)
+    plan_code: Mapped[str | None] = mapped_column(ForeignKey("portal_plans.code"), nullable=True)
+    subscription_id: Mapped[str | None] = mapped_column(ForeignKey("portal_subscriptions.id"), nullable=True)
+    period_months: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    idempotency_key: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    due_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=utcnow, nullable=False)
+    __table_args__ = (UniqueConstraint("org_id", "idempotency_key", name="uq_portal_invoice_request"),)
+
+
+class PaymentRecord(Base):
+    __tablename__ = "portal_payments"
+    __table_args__ = (UniqueConstraint("provider", "external_id", name="uq_portal_provider_payment"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    invoice_id: Mapped[str] = mapped_column(ForeignKey("portal_invoices.id"), nullable=False)
+    provider: Mapped[str] = mapped_column(String(40), nullable=False)
+    external_id: Mapped[str] = mapped_column(String(180), nullable=False)
+    amount_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False)
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=utcnow, nullable=False)
+
+
+class BuilderProject(Base):
+    """Per-customer Telegram workflow draft. No bot tokens or OAuth credentials."""
+
+    __tablename__ = "portal_builder_projects"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    scenario_json: Mapped[str] = mapped_column(Text, nullable=False)
+    layout_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, onupdate=utcnow, nullable=False)
+
+
+class AutomationConnection(Base):
+    """Tenant-owned connector registry. Never stores raw provider tokens."""
+
+    __tablename__ = "portal_automation_connections"
+    __table_args__ = (
+        UniqueConstraint("customer_id", "provider", "label",
+                         name="uq_automation_connection_label"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    provider: Mapped[str] = mapped_column(String(40), nullable=False)
+    label: Mapped[str] = mapped_column(String(100), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="pending_setup")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationConnectionEvent(Base):
+    """Append-only connection audit; event codes only, never secrets."""
+
+    __tablename__ = "portal_automation_connection_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    connection_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_connections.id"), index=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    actor_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False)
+    action: Mapped[str] = mapped_column(String(40), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationCredential(Base):
+    """Encrypted OAuth/connector secret; accessible only to backend workers."""
+
+    __tablename__ = "portal_automation_credentials"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    connection_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_connections.id"), unique=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    ciphertext: Mapped[bytes] = mapped_column(LargeBinary(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationOAuthState(Base):
+    """One-use OAuth CSRF state: only SHA256 of nonce is persisted."""
+
+    __tablename__ = "portal_automation_oauth_states"
+    nonce_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    pkce_verifier_ciphertext: Mapped[bytes | None] = mapped_column(LargeBinary(), nullable=True)
+    connection_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_connections.id"), index=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+
+
+class AutomationWorkflow(Base):
+    """Owned workflow definition with immutable revision counter."""
+
+    __tablename__ = "portal_automation_workflows"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), index=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    definition_json: Mapped[str] = mapped_column(Text, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    webhook_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationRun(Base):
+    """Bounded execution audit: no credential values or raw response bodies."""
+
+    __tablename__ = "portal_automation_runs"
+    __table_args__ = (UniqueConstraint("customer_id", "idempotency_key",
+                                       name="uq_omni_automation_run_key"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    workflow_id: Mapped[str] = mapped_column(ForeignKey("portal_automation_workflows.id"),
+                                             index=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), index=True, nullable=False)
+    workflow_revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False)
+    mode: Mapped[str] = mapped_column(String(10), nullable=False)
+    idempotency_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    trace_json: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationSchedule(Base):
+    """Opt-in interval schedule; worker acquires due runs using database CAS."""
+
+    __tablename__ = "portal_automation_schedules"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    workflow_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_workflows.id"), unique=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    interval_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    next_run_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudDeployment(Base):
+    """Customer-owned, plan-only deployment intent; contains no secrets."""
+
+    __tablename__ = "portal_cloud_deployments"
+    __table_args__ = (
+        UniqueConstraint("customer_id", "request_key", name="uq_cloud_customer_request"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(40), nullable=False)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    mode: Mapped[str] = mapped_column(String(16), nullable=False)
+    manifest_json: Mapped[str] = mapped_column(Text, nullable=False)
+    manifest_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    request_key: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="planned")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class CloudOAuthAttempt(Base):
+    """Short-lived PKCE state; never store raw state or verifier in plaintext."""
+
+    __tablename__ = "portal_cloud_oauth_attempts"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    state_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    session_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    verifier_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudOAuthConnection(Base):
+    """Encrypted OAuth credentials, customer-scoped and never returned from API."""
+
+    __tablename__ = "portal_cloud_oauth_connections"
+    __table_args__ = (
+        UniqueConstraint("customer_id", "provider", name="uq_cloud_oauth_customer_provider"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    remote_subject: Mapped[str] = mapped_column(String(200), nullable=False)
+    remote_name: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    scopes: Mapped[str] = mapped_column(Text, nullable=False)
+    access_ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    refresh_ciphertext: Mapped[str | None] = mapped_column(Text, nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudProvisionJob(Base):
+    """Durable plan-to-deploy attempt; immutable snapshot and no secrets."""
+
+    __tablename__ = "portal_cloud_provision_jobs"
+    __table_args__ = (
+        UniqueConstraint("customer_id", "request_key",
+                         name="uq_cloud_provision_customer_key"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    deployment_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_cloud_deployments.id"), nullable=False, index=True)
+    request_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    manifest_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    manifest_snapshot: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(30), default="awaiting_review", nullable=False)
+    mode: Mapped[str] = mapped_column(String(12), default="dry_run", nullable=False)
+    approval_note: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    provider_project_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    provider_service_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    provider_deployment_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudProvisionEvent(Base):
+    """Append-only lifecycle log, no raw OAuth/Telegram credentials."""
+
+    __tablename__ = "portal_cloud_provision_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    job_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_cloud_provision_jobs.id"), nullable=False, index=True)
+    code: Mapped[str] = mapped_column(String(70), nullable=False)
+    message: Mapped[str] = mapped_column(String(300), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudRailwayBinding(Base):
+    """Verified BYOC resource mapping. Provider IDs, no access tokens."""
+
+    __tablename__ = "portal_cloud_railway_bindings"
+    __table_args__ = (UniqueConstraint("deployment_id", name="uq_cloud_railway_deployment"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    deployment_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_cloud_deployments.id"), nullable=False, index=True)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    project_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    service_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    environment_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    verified_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    last_provider_status: Mapped[str | None] = mapped_column(String(60), nullable=True)
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class BotCredential(Base):
+    """Per-bot encrypted Telegram token, only owner can replace or revoke."""
+
+    __tablename__ = "portal_bot_credentials"
+    __table_args__ = (UniqueConstraint("project_id", name="uq_bot_credential_project"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    ciphertext: Mapped[str] = mapped_column(Text, nullable=False)
+    fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    verified_bot_id: Mapped[str | None] = mapped_column(String(32))
+    verified_username: Mapped[str | None] = mapped_column(String(80))
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime())
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    rotated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class BotAccessGrant(Base):
+    """Explicit per-project grant. No implicit organization-wide access."""
+
+    __tablename__ = "portal_bot_access_grants"
+    __table_args__ = (UniqueConstraint("project_id", "grantee_id",
+                                       name="uq_bot_grant_project_customer"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    grantee_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(12), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class BotAccessInvitation(Base):
+    """Single-use capability to invite a specifically named registered customer."""
+
+    __tablename__ = "portal_bot_access_invitations"
+    __table_args__ = (UniqueConstraint("token_hash", name="uq_bot_invitation_hash"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    invited_customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(12), nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime())
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime())
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class BotSecurityAudit(Base):
+    """Structured, non-sensitive audit trail for owner actions and access changes."""
+
+    __tablename__ = "portal_bot_security_audit"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    actor_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False)
+    event: Mapped[str] = mapped_column(String(48), nullable=False)
+    target_customer_id: Mapped[str | None] = mapped_column(String(36))
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudReleaseReview(Base):
+    """Owner-approved, immutable release review request; NEVER a provider charge."""
+
+    __tablename__ = "portal_cloud_release_reviews"
+    __table_args__ = (
+        UniqueConstraint("owner_id", "request_key", name="uq_cloud_release_request"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    owner_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    bot_project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    cloud_plan_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_cloud_deployments.id"), nullable=False, index=True)
+    request_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    artifact_image: Mapped[str] = mapped_column(String(240), nullable=False)
+    plan_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    credential_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    revision_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    review_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    budget_cap_usd: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="review_requested")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime())
+
+
+class SupportTicket(Base):
+    """Customer-created service request, strictly scoped to an organization."""
+
+    __tablename__ = "portal_support_tickets"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    created_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    subject: Mapped[str] = mapped_column(String(160), nullable=False)
+    category: Mapped[str] = mapped_column(String(30), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="new")
+    assigned_to_id: Mapped[str | None] = mapped_column(ForeignKey("portal_customers.id"), nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class SupportMessage(Base):
+    """Thread message. All access is mediated through the owning ticket's org_id."""
+
+    __tablename__ = "portal_support_messages"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    ticket_id: Mapped[str] = mapped_column(ForeignKey("portal_support_tickets.id"), index=True, nullable=False)
+    author_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class SupportEvent(Base):
+    """Append-only service desk status change visible in the customer's timeline."""
+
+    __tablename__ = "portal_support_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    ticket_id: Mapped[str] = mapped_column(ForeignKey("portal_support_tickets.id"), index=True, nullable=False)
+    actor_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    old_status: Mapped[str] = mapped_column(String(30), nullable=False)
+    new_status: Mapped[str] = mapped_column(String(30), nullable=False)
+    comment: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class ClientProject(Base):
+    """Organization-scoped paid-work request; never inferred from builder drafts."""
+
+    __tablename__ = "portal_client_projects"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), index=True, nullable=False)
+    created_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    brief: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(24), default="requested", nullable=False)
+    assigned_to_id: Mapped[str | None] = mapped_column(ForeignKey("portal_customers.id"), nullable=True)
+    due_date: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class ClientProjectMilestone(Base):
+    """Operational stage entered by an authorized platform operator."""
+
+    __tablename__ = "portal_client_project_milestones"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    details: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    status: Mapped[str] = mapped_column(String(24), default="planned", nullable=False)
+    ordinal: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class ClientProjectEvent(Base):
+    """Immutable status/milestone/acceptance history for the client portal."""
+
+    __tablename__ = "portal_client_project_events"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    actor_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class ClientProjectDocument(Base):
+    """Immutable text document revision; not an uploaded attachment or signature."""
+
+    __tablename__ = "portal_client_project_documents"
+    __table_args__ = (
+        UniqueConstraint("project_id", "document_kind", "version",
+                         name="uq_client_project_document_version"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    created_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    document_kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class ClientProjectApproval(Base):
+    """Acknowledgment of an exact document version, not a legal e-signature."""
+
+    __tablename__ = "portal_client_project_approvals"
+    __table_args__ = (
+        UniqueConstraint("document_id", "org_id", name="uq_client_document_org_approval"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_client_project_documents.id"), index=True, nullable=False)
+    org_id: Mapped[str] = mapped_column(ForeignKey("portal_organizations.id"), nullable=False)
+    approved_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class ClientProjectNotification(Base):
+    """Per-recipient in-app operational notice with an explicit read timestamp."""
+
+    __tablename__ = "portal_client_project_notifications"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    recipient_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), index=True, nullable=False)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), nullable=False)
+    message: Mapped[str] = mapped_column(String(250), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+
+
+class ClientProjectAttachment(Base):
+    """Small private customer attachment stored transactionally in database.
+
+    Intentionally bounded; production large-file storage requires a private
+    object-storage adapter and malware scanning before raising upload limits.
+    """
+
+    __tablename__ = "portal_client_project_attachments"
+    __table_args__ = (
+        UniqueConstraint("project_id", "filename", "version",
+                         name="uq_project_attachment_filename_version"),
+        CheckConstraint("size_bytes > 0 AND size_bytes <= 2097152",
+                        name="ck_project_attachment_size"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    uploaded_by_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    filename: Mapped[str] = mapped_column(String(120), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    mime_type: Mapped[str] = mapped_column(String(70), nullable=False)
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    data: Mapped[bytes] = mapped_column(LargeBinary(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class PublicArticleRevision(Base):
+    """Operator-edited journal metadata; originals remain immutable in source."""
+
+    __tablename__ = "portal_public_article_revisions"
+    slug: Mapped[str] = mapped_column(String(120), primary_key=True)
+    draft_title: Mapped[str] = mapped_column(String(180), nullable=False)
+    draft_excerpt: Mapped[str] = mapped_column(String(450), nullable=False)
+    draft_sections: Mapped[str] = mapped_column(Text, nullable=False)
+    published_title: Mapped[str | None] = mapped_column(String(180))
+    published_excerpt: Mapped[str | None] = mapped_column(String(450))
+    published_sections: Mapped[str | None] = mapped_column(Text)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime())
+    updated_by_id: Mapped[str | None] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=True,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(), default=utcnow, nullable=False,
+    )
+
+
+class PublicSearchMetric(Base):
+    """Aggregated Search Console page/day performance (no visitor identities)."""
+
+    __tablename__ = "portal_public_search_metrics"
+    date: Mapped[str] = mapped_column(String(10), primary_key=True)
+    path: Mapped[str] = mapped_column(String(240), primary_key=True)
+    clicks: Mapped[int] = mapped_column(Integer, nullable=False)
+    impressions: Mapped[int] = mapped_column(Integer, nullable=False)
+    position: Mapped[float | None] = mapped_column(nullable=True)
+    imported_at: Mapped[datetime] = mapped_column(
+        DateTime(), default=utcnow, nullable=False,
+    )
+
+
+class PublicPageRevision(Base):
+    """Staged creative copy for vetted services and cases only."""
+
+    __tablename__ = "portal_public_page_revisions"
+    page_key: Mapped[str] = mapped_column(String(160), primary_key=True)
+    draft_title: Mapped[str] = mapped_column(String(180), nullable=False)
+    draft_summary: Mapped[str] = mapped_column(String(800), nullable=False)
+    published_title: Mapped[str | None] = mapped_column(String(180))
+    published_summary: Mapped[str | None] = mapped_column(String(800))
+    published_at: Mapped[datetime | None] = mapped_column(DateTime())
+    scheduled_for: Mapped[datetime | None] = mapped_column(DateTime())
+    scheduled_title: Mapped[str | None] = mapped_column(String(180))
+    scheduled_summary: Mapped[str | None] = mapped_column(String(800))
+    updated_by_id: Mapped[str | None] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=True,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(), nullable=False, default=utcnow,
+    )
+
+
+class ClientProjectTask(Base):
+    """Dated work item; parent must belong to the same project (enforced by API)."""
+
+    __tablename__ = "portal_client_project_tasks"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    project_id: Mapped[str] = mapped_column(ForeignKey("portal_client_projects.id"), index=True, nullable=False)
+    parent_id: Mapped[str | None] = mapped_column(ForeignKey("portal_client_project_tasks.id"))
+    title: Mapped[str] = mapped_column(String(160), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="planned")
+    assignee_id: Mapped[str | None] = mapped_column(ForeignKey("portal_customers.id"))
+    start_on: Mapped[datetime | None] = mapped_column(DateTime())
+    due_on: Mapped[datetime | None] = mapped_column(DateTime())
+    estimate_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class ClientProjectTimeEntry(Base):
+    """Append-only operator time entries; integer minutes avoid floating drift."""
+
+    __tablename__ = "portal_client_project_time_entries"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    task_id: Mapped[str] = mapped_column(ForeignKey("portal_client_project_tasks.id"), index=True, nullable=False)
+    actor_id: Mapped[str] = mapped_column(ForeignKey("portal_customers.id"), nullable=False)
+    minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    note: Mapped[str] = mapped_column(String(500), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class GrowthLead(Base):
+    """Opt-in public inquiry, separate from tenant-owned customers."""
+
+    __tablename__ = "portal_growth_leads"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    contact: Mapped[str] = mapped_column(String(200), nullable=False)
+    topic: Mapped[str] = mapped_column(String(160), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    source_path: Mapped[str] = mapped_column(String(200), nullable=False, default="/studio")
+    utm_source: Mapped[str] = mapped_column(String(80), nullable=False, default="")
+    utm_medium: Mapped[str] = mapped_column(String(80), nullable=False, default="")
+    utm_campaign: Mapped[str] = mapped_column(String(80), nullable=False, default="")
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="new")
+    telegram_status: Mapped[str] = mapped_column(String(24), nullable=False, default="pending")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)

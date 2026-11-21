@@ -16,6 +16,13 @@ class BotCompiler:
         # 1. Загружаем базовый каркас aiogram
         code = ["import asyncio", "from aiogram import Bot, Dispatcher", "dp = Dispatcher()", ""]
 
+        # Мы создаем ветвление (Router)
+        code.append("async def router(user_id):")
+        code.append("    if await db.is_exists(user_id):")
+        code.append("        return 'crm_flow'")  # Переход в сценарий CRM
+        code.append("    else:")
+        code.append("        return 'onboarding_flow'")  # Переход в сценарий нового
+
         # 2. Парсим узлы из graph_data
         nodes = self.graph.get('drawflow', {}).get('Home', {}).get('data', {})
         for node_id, node_data in nodes.items():

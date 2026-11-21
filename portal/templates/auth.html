@@ -1,0 +1,36 @@
+<!doctype html><html lang="{{ ui_lang }}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050811"><title>{{ t("Регистрация") if mode == "register" else t("Вход") }} — OmniFactory</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3"><link rel="stylesheet" href="/studio-assets/account.css?v=2"><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
+<link rel="stylesheet" href="/studio-assets/account_security.css?v=1"></head>
+<body class="account-app"><header class="site-header"><div class="header-inner container">
+<a class="brand" href="/studio"><span class="brand-symbol" aria-hidden="true">◈</span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / ACCOUNTS</small></span></a>
+<nav class="account-header-links" aria-label="Навигация"><a href="/">{{ t("Платформа") }}</a><a href="/architect">{{ t("Конструктор") }}</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/studio">{{ t("Студия") }}</a><a href="/account/login?lang={{ ui_lang }}" {% if mode == "login" %}aria-current="page"{% endif %}>{{ t("Вход") }}</a><a href="/account/register?lang={{ ui_lang }}" {% if mode == "register" %}aria-current="page"{% endif %}>{{ t("Регистрация") }}</a></nav>
+</div></header><main class="container account-auth-main"><section class="account-auth-copy">
+<div class="eyebrow">OMNIFACTORY / PRIVATE WORKSPACE</div><h1>{{ t("Ваши проекты.") }}<br><span class="gradient-text">{{ t("В одном кабинете.") }}</span></h1>
+<p>{{ t("Персональное рабочее пространство для управления обращениями, проектами, счетами и настройками. Каждая организация видит только собственные данные.") }}</p>
+<div class="account-auth-points"><span>{{ t("01 / ЗАЯВКИ И ПЕРЕПИСКА С ПОДДЕРЖКОЙ") }}</span><span>{{ t("02 / ПОДПИСКИ, СЧЕТА И ИСТОРИЯ ОПЛАТ") }}</span><span>{{ t("03 / ПРОЕКТЫ И ИНСТРУМЕНТЫ АВТОМАТИЗАЦИИ") }}</span></div>
+</section><section class="account-auth-card" aria-labelledby="auth-title">
+<div class="auth-language"><a href="{{ '/account/register' if mode == 'register' else '/account/login' }}?lang=uk" {% if ui_lang == 'uk' %}aria-current="page"{% endif %}>UA</a><a href="{{ '/account/register' if mode == 'register' else '/account/login' }}?lang=ru" {% if ui_lang == 'ru' %}aria-current="page"{% endif %}>RU</a><a href="{{ '/account/register' if mode == 'register' else '/account/login' }}?lang=en" {% if ui_lang == 'en' %}aria-current="page"{% endif %}>EN</a></div>
+<div class="eyebrow">CUSTOMER IDENTITY</div><h2 id="auth-title">{{ t("Создать аккаунт") if mode == "register" else t("Войти в OmniFactory") }}</h2>
+{% if error %}<p role="alert" class="account-error">{{ error }}</p>{% endif %}
+<form method="post" action="{{ '/account/register' if mode == 'register' else '/account/login' }}" autocomplete="on">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<input type="hidden" name="lang" value="{{ ui_lang }}">
+{% if mode == "register" %}
+<label>{{ t("Логин") }} <input name="username" type="text" minlength="4" maxlength="30" pattern="[A-Za-z][A-Za-z0-9._-]{3,29}" autocomplete="username" required placeholder="my_company" autofocus></label>
+<label>{{ t("Имя") }} <input name="display_name" type="text" minlength="2" maxlength="120" autocomplete="name" required placeholder="{{ t('Как к вам обращаться') }}"></label>
+<label>Email <input name="email" type="email" maxlength="254" autocomplete="email" required placeholder="name@company.com"></label>
+<label>{{ t("Организация") }} <input name="organization" type="text" minlength="2" maxlength="160" required placeholder="{{ t('Название организации') }}"></label>
+<label>{{ t("Пароль") }} <input name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required placeholder="{{ t('Не менее 12 символов') }}"></label>
+<label>{{ t("Повтори пароль") }} <input name="password_repeat" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
+{% else %}
+<label>{{ t("Логин или email") }} <input name="login" type="text" autocomplete="username" maxlength="254" required autofocus placeholder="{{ t('Логин или email') }}"></label>
+<label>{{ t("Пароль") }} <input name="password" type="password" autocomplete="current-password" required placeholder="{{ t('Ваш пароль') }}"></label>
+{% endif %}
+<button class="button button-primary account-submit" type="submit">{{ t("Зарегистрироваться") if mode == "register" else t("Войти") }} <span>↗</span></button>
+</form>
+<div class="account-auth-foot">
+{% if mode == "register" %}{{ t("Уже зарегистрирован?") }} <a href="/account/login?lang={{ ui_lang }}">{{ t("Войти") }}</a>
+{% else %}{{ t("Ещё нет аккаунта?") }} <a href="/account/register?lang={{ ui_lang }}">{{ t("Зарегистрироваться") }}</a>{% endif %}
+</div><p class="account-smallprint">{{ t("Реальные платежи пока не принимаются. Восстановление пароля и подтверждение email пока недоступны. Не передавайте пароль в обращения поддержки.") }}</p>
+</section></main></body></html>

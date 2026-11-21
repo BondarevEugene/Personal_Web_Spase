@@ -1,0 +1,286 @@
+/* ==========================================================
+   OMNIFACTORY PLATFORM
+   Layout System v1.0
+   ========================================================== */
+
+/* ------------------------------
+   Containers
+------------------------------ */
+
+.container{
+
+    width:100%;
+
+    max-width:var(--container);
+
+    margin:auto;
+
+    padding-inline:32px;
+
+}
+
+.container-sm{
+
+    max-width:960px;
+
+    margin:auto;
+
+    padding-inline:32px;
+
+}
+
+.container-lg{
+
+    max-width:1600px;
+
+    margin:auto;
+
+    padding-inline:40px;
+
+}
+
+/* ------------------------------
+   Sections
+------------------------------ */
+
+.section{
+
+    padding-block:var(--section-padding);
+
+}
+
+.section-small{
+
+    padding-block:64px;
+
+}
+
+.section-large{
+
+    padding-block:140px;
+
+}
+
+/* ------------------------------
+   Grid
+------------------------------ */
+
+.grid{
+
+    display:grid;
+
+    gap:32px;
+
+}
+
+.grid-2{
+
+    grid-template-columns:repeat(2,1fr);
+
+}
+
+.grid-3{
+
+    grid-template-columns:repeat(3,1fr);
+
+}
+
+.grid-4{
+
+    grid-template-columns:repeat(4,1fr);
+
+}
+
+/* ------------------------------
+   Flex
+------------------------------ */
+
+.flex{
+
+    display:flex;
+
+}
+
+.flex-center{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+.flex-between{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+}
+
+.flex-column{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.flex-wrap{
+
+    flex-wrap:wrap;
+
+}
+
+.gap-sm{
+
+    gap:12px;
+
+}
+
+.gap-md{
+
+    gap:24px;
+
+}
+
+.gap-lg{
+
+    gap:48px;
+
+}
+
+/* ------------------------------
+   Hero
+------------------------------ */
+
+.hero{
+
+    min-height:100vh;
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+.hero-content{
+
+    width:50%;
+
+}
+
+.hero-preview{
+
+    width:50%;
+
+}
+
+/* ------------------------------
+   Main
+------------------------------ */
+
+main{
+
+    min-height:100vh;
+
+}
+
+/* ------------------------------
+   Page
+------------------------------ */
+
+.page{
+
+    min-height:100vh;
+
+}
+
+/* ------------------------------
+   Cards Grid
+------------------------------ */
+
+.cards{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+
+    gap:32px;
+
+}
+
+/* ------------------------------
+   Responsive
+------------------------------ */
+
+@media(max-width:1100px){
+
+.grid-4{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+.hero{
+
+flex-direction:column;
+
+justify-content:center;
+
+padding-top:120px;
+
+}
+
+.hero-content{
+
+width:100%;
+
+}
+
+.hero-preview{
+
+width:100%;
+
+margin-top:64px;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.container{
+
+padding-inline:20px;
+
+}
+
+.grid-3{
+
+grid-template-columns:1fr;
+
+}
+
+.grid-2{
+
+grid-template-columns:1fr;
+
+}
+
+.grid-4{
+
+grid-template-columns:1fr;
+
+}
+
+.section{
+
+padding-block:72px;
+
+}
+
+}

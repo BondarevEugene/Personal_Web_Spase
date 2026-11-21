@@ -1,0 +1,139 @@
+/* OMNIFACTORY Graph Studio | practical workspace refinements based on user screenshot.
+   Completely scoped to the constructor: no changes to Bot Lab or admin themes. */
+.builder-app .graph-workspace-helper{font-size:12px;line-height:1.5;color:#9bbdd1;margin:7px 3px 13px}
+.builder-app .graph-lab-link{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.builder-app.graph-workspace-compact .builder-intro{padding:5px 2px 4px!important;margin:0 0 8px!important;min-height:0}
+.builder-app.graph-workspace-compact .builder-intro h1{font-size:clamp(21px,2vw,28px)!important;line-height:1.1;margin:4px 0!important}
+.builder-app.graph-workspace-compact .builder-intro h1 br{display:none}
+.builder-app.graph-workspace-compact .builder-intro .builder-hero-kicker{font-size:10px}
+.builder-app.graph-workspace-compact .builder-intro p,.builder-app.graph-workspace-compact .builder-intro-note,
+.builder-app.graph-workspace-compact .builder-hero-metric{display:none!important}
+.builder-app.graph-workspace-compact .builder-page{padding-top:82px!important}
+.builder-app.graph-workspace-compact .builder-toolbar{gap:8px;padding:10px 12px!important;align-items:center}
+.builder-app.graph-workspace-compact .builder-toolbar-actions{gap:6px}
+.builder-app.graph-workspace-compact .builder-toolbar .button{min-height:36px;padding:7px 10px;font-size:11px}
+.builder-app.graph-workspace-compact .builder-toolbar input{min-width:155px;max-width:265px}
+.builder-app.graph-workspace-compact .builder-guide{display:none}
+.builder-app.graph-workspace-compact .builder-feedback{min-height:28px;padding:5px!important}
+.builder-app.graph-workspace-compact .builder-cloud{padding:10px 14px;margin:7px 0}
+.builder-app.graph-workspace-compact .graph-workspace-helper{margin:3px 0 8px}
+.builder-app.graph-workspace-compact .builder-layout{grid-template-columns:minmax(190px,230px) minmax(360px,1fr) minmax(260px,315px);gap:10px}
+.builder-app .builder-palette,.builder-app .builder-canvas,.builder-app .builder-inspector{border-radius:12px;box-shadow:0 7px 28px #02071335}
+.builder-app .builder-palette,.builder-app .builder-inspector{background:#101e30}
+.builder-app .builder-canvas{border-color:#4a6986}
+.builder-app.graph-workspace-compact .builder-canvas-scroll{height:min(71vh,820px);min-height:535px}
+.builder-app.graph-workspace-compact .builder-palette,.builder-app.graph-workspace-compact .builder-inspector{min-height:535px}
+.builder-app .builder-inspector input:focus-visible,.builder-app .builder-inspector textarea:focus-visible,
+.builder-app .builder-inspector select:focus-visible{border-color:#8ce8d6;outline:2px solid #8ce8d644;outline-offset:1px}
+.builder-app .graph-node.selected{outline-offset:4px;outline-width:2px}
+.builder-app .graph-port{min-width:19px;min-height:19px}
+.builder-app.graph-fullscreen .graph-workspace-helper{display:none}
+@media(max-width:1250px){
+ .builder-app.graph-workspace-compact .builder-layout{grid-template-columns:200px minmax(320px,1fr) 275px}
+ .builder-app.graph-workspace-compact .builder-toolbar .button{font-size:11px}
+}
+@media(max-width:980px){
+ .builder-app.graph-workspace-compact .builder-layout{grid-template-columns:minmax(175px,.38fr) minmax(340px,1fr)}
+ .builder-app.graph-workspace-compact .builder-inspector{grid-column:1/-1;min-height:220px}
+ .builder-app.graph-workspace-compact .builder-canvas-scroll{height:570px}
+}
+@media(max-width:700px){
+ .builder-app.graph-workspace-compact .builder-layout{grid-template-columns:1fr}
+ .builder-app.graph-workspace-compact .builder-palette{max-height:300px;min-height:0;overflow-y:auto}
+ .builder-app.graph-workspace-compact .builder-inspector{grid-column:auto}
+ .builder-app.graph-workspace-compact .builder-page{padding-top:75px!important}
+ .builder-app.graph-workspace-compact .builder-toolbar input{max-width:none}
+ .builder-app.graph-workspace-compact .builder-canvas-scroll{height:515px;min-height:475px}
+ .builder-app .graph-lab-link{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ .builder-app .graph-node,.builder-app .graph-port{transition:none!important}
+}
+
+/* Quiet, almost-black Graph Studio diagnostics. Does not replace type colors. */
+.builder-app .graph-diagnostics{
+ margin:9px 0 15px;padding:14px 17px;background:#0b0d12;
+ border:1px solid #454955;border-radius:10px;color:#eceef5
+}
+.builder-app .graph-diagnostics[hidden]{display:none}
+.builder-app .graph-diagnostics-head{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.builder-app .graph-diagnostics-head strong{display:block;font:600 15px/1.35 var(--display)}
+.builder-app .graph-diagnostics-head small{display:block;margin-top:5px;color:#b8bfce;font-size:12px}
+.builder-app #graph-diagnostics-close{border:1px solid #626776;background:#20232c;color:#f2f3f8;border-radius:6px;padding:8px 12px}
+.builder-app .graph-diagnostics-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-top:13px}
+.builder-app .graph-diagnostics-item{display:block;text-align:left;width:100%;border:1px solid #515563;background:#1b1d25;color:#f0f1f6;
+ border-radius:7px;padding:10px 12px;font-size:12px;line-height:1.5;cursor:pointer}
+.builder-app .graph-diagnostics-item.error{border-left:3px solid #e99190}
+.builder-app .graph-diagnostics-item.warning{border-left:3px solid #d8bd7b}
+.builder-app .graph-diagnostics-item:hover,.builder-app .graph-diagnostics-item:focus-visible{background:#2b2d39;border-color:#babed2}
+.builder-app .graph-diagnostics-clean{color:#b7dcc6;font-size:13px}
+.builder-app .graph-node.graph-diagnostic-error{outline:2px dashed #e99190;outline-offset:4px}
+.builder-app .graph-node.graph-diagnostic-warning{outline:2px dashed #d8bd7b;outline-offset:4px}
+@media(max-width:700px){.builder-app .graph-diagnostics-list{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.builder-app .graph-diagnostics-item{transition:none}}
+
+.builder-app .graph-palette-search{display:grid;gap:5px;padding:11px 12px 4px;font-size:11px;color:#dce1ec}
+.builder-app .graph-palette-search input{width:100%;min-height:34px;padding:7px 10px;
+ color:#f5f6fb;background:#13151c;border:1px solid #646978;border-radius:7px;font-size:12px}
+.builder-app .graph-palette-search input:focus-visible{outline:2px solid #b1b6cf;outline-offset:1px}
+.builder-app .graph-palette-results{color:#bfc5d5;font-size:11px;margin:4px 12px}
+.builder-app .builder-palette .palette-node[hidden],
+.builder-app .builder-palette .palette-group-label[hidden]{display:none!important}
+
+/* Graph Studio history controls: compact, keyboard-accessible and matte. */
+.builder-app .graph-history-actions{display:flex;align-items:center;gap:5px;border-right:1px solid #343944;padding-right:9px;margin-right:4px}
+.builder-app .graph-history-actions .button{padding:7px 9px;min-height:34px;background:#16181e;border-color:#525764;color:#e7e9f0;font-size:11px;white-space:nowrap}
+.builder-app .graph-history-actions .button:hover:not(:disabled){background:#292c35;border-color:#999fad}
+.builder-app .graph-history-actions .button:disabled{opacity:.42;cursor:not-allowed}
+@media(max-width:700px){.builder-app .graph-history-actions{width:100%;justify-content:flex-start;border:0;padding:0}}
+
+/* Step debugger: quiet, compact, matte inspection space. */
+.builder-app .preview-debugger{background:#0a0c11;border:1px solid #3c424e;border-radius:10px;padding:12px;min-width:0;color:#e7eaf1}
+.builder-app .preview-debugger-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid #323845;padding-bottom:10px}
+.builder-app .preview-debugger-head strong{font-size:12px;letter-spacing:.03em}
+.builder-app .preview-debugger-controls{display:flex;gap:7px;align-items:center}
+.builder-app .preview-debugger-controls button{width:30px;height:29px;border:1px solid #606777;border-radius:6px;background:#212630;color:#f3f5fa;cursor:pointer}
+.builder-app .preview-debugger-controls button:disabled{opacity:.4;cursor:not-allowed}
+.builder-app #debug-step-position{font:600 11px monospace;color:#d1d9eb;min-width:50px;text-align:center}
+.builder-app .preview-debugger .preview-trace{max-height:210px;overflow:auto;margin-top:9px}
+.builder-app .preview-trace .debug-step-link{display:block;width:100%;text-align:left;background:#171b23;border:1px solid #303744;border-radius:6px;padding:7px 10px;margin:5px 0;color:#dce4f0;font-size:11px;cursor:pointer}
+.builder-app .preview-trace .debug-step-link[aria-current=step]{background:#30364b;border-color:#9a9fb8;color:#fff}
+.builder-app .preview-trace .debug-step-link:hover{border-color:#9a9fb8}
+.builder-app .preview-debug-details{margin-top:12px;background:#131821;border:1px solid #303847;border-radius:8px;padding:12px;display:grid;gap:9px;font-size:12px;overflow-wrap:anywhere}
+.builder-app .preview-debug-details p{margin:0;color:#bac7db}
+.builder-app .debug-variables{display:grid;gap:5px}
+.builder-app .debug-variables b{color:#cbd3e3;font-size:11px}
+.builder-app .debug-variable{background:#1c2330;border-left:2px solid #909eb7;border-radius:3px;padding:5px 8px;font:12px/1.45 monospace;white-space:pre-wrap}
+.builder-app .debug-empty{font-size:11px;color:#9daabd}
+.builder-app .graph-node.graph-debug-active{outline:2px solid #d6dce9;outline-offset:5px}
+@media(prefers-reduced-motion:reduce){.builder-app .debug-step-link{transition:none!important}}
+
+/* Graph Studio: functional logical groups, understated low-glare controls. */
+.builder-app .graph-groups-panel{
+ margin:10px 12px 7px;padding:12px;border:1px solid #343946;border-radius:10px;
+ background:#0e1016;color:#e6eaf1
+}
+.builder-app .graph-groups-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font:700 11px/1.4 var(--font)}
+.builder-app .graph-groups-head span{color:#aab3c2;font-weight:500}
+.builder-app .graph-groups-controls{display:flex;align-items:end;flex-wrap:wrap;gap:7px;margin:10px 0}
+.builder-app .graph-groups-controls label{display:grid;gap:4px;min-width:130px;flex:1;font-size:10px;color:#b7bfd0}
+.builder-app .graph-groups-controls input,.builder-app .graph-groups-controls select{
+ min-height:31px;padding:6px 8px;border:1px solid #50596c;background:#181c25;color:#f0f2f6;border-radius:6px;font-size:12px;width:100%
+}
+.builder-app .graph-groups-controls button,.builder-app .graph-group-remove{
+ min-height:31px;padding:6px 10px;border:1px solid #626b7b;background:#252b35;color:#eef1f7;border-radius:6px;font-size:11px;cursor:pointer
+}
+.builder-app .graph-groups-controls button:hover,.builder-app .graph-group-remove:hover{border-color:#aab0c0}
+.builder-app .graph-groups-list{display:flex;gap:7px;flex-wrap:wrap;align-items:start}
+.builder-app .graph-group{flex:1 1 170px;min-width:155px;border:1px solid #353b48;border-radius:7px;background:#171b23;padding:0 8px}
+.builder-app .graph-group-title{cursor:pointer;padding:8px 3px;font-size:11px;color:#dbe3ef}
+.builder-app .graph-group-members{border-top:1px solid #333d4d;padding:6px 0 8px;display:grid;gap:5px}
+.builder-app .graph-group-member{display:block;width:100%;text-align:left;padding:7px 8px;font-size:11px;background:#212631;color:#dce3ee;border:1px solid #3c4655;border-radius:5px;cursor:pointer}
+.builder-app .graph-group-member.selected{border-color:#adb4c9;background:#313b4c;color:white}
+.builder-app .graph-group-member:hover{border-color:#aab3c7}
+.builder-app .graph-group-remove{color:#d4bdc1;background:#242027}
+.builder-app .graph-groups-empty,.builder-app .graph-groups-note{margin:5px 0;font-size:11px;color:#abb6c7;line-height:1.45}
+.builder-app .graph-groups-note{margin-top:8px}
+@media(max-width:700px){.builder-app .graph-groups-controls label{flex:1 1 100%}.builder-app .graph-group{flex-basis:100%}}
+
+.builder-app .graph-node-group-chip{display:inline-block;max-width:100%;align-self:flex-start;padding:3px 7px;font:600 10px/1.3 var(--font);background:#252935;border:1px solid #626b7e;color:#cdd5e3;border-radius:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

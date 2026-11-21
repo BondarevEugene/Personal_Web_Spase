@@ -1,0 +1,84 @@
+/* OMNIFACTORY / Blueprint Studio — structured enterprise art direction. */
+.blueprint-page{background:#080c15;color:#edf2fb}
+.blueprint-page .blueprint-main{max-width:1370px;padding-top:38px;padding-bottom:115px}
+.blueprint-page .blueprint-breadcrumb{display:flex;flex-wrap:wrap;gap:12px;color:#bdc7d9;font-size:11px;margin-bottom:42px}
+.blueprint-page .blueprint-breadcrumb a{text-decoration:underline;text-underline-offset:4px}
+.blueprint-page .blueprint-intro{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(230px,.6fr);gap:30px;align-items:center}
+.blueprint-page .blueprint-intro h1{font:750 clamp(43px,6.4vw,86px)/.98 var(--display);letter-spacing:-.075em;margin:16px 0 24px}
+.blueprint-page .blueprint-intro h1 span{color:#c3aff3}
+.blueprint-page .blueprint-intro p{max-width:740px;line-height:1.8;font-size:14px;color:#c2cfe0}
+.blueprint-page .blueprint-intro-meta{display:flex;flex-wrap:wrap;gap:15px;margin-top:20px;font-size:10px;font-weight:750;letter-spacing:.12em;color:#b8accf}
+.blueprint-page .blueprint-art{position:relative;min-height:320px;display:grid;place-items:center;border:1px solid #536585;border-radius:13px;background:radial-gradient(circle,#6559a147,transparent 62%),repeating-linear-gradient(90deg,#d1dded0b 0,#d1dded0b 1px,transparent 1px,transparent 30px),#121a2a;overflow:hidden}
+.blueprint-page .blueprint-art-ring{width:235px;height:235px;display:flex;align-items:center;justify-content:space-around;border:1px dashed #b8a8e8b0;border-radius:50%}
+.blueprint-page .blueprint-art-ring strong{font:400 115px var(--display);color:#d0bafa}
+.blueprint-page .blueprint-art-ring span,.blueprint-page .blueprint-art-axis{font-size:9px;font-weight:750;letter-spacing:.14em;color:#e0d8f0}
+.blueprint-page .blueprint-art-axis{position:absolute;bottom:16px;left:20px}
+.blueprint-page .blueprint-disclosure{display:flex;align-items:start;gap:20px;border:1px solid #536582;border-left:3px solid #b9a1ea;background:#1a2335;border-radius:9px;padding:17px 20px;margin:35px 0 28px}
+.blueprint-page .blueprint-disclosure strong{flex:0 0 200px;letter-spacing:.1em;font-size:10px;color:#e1d0fb}
+.blueprint-page .blueprint-disclosure span{font-size:12px;line-height:1.7;color:#c7d4e6}
+.blueprint-page .blueprint-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px;align-items:start}
+.blueprint-page .blueprint-form-panel,.blueprint-page .blueprint-guide{border:1px solid #475872;border-radius:12px;background:#121b2a;padding:clamp(18px,3vw,34px)}
+.blueprint-page .blueprint-panel-top>span,.blueprint-page .blueprint-guide-title>span,.blueprint-page .blueprint-next>span{font-size:10px;font-weight:750;letter-spacing:.12em;color:#b7a7e1}
+.blueprint-page .blueprint-panel-top h2{font:650 clamp(24px,3.2vw,38px)/1.2 var(--display);letter-spacing:-.055em;margin:15px 0 9px}
+.blueprint-page .blueprint-panel-top p,.blueprint-page .blueprint-submit-area p{font-size:12px;line-height:1.7;color:#b9c9df}
+.blueprint-page .blueprint-fieldset{border:0;border-top:1px solid #465772;margin:28px 0 0;padding:19px 0 0;min-width:0}
+.blueprint-page .blueprint-fieldset legend{padding:0 10px 0 0;font:650 clamp(15px,1.8vw,20px)/1.4 var(--display);color:#e4edfb}
+.blueprint-page .blueprint-fieldset legend span{font:750 11px var(--font);color:#a1e0d4;margin-right:9px}
+.blueprint-page .blueprint-fieldset legend small{font-size:11px;color:#b7c5dc}
+.blueprint-page .blueprint-choices{display:grid;gap:9px;margin-top:15px}
+.blueprint-page .blueprint-choices-compact{grid-template-columns:repeat(2,minmax(0,1fr))}
+.blueprint-page .blueprint-option{position:relative;display:flex;align-items:start;gap:13px;padding:15px 16px;min-width:0;background:#202a3b;border:1px solid #586985;border-radius:8px;cursor:pointer}
+.blueprint-page .blueprint-option:has(input:checked){border-color:#c7b3f3;background:linear-gradient(105deg,#362e53,#233244)}
+.blueprint-page .blueprint-option:focus-within{outline:2px solid #d3baf7;outline-offset:2px}
+.blueprint-page .blueprint-option input{width:16px;height:16px;flex:0 0 16px;margin:2px 0 0;accent-color:#bbadef}
+.blueprint-page .blueprint-option span{display:grid;gap:6px;min-width:0}
+.blueprint-page .blueprint-option strong{font:650 14px/1.4 var(--font);color:#f2f6ff}
+.blueprint-page .blueprint-option small{font-size:11px;color:#bfd0e5;line-height:1.5}
+.blueprint-page .blueprint-submit-area{border-top:1px solid #51617c;padding-top:20px;margin-top:30px}
+.blueprint-page .blueprint-submit{width:100%;min-height:52px;display:flex;align-items:center;justify-content:space-between;padding:14px 19px;background:#bfa9ee;border:1px solid #decaff;border-radius:8px;color:#101728;font:750 13px var(--font)}
+.blueprint-page .blueprint-submit:hover{background:#d8c4ff}
+.blueprint-page .blueprint-guide{position:sticky;top:95px;background:radial-gradient(circle at 90% 0%,#5c51824d,transparent 60%),#182035}
+.blueprint-page .blueprint-guide-title{display:grid;gap:8px}
+.blueprint-page .blueprint-guide-title strong{font:650 24px/1.2 var(--display);letter-spacing:-.05em}
+.blueprint-page .blueprint-guide-steps{display:grid;gap:19px;margin:30px 0}
+.blueprint-page .blueprint-guide-steps>div{border-left:2px solid #7a8cae;padding-left:15px}
+.blueprint-page .blueprint-guide-steps span{font-size:10px;color:#ac9ddd;margin-right:9px;font-weight:750}
+.blueprint-page .blueprint-guide-steps strong{font-size:12px;letter-spacing:.06em}
+.blueprint-page .blueprint-guide-steps p{font-size:11px;line-height:1.65;color:#bccae1;margin:8px 0 0}
+.blueprint-page .blueprint-guide>a{font-size:12px;font-weight:750;color:#b7e6e4}
+.blueprint-page .blueprint-result{scroll-margin-top:100px;margin-top:75px;border:1px solid #60708b;border-radius:13px;background:#121a29;overflow:hidden}
+.blueprint-page .blueprint-result-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:clamp(22px,4vw,44px);background:radial-gradient(circle at 90% 10%,#7664b83d,transparent 55%),#151d32;border-bottom:1px solid #4c5b78}
+.blueprint-page .blueprint-result-heading h2,.blueprint-page .blueprint-final h2{font:700 clamp(32px,4.6vw,57px)/1.1 var(--display);letter-spacing:-.065em;margin:12px 0}
+.blueprint-page .blueprint-result-heading h2 em,.blueprint-page .blueprint-final h2 em{font-style:normal;color:#c5b0f4}
+.blueprint-page .blueprint-result-heading p{font-size:12px;color:#c0cfe2}
+.blueprint-page .blueprint-result-mark{font:500 110px var(--display);color:#baa4ee}
+.blueprint-page .blueprint-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#4d5d78;border-bottom:1px solid #4d5d78}
+.blueprint-page .blueprint-summary-grid>div{background:#1a2536;padding:22px;display:grid;gap:11px}
+.blueprint-page .blueprint-summary-grid span,.blueprint-page .blueprint-guide-title span{font-size:10px;font-weight:750;letter-spacing:.11em;color:#bbaae4}
+.blueprint-page .blueprint-summary-grid strong{font-size:14px;line-height:1.5;color:#f2f5fd}
+.blueprint-page .blueprint-content-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:clamp(17px,3vw,29px)}
+.blueprint-page .blueprint-block,.blueprint-page .blueprint-questions{border:1px solid #4a5873;border-radius:9px;background:#1b2738;padding:clamp(18px,2.6vw,27px)}
+.blueprint-page .blueprint-risk{background:#30273b}
+.blueprint-page .blueprint-block h3,.blueprint-page .blueprint-questions h3{font:650 23px/1.2 var(--display);letter-spacing:-.04em;margin:12px 0}
+.blueprint-page .blueprint-block ol,.blueprint-page .blueprint-block ul,.blueprint-page .blueprint-questions ul{padding-left:21px}
+.blueprint-page .blueprint-block li,.blueprint-page .blueprint-questions li{font-size:12px;line-height:1.8;color:#cbd8e8;margin:7px 0}
+.blueprint-page .blueprint-questions{margin:0 clamp(17px,3vw,29px) 25px;background:#182d32}
+.blueprint-page .blueprint-export{padding:clamp(22px,3vw,32px);border-top:1px solid #53637f;background:#171f30}
+.blueprint-page .blueprint-export h3{font:650 25px var(--display);margin:0 0 8px}
+.blueprint-page .blueprint-export p{font-size:12px;line-height:1.7;color:#bdc9dc}
+.blueprint-page .blueprint-export textarea{width:100%;min-height:245px;resize:vertical;border:1px solid #7787a6;border-radius:8px;background:#0d1421;color:#e2eafa;padding:18px;font:12px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace}
+.blueprint-page .blueprint-export-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.blueprint-page .blueprint-export-actions button,.blueprint-page .blueprint-export-actions a{padding:13px 17px;border-radius:7px;border:1px solid #687895;background:#26354c;color:#e5f0fa;font-size:12px;font-weight:750;cursor:pointer}
+.blueprint-page .blueprint-export-actions a{background:#a992e1;color:#101a27;border-color:#cfb6f6}
+.blueprint-page .blueprint-next{padding:32px;background:#1b2639;border:1px dashed #697a98;border-radius:10px;margin-top:28px;display:grid;gap:10px}
+.blueprint-page .blueprint-next strong{font:650 24px/1.35 var(--display);max-width:670px}
+.blueprint-page .blueprint-next p{font-size:12px;color:#bfccdf}
+.blueprint-page .blueprint-final{margin-top:80px;padding:clamp(25px,4vw,50px);background:linear-gradient(120deg,#1c2134,#0e202a);border:1px solid #576683;border-radius:11px}
+.blueprint-page .blueprint-final p{font-size:13px;color:#bed0e1;line-height:1.8;max-width:740px}
+.blueprint-page .blueprint-final a{display:inline-block;border:1px solid #7488a1;border-radius:7px;padding:12px 15px;margin:14px 8px 0 0;font-size:12px;font-weight:750;color:#bfe9e6}
+.blueprint-page .blueprint-sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:1000px){.blueprint-page .blueprint-layout{grid-template-columns:1fr}.blueprint-page .blueprint-guide{position:static;display:none}}
+@media(max-width:760px){.blueprint-page .blueprint-intro,.blueprint-page .blueprint-summary-grid,.blueprint-page .blueprint-content-grid{grid-template-columns:1fr}.blueprint-page .blueprint-art{display:none}.blueprint-page .blueprint-disclosure{flex-direction:column;gap:8px}.blueprint-page .blueprint-disclosure strong{flex-basis:auto}.blueprint-page .blueprint-result-mark{display:none}}
+@media(max-width:490px){.blueprint-page .blueprint-main{padding-top:22px}.blueprint-page .blueprint-choices-compact{grid-template-columns:1fr}.blueprint-page .blueprint-result-heading h2{font-size:33px}.blueprint-page .blueprint-export-actions{flex-direction:column}.blueprint-page .blueprint-export-actions>*{width:100%;text-align:center}}
+@media print{.blueprint-page .journal-header,.blueprint-page .journal-footer,.blueprint-page .blueprint-form-panel,.blueprint-page .blueprint-guide,.blueprint-page .blueprint-final,.blueprint-page .blueprint-export-actions,.blueprint-page .blueprint-intro,.blueprint-page .blueprint-next,.blueprint-page .blueprint-disclosure{display:none!important}.blueprint-page .blueprint-main{padding:0;max-width:none}.blueprint-page .blueprint-result{margin:0;border:none}.blueprint-page .blueprint-result,.blueprint-page .blueprint-block,.blueprint-page .blueprint-result-heading{background:#fff!important;color:#111!important}.blueprint-page .blueprint-block li,.blueprint-page .blueprint-questions li,.blueprint-page .blueprint-summary-grid strong{color:#111!important}.blueprint-page .blueprint-content-grid{gap:6px}.blueprint-page .blueprint-export{display:none}}
+@media(prefers-reduced-motion:reduce){.blueprint-page *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

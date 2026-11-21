@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bot Lab · OmniFactory Managed Cloud</title><meta name="theme-color" content="#081828">
+<link rel="stylesheet" href="/studio-assets/site.css?v=3">
+<link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
+<link rel="stylesheet" href="/studio-assets/bot_lab.css?v=7">
+<script defer src="/studio-assets/bot_lab.js?v=6"></script>
+<script defer src="/studio-assets/bot_lab_release.js?v=1"></script>
+<script defer src="/studio-assets/bot_lab_runtime.js?v=1"></script><link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
+</head>
+<body class="omni-revamp lab-body">
+<a class="lab-skip" href="#lab-main">К содержимому</a>
+<header class="omni-top"><div class="omni-top-inner"><a class="omni-brand" href="/" aria-label="OmniFactory">
+<span class="omni-brand-logo"><i>◇</i></span><span><strong>OMNI<span>FACTORY</span></strong><small>BOT LAB / CONTROL CENTER</small></span></a>
+<nav class="omni-nav" aria-label="Модули OMNIFACTORY"><a href="/">Платформа</a><a href="/architect">Конструктор</a><a href="/bots/lab" aria-current="page">Bot Lab</a><a href="/automation/studio">Автоматизация</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/projects">Проекты</a><a href="/account">Кабинет</a><a href="/studio">Студия</a></nav></div></header>
+<main class="lab-main" id="lab-main">
+<div class="lab-intro">
+ <div><p class="lab-kicker">OMNIFACTORY / BOT OPERATIONS / LABORATORY</p>
+ <h1>Лаборатория <span>ботов.</span></h1>
+ <p>Один центр управления жизненным циклом бота: сценарий, проверка, подготовка публикации, инфраструктура и наблюдение за результатом. Здесь показываются только данные твоего аккаунта.</p></div>
+ <div class="lab-heading-actions"><a class="lab-button primary" href="/architect">＋ Создать бота</a><a class="lab-button" href="/cloud/deploy">Подготовить деплой</a></div>
+</div>
+<p class="lab-notice" id="lab-notice" role="status" aria-live="polite">Загружаем данные лаборатории…</p>
+<section class="lab-stats" aria-label="Сводка по аккаунту">
+ <article><span>Черновики ботов</span><strong id="lab-count-bots">—</strong><small>Graph Studio</small></article>
+ <article><span>Автоматизации</span><strong id="lab-count-flows">—</strong><small>Automation Studio</small></article>
+ <article><span>Планы публикации</span><strong id="lab-count-plans">—</strong><small>Не равно работающим сервисам</small></article>
+ <article><span>Railway</span><strong id="lab-railway-flag">—</strong><small id="lab-railway-desc">Подключение аккаунта</small></article>
+</section>
+<div class="lab-workspace">
+ <aside class="lab-sidebar" aria-label="Мои проекты">
+  <div class="lab-panel-heading"><h2>Мои боты</h2><button id="lab-refresh" class="lab-small">Обновить</button></div>
+  <label class="lab-search-label" for="lab-search">Поиск по названию</label>
+  <input id="lab-search" class="lab-search" type="search" placeholder="Найти бота или план…">
+  <div class="lab-sidebar-group"><span>Сценарии ботов</span><div id="lab-bots-list" class="lab-items">Загрузка…</div></div>
+  <div class="lab-accept-invitation">
+    <label for="lab-accept-token">Есть приглашение?</label>
+    <input type="password" id="lab-accept-token" placeholder="Одноразовый код приглашения" autocomplete="off" maxlength="200">
+    <button id="lab-accept-button" class="lab-small" type="button">Принять доступ</button>
+  </div>
+  <div class="lab-sidebar-group"><span>Доступ предоставлен мне</span><div id="lab-shared-list" class="lab-items">Загрузка…</div></div>
+  <div class="lab-sidebar-group"><span>Планы Cloud Deploy</span><div id="lab-plans-list" class="lab-items">Загрузка…</div></div>
+  <div class="lab-sidebar-group"><span>Автоматизации</span><div id="lab-flows-list" class="lab-items">Загрузка…</div></div>
+ </aside>
+ <section class="lab-detail" aria-label="Карточка выбранного проекта">
+  <div class="lab-panel-heading"><div><span class="lab-kicker">PROJECT WORKBENCH</span><h2 id="lab-selected-name">Выбери бота слева</h2></div><span class="lab-state" id="lab-selected-status">Нет выбора</span></div>
+  <p id="lab-selected-summary" class="lab-muted">Здесь появятся действия, соответствующие фактическому состоянию выбранного проекта.</p>
+  <div id="lab-selected-facts" class="lab-facts"></div>
+  <h3>Управление проектом</h3>
+  <div id="lab-actions" class="lab-actions"><span class="lab-muted">Выбери проект, чтобы открыть доступные операции.</span></div>
+  <div id="lab-readiness" class="lab-readiness" aria-live="polite"></div>
+  <section class="lab-security-workbench" id="lab-security-workbench" hidden aria-label="Безопасность и доступ к боту">
+    <div class="lab-security-heading">
+      <div><span class="lab-kicker">OMNI SECURITY / BOT ACCESS</span><h3>Безопасность и доступ</h3></div>
+      <span id="lab-secret-indicator" class="lab-security-indicator">Не подключён</span>
+    </div>
+    <p class="lab-muted">Токен Telegram хранится в зашифрованном виде на сервере и никогда не возвращается в интерфейс. Доступ выдаётся только выбранным пользователям.</p>
+    <div id="lab-secret-owner">
+      <label class="lab-security-label" for="lab-telegram-token">Токен из BotFather</label>
+      <div class="lab-secret-entry"><input id="lab-telegram-token" type="password" autocomplete="off" spellcheck="false" placeholder="Вставить Telegram BotFather token" maxlength="116"><button id="lab-token-save" type="button" class="lab-button primary">Сохранить</button></div>
+      <div class="lab-actions">
+        <button id="lab-token-verify" type="button" class="lab-button">Проверить через Telegram</button>
+        <button id="lab-token-revoke" type="button" class="lab-button">Удалить токен</button>
+      </div>
+      <p id="lab-token-status" class="lab-muted" role="status">Выбери принадлежащий тебе бот.</p>
+      <div class="lab-access-divider"></div>
+      <h3>Пригласить пользователя</h3>
+      <p class="lab-muted">Приглашение привязывается к существующему аккаунту OMNIFACTORY. Подтверждение требуется от самого приглашённого пользователя.</p>
+      <div class="lab-access-invite">
+        <label>Логин пользователя<input id="lab-invite-username" type="text" maxlength="32" autocomplete="off" placeholder="username"></label>
+        <label>Роль<select id="lab-invite-role"><option value="viewer">Наблюдатель</option><option value="operator">Оператор (доступ к действиям позже)</option></select></label>
+        <button id="lab-invite-create" type="button" class="lab-button primary">Создать приглашение</button>
+      </div>
+      <div id="lab-invite-once" class="lab-once" hidden>
+        <strong>Одноразовый код приглашения</strong>
+        <p>Показывается только сейчас. Передай его выбранному пользователю безопасным способом.</p>
+        <div class="lab-once-token"><code id="lab-invite-token"></code><button id="lab-invite-copy" type="button" class="lab-small">Скопировать</button></div>
+      </div>
+      <h3>Пользователи с доступом</h3>
+      <div id="lab-members" class="lab-member-list">Получаем список…</div>
+      <h3>Ожидают приглашения</h3><div id="lab-pending-invites" class="lab-member-list">Получаем список…</div>
+      <details class="lab-audit"><summary>Журнал безопасности</summary><div id="lab-security-audit" class="lab-member-list"></div></details>
+    </div>
+  </section>
+  <section id="lab-runtime-panel" class="lab-runtime-panel" hidden aria-label="Telegram Runtime">
+    <div class="lab-release-head"><div><span class="lab-kicker">OMNI LAB / TELEGRAM RUNTIME</span><h3>Среда исполнения бота</h3></div><span class="lab-release-tag">Webhook Runtime v1</span></div>
+    <p class="lab-muted">Проверка совместимости сохранённого сценария с отдельным контейнером. Здесь не создаются Railway-сервисы и не выводятся Telegram-токены.</p>
+    <div class="lab-actions"><button id="lab-runtime-check" type="button" class="lab-button">Проверить сценарий и runtime</button></div>
+    <div id="lab-runtime-report" class="lab-release-results" aria-live="polite">Выбери своего бота.</div>
+  </section>
+  <section class="lab-release-panel" id="lab-release-panel" hidden aria-label="Подготовка релиза">
+    <div class="lab-release-head"><div><span class="lab-kicker">OMNI RELEASE / CONTROLLED DELIVERY</span><h3>Центр подготовки релиза</h3></div><span class="lab-release-tag">Без платных операций</span></div>
+    <p class="lab-muted">Выбирай план размещения, проверяй Telegram, неизменяемый runtime и полномочия. Запрос на рассмотрение фиксирует версию сценария и не публикует бота.</p>
+    <label class="lab-release-label" for="lab-release-plan">План размещения</label>
+    <select id="lab-release-plan" class="lab-release-select"><option value="">Выбери план</option></select>
+    <div class="lab-actions">
+      <button id="lab-release-check" class="lab-button" type="button">Проверить готовность</button>
+      <button id="lab-release-request" class="lab-button primary" type="button" disabled>Отправить на проверку релиза</button>
+    </div>
+    <div id="lab-release-results" class="lab-release-results" aria-live="polite">Выбери собственного бота и план размещения.</div>
+    <h3>Мои запросы на релиз</h3><div id="lab-release-history" class="lab-jobs">Пока не загружено.</div>
+  </section>
+  <section class="lab-resource-workbench" aria-label="Подключение существующего Railway-сервиса">
+    <h3>Инфраструктура проекта · Railway BYOC</h3>
+    <p class="lab-muted">Для выбранного BYOC-плана можно связать существующий сервис из подключённого Railway. Список проверяется через Railway API — чужие ресурсы подключить нельзя.</p>
+    <div class="lab-resource-fields">
+      <label>Проект<select id="lab-resource-project"><option value="">Получить проекты Railway</option></select></label>
+      <label>Сервис<select id="lab-resource-service"><option value="">Выбрать сервис</option></select></label>
+      <label>Окружение<select id="lab-resource-environment"><option value="">Выбрать окружение</option></select></label>
+    </div>
+    <div class="lab-actions">
+      <button id="lab-resources-load" type="button" class="lab-button">Загрузить ресурсы</button>
+      <button id="lab-resources-bind" type="button" class="lab-button" disabled>Привязать сервис</button>
+      <button id="lab-resources-inspect" type="button" class="lab-button" disabled>Проверить статус</button>
+      <button id="lab-resources-unlink" type="button" class="lab-button" disabled>Отвязать</button>
+    </div>
+    <div id="lab-resource-report" class="lab-resource-report" aria-live="polite">Выбери план Railway BYOC слева.</div>
+  </section>
+  <h3>Очередь публикаций</h3>
+  <p class="lab-muted">Создай dry-run задачу для выбранного плана: реальная публикация пока заблокирована. История сохраняется в БД.</p>
+  <div class="lab-actions"><button id="lab-enqueue" class="lab-button" type="button" disabled>Добавить проверку в очередь</button><button id="lab-jobs-refresh" class="lab-button" type="button">Обновить задачи</button></div>
+  <div id="lab-provision-jobs" class="lab-jobs" aria-live="polite">Получаем историю задач…</div>
+  <h3>Жизненный цикл</h3>
+  <div class="lab-timeline" id="lab-timeline">
+   <div><b>01</b><span>Создание схемы</span></div>
+   <div><b>02</b><span>Тестирование</span></div>
+   <div><b>03</b><span>Подготовка релиза</span></div>
+   <div><b>04</b><span>Публикация и мониторинг</span></div>
+  </div>
+  <div class="lab-safety"><strong>Прозрачный статус</strong><p>Сохранённый проект или план развёртывания ещё не означает, что Telegram-бот работает. Настоящий статус «Запущен» должен подтверждаться ответом Railway и проверкой приложения.</p></div>
+ </section>
+ <aside class="lab-cloud" aria-label="Инфраструктура">
+  <div class="lab-panel-heading"><h2>Cloud Control</h2><span class="lab-kicker">RAILWAY</span></div>
+  <div class="lab-cloud-status" id="lab-cloud-status">Проверяем подключение…</div>
+  <div class="lab-actions"><a class="lab-button" href="/cloud/deploy">Управлять Railway</a><button id="lab-check-railway" class="lab-button" type="button">Проверить проекты</button></div>
+  <p class="lab-muted">Список ресурсов запрашивается у Railway через разрешённое подключение, без изменения или создания сервисов.</p>
+  <div id="lab-provider-projects" class="lab-provider-list"><span class="lab-muted">Проекты Railway ещё не загружены.</span></div>
+  <h3>Операции сервиса</h3>
+  <div class="lab-disabled-list"><span>Запустить / Перезапустить <em>В разработке</em></span>
+  <span>Логи и ошибки <em>В разработке</em></span><span>Откат версии <em>В разработке</em></span>
+  <span>Затраты и лимиты <em>В разработке</em></span></div>
+  <a class="lab-doc-link" href="/docs">Текущий API OmniFactory</a>
+ </aside>
+</div>
+<section class="lab-next"><div><span class="lab-kicker">DEPLOYMENT CONTROL PLANE</span><h2>От сценария до работающего продукта</h2><p>В текущей версии доступны создание, тестирование, хранение проектов и подготовка размещения. Автоматическое создание платных Railway-сервисов будет включено только после проверки интеграции, разрешений и бюджета.</p></div><a class="lab-button primary" href="/cloud/deploy">Перейти в Cloud Deploy</a></section>
+</main>
+<footer class="omni-footer"><div class="omni-footer-inner"><div><strong>OMNIFACTORY</strong><p>Bot Lab · управление ботами и инфраструктурой на базе проверенных данных</p></div><nav class="omni-footer-links"><a href="/">Платформа</a><a href="/architect">Bot Builder</a><a href="/automation/studio">Automation Studio</a><a href="/cloud/deploy">Cloud Deploy</a></nav></div></footer>
+</body></html>

@@ -1,0 +1,154 @@
+/* ==========================================================
+   OMNIFACTORY PLATFORM
+   Navigation System
+   ========================================================== */
+
+.of-navbar{
+
+    position:fixed;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:76px;
+
+    z-index:1000;
+
+    backdrop-filter:blur(18px);
+
+    background:rgba(7,9,13,.82);
+
+    border-bottom:1px solid rgba(255,255,255,.05);
+
+}
+
+.of-navbar__wrapper{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    height:76px;
+
+}
+
+.of-logo{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+}
+
+.of-logo__icon{
+
+    width:44px;
+
+    height:44px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:12px;
+
+    background:var(--gradient-primary);
+
+    color:white;
+
+}
+
+.of-logo__text{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.of-logo__text span{
+
+    font-weight:700;
+
+    letter-spacing:-.04em;
+
+}
+
+.of-logo__text small{
+
+    color:var(--text-muted);
+
+}
+
+.of-navbar__menu{
+
+    display:flex;
+
+    gap:34px;
+
+    align-items:center;
+
+}
+
+.of-navbar__menu a{
+
+    color:var(--text-secondary);
+
+    font-weight:500;
+
+}
+
+.of-navbar__menu a:hover{
+
+    color:white;
+
+}
+
+.of-navbar__actions{
+
+    display:flex;
+
+    gap:12px;
+
+}
+
+.of-navbar__toggle{
+
+    display:none;
+
+}
+
+@media(max-width:1100px){
+
+.of-navbar__menu{
+
+display:none;
+
+}
+
+.of-navbar__actions{
+
+display:none;
+
+}
+
+.of-navbar__toggle{
+
+display:block;
+
+font-size:28px;
+
+color:white;
+
+}
+
+}
