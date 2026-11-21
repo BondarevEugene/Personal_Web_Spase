@@ -82,16 +82,16 @@ def make_delivery_package(
         "CHECKLIST.md": checklist,
         "architecture.json": json.dumps(
             plan.architecture, ensure_ascii=False, sort_keys=True, indent=2,
-        ) + "\\n",
+        ) + "\n",
         "milestones.json": json.dumps(
             plan.milestones, ensure_ascii=False, sort_keys=True, indent=2,
-        ) + "\\n",
+        ) + "\n",
         "verification.json": json.dumps(
             plan.verification, ensure_ascii=False, sort_keys=True, indent=2,
-        ) + "\\n",
+        ) + "\n",
         "risks.json": json.dumps(
             plan.risks, ensure_ascii=False, sort_keys=True, indent=2,
-        ) + "\\n",
+        ) + "\n",
     }
     encoded = {
         name: value.encode("utf-8") for name, value in sorted(files.items())
