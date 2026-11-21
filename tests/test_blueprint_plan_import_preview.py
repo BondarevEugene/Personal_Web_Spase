@@ -5,9 +5,9 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
+from omni_site.blueprint_plan_import import PlanValidationError, validate_plan
 from omni_site.blueprint_project_plan import build_project_plan
 from omni_site.blueprint_specification import compile_specification
-from omni_site.blueprint_plan_import import PlanValidationError, validate_plan
 from server import app
 
 CLIENT = TestClient(app)
