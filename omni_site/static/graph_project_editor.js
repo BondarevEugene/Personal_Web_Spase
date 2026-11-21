@@ -485,16 +485,29 @@
   };
   const exportProject = async () => {
     if (!project) return;
-    status.textContent = "Проверяем и формируем Python ZIP…";
-    const response = await fetch("/api/v1/builder/simple/export", {
-      method: "POST", credentials: "same-origin",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(project.scenario)
+    if (dirty) {
+      status.textContent = "Сначала сохраните изменения, затем экспортируйте эту ревизию.";
+      return;
+    }
+    if (!project.revision) {
+      status.textContent = "Ревизия проекта не загружена. Обновите редактор.";
+      return;
+    }
+    status.textContent = "Проверяем сохранённую ревизию и формируем Python ZIP…";
+    const response = await fetch("/api/v1/builder/projects/" +
+      encodeURIComponent(projectId) + "/export", {
+      method: "GET", credentials: "same-origin", cache: "no-store",
+      headers: {"If-Match": project.revision}
     });
     if (!response.ok) {
       const details = await response.json().catch(() => ({}));
-      status.textContent = "Экспорт отклонён: " +
-        JSON.stringify(details.detail || details);
+      status.textContent = response.status === 409
+        ? "Проект изменён в другой вкладке. Обновите редактор перед экспортом."
+        : "Экспорт отклонён: " + JSON.stringify(details.detail || details);
+      return;
+    }
+    if (response.headers.get("X-Omni-Project-Revision") !== project.revision) {
+      status.textContent = "Ревизия экспортированного архива не совпадает. Повторите загрузку.";
       return;
     }
     const blob = await response.blob();
@@ -506,7 +519,7 @@
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    status.textContent = "ZIP сформирован из текущей схемы. Telegram-бот не запущен.";
+    status.textContent = "ZIP выпущен из сохранённой ревизии. Telegram-бот не запущен.";
   };
   palette.before(makeButton("Проверить схему", () => {
     runAnalysis().catch(error => { validation.textContent = error.message; });
