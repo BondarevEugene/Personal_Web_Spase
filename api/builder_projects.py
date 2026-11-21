@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
+from api.graph_release_evidence import release_evidence
 from api.simple_builder import (
     Scenario,
     SimulationRequest,
@@ -23,7 +24,6 @@ from api.simple_builder import (
     simulate_scenario,
 )
 from automation.deployment import DeploymentSpec, build_plan
-from api.graph_release_evidence import release_evidence
 from portal.db import session_factory
 from portal.models import BuilderProject, CloudDeployment, utcnow
 from portal.routes import current_customer
