@@ -11,6 +11,7 @@ import zipfile
 from dataclasses import dataclass
 from hashlib import sha256
 
+from omni_site.blueprint_project_plan import build_project_plan
 from omni_site.blueprint_specification import compile_specification
 
 
@@ -33,6 +34,7 @@ def make_delivery_package(
         integrations=integrations,
     )
     chosen = sorted(integrations)
+    plan = build_project_plan(spec)
     config = {
         "schema": "omnifactory.blueprint.package.v1",
         "revision": spec.revision,
@@ -78,6 +80,18 @@ def make_delivery_package(
             acceptance, ensure_ascii=False, sort_keys=True, indent=2,
         ) + "\n",
         "CHECKLIST.md": checklist,
+        "architecture.json": json.dumps(
+            plan.architecture, ensure_ascii=False, sort_keys=True, indent=2,
+        ) + "\n",
+        "milestones.json": json.dumps(
+            plan.milestones, ensure_ascii=False, sort_keys=True, indent=2,
+        ) + "\n",
+        "verification.json": json.dumps(
+            plan.verification, ensure_ascii=False, sort_keys=True, indent=2,
+        ) + "\n",
+        "risks.json": json.dumps(
+            plan.risks, ensure_ascii=False, sort_keys=True, indent=2,
+        ) + "\n",
     }
     encoded = {
         name: value.encode("utf-8") for name, value in sorted(files.items())
