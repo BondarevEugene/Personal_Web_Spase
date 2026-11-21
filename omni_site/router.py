@@ -1,6 +1,6 @@
 """Public software studio pages. Mount via app.include_router(router)."""
-import os
 import json
+import os
 from pathlib import Path
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import Response
