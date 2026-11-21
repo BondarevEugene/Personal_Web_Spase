@@ -114,7 +114,7 @@
       const response = await fetch('/studio/api/lead', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name: data.name, contact: data.contact, topic: data.topic, message: data.message, website: data.website}),
+        body: JSON.stringify({name: data.name, contact: data.contact, topic: data.topic, message: data.message, website: data.website, consent: data.consent === 'yes', source_path: window.location.pathname, utm_source: new URLSearchParams(window.location.search).get('utm_source') || '', utm_medium: new URLSearchParams(window.location.search).get('utm_medium') || '', utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign') || ''}),
       });
       let payload = {};
       try { payload = await response.json(); } catch (_) { /* Generic server/network error below. */ }
