@@ -711,12 +711,58 @@ Type /start in your Telegram bot to begin the conversation.
 """
 
 
+_SMOKE_SOURCE = '''"""Offline smoke test for the generated aiogram bot. No BOT_TOKEN required."""
+import importlib.util
+import json
+import tempfile
+from pathlib import Path
+
+
+def main() -> None:
+    base = Path(__file__).resolve().parent
+    scenario = json.loads((base / "scenario.json").read_text(encoding="utf-8"))
+    ids = {node["id"] for node in scenario["nodes"]}
+    if scenario["start"] not in ids or len(ids) != len(scenario["nodes"]):
+        raise RuntimeError("Invalid scenario start or duplicate node IDs")
+    spec = importlib.util.spec_from_file_location("omni_generated_bot_smoke", base / "bot.py")
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Cannot import generated bot")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    with tempfile.TemporaryDirectory(prefix="omni-smoke-") as directory:
+        module.DB_PATH = Path(directory) / "state.sqlite3"
+        module.init_state()
+        key = (1001, 2002)
+        module.CURSORS[key] = scenario["start"]
+        module.VALUES[key] = {"smoke": "persisted"}
+        module.save_state(key)
+        module.CURSORS.clear()
+        module.VALUES.clear()
+        module.init_state()
+        if module.CURSORS.get(key) != scenario["start"]:
+            raise RuntimeError("Cursor did not survive SQLite reload")
+        if module.VALUES.get(key, {}).get("smoke") != "persisted":
+            raise RuntimeError("Variables did not survive SQLite reload")
+        module.CURSORS.pop(key)
+        module.VALUES.pop(key)
+        module.save_state(key)
+        module.init_state()
+        if key in module.CURSORS or key in module.VALUES:
+            raise RuntimeError("Completed conversation was not removed")
+    print("OMNIFACTORY_SMOKE_OK: import, scenario, SQLite restart, cleanup")
+
+
+if __name__ == "__main__":
+    main()
+'''
+
 _DOCKERFILE = """FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-COPY bot.py scenario.json ./
+COPY bot.py scenario.json smoke.py ./
+RUN python smoke.py
 RUN useradd --create-home --uid 10001 omni && mkdir -p /data && chown omni:omni /data
 USER omni
 ENV OMNI_STATE_DB=/data/bot_state.sqlite3
@@ -737,7 +783,9 @@ _DEPLOY_README = """# Railway deployment · Telegram bot
 3. Attach a Railway volume mounted at /data BEFORE starting the bot.
    The generated Dockerfile stores SQLite state at /data/bot_state.sqlite3.
 4. Run exactly ONE replica. Polling and local SQLite are not multi-replica safe.
-5. Deploy the service and inspect logs. Send /start to your bot and test
+5. Before deploying, run `python smoke.py` offline (no token or Telegram calls).
+   The Docker build runs this same smoke test and fails on persistence errors.
+6. Deploy the service and inspect logs. Send /start to your bot and test
    all branches, inputs, variables and restart persistence.
 6. Revoke the bot token immediately if accidentally exposed.
 
@@ -769,6 +817,7 @@ def export_scenario(scenario: Scenario):
         output.writestr(".env.example", "BOT_TOKEN=YOUR_BOTFATHER_TOKEN\n")
         output.writestr("README.md", _README)
         output.writestr("Dockerfile", _DOCKERFILE)
+        output.writestr("smoke.py", _SMOKE_SOURCE)
         output.writestr("railway.json", _RAILWAY_CONFIG)
         output.writestr("DEPLOY_RAILWAY.md", _DEPLOY_README)
     try:
