@@ -136,6 +136,13 @@
    <ul id="release-gate-checks"></ul>
    <button type="button" id="release-gate-request" class="button button-line" disabled>Запросить согласование релиза</button>
    <p id="release-gate-review-status" role="status" aria-live="polite"></p>
+   <section id="release-fleet-monitor" aria-label="Мониторинг Railway">
+    <h3>Мониторинг подключённых Railway-сервисов</h3>
+    <p>Статус Railway не подтверждает, что Telegram-бот отвечает пользователям.</p>
+    <button type="button" id="release-fleet-refresh">Проверить Railway</button>
+    <p id="release-fleet-status" role="status" aria-live="polite"></p>
+    <div id="release-fleet-services"></div>
+   </section>
   </section>
  </section>
  <a id="release-center-download" class="button button-primary" hidden>Скачать Python-бот ZIP</a>
@@ -284,6 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <link rel="stylesheet" href="/studio-assets/graph_release_inspector.css?v=3">
 <script defer src="/studio-assets/graph_release_inspector.js?v=3"></script>
-<script defer src="/studio-assets/graph_release_center.js?v=4"></script>
+<script defer src="/studio-assets/graph_release_center.js?v=5"></script>
 <link rel="stylesheet" href="/studio-assets/graph_release_center.css?v=1">
 </body></html>

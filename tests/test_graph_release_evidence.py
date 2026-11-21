@@ -159,3 +159,20 @@ def test_graph_cloud_plan_is_revision_pinned_across_release_and_operations():
     assert "Graph plan revision changed; create a new plan" in releases
     assert 'startswith("graph-" + row.id + "-r")' in builder
     assert '"graph-" + project.id + "-r"' in operations
+
+
+def test_graph_release_fleet_monitor_contract():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "templates/builder_pro_final.html").read_text(encoding="utf-8")
+    js = (root / "omni_site/static/graph_release_center.js").read_text(encoding="utf-8")
+    for identifier in ("release-fleet-monitor", "release-fleet-refresh",
+                       "release-fleet-status", "release-fleet-services"):
+        assert f'id="{identifier}"' in html
+    for identifier in ("release-fleet-refresh", "release-fleet-status",
+                       "release-fleet-services"):
+        assert f"$('{identifier}')" in js
+    assert "/api/v1/cloud/fleet/services?refresh=true" in js
+    assert "service.reconciliation.state" in js
+    assert "Работа Telegram-бота: не подтверждена" in js
