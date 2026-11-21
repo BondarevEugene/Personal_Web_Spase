@@ -65,6 +65,21 @@
  <button id="btn-cloud-delete" type="button" class="button button-line">Удалить</button>
  <a href="/account/login" class="cloud-login-link">Войти в кабинет ↗</a>
 </section>
+<section class="graph-release-inspector" id="graph-release-inspector" aria-label="Проверка релиза и тестовых путей">
+ <div class="eyebrow">RELEASE LAB / GRAPH STUDIO</div>
+ <h2>Диагностика релиза и тестовые маршруты</h2>
+ <p>Проверка сохранённого проекта: ошибки, покрытие ветвей, пошаговые переходы и значения переменных. Это не запуск Telegram-бота.</p>
+ <button id="btn-release-inspect" type="button" class="button button-primary">Проверить все тестовые маршруты</button>
+ <p id="release-inspect-state" role="status" aria-live="polite">Выберите сохранённый проект.</p>
+ <div id="release-inspect-summary" aria-live="polite"></div>
+ <div class="graph-release-columns">
+  <div class="graph-release-column"><h3>Ошибки и предупреждения</h3><div id="release-inspect-issues"></div></div>
+  <div class="graph-release-column"><h3>Тестовые маршруты</h3><div id="release-inspect-cases"></div></div>
+ </div>
+ <h3>Пошаговая трассировка</h3>
+ <div id="release-inspect-trace"></div>
+ <pre id="release-inspect-variables" class="graph-release-variables">Выберите шаг для просмотра переменных.</pre>
+</section>
 <section class="builder-cloud" id="builder-release-workflow" aria-label="Готовность сохранённого бота">
  <div class="builder-cloud-title"><strong>МАРШРУТ К ЗАПУСКУ</strong><small id="builder-workflow-state" role="status" aria-live="polite">Выберите сохранённый проект</small></div>
  <p>Проверка выполняется по последней <strong>сохранённой</strong> версии. Несохранённые изменения сначала отправьте в аккаунт.</p>
@@ -206,4 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<link rel="stylesheet" href="/studio-assets/graph_release_inspector.css?v=1">
+<script defer src="/studio-assets/graph_release_inspector.js?v=1"></script>
 </body></html>
