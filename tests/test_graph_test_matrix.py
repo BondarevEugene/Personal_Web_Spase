@@ -75,3 +75,46 @@ def test_editor_contains_real_debugger_controls_and_assets():
     assert "/release-evidence" in js
     assert "/test-matrix" in js
     assert "textContent" in js
+
+
+def test_matrix_distinguishes_unreachable_nodes_from_untested_branches():
+    scenario = graph([
+        {"id": "start", "kind": "condition", "variable": "flag",
+         "operator": "equals", "value": "yes",
+         "true_target": "yes", "false_target": "no"},
+        {"id": "yes", "kind": "end"},
+        {"id": "no", "kind": "end"},
+        {"id": "orphan", "kind": "end"},
+    ])
+    report = dialogue_matrix(scenario)
+    assert report["unreachable_nodes"] == ["orphan"]
+    assert report["untested_reachable_nodes"] == ["yes"]
+    assert report["reachable_edge_count"] == 2
+    assert report["covered_edge_count"] == 1
+    assert report["edge_coverage_percent"] == 50.0
+    assert report["uncovered_edges"] == [{"source": "start", "target": "yes"}]
+    assert report["status_counts"] == {"completed": 1}
+
+
+def test_matrix_identifies_unexercised_choice_option_under_case_limit():
+    scenario = graph([
+        {"id": "start", "kind": "choice", "text": "Choose",
+         "options": [{"label": "A", "target": "a"}, {"label": "B", "target": "b"}]},
+        {"id": "a", "kind": "end"},
+        {"id": "b", "kind": "end"},
+    ])
+    report = dialogue_matrix(scenario, max_cases=2)
+    assert report["truncated"] is True
+    assert report["untested_choice_options"] == [
+        {"node_id": "start", "option_index": 1, "target": "b"}
+    ]
+    assert report["edge_coverage_percent"] == 50.0
+
+
+def test_matrix_rejects_invalid_case_limits():
+    import pytest
+
+    scenario = graph([{"id": "start", "kind": "end"}])
+    for limit in (0, -1, 201):
+        with pytest.raises(ValueError, match="max_cases"):
+            dialogue_matrix(scenario, max_cases=limit)

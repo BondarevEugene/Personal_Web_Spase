@@ -4,7 +4,7 @@ Runs only the existing deterministic interpreter; never executes user code.
 """
 from __future__ import annotations
 
-from collections import deque
+from collections import Counter, deque
 
 from api.simple_builder import Scenario, SimulationRequest, simulate_scenario
 
@@ -15,6 +15,8 @@ def dialogue_matrix(scenario: Scenario, *, max_cases: int = 24) -> dict:
     Conditions are data-dependent, so coverage is reported honestly rather than
     claiming exhaustive execution of every possible user input.
     """
+    if not 1 <= max_cases <= 200:
+        raise ValueError('max_cases must be between 1 and 200')
     choices: dict[str, int] = {}
     inputs: dict[str, str] = {}
     queue = deque([(choices, inputs)])
@@ -58,11 +60,52 @@ def dialogue_matrix(scenario: Scenario, *, max_cases: int = 24) -> dict:
             node_id = result["at"]
             queue.append((dict(selected), dict(entered, **{node_id: "Тест"})))
     all_nodes = {node.id for node in scenario.nodes}
-    completed = sum(case["status"] == "completed" for case in cases)
+    expected_edges = set()
+    for node in scenario.nodes:
+        if node.next:
+            expected_edges.add((node.id, node.next))
+        if node.kind == "choice":
+            expected_edges.update((node.id, option.target) for option in node.options)
+        if node.kind == "condition":
+            expected_edges.update(((node.id, node.true_target), (node.id, node.false_target)))
+    reachable = set()
+    pending = deque([scenario.start])
+    while pending:
+        current = pending.popleft()
+        if current in reachable:
+            continue
+        reachable.add(current)
+        pending.extend(target for source, target in expected_edges if source == current)
+    reachable_edges = {(source, target) for source, target in expected_edges if source in reachable}
+    status_counts = dict(sorted(Counter(case["status"] for case in cases).items()))
+    completed = status_counts.get("completed", 0)
+    untested_choices = [
+        {"node_id": node.id, "option_index": index, "target": option.target}
+        for node in scenario.nodes if node.kind == "choice" and node.id in reachable
+        for index, option in enumerate(node.options)
+        if not any(
+            case["choices"].get(node.id) == index
+            and any(row["id"] == node.id for row in case["trace"])
+            for case in cases
+        )
+    ]
+
     return {
         "cases": cases,
         "case_count": len(cases),
         "completed_cases": completed,
+        "status_counts": status_counts,
+        "reachable_nodes": sorted(reachable),
+        "unreachable_nodes": sorted(all_nodes - reachable),
+        "untested_reachable_nodes": sorted(reachable - covered_nodes),
+        "reachable_edge_count": len(reachable_edges),
+        "covered_edge_count": len(covered_edges & reachable_edges),
+        "edge_coverage_percent": round(100 * len(covered_edges & reachable_edges) / len(reachable_edges), 1) if reachable_edges else 100.0,
+        "uncovered_edges": [
+            {"source": source, "target": target}
+            for source, target in sorted(reachable_edges - covered_edges)
+        ],
+        "untested_choice_options": untested_choices,
         "covered_nodes": sorted(covered_nodes),
         "uncovered_nodes": sorted(all_nodes - covered_nodes),
         "covered_edges": [
@@ -74,6 +117,8 @@ def dialogue_matrix(scenario: Scenario, *, max_cases: int = 24) -> dict:
         "max_cases": max_cases,
         "limitations": [
             "Input values are synthetic; condition branches are not exhaustive",
+            "Conditional outcomes depend on synthetic inputs and may remain untested",
+            "Unreachable nodes are reported separately from untested reachable nodes",
             "Coverage is not proof of Telegram delivery or production readiness",
         ],
     }
