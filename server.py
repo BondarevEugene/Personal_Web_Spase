@@ -35,6 +35,7 @@ from omni_site.blueprint_handoff import router as blueprint_handoff_router
 from omni_site.graph_project_view import router as graph_project_view_router
 from omni_site.search_discovery import router as public_search_router
 from omni_site.telegram_leads import router as studio_leads_router
+from omni_site.automation_flagship_routes import router as automation_flagship_router
 from api.simple_builder import router as simple_builder_router
 from api.product_factory import router as product_factory_router
 from api.builder_projects import router as builder_projects_router
@@ -113,6 +114,7 @@ app.include_router(blueprint_handoff_router)
 app.include_router(graph_project_view_router)
 app.include_router(public_search_router)
 app.include_router(studio_leads_router)
+app.include_router(automation_flagship_router)
 app.include_router(simple_builder_router)
 app.include_router(product_factory_router)
 app.include_router(builder_projects_router)

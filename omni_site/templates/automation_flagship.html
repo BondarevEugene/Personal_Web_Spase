@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="OMNIFACTORY Automation Engine: каталог интеграций, реальные возможности, шаблоны workflow и безопасный интерактивный dry-run на Python.">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="Automation & Integrations — OMNIFACTORY">
+<title>Автоматизация и интеграции бизнеса — OMNIFACTORY</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3">
+<link rel="stylesheet" href="/studio-assets/journal.css?v=1">
+<link rel="stylesheet" href="/studio-assets/public_shell.css?v=1">
+<link rel="stylesheet" href="/studio-assets/automation_flagship.css?v=1">
+<script defer src="/studio-assets/automation_flagship.js?v=1"></script>
+</head>
+<body class="platform-app flagship-page">
+<a class="skip-link" href="#main">К содержанию</a>
+{% include "_public_header.html" %}
+<main id="main" class="container flagship-main">
+<section class="flagship-hero">
+<span class="eyebrow">OMNIFACTORY / AUTOMATION FLAGSHIP</span>
+<h1>Соединяем системы.<br><em>Автоматизируем результат.</em></h1>
+<p>CRM, API, документы, маркетинг и интеллектуальные сценарии — в единой управляемой архитектуре. Изучите, какие интеграции уже поддерживает Python-движок, и запустите настоящий тестовый сценарий без регистрации.</p>
+<div class="flagship-actions"><a class="button button-primary" href="#templates">Запустить демонстрацию ↗</a><a href="/automation/studio">Открыть Automation Studio ↗</a></div>
+<div class="flagship-note">Демонстрации выполняются на сервере в режиме dry-run. Реальные внешние операции не запускаются.</div>
+</section>
+<section class="flagship-section" id="integrations"><div class="flagship-heading"><span class="eyebrow">01 / INTEGRATION HUB</span><h2>Подключения без преувеличений.</h2><p>Показаны реальные возможности текущего Automation Engine. Некоторые интеграции требуют настройки оператора, другие пока не являются узлами движка.</p></div>
+<div class="flagship-grid">
+{% for integration in integrations %}
+<article class="flagship-card">
+<div class="flagship-card-top"><span>{{ integration.category }}</span><span class="flagship-status status-{{ integration.status }}">{{ statuses[integration.status] }}</span></div>
+<h3>{{ integration.title }}</h3><strong>{{ integration.capability }}</strong><p>{{ integration.detail }}</p>
+</article>
+{% endfor %}
+</div></section>
+<section class="flagship-section" id="templates"><div class="flagship-heading"><span class="eyebrow">02 / WORKFLOW TEMPLATES</span><h2>Не скриншоты. Выполнение.</h2><p>Три проверяемых сценария исполняются тем же Python-интерпретатором, который используется в Automation Studio. Скачайте валидный граф для дальнейшей настройки.</p></div>
+<div class="flagship-grid flagship-templates">
+{% for item in automation_templates %}
+<article class="flagship-card flagship-template">
+<span class="eyebrow">{{ item.audience }}</span><h3>{{ item.title }}</h3><p>{{ item.description }}</p>
+<div class="flagship-actions">
+<button type="button" class="flagship-run" data-preview="{{ item.slug }}" aria-controls="flagship-result">▶ Выполнить dry-run</button>
+<a href="/integrations/templates/{{ item.slug }}">Скачать JSON ↗</a>
+</div>
+</article>
+{% endfor %}
+</div>
+<div class="flagship-console" id="flagship-result" aria-live="polite" aria-atomic="true">
+<div class="flagship-console-head"><strong>EXECUTION TRACE</strong><span>READ-ONLY / SERVER-SIDE</span></div>
+<p id="flagship-result-status">Выберите шаблон, чтобы увидеть реальную трассировку исполнения.</p>
+<ol id="flagship-trace"></ol>
+<pre id="flagship-variables" hidden></pre>
+</div></section>
+<section class="flagship-section flagship-next"><span class="eyebrow">03 / BUILD YOUR SYSTEM</span><h2>От демонстрации к собственному процессу.</h2><p>Используйте визуальный редактор, настройте шаги, проверьте логику и сохраните workflow в своём аккаунте. Для реальных внешних действий нужны разрешения и настройка оператора.</p>
+<div class="flagship-actions"><a class="button button-primary" href="/automation/studio">Перейти в Automation Studio ↗</a><a href="/demo/blueprint?sector=automation">Получить архитектурный бриф ↗</a><a href="/studio#contact">Обсудить интеграцию ↗</a></div>
+</section>
+</main>{% include "_public_footer.html" %}
+</body></html>

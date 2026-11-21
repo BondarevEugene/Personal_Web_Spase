@@ -6,6 +6,7 @@
     </a>
     <nav class="omni-global-desktop" aria-label="Основная навигация">
       <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>Платформа</a>
+      <a href="/integrations" {% if request.url.path.startswith("/integrations") %}aria-current="page"{% endif %}>Автоматизация</a>
       <a href="/services" {% if request.url.path.startswith('/services') %}aria-current="page"{% endif %}>Услуги</a>
       <a href="/cases" {% if request.url.path.startswith('/cases') %}aria-current="page"{% endif %}>Кейсы</a>
       <a href="/demo" {% if request.url.path.startswith('/demo') %}aria-current="page"{% endif %}>Experience Lab</a>
@@ -17,6 +18,7 @@
       <summary aria-label="Открыть навигацию">Меню <span aria-hidden="true">☰</span></summary>
       <nav aria-label="Мобильная навигация">
         <a href="/">Платформа</a>
+        <a href="/integrations">Автоматизация и интеграции</a>
         <a href="/services">Услуги</a>
         <a href="/cases">Кейсы</a>
         <a href="/demo">Experience Lab</a>
