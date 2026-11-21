@@ -73,3 +73,36 @@ def test_release_center_contract_and_ui():
     assert "report.export_url === expected" in js
     assert "textContent" in js
     assert "graph-release-center-blocked" in css
+
+
+def test_deployment_plan_requires_revision_and_release_preflight():
+    import pytest
+    from pydantic import ValidationError
+
+    from api.builder_projects import GraphDeploymentRequest
+
+    with pytest.raises(ValidationError):
+        GraphDeploymentRequest(name="Demo", max_monthly_usd=10)
+    payload = GraphDeploymentRequest(
+        revision="a" * 64, name="Demo", max_monthly_usd=10,
+    )
+    assert payload.transport == "worker"
+    assert payload.revision == "a" * 64
+
+
+def test_release_center_plan_ui_contract():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "templates/builder_pro_final.html").read_text(encoding="utf-8")
+    js = (root / "omni_site/static/graph_release_center.js").read_text(encoding="utf-8")
+    for identifier in ("release-plan-form", "release-plan-status",
+                       "release-plan-history", "release-plan-name",
+                       "release-plan-budget"):
+        assert f'id="{identifier}"' in html
+        assert f"$('{identifier}')" in js
+    assert "X-Omni-CSRF" in js
+    assert "current.revision" in js
+    assert "/deployment-plan" in js
+    assert "/api/v1/builder/operations/" in js
+    assert "planForm.hidden = !report.export_ready" in js

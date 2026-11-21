@@ -351,6 +351,7 @@ def duplicate_project(id: str, request: Request):
 
 
 class GraphDeploymentRequest(BaseModel):
+    revision: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
     name: str = Field(min_length=3, max_length=40)
     mode: str = Field(default="managed")
     transport: str = Field(default="worker")
@@ -407,9 +408,15 @@ def create_graph_deployment_plan(
         ))
         if row is None:
             raise HTTPException(404, "Project not found")
+        if project_revision(row) != body.revision:
+            raise HTTPException(409, detail={
+                "code": "PROJECT_CHANGED",
+                "message": "Ревизия изменилась. Проверьте выпуск повторно.",
+                "current_revision": project_revision(row),
+            })
         scenario = Scenario.model_validate_json(row.scenario_json)
-        report = analyze_scenario(scenario)
-        if not report["ok"]:
+        report = release_preflight(scenario)
+        if not report["ready"]:
             raise HTTPException(422, detail={
                 "message": "Исправьте ошибки сценария перед планированием",
                 "issues": report["issues"],
