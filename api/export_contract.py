@@ -15,6 +15,7 @@ from runtime.telegram.scenario import read_scenario
 REQUIRED_FILES = frozenset({
     "scenario.json", "bot.py", "requirements.txt", ".env.example", "README.md",
     "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md", "smoke.py",
+    ".github/workflows/verify.yml",
 })
 MAX_ARCHIVE_BYTES = 500_000
 MAX_MEMBER_BYTES = 300_000
@@ -43,6 +44,7 @@ def verify_export_archive(archive_bytes: bytes) -> dict:
             env_example = archive.read(".env.example").decode("utf-8")
             readme = archive.read("README.md").decode("utf-8")
             dockerfile = archive.read("Dockerfile").decode("utf-8")
+            workflow = archive.read(".github/workflows/verify.yml").decode("utf-8")
             smoke_bytes = archive.read("smoke.py")
             compile(smoke_bytes, "smoke.py", "exec")
             railway = json.loads(archive.read("railway.json").decode("utf-8"))
@@ -64,7 +66,11 @@ def verify_export_archive(archive_bytes: bytes) -> dict:
     if "OMNI_STATE_DB" not in readme or "OMNI_STATE_DB" not in source_bytes.decode("utf-8"):
         raise ExportContractError("Persistence contract missing")
     if (
-        "RUN python smoke.py" not in dockerfile
+        "run: python smoke.py" not in workflow
+        or "run: docker build --tag omni-generated-bot:ci ." not in workflow
+        or "permissions:" not in workflow
+        or "pull_request:" not in workflow
+        or "RUN python smoke.py" not in dockerfile
         or "COPY bot.py scenario.json smoke.py ./" not in dockerfile
         or "USER omni" not in dockerfile
         or "OMNI_STATE_DB=/data/bot_state.sqlite3" not in dockerfile
@@ -88,5 +94,6 @@ def verify_export_archive(archive_bytes: bytes) -> dict:
         "cloud_deployed": False,
         "railway_worker_packaged": True,
         "offline_smoke_packaged": True,
+        "github_ci_packaged": True,
         "persistent_volume_required": True,
     }
