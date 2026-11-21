@@ -9,3 +9,12 @@
 .graph-release-variables{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;font-size:.82rem;padding:.7rem;border-radius:10px;background:rgba(120,150,185,.08)}
 .graph-release-warning{font-weight:700}
 @media(max-width:760px){.graph-release-columns{grid-template-columns:1fr}}
+
+.graph-release-legend{display:flex;gap:.75rem;flex-wrap:wrap;margin:.75rem 0;font-size:.82rem}
+.graph-release-legend span{padding:.35rem .6rem;border:1px solid rgba(120,150,185,.25);border-radius:8px}
+.graph-node.graph-release-unreachable{outline:2px dashed #89909b!important;outline-offset:3px;opacity:.72}
+.graph-node.graph-release-untested{outline:3px solid #d4aa61!important;outline-offset:3px}
+.graph-node.graph-release-blocker{outline:3px solid #d66c6c!important;outline-offset:3px}
+.graph-node.graph-release-focus{outline:3px solid #b48cf0!important;outline-offset:5px;opacity:1}
+#release-inspect-edges{max-height:260px;overflow:auto}
+#release-inspect-coverage,#release-inspect-readiness{padding:.75rem;border-radius:10px;background:rgba(110,145,190,.07)}
