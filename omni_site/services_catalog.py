@@ -126,7 +126,7 @@ SERVICES = (
         journal_url="/journal/graph-studio-python-export",
         lead_topic="AI / автоматизация",
         accent="mint",
-    ),,
+    ),
     Service(
         slug="ai-solutions",
         title="AI-ассистенты и интеллектуальные системы",
