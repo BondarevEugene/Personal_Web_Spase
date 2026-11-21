@@ -194,7 +194,7 @@ def audit(base_url: str, output: Path) -> int:
                                 issues.append("Blueprint result text missing")
                             if page.locator(
                                 ".blueprint-content-grid .blueprint-block"
-                            ).count() != 3:
+                            ).count() != 4:
                                 issues.append("Blueprint architecture panels missing")
                     if route == "/services" and not page.locator(
                         'a[href="/services/custom-crm"]'
