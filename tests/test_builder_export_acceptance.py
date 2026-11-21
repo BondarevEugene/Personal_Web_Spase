@@ -110,7 +110,8 @@ async def _test_exported_bot_user_journey_and_callback_replay(tmp_path):
     sent_text = [call.args[1] for call in bot.send_message.await_args_list]
     assert sent_text == ["Welcome!", "Proceed?", "Your name?", "Hello Alex", "Done"]
     assert user_key not in module.CURSORS
-    assert module.VALUES[user_key]["greeting"] == "Hello Alex"
+    # Completed conversations intentionally discard their variables and cursor.
+    assert user_key not in module.VALUES
 
     await module.start(message)
     assert module.CURSORS[user_key] == "choose"
