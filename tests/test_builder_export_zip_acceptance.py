@@ -25,7 +25,7 @@ def test_export_zip_contains_runnable_runtime_and_correct_persistence_docs():
     with zipfile.ZipFile(io.BytesIO(payload)) as archive:
         assert set(archive.namelist()) == {
             "scenario.json", "bot.py", "requirements.txt", ".env.example", "README.md",
-            "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md",
+            "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md", "smoke.py",
         }
         bot = archive.read("bot.py").decode("utf-8")
         readme = archive.read("README.md").decode("utf-8")
