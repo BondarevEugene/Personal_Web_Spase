@@ -1,6 +1,6 @@
 """Release smoke checker contracts, without external network calls."""
 import json
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 
 import pytest
 
@@ -23,9 +23,27 @@ class Response:
         return self.text.encode()
 
 
+class Opener:
+    def __init__(self, response=None, error=None):
+        self.response = response
+        self.error = error
+
+    def open(self, *_args, **_kwargs):
+        if self.error:
+            raise self.error
+        return self.response
+
+
+def fake_opener(monkeypatch, *, text="", error=None):
+    monkeypatch.setattr(
+        smoke, "build_opener", lambda *_args: Opener(Response(text), error)
+    )
+
+
 def test_staging_url_rejects_production_and_insecure_origins():
     for url in (
         "https://omnifactory.up.railway.app",
+        "https://www.omnifactory.up.railway.app",
         "http://staging.example.com",
         "https://user:password@staging.example.com",
         "https://staging.example.com/private",
@@ -42,40 +60,68 @@ def test_staging_url_rejects_production_and_insecure_origins():
 
 
 def test_health_requires_current_platform_identity(monkeypatch):
-    monkeypatch.setattr(smoke, "urlopen", lambda *_a, **_k: Response(
-        json.dumps({"status": "ok", "platform_ui": "studio-v3-platform"})
-    ))
-    result = smoke.check_endpoint("https://preview.example.com/", smoke.CHECKS[0])
-    assert result["ok"] is True
-    monkeypatch.setattr(smoke, "urlopen", lambda *_a, **_k: Response(
-        json.dumps({"status": "ok", "platform_ui": "legacy"})
-    ))
+    fake_opener(
+        monkeypatch,
+        text=json.dumps({"status": "ok", "platform_ui": "studio-v3-platform"}),
+    )
     assert smoke.check_endpoint(
         "https://preview.example.com/", smoke.CHECKS[0]
-    )["ok"] is False
+    )["ok"]
+    fake_opener(
+        monkeypatch,
+        text=json.dumps({"status": "ok", "platform_ui": "legacy"}),
+    )
+    assert not smoke.check_endpoint(
+        "https://preview.example.com/", smoke.CHECKS[0]
+    )["ok"]
 
 
 def test_home_rejects_legacy_page(monkeypatch):
-    monkeypatch.setattr(smoke, "urlopen", lambda *_a, **_k: Response(
-        "OMNIFACTORY MAIN_NODE BUILDER_PRO"
-    ))
-    assert smoke.check_endpoint(
+    fake_opener(monkeypatch, text="OMNIFACTORY MAIN_NODE BUILDER_PRO")
+    assert not smoke.check_endpoint(
         "https://preview.example.com/", smoke.CHECKS[1]
-    )["ok"] is False
+    )["ok"]
 
 
 def test_connection_errors_are_reported_without_credentials(monkeypatch):
-    def offline(*_a, **_k):
-        raise URLError("offline")
-
-    monkeypatch.setattr(smoke, "urlopen", offline)
+    fake_opener(monkeypatch, error=URLError("offline"))
     result = smoke.check_endpoint(
         "https://preview.example.com/", smoke.CHECKS[0]
     )
     assert result == {"path": "/health", "ok": False, "error": "URLError"}
 
 
-def test_expected_routes_cover_customer_builder_and_automation():
+def test_login_redirect_is_not_followed(monkeypatch):
+    fake_opener(
+        monkeypatch,
+        error=HTTPError(
+            "https://preview.example.com/account", 303, "See Other",
+            {"Location": "https://outside.example.com/"}, None,
+        ),
+    )
+    result = smoke.check_endpoint(
+        "https://preview.example.com/", smoke.CHECKS[7]
+    )
+    assert result["ok"] and result["status"] == 303
+
+
+def test_unexpected_redirect_fails(monkeypatch):
+    fake_opener(
+        monkeypatch,
+        error=HTTPError(
+            "https://preview.example.com/health", 302, "Found",
+            {"Location": "https://outside.example.com/"}, None,
+        ),
+    )
+    assert not smoke.check_endpoint(
+        "https://preview.example.com/", smoke.CHECKS[0]
+    )["ok"]
+
+
+def test_expected_routes_cover_customer_builder_automation_and_assets():
     paths = {check.path for check in smoke.CHECKS}
-    assert {"/", "/health", "/account", "/architect",
-            "/automation/studio", "/demo", "/services/ai-solutions"} <= paths
+    assert {
+        "/", "/health", "/account", "/architect", "/automation/studio",
+        "/demo", "/services/ai-solutions", "/studio-assets/site.css",
+        "/studio-assets/solution_demo.js",
+    } <= paths
