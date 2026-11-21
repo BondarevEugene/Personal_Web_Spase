@@ -85,6 +85,12 @@
   <div class="graph-release-column"><h3>Ошибки и предупреждения</h3><div id="release-inspect-issues"></div></div>
   <div class="graph-release-column"><h3>Тестовые маршруты</h3><div id="release-inspect-cases"></div></div>
  </div>
+ <h3>Интерактивное прохождение диалога</h3>
+ <p>Введите собственные ответы или выберите кнопки. Проверка выполняется на сервере без Telegram и без изменения проекта.</p>
+ <button id="release-debug-start" type="button" class="button button-line">▶ Начать свой тест</button>
+ <p id="release-debug-status" role="status" aria-live="polite">Сначала проверьте сохранённую ревизию.</p>
+ <div id="release-debug-history" class="graph-release-debug-history" aria-live="polite"></div>
+ <div id="release-debug-inputs"></div>
  <h3>Пошаговая трассировка</h3>
  <div id="release-inspect-trace"></div>
  <pre id="release-inspect-variables" class="graph-release-variables">Выберите шаг для просмотра переменных.</pre>
@@ -230,6 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-<link rel="stylesheet" href="/studio-assets/graph_release_inspector.css?v=2">
-<script defer src="/studio-assets/graph_release_inspector.js?v=2"></script>
+<link rel="stylesheet" href="/studio-assets/graph_release_inspector.css?v=3">
+<script defer src="/studio-assets/graph_release_inspector.js?v=3"></script>
 </body></html>

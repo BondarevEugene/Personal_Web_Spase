@@ -139,3 +139,24 @@ def test_release_lab_visual_coverage_contract():
     assert "evidence.export_ready" in js
     assert "evidence.revision !== matrix.revision" in js
     assert "textContent" in js
+
+
+def test_saved_graph_interactive_debug_contract():
+    from api.builder_projects import SavedGraphDebugRequest
+
+    payload = SavedGraphDebugRequest(
+        revision="a" * 64, choices={"start": 1}, inputs={"name": "Alice"},
+    )
+    assert payload.choices == {"start": 1}
+    assert payload.inputs["name"] == "Alice"
+
+    html = (ROOT / "templates/builder_pro_final.html").read_text(encoding="utf-8")
+    js = (ROOT / "omni_site/static/graph_release_inspector.js").read_text(encoding="utf-8")
+    for identifier in ("release-debug-start", "release-debug-status",
+                       "release-debug-history", "release-debug-inputs"):
+        assert f'id="{identifier}"' in html
+        assert f"$('{identifier}')" in js
+    assert "/debug-session" in js
+    assert "current.revision" in js
+    assert "response.status === 409" in js
+    assert "textContent" in js

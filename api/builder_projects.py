@@ -549,3 +549,36 @@ def saved_graph_test_matrix(id: str, request: Request):
             "revision": project_revision(row),
             **dialogue_matrix(scenario),
         }
+
+
+class SavedGraphDebugRequest(BaseModel):
+    """Read-only dialogue dry-run pinned to the inspected saved revision."""
+
+    revision: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    choices: dict[str, int] = Field(default_factory=dict, max_length=80)
+    inputs: dict[str, str] = Field(default_factory=dict, max_length=80)
+
+
+@router.post("/{id}/debug-session")
+def debug_saved_graph(id: str, request: Request, body: SavedGraphDebugRequest):
+    """Replay a bounded simulation with user answers; never mutate the project."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        revision = project_revision(row)
+        if revision != body.revision:
+            raise HTTPException(409, detail={
+                "code": "PROJECT_CHANGED",
+                "message": "Сохранённая ревизия изменилась. Запустите диагностику заново.",
+                "current_revision": revision,
+            })
+        scenario = Scenario.model_validate_json(row.scenario_json)
+    result = simulate_scenario(SimulationRequest(
+        scenario=scenario, choices=body.choices, inputs=body.inputs,
+    ))
+    return {"project_id": id, "revision": revision, **result}
