@@ -32,6 +32,9 @@ import httpx
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 
+from portal.db import session_factory
+from portal.models import GrowthLead
+
 router = APIRouter(prefix="/studio/api", tags=["Studio Leads"])
 
 # Lightweight process-local throttle; no database, so no alteration of CRM data.
@@ -49,6 +52,11 @@ class StudioLead(BaseModel):
     topic: str = Field(min_length=2, max_length=160)
     message: str = Field(min_length=10, max_length=3000)
     website: str = Field(default="", max_length=200)
+    consent: bool = False
+    source_path: str = Field(default="/studio", max_length=200)
+    utm_source: str = Field(default="", max_length=80)
+    utm_medium: str = Field(default="", max_length=80)
+    utm_campaign: str = Field(default="", max_length=80)
 
     @field_validator("name", "contact", "topic", "message")
     @classmethod
@@ -99,6 +107,9 @@ async def create_lead(lead: StudioLead, request: Request) -> dict[str, bool]:
     if lead.website:
         return {"ok": True}
 
+    if not lead.consent:
+        raise HTTPException(status_code=422, detail="Consent required")
+
     token = os.getenv("OMNI_STUDIO_BOT_TOKEN", "").strip()
     chat_id = os.getenv("OMNI_STUDIO_CHAT_ID", "").strip()
     if not token or not chat_id:
@@ -107,6 +118,18 @@ async def create_lead(lead: StudioLead, request: Request) -> dict[str, bool]:
     # request.client.host is a connection IP. Do not blindly trust X-Forwarded-For.
     client_ip = request.client.host if request.client else "unknown"
     await _check_rate_limit(client_ip)
+
+    try:
+        with session_factory()() as db:
+            saved = GrowthLead(name=lead.name, contact=lead.contact, topic=lead.topic,
+                               message=lead.message, source_path=lead.source_path,
+                               utm_source=lead.utm_source, utm_medium=lead.utm_medium,
+                               utm_campaign=lead.utm_campaign)
+            db.add(saved)
+            db.commit()
+            lead_id = saved.id
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Lead storage unavailable") from exc
 
     payload = {
         "chat_id": chat_id,
@@ -120,7 +143,12 @@ async def create_lead(lead: StudioLead, request: Request) -> dict[str, bool]:
             response.raise_for_status()
             delivered = response.json().get("ok") is True
     except (httpx.HTTPError, ValueError) as exc:
-        raise HTTPException(status_code=502, detail="Telegram unavailable") from exc
+        raise HTTPException(status_code=502, detail="Telegram unavailable; lead stored") from exc
     if not delivered:
-        raise HTTPException(status_code=502, detail="Telegram rejected delivery")
+        raise HTTPException(status_code=502, detail="Telegram rejected delivery; lead stored")
+    with session_factory()() as db:
+        saved = db.get(GrowthLead, lead_id)
+        if saved is not None:
+            saved.telegram_status = "sent"
+            db.commit()
     return {"ok": True}
