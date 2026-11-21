@@ -52,3 +52,24 @@ def test_branch_edges_are_typed():
     ])
     edges = graph_inventory(graph)["edges"]
     assert {edge["kind"] for edge in edges} == {"true", "false"}
+
+
+def test_release_center_contract_and_ui():
+    from pathlib import Path
+
+    from api.builder_projects import saved_graph_release_center
+
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "templates/builder_pro_final.html").read_text(encoding="utf-8")
+    js = (root / "omni_site/static/graph_release_center.js").read_text(encoding="utf-8")
+    css = (root / "omni_site/static/graph_release_center.css").read_text(encoding="utf-8")
+    assert saved_graph_release_center.__name__ == "saved_graph_release_center"
+    for identifier in ("release-center-check", "release-center-status",
+                       "release-center-steps", "release-center-download"):
+        assert f'id="{identifier}"' in html
+        assert f"$('{identifier}')" in js
+    assert "/release-center" in js
+    assert "report.export_ready" in js
+    assert "report.export_url === expected" in js
+    assert "textContent" in js
+    assert "graph-release-center-blocked" in css

@@ -1,0 +1,8 @@
+.graph-release-center-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.65rem;padding:0;list-style:none}
+.graph-release-center-steps li{padding:.85rem;border:1px solid rgba(120,150,185,.3);border-radius:12px;background:rgba(110,145,190,.07)}
+.graph-release-center-blocked{border-left:4px solid #d66c6c!important}
+.graph-release-center-attention{border-left:4px solid #d4aa61!important}
+.graph-release-center-ready,.graph-release-center-complete{border-left:4px solid #5cae91!important}
+.graph-release-center-manual,.graph-release-center-not_verified{border-left:4px solid #8795a9!important}
+#release-center-instructions{max-width:750px}
+#release-center-instructions li{margin:.4rem 0}

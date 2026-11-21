@@ -95,6 +95,18 @@
  <div id="release-inspect-trace"></div>
  <pre id="release-inspect-variables" class="graph-release-variables">Выберите шаг для просмотра переменных.</pre>
 </section>
+<section class="graph-release-inspector" id="graph-release-center" aria-label="Центр выпуска Telegram-бота">
+ <div class="eyebrow">RELEASE & DEPLOYMENT CENTER</div>
+ <h2>От проверенного сценария до Telegram</h2>
+ <p>Единый маршрут сохранённой версии: проверка, тесты, ZIP, настройка хостинга и ручная проверка запуска.</p>
+ <button type="button" id="release-center-check" class="button button-primary">Проверить выпуск</button>
+ <p id="release-center-status" role="status" aria-live="polite">Выберите сохранённый проект.</p>
+ <ol id="release-center-steps" class="graph-release-center-steps"></ol>
+ <div id="release-center-summary"></div>
+ <div id="release-center-instructions"></div>
+ <a id="release-center-download" class="button button-primary" hidden>Скачать Python-бот ZIP</a>
+ <p><small>Выпуск не означает, что бот запущен. Подключение Railway и подтверждение онлайн-статуса не выполняются.</small></p>
+</section>
 <section class="builder-cloud" id="builder-release-workflow" aria-label="Готовность сохранённого бота">
  <div class="builder-cloud-title"><strong>МАРШРУТ К ЗАПУСКУ</strong><small id="builder-workflow-state" role="status" aria-live="polite">Выберите сохранённый проект</small></div>
  <p>Проверка выполняется по последней <strong>сохранённой</strong> версии. Несохранённые изменения сначала отправьте в аккаунт.</p>
@@ -238,4 +250,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <link rel="stylesheet" href="/studio-assets/graph_release_inspector.css?v=3">
 <script defer src="/studio-assets/graph_release_inspector.js?v=3"></script>
+<script defer src="/studio-assets/graph_release_center.js?v=1"></script>
+<link rel="stylesheet" href="/studio-assets/graph_release_center.css?v=1">
 </body></html>

@@ -582,3 +582,60 @@ def debug_saved_graph(id: str, request: Request, body: SavedGraphDebugRequest):
         scenario=scenario, choices=body.choices, inputs=body.inputs,
     ))
     return {"project_id": id, "revision": revision, **result}
+
+
+@router.get("/{id}/release-center")
+def saved_graph_release_center(id: str, request: Request):
+    """Single owner-scoped, revision-pinned release decision; no cloud mutation."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+        revision = project_revision(row)
+        evidence = release_evidence(scenario, row.id, revision)
+        matrix = dialogue_matrix(scenario)
+        export_ready = evidence["export_ready"]
+        return {
+            "project_id": row.id,
+            "revision": revision,
+            "scenario_name": scenario.name,
+            "export_ready": export_ready,
+            "blockers": evidence["blockers"],
+            "warnings": evidence["warnings"],
+            "test_summary": {
+                "cases": matrix["case_count"],
+                "completed": matrix["completed_cases"],
+                "truncated": matrix["truncated"],
+                "edge_coverage_percent": matrix["edge_coverage_percent"],
+                "uncovered_edges": matrix["uncovered_edges"],
+            },
+            "steps": [
+                {"id": "save", "status": "complete", "label": "Сохранённая ревизия"},
+                {"id": "validate", "status": "complete" if export_ready else "blocked",
+                 "label": "Проверка структуры и завершения"},
+                {"id": "simulate", "status": "complete" if matrix["completed_cases"] else "attention",
+                 "label": "Тестовые диалоги"},
+                {"id": "export", "status": "ready" if export_ready else "blocked",
+                 "label": "Python / aiogram ZIP"},
+                {"id": "configure", "status": "manual",
+                 "label": "Настроить BOT_TOKEN в хостинге"},
+                {"id": "deploy", "status": "not_verified",
+                 "label": "Запуск и проверка Telegram"},
+            ],
+            "export_url": f"/api/v1/builder/projects/{row.id}/export"
+            if export_ready else None,
+            "deployment_instructions": [
+                "Скачайте ZIP и распакуйте проект на Python-хостинге.",
+                "Установите зависимости из requirements.txt.",
+                "Задайте BOT_TOKEN как секрет окружения, не в коде.",
+                "Запустите приложение согласно README из ZIP.",
+                "Проверьте ответы бота в Telegram и логи хостинга.",
+            ],
+            "live_deployment_verified": False,
+            "provider_connection_active": False,
+        }
