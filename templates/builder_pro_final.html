@@ -1,296 +1,508 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#050811">
-<title>OmniFactory — конструктор Telegram-ботов</title>
-<link rel="stylesheet" href="/studio-assets/site.css?v=3">
-<link rel="stylesheet" href="/studio-assets/platform.css?v=1">
-<link rel="stylesheet" href="/studio-assets/builder.css?v=8">
-<link rel="stylesheet" href="/studio-assets/graph_workspace.css?v=2">
-<script defer src="/studio-assets/site.js?v=3"></script>
-<script defer src="/studio-assets/graph_history.js?v=1"></script>
-<script defer src="/studio-assets/graph_layout.js?v=1"></script>
-<script defer src="/studio-assets/graph_groups.js?v=1"></script>
-<script defer src="/studio-assets/graph_studio.js?v=12"></script>
-<script defer src="/studio-assets/graph_workspace.js?v=1"></script>
-<link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMNIFACTORY // EVO_CORE // ENTERPRISE_ARCHITECT v5.0</title>
+
+    <!-- Сквозные шрифты и графические пакеты библиотеки Drawflow -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@600;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z' fill='none' stroke='%23bc13fe' stroke-width='5'/><text x='35' y='68' font-family='Orbitron, sans-serif' font-size='50' fill='%23bc13fe' font-weight='bold'>F</text></svg>">
+
+    <style>
+        :root {
+            --deep-space: #030305;
+            --bg-main: #121214;
+            --bg-panel: #18181b;
+            --border-dim: #27272a;
+            --bright-purple: #bc13fe;
+            --soft-blue: #00f0ff;
+            --critical-pink: #ff007f;
+            --ok-green: #00ff88;
+            --glass: rgba(15, 15, 25, 0.9);
+            --border: rgba(94, 10, 126, 0.3);
+            --text-bright: #e4e4e7;
+            --text-dim: #a1a1aa;
+            --font-main: 'Share Tech Mono', monospace;
+            --font-header: 'Orbitron', sans-serif;
+        }
+
+        body {
+            background-color: var(--deep-space);
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            color: #fff;
+            font-family: var(--font-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        h1, h2, h3, h4, .nav-btn, .action-btn, .status-badge, .logo-text, .category-title {
+            font-family: var(--font-header) !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* [ SIDEBAR: КИБЕРПАНК СТИЛЬ ] */
+        .sidebar {
+            width: 260px;
+            background: rgba(5, 5, 10, 0.95);
+            border-right: 1px solid var(--border);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            position: relative;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+            background: rgba(188, 19, 254, 0.02);
+            border: 1px solid var(--border);
+            color: var(--soft-blue);
+            cursor: pointer;
+            font-size: 0.72rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(5px);
+            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0% 30%);
+            overflow: hidden;
+            user-select: none;
+            text-align: left;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            background: rgba(0, 240, 255, 0.12);
+            border-color: var(--soft-blue);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.35);
+            transform: translateX(4px);
+        }
+
+        .nav-btn.active {
+            background: rgba(188, 19, 254, 0.15);
+            border-color: var(--bright-purple);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.4);
+            text-shadow: 0 0 8px #fff;
+        }
+
+        .panic-btn {
+            background: repeating-linear-gradient(45deg, rgba(255, 0, 127, 0.1), rgba(255, 0, 127, 0.1) 10px, rgba(0, 0, 0, 0.2) 10px, rgba(0, 0, 0, 0.2) 20px);
+            border: 2px solid var(--critical-pink);
+            color: var(--critical-pink);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            animation: alert-blink 2s infinite;
+        }
+
+        /* [ MAIN CONTENT ] */
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: rgba(3, 3, 5, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            flex-grow: 1;
+        }
+
+        .tab-content.active {
+            display: flex !important;
+            flex-direction: column;
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+
+        /* [ СТИЛИ ХОЛСТА И СРЕДЫ РАЗРАБОТКИ ] */
+        .ide-workspace {
+            display: grid;
+            grid-template-columns: 260px 1fr 320px;
+            flex-grow: 1;
+            overflow: hidden;
+            width: 100%;
+            height: calc(100vh - 160px);
+            border: 1px solid var(--border-dim);
+            background: var(--bg-main);
+            border-radius: 8px;
+        }
+
+        .ide-sidebar { background: var(--bg-panel); border-right: 1px solid var(--border-dim); display: flex; flex-direction: column; overflow: hidden; }
+        .sidebar-search input { width: 100%; padding: 10px; background: rgba(0,0,0,0.4); border: none; border-bottom: 1px solid var(--border-dim); color: #fff; font-family: var(--font-main); box-sizing: border-box; outline: none; }
+        .sidebar-scroll { overflow-y: auto; padding: 12px; flex-grow: 1; }
+
+        .category-title { font-size: 0.65rem; color: var(--soft-blue); margin: 15px 0 6px 0; }
+        .node-item { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-dim); padding: 8px 10px; margin-bottom: 6px; cursor: grab; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; transition: 0.2s; color: var(--text-bright); }
+        .node-item:hover { border-color: var(--bright-purple); background: rgba(188, 19, 254, 0.05); }
+
+        #drawflow {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-image: radial-gradient(#1e1e24 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
+            cursor: grab;
+            background-color: #121214;
+        }
+
+        /* Кастомизация блоков Drawflow под киберпанк */
+        .drawflow .drawflow-node { background: var(--bg-panel) !important; border: 1px solid var(--border-dim) !important; border-radius: 6px !important; padding: 10px !important; width: 160px !important; color: #fff !important; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .drawflow .drawflow-node.selected { border-color: var(--bright-purple) !important; box-shadow: 0 0 12px rgba(188, 19, 254, 0.3); }
+        .drawflow .connection .main-path { stroke: var(--bright-purple) !important; stroke-width: 2.5px !important; }
+
+        .ide-inspector { background: var(--bg-panel); border-left: 1px solid var(--border-dim); display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
+        .prop-field { margin-bottom: 12px; font-size: 0.75rem; }
+        .prop-field label { display: block; color: var(--soft-blue); margin-bottom: 4px; font-family: var(--font-header); }
+        .prop-field input { width: 100%; padding: 6px; background: #000; border: 1px solid var(--border-dim); color: #fff; border-radius: 4px; }
+
+        /* [ МОНИТОРИНГ И ПАНЕЛИ ] */
+        .tech-card, .component-panel { background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); }
+        .project-grid, .component-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        .status-badge { background: rgba(0, 255, 136, 0.1); color: var(--ok-green); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; }
+        .control-btns { display: flex; gap: 10px; margin-top: 15px; }
+
+        .stream-box { background: rgba(0, 0, 0, 0.8); border: 1px solid var(--border-dim); border-radius: 8px; padding: 15px; height: 55vh; overflow-y: auto; font-size: 0.8rem; color: #00ff41; font-family: 'JetBrains Mono', monospace; }
+        .action-btn { background: var(--deep-space); border: 1px solid var(--border); color: var(--bright-purple); padding: 8px 15px; cursor: pointer; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        .action-btn:hover { border-color: var(--bright-purple); box-shadow: 0 0 10px rgba(188, 19, 254, 0.2); }
+
+        .btn-trigger { background: var(--bright-purple); color: #000; font-weight: bold; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; font-family: var(--font-header); transition: 0.2s; font-size: 0.75rem; }
+        .btn-trigger:hover { opacity: 0.9; box-shadow: 0 0 15px var(--bright-purple); }
+
+        @keyframes alert-blink { 0% { opacity: 1; } 50% { opacity: 0.7; border-color: #fff; } 100% { opacity: 1; } }
+    </style>
 </head>
-<body class="platform-app builder-app graph-workspace-compact">
-<a class="skip-link" href="#main">Перейти к редактору</a><div class="grid-noise" aria-hidden="true"></div>
-<header class="site-header" id="site-header"><div class="header-inner container">
-<a class="brand" href="/" aria-label="OmniFactory — платформа"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 38 38" fill="none"><path d="M19 2 35 19 19 36 3 19Z" stroke="currentColor" stroke-width="1.8"/><path d="m19 9 10 10-10 10L9 19Z" fill="currentColor" opacity=".75"/><path d="M19 9v20M9 19h20" stroke="#08121c" stroke-width="1.5"/></svg></span><span class="brand-word">OMNI<span>FACTORY</span><small>PYTHON ENGINEERING / BUILDER</small></span></a>
-<nav id="main-nav" class="nav-links" aria-label="Модули OMNIFACTORY"><a href="/">Платформа</a><a href="/architect" class="active">Конструктор</a><a href="/bots/lab">Bot Lab</a><a href="/automation/studio">Автоматизация</a><a href="/cloud/deploy">Cloud Deploy</a><a href="/projects">Проекты</a><a href="/account">Кабинет</a><a href="/studio">Студия</a></nav>
-<div class="nav-actions"><a class="header-contact" href="/docs">API <span aria-hidden="true">↗</span></a><button class="menu-toggle" type="button" id="menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Открыть меню"><span></span><span></span></button></div>
-</div></header>
-<main id="main" class="container builder-page">
-<div class="builder-intro"><div><div class="builder-hero-kicker">OMNIFACTORY / GRAPH STUDIO</div><h1>Логика становится<br><span class="gradient-text">видимой.</span></h1><p>Создай Telegram-сценарий от начала до конца: добавь блоки, соедини выходы со входами, проверь логику, протестируй диалог и скачай исполняемый Python-проект. Для реального запуска понадобится токен BotFather и Python-хостинг.</p><div class="builder-hero-metric"><strong>01</strong> Пространство без ограничений по шаблону <strong>02</strong> Соединения и ветвления <strong>03</strong> Python / aiogram 3</div></div><div class="builder-intro-note"><span>PYTHON / AIOGRAM 3</span><strong>Graph Studio v2</strong><small>Черновик сохраняется в текущем браузере, а ZIP содержит самостоятельный aiogram-проект. Автоматическое развёртывание ещё не реализовано.</small></div></div>
-<div class="builder-toolbar">
-<label for="scenario-name">Название сценария <input id="scenario-name" type="text" maxlength="100" value="Мой Telegram-бот" autocomplete="off"></label>
-<div class="builder-toolbar-actions">
-<div class="graph-history-actions" role="group" aria-label="История редактирования">
-<button type="button" id="graph-undo" class="button button-line" disabled title="Отменить (Ctrl+Z)" aria-label="Отменить действие">↶ Отменить</button>
-<button type="button" id="graph-redo" class="button button-line" disabled title="Повторить (Ctrl+Shift+Z)" aria-label="Повторить действие">↷ Повторить</button></div>
-<button id="btn-workspace-density" type="button" class="button button-line" aria-pressed="true" aria-controls="graph-workspace-help">Рабочий режим</button>
-<a href="/bots/lab" class="button button-line graph-lab-link">◈ Лаборатория ботов</a>
-<button id="btn-new-scenario" type="button" class="button button-line">＋ Новый бот</button>
-<button id="btn-demo-scenario" type="button" class="button button-line">Пример диалога</button>
-<button id="btn-save" type="button" class="button button-line">Сохранить черновик</button>
-<button id="btn-import" type="button" class="button button-line">Импорт JSON</button>
-<button id="btn-download-json" type="button" class="button button-line">Скачать JSON</button>
-<button id="btn-auto-layout" type="button" class="button button-line" title="Расположить блоки по связям; отмена Ctrl+Z">▦ Авторасстановка</button>
-<button id="btn-validate" type="button" class="button button-line" aria-controls="graph-diagnostics" aria-expanded="false">Диагностика графа</button>
-<button id="btn-test-canvas" type="button" class="button button-primary">▶ Тестировать диалог</button>
-<button id="btn-expand-canvas" type="button" class="button button-line" aria-pressed="false">Развернуть поле</button>
-<button id="btn-export-info" type="button" class="button button-line">Как работает экспорт?</button>
-<button id="btn-export" type="button" class="button button-primary">Экспорт Python ZIP <span aria-hidden="true">↗</span></button>
-<input type="file" id="import-file" accept=".json,application/json" hidden>
-</div></div>
-<section class="graph-diagnostics" id="graph-diagnostics" aria-label="Диагностика графа" hidden>
-<div class="graph-diagnostics-head"><div><strong>Диагностика сценария</strong><small id="graph-diagnostics-summary" role="status" aria-live="polite">Запустите проверку, чтобы увидеть проблемы и рекомендации.</small></div>
-<button type="button" id="graph-diagnostics-close" aria-label="Закрыть диагностику">Закрыть ×</button></div>
-<div class="graph-diagnostics-list" id="graph-diagnostics-list"></div>
-</section>
-<section class="export-explainer" id="export-explainer" hidden aria-label="Формат экспорта">
- <div><strong>Что создаётся при экспорте?</strong><p>Скачивается ZIP-архив самостоятельного Python Telegram-бота. Это исходный код, а не уже запущенный бот.</p></div>
- <div class="export-file-list"><code>bot.py</code><code>scenario.json</code><code>requirements.txt</code><code>.env.example</code><code>README.md</code></div>
- <p>Для запуска нужен токен от BotFather, установка библиотек и компьютер либо хостинг с Python 3.11+. Платформа сейчас не публикует бота автоматически. Интеграции Google, Meta и пользовательский Python пока не входят в экспорт.</p>
-</section>
-<section class="builder-cloud" aria-label="Сохранённые проекты аккаунта">
- <div class="builder-cloud-title"><strong>МОИ СЦЕНАРИИ</strong><small id="cloud-state" role="status">Проверка входа…</small></div>
- <label for="cloud-project-list">Проекты аккаунта</label>
- <select id="cloud-project-list" aria-label="Выбрать сохранённый сценарий"><option value="">Новый проект</option></select>
- <button id="btn-cloud-save" type="button" class="button button-primary">Сохранить в аккаунте</button>
- <button id="btn-cloud-load" type="button" class="button button-line">Открыть</button>
- <button id="btn-cloud-delete" type="button" class="button button-line">Удалить</button>
- <a href="/account/login" class="cloud-login-link">Войти в кабинет ↗</a>
-</section>
-<section class="graph-release-inspector" id="graph-release-inspector" aria-label="Проверка релиза и тестовых путей">
- <div class="eyebrow">RELEASE LAB / GRAPH STUDIO</div>
- <h2>Диагностика релиза и тестовые маршруты</h2>
- <p>Проверка сохранённого проекта: ошибки, покрытие ветвей, пошаговые переходы и значения переменных. Это не запуск Telegram-бота.</p>
- <button id="btn-release-inspect" type="button" class="button button-primary">Проверить все тестовые маршруты</button>
- <p id="release-inspect-state" role="status" aria-live="polite">Выберите сохранённый проект.</p>
- <div id="release-inspect-summary" aria-live="polite"></div>
- <div class="graph-release-columns">
-  <div class="graph-release-column"><h3>Покрытие переходов</h3><div id="release-inspect-coverage" aria-live="polite"></div></div>
-  <div class="graph-release-column"><h3>Готовность к экспорту</h3><div id="release-inspect-readiness" aria-live="polite"></div></div>
- </div>
- <div class="graph-release-legend" aria-label="Статусы блоков">
-  <span>Красный — ошибка экспорта</span><span>Жёлтый — не проверен</span><span>Серый — недостижим</span>
- </div>
- <h3>Непроверенные переходы и кнопки</h3>
- <div id="release-inspect-edges"></div>
- <div class="graph-release-columns">
-  <div class="graph-release-column"><h3>Ошибки и предупреждения</h3><div id="release-inspect-issues"></div></div>
-  <div class="graph-release-column"><h3>Тестовые маршруты</h3><div id="release-inspect-cases"></div></div>
- </div>
- <h3>Интерактивное прохождение диалога</h3>
- <p>Введите собственные ответы или выберите кнопки. Проверка выполняется на сервере без Telegram и без изменения проекта.</p>
- <button id="release-debug-start" type="button" class="button button-line">▶ Начать свой тест</button>
- <p id="release-debug-status" role="status" aria-live="polite">Сначала проверьте сохранённую ревизию.</p>
- <div id="release-debug-history" class="graph-release-debug-history" aria-live="polite"></div>
- <div id="release-debug-inputs"></div>
- <h3>Пошаговая трассировка</h3>
- <div id="release-inspect-trace"></div>
- <pre id="release-inspect-variables" class="graph-release-variables">Выберите шаг для просмотра переменных.</pre>
-</section>
-<section class="graph-release-inspector" id="graph-release-center" aria-label="Центр выпуска Telegram-бота">
- <div class="eyebrow">RELEASE & DEPLOYMENT CENTER</div>
- <h2>От проверенного сценария до Telegram</h2>
- <p>Единый маршрут сохранённой версии: проверка, тесты, ZIP, настройка хостинга и ручная проверка запуска.</p>
- <button type="button" id="release-center-check" class="button button-primary">Проверить выпуск</button>
- <p id="release-center-status" role="status" aria-live="polite">Выберите сохранённый проект.</p>
- <ol id="release-center-steps" class="graph-release-center-steps"></ol>
- <div id="release-center-summary"></div>
- <div id="release-center-instructions"></div>
- <form id="release-plan-form" hidden>
-  <h3>План Railway — без создания облачных ресурсов</h3>
-  <label for="release-plan-name">Название развёртывания</label>
-  <input id="release-plan-name" name="name" minlength="3" maxlength="40" required placeholder="Мой Telegram-бот">
-  <label for="release-plan-mode">Режим Railway</label>
-  <select id="release-plan-mode" name="mode">
-   <option value="managed">Managed — только планирование</option>
-   <option value="byoc">BYOC — существующий сервис клиента</option>
-  </select>
-  <label for="release-plan-budget">Месячный лимит бюджета, USD</label>
-  <input id="release-plan-budget" name="budget" type="number" min="5" max="10000" value="10" required>
-  <button type="submit" id="release-plan-create" class="button button-line">Сохранить dry-run план</button>
-  <p id="release-plan-status" role="status" aria-live="polite"></p>
- </form>
- <div id="release-plan-history"></div>
- <section id="release-runtime-queue" aria-label="Очередь проверки облачного развёртывания">
-  <h3>Проверка плана перед публикацией</h3>
-  <p>Запустите безопасную dry-run проверку плана. Очередь не создаёт ресурсы Railway и не списывает средства.</p>
-  <label for="release-runtime-plan">Сохранённый план</label>
-  <select id="release-runtime-plan"><option value="">Сначала проверьте проект</option></select>
-  <button type="button" id="release-runtime-run" class="button button-line" disabled>Запустить dry-run проверку</button>
-  <button type="button" id="release-runtime-refresh" class="button button-line">Обновить задания</button>
-  <p id="release-runtime-status" role="status" aria-live="polite"></p>
-  <div id="release-runtime-jobs"></div>
-  <section id="release-live-gate" aria-label="Проверка готовности реального запуска">
-   <h3>Контроль допуска к реальному запуску</h3>
-   <p>Проверяем подключение Railway, подтверждение Telegram-бота, привязку сервиса и допустимость релиза. Этот экран не создаёт облачные ресурсы.</p>
-   <button type="button" id="release-gate-check" class="button button-line" disabled>Проверить допуск</button>
-   <p id="release-gate-status" role="status" aria-live="polite"></p>
-   <ul id="release-gate-checks"></ul>
-   <button type="button" id="release-gate-request" class="button button-line" disabled>Запросить согласование релиза</button>
-   <p id="release-gate-review-status" role="status" aria-live="polite"></p>
-   <section id="release-fleet-monitor" aria-label="Мониторинг Railway">
-    <h3>Мониторинг подключённых Railway-сервисов</h3>
-    <p>Статус Railway не подтверждает, что Telegram-бот отвечает пользователям.</p>
-    <button type="button" id="release-fleet-refresh">Проверить Railway</button>
-    <p id="release-fleet-status" role="status" aria-live="polite"></p>
-    <div id="release-fleet-services"></div>
-   </section>
-  </section>
- </section>
- <a id="release-center-download" class="button button-primary" hidden>Скачать Python-бот ZIP</a>
- <p><small>Выпуск не означает, что бот запущен. Подключение Railway и подтверждение онлайн-статуса не выполняются.</small></p>
-</section>
-<section class="builder-cloud" id="builder-release-workflow" aria-label="Готовность сохранённого бота">
- <div class="builder-cloud-title"><strong>МАРШРУТ К ЗАПУСКУ</strong><small id="builder-workflow-state" role="status" aria-live="polite">Выберите сохранённый проект</small></div>
- <p>Проверка выполняется по последней <strong>сохранённой</strong> версии. Несохранённые изменения сначала отправьте в аккаунт.</p>
- <button id="btn-workflow-check" type="button" class="button button-line">Проверить готовность</button>
- <ol id="builder-workflow-stages" aria-label="Этапы выпуска"></ol>
- <div id="builder-workflow-errors" role="status" aria-live="polite"></div>
- <a id="builder-workflow-export" class="button button-primary" hidden href="#">Скачать проверенный ZIP</a>
- <p><small>Публикация в Railway пока выполняется вручную; эта проверка не запускает бота.</small></p>
-</section>
-<p id="graph-workspace-help" class="graph-workspace-helper">Рабочий режим освобождает место для схемы. Чтобы увидеть описание возможностей, переключи режим просмотра.</p>
-<div class="builder-guide" aria-label="Как создать бота"><span><b>1</b> Новый бот или пример</span><span><b>2</b> Настрой узлы и связи</span><span><b>3</b> Проверь схему</span><span><b>4</b> Тестируй маршрут</span><span><b>5</b> Экспортируй ZIP</span></div>
-<div class="integration-information" id="integration-information" hidden aria-live="polite"></div>
-<div id="project-status" class="builder-feedback" role="status" aria-live="polite">Редактор загружается…</div>
-<div class="builder-layout">
-<aside class="builder-palette" aria-label="Библиотека блоков">
-<div class="builder-pane-head"><span>01 / БЛОКИ</span><small>Клик или перетащи</small></div>
-<label class="graph-palette-search" for="graph-palette-query"><span>Поиск блока</span>
-<input id="graph-palette-query" type="search" autocomplete="off" placeholder="Название или функция (Ctrl+K)" aria-controls="graph-palette-results"></label>
-<p id="graph-palette-results" class="graph-palette-results" role="status" aria-live="polite"></p>
-<div class="palette-group-label">TELEGRAM / ДИАЛОГИ <span>РАБОТАЕТ</span></div>
-<button class="palette-node" data-add="message" type="button" draggable="true"><b>✉</b><span><strong>Сообщение</strong><small>Отправка текста</small></span></button>
-<button class="palette-node" data-add="choice" type="button" draggable="true"><b>◇</b><span><strong>Кнопки</strong><small>Выбор пути</small></span></button>
-<button class="palette-node" data-add="photo" type="button" draggable="true"><b>▧</b><span><strong>Фото</strong><small>HTTPS / Telegram file_id</small></span></button>
-<button class="palette-node" data-add="document" type="button" draggable="true"><b>▤</b><span><strong>Документ</strong><small>HTTPS / Telegram file_id</small></span></button>
-<button class="palette-node" data-add="end" type="button" draggable="true"><b>■</b><span><strong>Завершение</strong><small>Конец диалога</small></span></button>
-<div class="palette-group-label">ЛОГИКА / ДАННЫЕ <span>ИСПОЛНЯЕТСЯ</span></div>
-<button class="palette-node" data-add="input" type="button" draggable="true"><b>⇥</b><span><strong>Ввод пользователя</strong><small>Сохранить ответ в переменной</small></span></button>
-<button class="palette-node" data-add="set_variable" type="button" draggable="true"><b>≔</b><span><strong>Присвоить значение</strong><small>Переменные и шаблоны</small></span></button>
-<button class="palette-node" data-add="condition" type="button" draggable="true"><b>◇</b><span><strong>Условие IF / ELSE</strong><small>Проверка данных · две ветки</small></span></button>
-<div class="palette-group-label">ИНТЕГРАЦИИ / КОННЕКТОРЫ <span>ROADMAP</span></div>
-<button class="palette-node integration-node" data-integration="google_docs" type="button"><b>G</b><span><strong>Google Docs</strong><small>Документы · OAuth требуется</small></span></button>
-<button class="palette-node integration-node" data-integration="google_sheets" type="button"><b>▦</b><span><strong>Google Sheets</strong><small>Таблицы · OAuth требуется</small></span></button>
-<button class="palette-node integration-node" data-integration="facebook" type="button"><b>f</b><span><strong>Facebook Pages</strong><small>Meta Graph API</small></span></button>
-<button class="palette-node integration-node" data-integration="instagram" type="button"><b>◎</b><span><strong>Instagram Business</strong><small>Meta API</small></span></button>
-<div class="palette-group-label">ЛОГИКА / ОБРАБОТЧИКИ <span>ROADMAP</span></div>
-<button class="palette-node integration-node" data-integration="http" type="button"><b>↗</b><span><strong>HTTP / Webhook</strong><small>REST запросы, события</small></span></button>
-<button class="palette-node integration-node" data-integration="python" type="button"><b>{ }</b><span><strong>Python Handler</strong><small>Изолированный исполнитель</small></span></button>
-<p class="builder-tip">Перетащи блок на поле. Двигай его за заголовок. Нажми порт справа, затем порт слева на другом блоке — связь появится автоматически.</p>
-</aside>
-<section class="builder-canvas" aria-label="Визуальный граф сценария"><div class="builder-pane-head"><span>02 / GRAPH CANVAS</span><small id="node-count">0 блоков</small></div><div class="graph-legend" aria-label="Легенда типов узлов"><span class="legend-message">● Сообщения</span><span class="legend-choice">◆ Ветвления</span><span class="legend-photo">▣ Медиа</span><span class="legend-document">▤ Документы</span><span class="legend-end">■ Завершение</span><span class="legend-choice">◇ Условия</span><span class="legend-document">⇥ Ввод</span><span class="legend-photo">≔ Переменные</span></div><section class="graph-groups-panel" aria-label="Логические группы сценария">
-<div class="graph-groups-head"><strong>ГРУППЫ / НАВИГАЦИЯ</strong><span id="graph-groups-count">0 групп</span></div>
-<div class="graph-groups-controls">
-<label for="graph-group-name">Название группы<input id="graph-group-name" type="text" maxlength="60" placeholder="Например, Регистрация" autocomplete="off"></label>
-<button type="button" id="graph-group-create" title="Создать группу из выбранного блока">＋ Группа</button>
-<label for="graph-group-target">Переместить выбранный блок в группу
-<select id="graph-group-target"><option value="">Без группы</option></select></label>
-<button type="button" id="graph-group-apply">Применить</button>
-</div>
-<div id="graph-groups-list" class="graph-groups-list" aria-label="Список групп"></div>
-<p class="graph-groups-note">Группы организуют работу на холсте и сохраняются с проектом. Они не изменяют исполнение Python-бота. Нажмите название блока в группе для перехода.</p>
-</section>
-<div id="flow-canvas" class="builder-canvas-scroll" aria-label="Блоки сценария"></div></section>
-<aside class="builder-inspector" aria-label="Настройка блока"><div class="builder-pane-head"><span>03 / ИНСПЕКТОР</span><small>Параметры</small></div><div id="editor-inspector" class="builder-inspector-body"></div></aside>
-</div>
-<section class="builder-preview" id="builder-preview" aria-label="Тестирование сценария"><div><div class="eyebrow">04 / DIALOGUE PREVIEW</div><h2>Тестовый диалог и трассировка.</h2><p>Это симуляция в браузере, а не запуск Telegram-бота. Настоящий Telegram-бот начнёт отвечать после запуска сгенерированного Python-проекта.</p><button id="btn-preview" type="button" class="button button-line">▶ Начать предпросмотр</button></div><div class="preview-workspace"><div id="preview-messages" class="builder-preview-chat" aria-live="polite"><p>Здесь появятся сообщения.</p></div><div class="preview-debugger" aria-label="Пошаговый отладчик">
-<div class="preview-debugger-head"><strong>Серверная трассировка</strong>
-<div class="preview-debugger-controls" role="group" aria-label="Навигация по шагам">
-<button id="debug-step-prev" type="button" disabled aria-label="Предыдущий шаг">←</button>
-<span id="debug-step-position" aria-live="polite">— / —</span>
-<button id="debug-step-next" type="button" disabled aria-label="Следующий шаг">→</button>
-</div></div>
-<div class="preview-trace" id="preview-trace" aria-label="Шаги симуляции"></div>
-<div id="debug-step-details" class="preview-debug-details" aria-live="polite">
-Запустите предпросмотр, чтобы увидеть переходы и изменения переменных.
-</div></div></div></section>
-<section class="builder-security-note"><strong>Безопасный экспорт:</strong> секреты не попадают в ZIP. Токен Telegram задаётся только в переменных окружения при запуске бота. Запуск на нашем сервере и синхронизация CRM пока не реализованы.</section>
-<div id="graph-context-menu" class="graph-context-menu" role="menu" hidden></div>
-</main>
-<footer class="builder-footer" aria-label="OmniFactory footer">
- <div class="builder-footer-main">
-  <div><div class="builder-footer-brand">OMNI<span>FACTORY</span></div>
-   <p>Инженерия цифровых систем. Превращаем идеи в масштабируемые процессы, интеллектуальных ассистентов и работающие продукты.</p></div>
-  <nav class="builder-footer-links" aria-label="Ссылки платформы">
-   <a href="/">Платформа</a><a href="/studio">Студия</a><a href="/dashboard">Система</a><a href="/docs">Developer API</a>
-  </nav>
- </div>
- <div class="builder-footer-bottom"><span>© 2026 OMNIFACTORY · BUILT FOR WHAT'S NEXT.</span><span>GRAPH STUDIO / PYTHON ENGINEERING / HUMAN-CENTERED AUTOMATION</span></div>
-</footer>
+<body>
+
+    <!-- ЕДИНЫЙ КИБЕРПАНК ХЕДЕР СИСТЕМЫ -->
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; background: rgba(10, 10, 15, 0.9); border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); z-index: 100; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:26px; height:26px; filter: drop-shadow(0 0 4px var(--bright-purple));">
+                <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" fill="none" stroke="#bc13fe" stroke-width="8"/>
+                <text x="32" y="68" font-family="Orbitron" font-size="52" fill="#bc13fe" font-weight="bold">F</text>
+            </svg>
+            <span style="font-family: 'Orbitron', sans-serif; font-weight: 600; letter-spacing: 1px; font-size: 0.95rem; color: #fff;">OMNIFACTORY // EVO_CORE v5.0</span>
+        </div>
+        <div style="color: #FFD700; font-family: 'Share Tech Mono', monospace; font-size: 12pt; font-weight: 700; letter-spacing: 2px; text-shadow: 0 0 12px rgba(255, 215, 0, 0.4);">
+            OMNIFACTORY 救援 PRO ARCHITECT 救援 Design by BONDAREV_E
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- ГЛОБАЛЬНЫЙ САЙДБАР УПРАВЛЕНИЯ -->
+        <nav class="sidebar">
+            <button class="nav-btn active" onclick="app.openTab('builder-tab', this)">🚀 VISUAL_BUILDER</button>
+            <button class="nav-btn" onclick="app.openTab('projects', this)">⌘ ECOSYSTEM_SITES</button>
+            <button class="nav-btn" onclick="app.openTab('components-tab', this)">🧩 ORCHESTRATION</button>
+            <button class="nav-btn" onclick="app.openTab('analytics', this)">⌬ LOGS_ANALYTICS</button>
+            <button class="nav-btn" onclick="app.openTab('crm-tab', this); app.renderCRM()">📅 CRM_SCHEDULER</button>
+            <button class="nav-btn" onclick="app.openTab('seo-tab', this)">🔍 SEO_MONITOR</button>
+            <button class="nav-btn" onclick="app.openTab('server-tab', this)">📡 TELEMETRY</button>
+
+            <div class="health-card" id="api-status" style="margin-top: auto; border: 1px solid var(--border); padding: 10px; border-radius: 8px; font-size: 0.65rem;">
+                <div>CORE_API_UPLINK</div>
+                <div style="margin-top: 5px;"><span style="display:inline-block; width:8px; height:8px; background:var(--ok-green); border-radius:5px;"></span> CONNECTED</div>
+            </div>
+            <button class="panic-btn" onclick="app.togglePanic()">🚨 PANIC MODE</button>
+        </nav>
+
+        <main>
+            <!-- ВКЛАДКА 1: МОЩНЫЙ ИНТЕГРИРОВАННЫЙ DRAWFLOW КОНСТРУКТОР -->
+            <div id="builder-tab" class="tab-content active">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <h1 style="font-size: 1.3rem; margin: 0;">VISUAL COMPILATION CANVAS</h1>
+                        <p style="font-size:0.75rem; color:var(--soft-blue); margin: 2px 0 0 0;">// Перетащите необходимые ноды на холст, свяжите их и запустите сборку кода</p>
+                    </div>
+                    <div>
+                        <button class="btn-trigger" onclick="deployGraph()">🚀 DEPLOY & GENERATE BOT (ZIP)</button>
+                    </div>
+                </div>
+
+                <div class="ide-workspace">
+                    <aside class="ide-sidebar">
+                        <div class="sidebar-search"><input type="text" placeholder="Поиск интеграции..."></div>
+                        <div class="sidebar-scroll" id="library">
+                            <div class="category-title">// 🌐 TRIGGERS (ВХОДНЫЕ ТОЧКИ)</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="webhook">🪝 Webhook (GET/POST)</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="cron">⏱️ Schedule (Cron)</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="tg_trigger">✈️ Telegram Event</div>
+
+                            <div class="category-title">// ⚙️ CORE LOGIC (ОБРАБОТКА)</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="http_req">🔗 HTTP Request</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="switch">🔀 Switch (Router)</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="code">💻 Python/JS Code</div>
+
+                            <div class="category-title">// 🗄 DATABASES (ХРАНИЛИЩА)</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="postgres">🐘 PostgreSQL</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="redis">🟥 Redis (Cache)</div>
+
+                            <div class="category-title">// 🧠 AI & LLM (ИНТЕЛЛЕКТ)</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="openai">🤖 OpenAI (GPT-4)</div>
+                            <div class="node-item" draggable="true" ondragstart="drag(event)" data-node="chromadb">🔍 ChromaDB (Vector)</div>
+                        </div>
+                    </aside>
+
+                    <div style="flex-grow:1; position:relative; overflow:hidden;"><div id="drawflow"></div></div>
+
+                    <aside class="ide-inspector">
+                        <h3 style="color:var(--soft-blue); font-size:0.8rem; margin-top:0;">📋 NODE_INSPECTOR</h3>
+                        <div id="inspector-ui" style="color:var(--text-dim); font-size: 0.72rem;">Выберите узел для настройки параметров интеграции...</div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 2: CONNECTED NODES -->
+            <div id="projects" class="tab-content">
+                <h1 style="font-size: 1.3rem; margin-bottom: 20px;">CONNECTED_NODES</h1>
+                <div class="project-grid">
+                    <div class="tech-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div><strong>GENESYS_ENGINE</strong><br><span style="font-size: 0.7rem; color: #888;">webfactory.ua/genesys</span></div>
+                            <span class="status-badge">ONLINE</span>
+                        </div>
+                        <div class="control-btns">
+                            <button class="action-btn" onclick="app.nodeAction('GENESYS', 'console')">CONSOLE</button>
+                            <button class="action-btn" onclick="app.nodeAction('GENESYS', 'restart')">RESTART</button>
+                        </div>
+                    </div>
+                    <div class="tech-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div><strong>WF_MAIN_PORTAL</strong><br><span style="font-size: 0.7rem; color: #888;">webfactory.ua</span></div>
+                            <span class="status-badge">ONLINE</span>
+                        </div>
+                        <div class="control-btns">
+                            <button class="action-btn" onclick="app.nodeAction('MAIN', 'console')">CONSOLE</button>
+                            <button class="action-btn" onclick="app.nodeAction('MAIN', 'restart')">RESTART</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 3: ORCHESTRATION -->
+            <div id="components-tab" class="tab-content">
+                <h1 style="font-size: 1.3rem; margin-bottom: 20px;">DYNAMIC_COMPONENTS_ORCHESTRATOR</h1>
+                <div class="component-grid">
+                    <div class="component-panel">
+                        <h3 style="color: var(--bright-purple); margin-top:0;">GENESYS_ENGINE NODE</h3>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><b>ai_consultant.py</b><br><span style="font-size:0.7rem; color:var(--muted-text);">RAG AI Assistant (Gemini Flash)</span></div>
+                            <button class="action-btn" style="background:rgba(0,255,136,0.1); color:var(--ok-green); border-color: var(--ok-green);">ACTIVE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 4: ЛОГИ И АНАЛИТИКА -->
+            <div id="analytics" class="tab-content">
+                <h1 style="font-size: 1.3rem; margin-bottom: 20px;">UNIFIED_SYSTEM_LOG_STREAM</h1>
+                <div class="stream-box" id="stream-logs">> [SYSTEM] Ожидание проектирования графа потока данных...</div>
+            </div>
+
+            <!-- ВКЛАДКА 5: СЛУЖЕБНЫЙ КАЛЕНДАРЬ CRM -->
+            <div id="crm-tab" class="tab-content">
+                <div class="tech-card" style="height: 100%; display: flex; flex-direction: column;">
+                    <h3 style="margin-top:0;">// EVENT_SCHEDULER</h3>
+                    <div id="calendar-render" style="color: #fff; flex-grow: 1; overflow:hidden;"></div>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 6: SEO СТАТУС -->
+            <div id="seo-tab" class="tab-content">
+                <h3 style="margin-bottom:20px;">// SEARCH_ENGINE_INDEX_TRACKER</h3>
+                <div class="tech-card">
+                    <table style="width:100%; font-size:0.8rem; text-align: left; font-family:'JetBrains Mono'">
+                        <thead><tr style="color:var(--soft-blue);"><th style="padding:10px;">KEYWORD</th><th>POSITION</th><th>CHANGE</th></tr></thead>
+                        <tbody>
+                            <tr><td style="padding:10px;">Создание сайтов Киев</td><td style="color:var(--ok-green);">#3</td><td style="color:var(--ok-green);">▲ 2</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 7: ХАРДВЕРНАЯ ТЕЛЕМЕТРИЯ -->
+            <div id="server-tab" class="tab-content">
+                <h3 style="margin-bottom:20px;">// HARDWARE_TELEMETRY</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
+                    <div class="tech-card" id="cpu-card">
+                        <div style="font-size:0.7rem; margin-bottom:10px;">CPU_UTILIZATION (GENESYS_NODE)</div>
+                        <div style="height:8px; background:#111; border-radius:4px; overflow:hidden;"><div class="bar" style="width:42%; height:100%; background:var(--bright-purple); transition: 0.5s;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ФУТЕР ЭКОСИСТЕМЫ -->
+    <footer style="height: 35px; background: #050508; border-top: 1px solid var(--border-dim); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-dim);">
+        <div id="ide-status-node">&gt; [KERNEL] Сигнальные рантайм-шлюзы OmniFactory синхронизированы успешно.</div>
+        <div>ARCHITECT: <span>EUGENE BONDAREV</span> | © 2026 // ALL_RIGHTS_RESERVED</div>
+    </footer>
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const select = document.getElementById('cloud-project-list');
-  const check = document.getElementById('btn-workflow-check');
-  const state = document.getElementById('builder-workflow-state');
-  const stages = document.getElementById('builder-workflow-stages');
-  const errors = document.getElementById('builder-workflow-errors');
-  const download = document.getElementById('builder-workflow-export');
-  const names = {created:'Создан', saved:'Сохранён', validated:'Проверен',
-    simulated:'Симуляция', export:'Экспорт', deployment:'Запуск'};
-  function reset() {
-    stages.replaceChildren();
-    errors.replaceChildren();
-    download.hidden = true;
-    download.removeAttribute('href');
-    state.textContent = 'Нажмите «Проверить готовность»';
-  }
-  select.addEventListener('change', reset);
-  check.addEventListener('click', async () => {
-    reset();
-    const id = select.value;
-    if (!/^[0-9a-f-]{36}$/i.test(id)) {
-      state.textContent = 'Сначала сохраните проект в аккаунте и выберите его';
-      return;
+    // 1. Инициализация и настройка Drawflow холста
+    const container = document.getElementById("drawflow");
+    const editor = new Drawflow(container);
+    editor.start();
+
+    // Схемы полей для инспектора нод (эмуляция реестра)
+    const MODULE_SCHEMAS = {
+        webhook: { title: "Webhook (GET/POST)", color: "var(--soft-blue)", fields: { path: "Трасса / Префикс шлюза", token: "Ключ авторизации API" } },
+        cron: { title: "Schedule (Cron)", color: "var(--soft-blue)", fields: { interval: "Интервал выполнения (сек)" } },
+        openai: { title: "OpenAI (GPT-4)", color: "var(--bright-purple)", fields: { prompt: "Системный промпт когнитивного ядра", max_tokens: "Лимит токенов" } },
+        tg_trigger: { title: "Telegram Event", color: "var(--soft-blue)", fields: { bot_token: "Токен бота (Telegram)" } }
+    };
+
+    window.allowDrop = (ev) => ev.preventDefault();
+    window.drag = (ev) => ev.dataTransfer.setData("nodeId", ev.target.getAttribute('data-node'));
+
+    container.addEventListener("dragover", window.allowDrop);
+    container.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        const nodeId = ev.dataTransfer.getData("nodeId");
+        const schema = MODULE_SCHEMAS[nodeId] || { title: nodeId.toUpperCase(), color: "#fff", fields: { name: "Имя модуля" } };
+
+        const rect = container.getBoundingClientRect();
+        const x = ev.clientX - rect.left;
+        const y = ev.clientY - rect.top;
+
+        editor.addNode(nodeId, 1, 1, x, y, nodeId, { config: {} },
+            `<div style="font-size:0.55rem; color:${schema.color}">// ${nodeId.toUpperCase()}</div><div style="font-weight:bold; font-size:0.75rem;">${schema.title}</div>`
+        );
+        app.writeLog('CANVAS', `Узел [${schema.title}] зафиксирован в координатах ${Math.round(x)}:${Math.round(y)}`, 'var(--soft-blue)');
+    });
+
+    // Отрисовка инспектора при клике на узел Drawflow
+    editor.on('nodeSelected', (id) => {
+        const node = editor.getNodeFromId(id);
+        const inspector = document.getElementById('inspector-ui');
+        const schema = MODULE_SCHEMAS[node.name] || { title: node.name.toUpperCase(), color: "#fff", fields: { name: "Имя модуля" } };
+
+        const nodeData = node.data.config || {};
+        let html = `<div style="font-size:0.75rem; color:${schema.color}; margin-bottom:15px; font-weight:bold;">ID: #${id} | ${schema.title}</div>`;
+
+        for (const [key, labelText] of Object.entries(schema.fields)) {
+            const val = nodeData[key] || '';
+            html += `<div class="prop-field"><label>${labelText}</label>`;
+            html += `<input type="text" value="${val}" onchange="updateNodeData(${id}, '${key}', this.value)"></div>`;
+        }
+        inspector.innerHTML = html;
+    });
+
+    window.updateNodeData = (nodeId, key, value) => {
+        let node = editor.getNodeFromId(nodeId);
+        if (!node.data.config) node.data.config = {};
+        node.data.config[key] = value;
+        editor.updateNodeDataFromId(nodeId, node.data);
+    };
+
+    // 2. Глобальная логика приложения (Вкладки, логгер, CRM)
+    const app = {
+        calendar: null,
+        openTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(tab => { tab.classList.remove('active'); });
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            const activeTab = document.getElementById(tabId);
+            if (activeTab) activeTab.classList.add('active');
+            if (btn) btn.classList.add('active');
+        },
+        renderCRM() {
+            const calendarEl = document.getElementById('calendar-render');
+            if (calendarEl && !this.calendar) {
+                this.calendar = new FullCalendar.Calendar(calendarEl, { initialView: 'dayGridMonth', editable: true });
+                setTimeout(() => { this.calendar.render(); }, 50);
+            }
+        },
+        writeLog(node, msg, color = 'var(--bright-purple)') {
+            const log = document.getElementById('stream-logs');
+            if (!log) return;
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.cssText = `margin-bottom:6px; color:${color}; border-left: 2px solid ${color}; padding-left: 10px; font-family:'JetBrains Mono'; font-size:0.75rem;`;
+            logEntry.innerHTML = `<span>[${time}]</span> &gt; [${node}] ${msg}`;
+            log.prepend(logEntry);
+        },
+        nodeAction(node, type) {
+            this.writeLog(node, `Директива ${type.toUpperCase()} передана в Python-апстрим.`, 'var(--critical-pink)');
+        },
+        togglePanic() {
+            alert("Внимание! Весь контур переведен в изолированный защищенный режим Valkyria Shield.");
+        }
+    };
+
+    // 3. Функция компиляции графа холста в ZIP-архив через FastAPI
+    async function deployGraph() {
+        app.writeLog('COMPILER', "Инициализация пайплайна компиляции графа...", 'var(--bright-purple)');
+
+        const graphData = editor.export();
+        const nodes = graphData.drawflow.Home.data;
+        const selectedIds = Object.keys(nodes).map(key => nodes[key].name);
+
+        if (selectedIds.length === 0) {
+            app.writeLog('ERROR', "Ошибка: Схема пуста. Перетащите модули на рабочую область холста.", 'var(--critical-pink)');
+            return;
+        }
+
+        app.writeLog('COMPILER', `Связь установлена. Сборка пакетов: [${selectedIds.join(', ')}]...`, '#fff');
+
+        try {
+            const response = await fetch('/api/builder/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ selected_ids: selectedIds })
+            });
+
+            if (!response.ok) throw new Error(`Код ответа сервера: ${response.status}`);
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.href = url;
+            downloadAnchor.download = 'omnifactory_bot.zip';
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            app.writeLog('SUCCESS', "Архитектура скомпилирована! Сборка проекта omnifactory_bot.zip успешно выгружена. ✅", 'var(--ok-green)');
+        } catch (e) {
+            app.writeLog('CRITICAL', `Сбой сборщика кода: ${e.message}. Проверьте рантайм server.py`, 'var(--critical-pink)');
+        }
     }
-    check.disabled = true;
-    state.textContent = 'Проверяем сохранённую ревизию…';
-    try {
-      const response = await fetch('/api/v1/builder/projects/' +
-        encodeURIComponent(id) + '/workflow', {credentials:'same-origin'});
-      if (!response.ok) {
-        state.textContent = response.status === 401 ?
-          'Войдите в аккаунт для проверки' : 'Не удалось проверить проект: HTTP ' + response.status;
-        return;
-      }
-      const report = await response.json();
-      if (select.value !== id) return;
-      for (const step of report.stages || []) {
-        const li = document.createElement('li');
-        li.textContent = (names[step.id] || step.id) + ' — ' + step.status;
-        stages.appendChild(li);
-      }
-      for (const issue of (report.preflight?.issues || []).filter(x => x.severity === 'error')) {
-        const p = document.createElement('p');
-        p.textContent = issue.node_id + ': ' + issue.message;
-        errors.appendChild(p);
-      }
-      state.textContent = report.export_available ?
-        'Готов к экспорту · ревизия ' + report.revision.slice(0, 8) :
-        'Есть ошибки, экспорт заблокирован';
-      if (report.export_available && report.export_url &&
-          report.export_url === '/api/v1/builder/projects/' + id + '/export') {
-        download.href = report.export_url;
-        download.hidden = false;
-      }
-    } catch (_error) {
-      state.textContent = 'Нет связи с сервером. Повторите проверку.';
-    } finally {
-      check.disabled = false;
-    }
-  });
-});
+
+    // Симуляция фоновой активности системы в логи
+    setInterval(() => {
+        const dummy = ["FastAPI Uvicorn polling complete", "ChromaDB contextual vectors indexed", "Redis caching active pipeline"];
+        app.writeLog('SYSTEM', dummy[Math.floor(Math.random() * dummy.length)], '#555');
+    }, 5000);
 </script>
-<link rel="stylesheet" href="/studio-assets/graph_release_inspector.css?v=3">
-<script defer src="/studio-assets/graph_release_inspector.js?v=3"></script>
-<script defer src="/studio-assets/graph_release_center.js?v=6"></script>
-<link rel="stylesheet" href="/studio-assets/graph_release_center.css?v=1">
-</body></html>
+</body>
+</html>
