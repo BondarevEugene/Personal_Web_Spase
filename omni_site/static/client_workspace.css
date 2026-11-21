@@ -54,3 +54,41 @@
 .account-app .workspace-language button[aria-pressed=true]{border-color:#b9a5c9;background:#383044;color:#fff}
 .account-app .workspace-language button:hover,.account-app .workspace-language button:focus-visible{outline:2px solid #c1a4da;outline-offset:1px;color:#fff}
 @media(max-width:680px){.account-app .workspace-language{padding-left:6px}.account-app .workspace-language button{padding:6px 7px}}
+
+/* Client Workspace 2.0 — quiet editorial shell, shared with OmniFactory's public identity.
+   Applied after legacy account styles; server-backed forms and permissions are untouched. */
+.account-app{--cw-bg:#080b11;--cw-surface:#121822;--cw-raised:#19212e;--cw-border:#303b4a;--cw-ink:#f4f5f8;--cw-muted:#b4c2d2;--cw-accent:#a7c5ff;background:var(--cw-bg);color:var(--cw-ink);font-synthesis:none}
+.account-app .site-header{background:#0a0e15;border-bottom:1px solid var(--cw-border)}
+.account-app .site-header .brand{letter-spacing:-.04em;font-weight:750}
+.account-app .account-header-links{gap:clamp(10px,2vw,24px)}
+.account-app .account-header-links a{color:#d4dfed;text-decoration:none}
+.account-app .account-header-links a:hover,.account-app .account-header-links a:focus-visible{color:#fff;text-decoration:underline;text-underline-offset:5px}
+.account-app .workspace-nav{padding:0 clamp(14px,3vw,42px);background:#0d121b;border-bottom:1px solid var(--cw-border)}
+.account-app .workspace-nav-caption{max-width:1390px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:17px 0 8px}
+.account-app .workspace-nav-label{font-size:11px;letter-spacing:.16em;font-weight:800;color:#edf3fb}
+.account-app .workspace-nav-slash{color:#9caec7;margin:0 7px}
+.account-app .workspace-nav-caption-note{font-size:11px;color:var(--cw-muted)}
+.account-app .workspace-nav-inner{padding:7px 0 14px;gap:5px}
+.account-app .workspace-nav-inner>a{border:1px solid transparent;border-radius:7px;font-size:12px;min-height:40px;padding:10px 13px;color:#cbd7e6}
+.account-app .workspace-nav-inner>a:hover,.account-app .workspace-nav-inner>a:focus-visible{background:#1d2836;border-color:#455569;color:#fff}
+.account-app .workspace-nav-inner>a[aria-current=page]{background:#233148;border-color:#597395;box-shadow:none;color:#fff}
+.account-app .workspace-nav-tool{color:#aabbd0!important}
+.account-app .workspace-language button{border:1px solid #465669;background:#182232;color:#d7e2f0;min-height:36px;border-radius:7px}
+.account-app .workspace-language button[aria-pressed=true]{background:#344a67;border-color:#9ebbe4;color:#fff}
+.account-app .account-dashboard,.account-app .client-projects-page{max-width:1390px}
+.account-app .account-dashboard>h1,.account-app .client-projects-page h1{letter-spacing:-.055em;line-height:1.08}
+.account-app .account-dashboard-lede,.account-app .cp-heading p{color:var(--cw-muted);line-height:1.7}
+.account-app .account-panel,.account-app .account-section-nav,.account-app .workspace-attention,.account-app .workspace-secondary-meta{background:var(--cw-surface);border:1px solid var(--cw-border);border-radius:13px;box-shadow:none}
+.account-app .account-kpis article,.account-app .workspace-attention-item,.account-app .account-project-row,.account-app .account-ticket,.account-app .account-project-grid>div{background:var(--cw-raised);border:1px solid var(--cw-border);border-radius:10px;box-shadow:none}
+.account-app .account-kpis strong{color:#f7f9fc}
+.account-app .account-kpis span,.account-app .account-kpis small,.account-app .workspace-attention-item small{color:var(--cw-muted)}
+.account-app .account-panel h2{letter-spacing:-.035em}
+.account-app .workspace-attention-item:first-child{border-left:1px solid var(--cw-border)}
+.account-app .workspace-attention-item:hover,.account-app .workspace-attention-item:focus-visible{background:#243248;border-color:#8faed3}
+.account-app :is(a,button,input,textarea,select,summary):focus-visible{outline:2px solid #a7c5ff;outline-offset:3px}
+.account-app .button{border-radius:8px;min-height:40px}
+.account-app .button-primary{background:#c8dcff;color:#0a1424;border-color:#c8dcff}
+.account-app .button-primary:hover{background:#e1ecff;color:#08111f}
+@media(max-width:850px){.account-app .workspace-nav-caption-note{display:none}.account-app .workspace-nav{padding:0 14px}.account-app .workspace-nav-inner{scroll-snap-type:x proximity}.account-app .workspace-nav-inner>a{scroll-snap-align:start}}
+@media(max-width:590px){.account-app .workspace-nav-caption{padding-top:13px}.account-app .workspace-nav-inner>a{font-size:12px;padding:9px 12px}.account-app .account-header-links{gap:10px}.account-app .account-header-links a{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.account-app *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
