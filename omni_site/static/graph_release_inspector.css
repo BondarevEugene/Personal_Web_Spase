@@ -18,3 +18,10 @@
 .graph-node.graph-release-focus{outline:3px solid #b48cf0!important;outline-offset:5px;opacity:1}
 #release-inspect-edges{max-height:260px;overflow:auto}
 #release-inspect-coverage,#release-inspect-readiness{padding:.75rem;border-radius:10px;background:rgba(110,145,190,.07)}
+
+.graph-release-debug-history{max-height:300px;overflow:auto;margin:.75rem 0}
+#release-debug-inputs{display:flex;flex-direction:column;gap:.5rem;max-width:560px}
+#release-debug-inputs input{width:100%;padding:.75rem;border:1px solid rgba(120,150,185,.45);border-radius:9px;background:transparent;color:inherit}
+#release-debug-inputs form{display:flex;flex-wrap:wrap;gap:.5rem}
+#release-debug-inputs form input{flex:1;min-width:170px}
+#release-debug-inputs form button{width:auto}
