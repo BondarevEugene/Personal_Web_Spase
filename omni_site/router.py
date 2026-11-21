@@ -19,7 +19,7 @@ from omni_site.solution_journeys import JOURNEYS, BY_SLUG
 from omni_site.blueprint_specification import compile_specification
 from omni_site.blueprint_delivery import make_delivery_package
 from omni_site.blueprint_studio import (
-    INTEGRATIONS, PRIORITIES, PROCESSES, SECTORS, TEAMS, make_blueprint,
+    INTEGRATIONS, PRIORITIES, PROCESSES, SECTORS, SECTOR_BY_KEY, TEAMS, make_blueprint,
 )
 
 BASE = Path(__file__).resolve().parent
@@ -144,9 +144,13 @@ def interactive_solution_demo(request: Request):
             name="blueprint_studio")
 def blueprint_studio(request: Request):
     """Public opt-in architectural questionnaire with no persistence."""
+    selected_sector = request.query_params.get("sector", "")
+    if selected_sector not in SECTOR_BY_KEY:
+        selected_sector = ""
     return templates.TemplateResponse(
         request=request, name="blueprint_studio.html",
         context={
+            "selected_sector": selected_sector,
             "sectors": SECTORS, "teams": TEAMS, "processes": PROCESSES,
             "priorities": PRIORITIES, "integrations": INTEGRATIONS,
             "blueprint": None,
@@ -177,7 +181,7 @@ def create_blueprint(
         context={
             "sectors": SECTORS, "teams": TEAMS, "processes": PROCESSES,
             "priorities": PRIORITIES, "integrations": INTEGRATIONS,
-            "blueprint": blueprint,
+            "blueprint": blueprint, "selected_sector": blueprint.sector,
         },
     )
     response.headers["Cache-Control"] = "no-store"
