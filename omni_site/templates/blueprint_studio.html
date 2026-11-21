@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="OMNIFACTORY Blueprint Studio — составьте предварительный технический бриф и архитектуру CRM, Telegram-бота или автоматизации за несколько шагов без регистрации.">
+<meta name="description" content="OMNIFACTORY Blueprint Studio — составьте предварительный технический бриф и архитектуру CRM, Telegram-бота, автоматизации или AI-ассистента за несколько шагов без регистрации.">
 <meta name="robots" content="index,follow">
 <meta property="og:title" content="Blueprint Studio · Архитектура бизнес-системы">
 <title>Blueprint Studio — предварительная архитектура вашего проекта | OMNIFACTORY</title>
@@ -37,7 +37,7 @@
 <fieldset class="blueprint-fieldset"><legend><span>01</span> Какой продукт нужен?</legend>
 <div class="blueprint-choices">
 {% for item in sectors %}
-<label class="blueprint-option"><input type="radio" name="sector" value="{{ item.key }}" required {% if (blueprint and blueprint.sector == item.key) or (not blueprint and loop.first) %}checked{% endif %}><span><strong>{{ item.title }}</strong><small>{{ item.detail }}</small></span></label>
+<label class="blueprint-option"><input type="radio" name="sector" value="{{ item.key }}" required {% if (blueprint and blueprint.sector == item.key) or (not blueprint and (selected_sector == item.key if selected_sector else loop.first)) %}checked{% endif %}><span><strong>{{ item.title }}</strong><small>{{ item.detail }}</small></span></label>
 {% endfor %}
 </div></fieldset>
 <fieldset class="blueprint-fieldset"><legend><span>02</span> Масштаб команды</legend>
