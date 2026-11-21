@@ -8,7 +8,6 @@ from __future__ import annotations
 import json
 
 import httpx
-
 from fastapi import APIRouter, HTTPException, Request
 from sqlalchemy import select
 
