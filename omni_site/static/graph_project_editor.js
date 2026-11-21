@@ -695,18 +695,31 @@
         item.textContent = issue.severity + " · " + issue.node_id + ": " + issue.message;
         state.append(item);
       }
+      const revisionLine = document.createElement("p");
+      revisionLine.textContent = "Сохранённая ревизия: " + data.revision.slice(0, 12);
+      state.append(revisionLine);
       const plans = document.createElement("ul");
       for (const plan of data.saved_plans) {
         const item = document.createElement("li");
-        item.textContent = plan.name + " · " + plan.status + " · " + plan.id;
+        item.textContent = plan.name + " · " + plan.status +
+          (plan.current_revision ? " · актуальная ревизия" : " · устаревшая ревизия") +
+          " · " + plan.provider + " · " + plan.id;
         plans.append(item);
       }
       state.append(plans);
-      submit.disabled = !data.scenario_valid;
+      submit.disabled = !data.scenario_valid || dirty || !project ||
+        data.revision !== project.revision;
     };
     form.addEventListener("submit", async event => {
       event.preventDefault();
-      if (dirty && !confirm("План строится по сохранённой версии графа. Продолжить?")) return;
+      if (dirty) {
+        state.textContent = "Сначала сохраните изменения графа перед созданием плана.";
+        return;
+      }
+      if (!project || !project.revision) {
+        state.textContent = "Не удалось определить ревизию. Обновите редактор.";
+        return;
+      }
       submit.disabled = true;
       state.textContent = "Создаём план…";
       try {
@@ -716,11 +729,15 @@
           headers: {"Content-Type": "application/json", ...await csrfHeaders()},
           body: JSON.stringify({
             name: name.value, max_monthly_usd: Number(budget.value),
-            mode: mode.value, transport: transport.value
+            mode: mode.value, transport: transport.value,
+            revision: project.revision
           })
         });
         if (!response.ok) {
           const error = await response.json().catch(() => ({}));
+          if (response.status === 409) {
+            throw new Error("Сохранённая ревизия изменилась. Обновите редактор.");
+          }
           throw new Error(JSON.stringify(error.detail || "Не удалось создать план"));
         }
         const result = await response.json();
