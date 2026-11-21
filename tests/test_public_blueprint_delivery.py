@@ -17,6 +17,7 @@ BASE = {"sector": "crm", "team": "growth", "process": "manual", "priority": "con
 FILES = {
     "README.md", "SPECIFICATION.md", "blueprint.json",
     "acceptance.json", "CHECKLIST.md", "manifest.json",
+    "architecture.json", "milestones.json", "verification.json", "risks.json",
 }
 
 
@@ -41,6 +42,11 @@ def test_archive_download_for_every_product_and_manifest_integrity(sector):
         assert config["deployable"] is False
         assert config["revision"] == manifest["revision"]
         assert len(acceptance["items"]) >= 4
+        assert set(manifest["files"]) == FILES - {"manifest.json"}
+        for name in ("architecture.json", "milestones.json", "verification.json", "risks.json"):
+            document = json.loads(archive.read(name))
+            assert document["revision"] == manifest["revision"]
+        assert json.loads(archive.read("architecture.json"))["deployable"] is False
         for filename, metadata in manifest["files"].items():
             data = archive.read(filename)
             assert metadata["sha256"] == sha256(data).hexdigest()
