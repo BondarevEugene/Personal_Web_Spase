@@ -1,5 +1,6 @@
 """Public software studio pages. Mount via app.include_router(router)."""
 import os
+import json
 from pathlib import Path
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import Response
@@ -16,6 +17,7 @@ from omni_site.creative_store import public_items, public_item
 from omni_site.trust_content import PAGES, PAGE_BY_SLUG
 from omni_site.solution_journeys import JOURNEYS, BY_SLUG
 from omni_site.blueprint_specification import compile_specification
+from omni_site.blueprint_project_plan import build_project_plan
 from omni_site.blueprint_delivery import make_delivery_package
 from omni_site.blueprint_studio import (
     INTEGRATIONS, PRIORITIES, PROCESSES, SECTORS, TEAMS, make_blueprint,
@@ -236,6 +238,49 @@ def download_blueprint_package(
         headers={
             "Content-Disposition": (
                 f'attachment; filename="omnifactory-blueprint-{package.revision}.zip"'
+            ),
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, nofollow",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
+@router.post("/demo/blueprint/plan", name="download_blueprint_plan")
+def download_blueprint_plan(
+    sector: str = Form(..., max_length=20),
+    team: str = Form(..., max_length=20),
+    process: str = Form(..., max_length=20),
+    priority: str = Form(..., max_length=20),
+    integration: list[str] | None = Form(None),
+):
+    """Export a validated, read-only JSON planning snapshot without persistence."""
+    try:
+        spec = compile_specification(
+            sector=sector, team=team, process=process, priority=priority,
+            integrations=tuple(integration or ()),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    plan = build_project_plan(spec)
+    payload = {
+        "schema": "omnifactory.blueprint.plan.v1",
+        "revision": spec.revision,
+        "status": "draft",
+        "deployable": False,
+        "architecture": plan.architecture,
+        "milestones": plan.milestones,
+        "verification": plan.verification,
+        "risks": plan.risks,
+    }
+    return Response(
+        content=json.dumps(
+            payload, ensure_ascii=False, sort_keys=True, indent=2,
+        ) + "\n",
+        media_type="application/json",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="omnifactory-plan-{spec.revision}.json"'
             ),
             "Cache-Control": "no-store",
             "X-Robots-Tag": "noindex, nofollow",
