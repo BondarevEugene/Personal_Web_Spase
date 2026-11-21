@@ -14,6 +14,7 @@ from runtime.telegram.scenario import read_scenario
 
 REQUIRED_FILES = frozenset({
     "scenario.json", "bot.py", "requirements.txt", ".env.example", "README.md",
+    "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md",
 })
 MAX_ARCHIVE_BYTES = 500_000
 MAX_MEMBER_BYTES = 300_000
@@ -41,6 +42,9 @@ def verify_export_archive(archive_bytes: bytes) -> dict:
             requirements = archive.read("requirements.txt").decode("utf-8")
             env_example = archive.read(".env.example").decode("utf-8")
             readme = archive.read("README.md").decode("utf-8")
+            dockerfile = archive.read("Dockerfile").decode("utf-8")
+            railway = json.loads(archive.read("railway.json").decode("utf-8"))
+            deploy_guide = archive.read("DEPLOY_RAILWAY.md").decode("utf-8")
     except (zipfile.BadZipFile, UnicodeError, OSError, RuntimeError) as exc:
         raise ExportContractError("Unreadable generated archive") from exc
     try:
@@ -55,6 +59,16 @@ def verify_export_archive(archive_bytes: bytes) -> dict:
         raise ExportContractError("Missing runtime dependency or token placeholder")
     if "OMNI_STATE_DB" not in readme or "OMNI_STATE_DB" not in source_bytes.decode("utf-8"):
         raise ExportContractError("Persistence contract missing")
+    if (
+        "USER omni" not in dockerfile
+        or "OMNI_STATE_DB=/data/bot_state.sqlite3" not in dockerfile
+        or 'CMD ["python", "bot.py"]' not in dockerfile
+        or railway.get("build", {}).get("builder") != "DOCKERFILE"
+        or railway.get("deploy", {}).get("healthcheckPath") is not None
+        or "/data" not in deploy_guide
+        or "BOT_TOKEN" not in deploy_guide
+    ):
+        raise ExportContractError("Runnable Railway worker contract missing")
     if "YOUR_BOTFATHER_TOKEN" not in env_example:
         raise ExportContractError("Expected placeholder token, not a real credential")
     return {
@@ -66,4 +80,6 @@ def verify_export_archive(archive_bytes: bytes) -> dict:
         "runtime_scenario_compatible": True,
         "telegram_delivery_verified": False,
         "cloud_deployed": False,
+        "railway_worker_packaged": True,
+        "persistent_volume_required": True,
     }
