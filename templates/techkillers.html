@@ -1,28 +1,56 @@
-<!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#081422"><title>Технологии и инженерный подход — OMNIFACTORY</title>
-<link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1"></head>
-<body class="omni-revamp">
-<header class="omni-top"><div class="omni-top-inner">
-<a class="omni-brand" href="/" aria-label="OmniFactory — главная"><span class="omni-brand-logo" aria-hidden="true"><i>◇</i></span><span><strong>OMNI<span>FACTORY</span></strong><small>PYTHON ENGINEERING / PLATFORM</small></span></a>
-<nav class="omni-nav" aria-label="Основная навигация"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/architect">Конструктор</a><a href="/robotization">Автоматизация</a><a href="/techkillers" aria-current="page">Технологии</a><a href="/studio">Студия</a><a href="/dashboard">Диагностика</a></nav></div></header>
-<main class="omni-main" id="main">
-<section class="omni-hero"><div><p class="omni-eyebrow">ENGINEERING / PLATFORM CAPABILITIES</p>
-<h1>Инженерные решения.<br><em>Без декораций.</em></h1>
-<p class="omni-lead">Вместо прежнего «TECH KILLERS» и скриншотов старой нумерологии — понятная карта технологических компонентов, фактически представленных в портале, и задач следующего этапа.</p>
-<div class="omni-actions"><a class="omni-button primary" href="/architect">Graph Studio</a><a class="omni-button" href="/docs">API проекта</a><a class="omni-button" href="/projects">Каталог проектов</a></div></div>
-<aside class="omni-hero-aside"><strong>Принцип</strong>Не приписываем платформе работающий Docker-оркестратор, Celery-кластер, Redis или сертификаты безопасности без реального внедрения и проверки.</aside></section>
-<section class="omni-section"><div class="omni-section-head"><h2>Основной технологический стек</h2><p>Компоненты текущего портала и работающего редактора. Это обзор архитектуры, а не автоматическая диагностика установленной версии каждого пакета.</p></div>
-<div class="omni-grid">
-<article class="omni-card blue"><div class="omni-meta">BACKEND / PYTHON</div><h3>FastAPI</h3><p>Маршрутизация, API, серверная проверка сценариев и выдача архивов проектов.</p><div class="omni-card-footer"><a href="/docs">Swagger API →</a></div></article>
-<article class="omni-card mint"><div class="omni-meta">UI / TEMPLATES</div><h3>Jinja2 и CSS</h3><p>Серверные шаблоны страниц и интерфейс Graph Studio на браузерном JavaScript.</p><div class="omni-card-footer"><a href="/architect">Посмотреть интерфейс →</a></div></article>
-<article class="omni-card violet"><div class="omni-meta">MESSAGING / EXPORT</div><h3>aiogram 3</h3><p>Шаблон автономного Telegram-бота, который создаётся при экспорте сценария.</p><div class="omni-card-footer"><a href="/architect">Сценарии Telegram →</a></div></article>
-<article class="omni-card amber"><div class="omni-meta">DATA / FOUNDATION</div><h3>SQLAlchemy и Alembic</h3><p>Инструменты для моделей и миграций. Единый серверный реестр графов ещё предстоит реализовать.</p><div class="omni-card-footer"><a href="/projects">Модель данных →</a></div></article>
-<article class="omni-card blue"><div class="omni-meta">HTTP / RUNNING APP</div><h3>Uvicorn</h3><p>ASGI-сервер FastAPI; публичная проверка состояния доступна через endpoint /health.</p><div class="omni-card-footer"><a href="/health">Проверить /health →</a></div></article>
-<article class="omni-card rose"><div class="omni-meta">SECURITY / NEXT</div><h3>Исполнение кода и секреты</h3><p>Для пользовательских Python-обработчиков потребуются sandbox-процессы, контроль ресурсов, ACL и зашифрованное хранение ключей.</p><div class="omni-card-footer"><a href="/robotization">План развития →</a></div></article>
-</div></section>
-<section class="omni-section"><div class="omni-section-head"><h2>Ключевые инженерные решения</h2></div>
-<div class="omni-steps"><article class="omni-step"><h3>Честные статусы</h3><p>Не показываем синтетическую телеметрию как реальную и не обещаем готовый деплой.</p></article><article class="omni-step"><h3>Безопасный экспорт</h3><p>Сценарий валидируется и генерируется из фиксированного Python-шаблона; пользовательский код не исполняется сервером.</p></article><article class="omni-step"><h3>Расширение по модулям</h3><p>Коннекторы, хранение проектов и движок автоматизации развиваются отдельно от текущего редактора.</p></article></div></section>
-<section class="omni-section"><div class="omni-panel"><h3>Нужны реальные технические показатели?</h3><p>Для этого должны появиться защищённые endpoints мониторинга и журналов с авторизацией. Публичная диагностическая страница показывает только подтверждённые ответы платформы.</p><a class="omni-button" href="/dashboard">Состояние платформы</a></div></section></main>
-<footer class="omni-footer"><div class="omni-footer-inner"><div><strong>OMNIFACTORY</strong><p>Инструменты проектирования, автоматизации и разработки цифровых продуктов. Только проверенные функции отмечены как доступные.</p></div><nav class="omni-footer-links" aria-label="Ссылки внизу страницы"><a href="/">Платформа</a><a href="/projects">Проекты</a><a href="/architect">Graph Studio</a><a href="/robotization">Автоматизация</a><a href="/docs">API</a><a href="/studio">Studio</a></nav></div><div class="omni-footnote">© 2026 OMNIFACTORY · PYTHON ENGINEERING · PLATFORM DEVELOPMENT</div></footer>
-</body></html>
+<div class="content-area" style="max-width: 1000px; margin: auto;">
+    <div class="dash-header" style="border-bottom: 2px solid var(--neon-purple); margin-bottom: 30px; padding-bottom: 20px;">
+        <h1 style="font-family: 'Orbitron'; font-size: 32px; color: #fff; margin-bottom: 10px;">GENESYS // PSYCHO-NUMEROLOGY ENGINE</h1>
+        <p style="color: var(--text-muted); font-size: 14px; letter-spacing: 2px;">Data-driven аналитика личности на основе квантового преобразования психоматриц</p>
+    </div>
+
+    <div class="slider-container" style="border: 1px solid var(--border-static); border-radius: 8px; background: #000; margin-bottom: 30px; position: relative; overflow: hidden;">
+        <div class="slider-track" id="slider" style="display: flex; transition: transform 0.5s ease; width: 100%;">
+            <div class="slide" style="min-width: 100%;"><img src="/assets/projects/genesys/img/admin_panel.png" onerror="this.style.display='none'" style="width:100%; height:400px; object-fit:contain;"></div>
+            <div class="slide" style="min-width: 100%;"><img src="/assets/projects/genesys/img/db_schema.png" onerror="this.style.display='none'" style="width:100%; height:400px; object-fit:contain;"></div>
+            <div class="slide" style="min-width: 100%;"><img src="/assets/projects/genesys/img/code_view.png" onerror="this.style.display='none'" style="width:100%; height:400px; object-fit:contain;"></div>
+        </div>
+        <div style="padding: 15px; display: flex; justify-content: center; gap: 20px;">
+            <button onclick="moveSlide(-1)" style="background:transparent; border:1px solid var(--neon-purple); color:#fff; padding:5px 15px; cursor:pointer;">❮ PREV</button>
+            <button onclick="moveSlide(1)" style="background:transparent; border:1px solid var(--neon-purple); color:#fff; padding:5px 15px; cursor:pointer;">NEXT ❯</button>
+        </div>
+    </div>
+
+    <div class="project-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+
+        <div class="tech-card" style="background: var(--panel-bg); padding: 30px; border: 1px solid var(--border-static);">
+            <h2 style="font-family: 'Orbitron'; font-size: 18px; margin-bottom: 20px; color: var(--neon-blue);">Engineering Stack</h2>
+            <ul style="color: var(--text-muted); font-size: 14px; line-height: 2; list-style-position: inside;">
+                <li><b>Engine:</b> Python 3.11+, NumPy для тензорных вычислений психоматрицы.</li>
+                <li><b>Data Layer:</b> ChromaDB для хранения семантических векторов профиля личности.</li>
+                <li><b>Architecture:</b> FastAPI micro-services, Pydantic-валидация входящих векторов.</li>
+                <li><b>UI-Layer:</b> Flet (Flutter-based) для кроссплатформенного рендеринга аналитики.</li>
+                <li><b>Reliability:</b> Docker-контейнеризация каждого экземпляра расчета для изоляции сессий.</li>
+            </ul>
+        </div>
+
+        <div class="tech-card" style="background: var(--panel-bg); padding: 30px; border: 1px solid var(--border-static);">
+            <h2 style="font-family: 'Orbitron'; font-size: 18px; margin-bottom: 20px; color: var(--neon-purple);">Business Logic</h2>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 15px;">Genesys превращает сухие цифры в <b>Predictive Personality Profiling</b>.</p>
+            <ul style="color: var(--text-muted); font-size: 14px; line-height: 2; list-style-position: inside;">
+                <li><b>HR-Analytics:</b> Автоматический мэтчинг soft-skills кандидата с задачами команды.</li>
+                <li><b>CRM-Integration:</b> Модуль API для передачи данных совместимости в сторонние системы.</li>
+                <li><b>Retention:</b> Динамические отчеты по личностным циклам, стимулирующие повторные визиты.</li>
+                <li><b>Monetization:</b> Модель Freemium: расчет матрицы — бесплатно, развернутый психоаналитический PDF-отчет — платно.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        let currentSlide = 0;
+        const track = document.getElementById('slider');
+        window.moveSlide = function(dir) {
+            if(!track) return;
+            const slides = track.children;
+            currentSlide = (currentSlide + dir + slides.length) % slides.length;
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        };
+    })();
+</script>

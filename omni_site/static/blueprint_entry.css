@@ -1,9 +1,0 @@
-/* Experience Lab / premium entry into a real configurable brief. */
-.solution-demo-page .blueprint-demo-entry{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(150px,.5fr);align-items:center;gap:25px;padding:clamp(26px,4.5vw,50px);border:1px solid #766b9c;border-radius:12px;background:radial-gradient(circle at 90% 0%,#876cba40,transparent 58%),#161e30;margin-top:45px}
-.solution-demo-page .blueprint-demo-entry h2{font:700 clamp(28px,4vw,53px)/1.11 var(--display);letter-spacing:-.06em;margin:17px 0}
-.solution-demo-page .blueprint-demo-entry h2 em{font-style:normal;color:#c7b1f4}
-.solution-demo-page .blueprint-demo-entry p{font-size:13px;line-height:1.8;color:#c4d1e2;max-width:780px}
-.solution-demo-page .blueprint-demo-entry a{display:inline-block;margin-top:15px;padding:14px 19px;background:#bba4ea;border:1px solid #d9c5fd;border-radius:8px;color:#0d1624;font-size:13px;font-weight:750}
-.solution-demo-page .blueprint-demo-entry-sign{font:400 clamp(110px,13vw,190px)/1 var(--display);color:#bda9ec;text-align:center}
-@media(max-width:680px){.solution-demo-page .blueprint-demo-entry{grid-template-columns:1fr}.solution-demo-page .blueprint-demo-entry-sign{display:none}.solution-demo-page .blueprint-demo-entry a{width:100%;text-align:center}}
-@media(prefers-reduced-motion:reduce){.solution-demo-page .blueprint-demo-entry *{animation:none!important;transition:none!important}}
