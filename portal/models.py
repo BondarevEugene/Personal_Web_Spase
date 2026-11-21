@@ -402,3 +402,30 @@ class BotSecurityAudit(Base):
     event: Mapped[str] = mapped_column(String(48), nullable=False)
     target_customer_id: Mapped[str | None] = mapped_column(String(36))
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class CloudReleaseReview(Base):
+    """Owner-approved, immutable release review request; NEVER a provider charge."""
+
+    __tablename__ = "portal_cloud_release_reviews"
+    __table_args__ = (
+        UniqueConstraint("owner_id", "request_key", name="uq_cloud_release_request"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    owner_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), nullable=False, index=True)
+    bot_project_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_builder_projects.id"), nullable=False, index=True)
+    cloud_plan_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_cloud_deployments.id"), nullable=False, index=True)
+    request_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    artifact_image: Mapped[str] = mapped_column(String(240), nullable=False)
+    plan_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    credential_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    revision_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    review_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    budget_cap_usd: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="review_requested")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    cancelled_at: Mapped[datetime | None] = mapped_column(DateTime())
