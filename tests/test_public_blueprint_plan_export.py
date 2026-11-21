@@ -67,7 +67,8 @@ def test_json_plan_rejects_duplicate_integrations_and_missing_inputs():
         data={**DATA, "integration": ["telegram", "telegram"]},
     )
     assert response.status_code == 422
-    assert CLIENT.post("/demo/blueprint/plan", data={"sector": "crm"}).status_code == 422
+    missing = CLIENT.post("/demo/blueprint/plan", data={"sector": "crm"})
+    assert missing.status_code == 422
     assert CLIENT.get("/demo/blueprint/plan").status_code == 405
 
 
