@@ -382,12 +382,19 @@ def graph_deployment_readiness(id: str, request: Request):
                 continue
             if (manifest.get("version") == "graph-" + row.id or
                     str(manifest.get("version", "")).startswith("graph-" + row.id + "-r")):
+                pinned = str(manifest.get("version", ""))
+                expected = "graph-" + row.id + "-r" + project_revision(row)[:48]
                 linked.append({
                     "id": plan.id, "name": plan.name, "status": plan.status,
                     "manifest_sha256": plan.manifest_sha256,
+                    "version": pinned,
+                    "current_revision": pinned == expected,
+                    "provider": plan.provider,
+                    "created_at": plan.created_at.isoformat() + "Z",
                 })
         return {
-            "project_id": row.id, "scenario_valid": report["ok"],
+            "project_id": row.id, "revision": project_revision(row),
+            "scenario_valid": report["ok"],
             "diagnostics": report, "saved_plans": linked,
             "live_deployment_enabled": False,
             "token_collection_enabled": False,
