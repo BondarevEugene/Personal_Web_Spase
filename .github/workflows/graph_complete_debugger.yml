@@ -1,0 +1,25 @@
+name: Graph Studio complete debugger
+on:
+  pull_request:
+    paths:
+      - "api/graph_test_matrix.py"
+      - "api/builder_projects.py"
+      - "omni_site/static/graph_release_inspector.js"
+      - "omni_site/static/graph_release_inspector.css"
+      - "templates/builder_pro_final.html"
+      - "tests/test_graph_test_matrix.py"
+      - ".github/workflows/graph_complete_debugger.yml"
+  workflow_dispatch:
+jobs:
+  debugger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pip install "ruff>=0.9,<1" "pytest>=8,<10"
+      - run: python -m ruff check api/graph_test_matrix.py api/builder_projects.py tests/test_graph_test_matrix.py
+      - run: python -m pytest -q tests/test_graph_test_matrix.py tests/test_graph_step_debugger.py tests/test_graph_release_evidence.py tests/test_builder_final_workflow.py
+      - run: node --check omni_site/static/graph_release_inspector.js
