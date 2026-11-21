@@ -1,13 +1,13 @@
 """Automation connection registry and append-only audit.
 
 Revision ID: 20261121_portal_20
-Revises: 20261120_portal_18
+Revises: 20261121_portal_19
 """
 import sqlalchemy as sa
 from alembic import op
 
 revision = "20261121_portal_20"
-down_revision = "20261120_portal_18"
+down_revision = "20261121_portal_19"
 branch_labels = None
 depends_on = None
 
