@@ -203,6 +203,33 @@ class AutomationConnectionEvent(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
 
 
+class AutomationCredential(Base):
+    """Encrypted OAuth/connector secret; accessible only to backend workers."""
+
+    __tablename__ = "portal_automation_credentials"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    connection_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_connections.id"), unique=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    ciphertext: Mapped[bytes] = mapped_column(LargeBinary(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), default=utcnow, nullable=False)
+
+
+class AutomationOAuthState(Base):
+    """One-use OAuth CSRF state: only SHA256 of nonce is persisted."""
+
+    __tablename__ = "portal_automation_oauth_states"
+    nonce_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    connection_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_automation_connections.id"), index=True, nullable=False)
+    customer_id: Mapped[str] = mapped_column(
+        ForeignKey("portal_customers.id"), index=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(), nullable=True)
+
+
 class AutomationWorkflow(Base):
     """Owned workflow definition with immutable revision counter."""
 
