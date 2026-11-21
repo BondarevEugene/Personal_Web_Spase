@@ -1,4 +1,5 @@
 """Public software studio pages. Mount via app.include_router(router)."""
+import os
 from pathlib import Path
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import Response
@@ -7,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from omni_site.editorial import ARTICLES, ARTICLE_BY_SLUG
+from omni_site.search_discovery import canonical_origin
 from omni_site.content_store import public_articles, published_article
 from portal.db import session_factory
 from omni_site.case_library import CATEGORIES
@@ -51,7 +53,8 @@ def engineering_article(request: Request, slug: str):
     return templates.TemplateResponse(
         request=request,
         name="engineering_article.html",
-        context={"article": article, "articles": articles},
+        context={"article": article, "articles": articles,
+                 "seo_origin": canonical_origin(os.getenv("OMNI_PUBLIC_ORIGIN", ""))},
     )
 
 
@@ -74,7 +77,8 @@ def public_case_detail(request: Request, slug: str):
         raise HTTPException(status_code=404, detail="Case not found")
     return templates.TemplateResponse(
         request=request, name="case_detail.html",
-        context={"item": item, "cases": cases},
+        context={"item": item, "cases": cases,
+                 "seo_origin": canonical_origin(os.getenv("OMNI_PUBLIC_ORIGIN", ""))},
     )
 
 
@@ -98,7 +102,8 @@ def service_detail(request: Request, slug: str):
         raise HTTPException(status_code=404, detail="Service not found")
     return templates.TemplateResponse(
         request=request, name="service_detail.html",
-        context={"service": service, "services": services},
+        context={"service": service, "services": services,
+                 "seo_origin": canonical_origin(os.getenv("OMNI_PUBLIC_ORIGIN", ""))},
     )
 
 
