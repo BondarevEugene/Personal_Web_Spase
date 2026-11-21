@@ -12,6 +12,42 @@
     link.textContent = "Авторизация";
     status.append(link);
   };
+  const previewButton = document.getElementById("blueprint-graph-preview");
+  const previewResult = document.getElementById("blueprint-graph-preview-result");
+  previewButton?.addEventListener("click", async () => {
+    if (!previewResult || previewButton.disabled) return;
+    if (!form.reportValidity()) return;
+    previewButton.disabled = true;
+    previewResult.textContent = "Проверяем схему…";
+    try {
+      const response = await fetch("/api/v1/blueprint/import-graph/preview", {
+        method: "POST", credentials: "same-origin",
+        body: new FormData(form)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(typeof data.detail === "string"
+          ? data.detail : "Не удалось проверить схему");
+      }
+      const heading = document.createElement("h3");
+      heading.textContent = "Предпросмотр · " + data.summary.nodes + " блоков, " +
+        data.summary.choices + " развилок";
+      const list = document.createElement("ol");
+      for (const node of data.scenario.nodes) {
+        const item = document.createElement("li");
+        item.textContent = node.id + " · " + node.kind +
+          (node.text ? " — " + node.text : "");
+        list.append(item);
+      }
+      const note = document.createElement("p");
+      note.textContent = "Это только проверка. Ничего не сохранено и не запущено.";
+      previewResult.replaceChildren(heading, list, note);
+    } catch (error) {
+      previewResult.textContent = error.message || "Ошибка предпросмотра";
+    } finally {
+      previewButton.disabled = false;
+    }
+  });
   form.addEventListener("submit", async event => {
     event.preventDefault();
     if (button.disabled) return;
