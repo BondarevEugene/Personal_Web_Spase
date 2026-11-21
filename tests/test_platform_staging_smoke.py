@@ -1,7 +1,6 @@
 """Release smoke checker contracts, without external network calls."""
-import io
 import json
-from urllib.error import HTTPError, URLError
+from urllib.error import URLError
 
 import pytest
 
