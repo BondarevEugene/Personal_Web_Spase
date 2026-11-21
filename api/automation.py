@@ -339,6 +339,78 @@ def workflow_runs(workflow_id: str, request: Request):
         return {"runs": [run_visible(r) for r in runs]}
 
 
+@router.get("/control/summary")
+def control_summary(request: Request):
+    """Customer-scoped operational metrics from persisted run records."""
+    with session_factory()() as db:
+        user = require_user(request, db)
+        workflows = db.scalars(
+            select(AutomationWorkflow)
+            .where(AutomationWorkflow.customer_id == user.id)
+            .order_by(AutomationWorkflow.updated_at.desc()).limit(50)
+        ).all()
+        recent = db.scalars(
+            select(AutomationRun)
+            .where(AutomationRun.customer_id == user.id)
+            .order_by(AutomationRun.created_at.desc()).limit(100)
+        ).all()
+        counts = {}
+        for run in recent:
+            counts[run.status] = counts.get(run.status, 0) + 1
+        schedules = db.scalars(
+            select(AutomationSchedule)
+            .where(AutomationSchedule.customer_id == user.id)
+        ).all()
+        return {
+            "workflow_count": len(workflows),
+            "sampled_run_count": len(recent),
+            "status_counts": counts,
+            "active_schedules": sum(bool(row.enabled) for row in schedules),
+            "scope": "latest_100_runs",
+            "runs": [run_visible(row) for row in recent[:30]],
+            "workflows": [visible(row) for row in workflows],
+        }
+
+
+@router.post("/workflows/{workflow_id}/runs/{run_id}/retry-dry-run", status_code=201)
+def retry_dry_run(workflow_id: str, run_id: str, request: Request):
+    """Re-run the CURRENT workflow revision in dry-run mode, never replay live effects.
+
+    Historical input is not persisted in run audit logs, so this operation
+    explicitly uses an empty input. Callers needing inputs must use the
+    regular /runs endpoint with an explicit new payload.
+    """
+    with session_factory()() as db:
+        user = require_user(request, db)
+        csrf(request)
+        workflow = row_for(db, user.id, workflow_id)
+        prior = db.scalar(
+            select(AutomationRun).where(
+                AutomationRun.id == parse_id(run_id),
+                AutomationRun.workflow_id == workflow.id,
+                AutomationRun.customer_id == user.id,
+            )
+        )
+        if prior is None:
+            raise HTTPException(404, "Run not found")
+        if prior.mode != "dry_run":
+            raise HTTPException(409, "Live runs cannot be retried")
+        if prior.status not in {"failed", "step_limit"}:
+            raise HTTPException(409, "Only failed dry-runs can be retried")
+        definition = WorkflowDefinition.model_validate_json(workflow.definition_json)
+        if any(node.kind not in {"trigger", "set", "condition", "transform", "end"}
+               for node in definition.nodes):
+            raise HTTPException(
+                409, "This workflow requires explicit inputs or connector review; "
+                     "use the regular dry-run endpoint",
+            )
+        result = record_run(
+            db, workflow, input_data={}, live=False, idempotency_key=None,
+        )
+        return {**result, "retry_of": prior.id,
+                "input_policy": "empty_input_current_revision"}
+
+
 @router.get("/workflows/{workflow_id}/schedule")
 def get_schedule(workflow_id: str, request: Request):
     with session_factory()() as db:
