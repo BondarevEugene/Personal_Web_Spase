@@ -1,0 +1,35 @@
+name: Automation Vault Security
+on:
+  pull_request:
+    paths:
+      - "automation/connection_vault.py"
+      - "automation/oauth_state.py"
+      - "portal/models.py"
+      - "portal/migrations/versions/20261121_portal_21.py"
+      - "tests/test_connection_vault.py"
+      - ".github/workflows/automation-vault.yml"
+  push:
+    branches:
+      - "feat/automation-secure-vault-20261121"
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install pytest ruff
+      - name: Ruff
+        run: python -m ruff check automation/connection_vault.py automation/oauth_state.py portal/migrations/versions/20261121_portal_21.py tests/test_connection_vault.py
+      - name: Compile
+        run: python -m py_compile automation/connection_vault.py automation/oauth_state.py portal/models.py portal/migrations/versions/20261121_portal_21.py tests/test_connection_vault.py
+      - name: Tests
+        run: python -m pytest -q tests/test_connection_vault.py tests/test_automation_connections.py
+      - name: Alembic migration
+        env:
+          OMNI_PORTAL_DATABASE_URL: sqlite:///./vault_ci.sqlite3
+        run: python -m alembic -c portal_alembic.ini upgrade head
