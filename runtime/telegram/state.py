@@ -27,6 +27,12 @@ class DialogueStore:
             PRIMARY KEY(chat_id, user_id))""")
         self.connection.execute("""CREATE TABLE IF NOT EXISTS updates (
             update_id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL)""")
+        # Add receipt state without dropping legacy update IDs on upgrade.
+        columns = {row[1] for row in self.connection.execute(
+            "PRAGMA table_info(updates)").fetchall()}
+        if "status" not in columns:
+            self.connection.execute(
+                "ALTER TABLE updates ADD COLUMN status TEXT NOT NULL DEFAULT 'done'")
         self.connection.commit()
         self.lock = threading.RLock()
 
@@ -55,14 +61,45 @@ class DialogueStore:
                 "DELETE FROM dialogues WHERE chat_id=? AND user_id=?", key)
             self.connection.commit()
 
-    def claim_update(self, update_id: int) -> bool:
-        """Atomically reject repeated Telegram update IDs."""
+    def claim_update(self, update_id: int, lease_seconds: int = 300) -> bool:
+        """Claim an update, or reclaim a processing receipt abandoned by a crash.
+
+        Completed receipts are not reclaimed before retention pruning.
+        Single-replica only.
+        """
+        now = int(time.time())
         with self.lock:
-            cursor = self.connection.execute(
-                "INSERT OR IGNORE INTO updates(update_id,created_at) VALUES(?,?)",
-                (update_id, int(time.time())))
+            self.connection.execute("BEGIN IMMEDIATE")
+            try:
+                row = self.connection.execute(
+                    "SELECT status, created_at FROM updates WHERE update_id=?",
+                    (update_id,),
+                ).fetchone()
+                if row is None:
+                    self.connection.execute(
+                        "INSERT INTO updates(update_id,created_at,status) "
+                        "VALUES(?,?,'processing')", (update_id, now))
+                    claimed = True
+                elif row[0] == "processing" and row[1] <= now - lease_seconds:
+                    self.connection.execute(
+                        "UPDATE updates SET created_at=? WHERE update_id=?",
+                        (now, update_id))
+                    claimed = True
+                else:
+                    claimed = False
+                self.connection.commit()
+                return claimed
+            except Exception:
+                self.connection.rollback()
+                raise
+
+    def complete_update(self, update_id: int) -> None:
+        """Mark successfully dispatched update as deduplicated."""
+        with self.lock:
+            self.connection.execute(
+                "UPDATE updates SET status='done',created_at=? WHERE update_id=?",
+                (int(time.time()), update_id))
             self.connection.commit()
-            return cursor.rowcount == 1
 
     def forget_update(self, update_id: int):
         with self.lock:

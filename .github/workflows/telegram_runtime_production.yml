@@ -1,0 +1,21 @@
+name: Telegram Runtime production staging gate
+on:
+  pull_request:
+    paths:
+      - "runtime/telegram/**"
+      - "tests/test_telegram_runtime_production.py"
+      - ".github/workflows/telegram_runtime_production.yml"
+  workflow_dispatch:
+jobs:
+  runtime-production:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pip install "ruff>=0.9,<1" "pytest>=8,<10"
+      - run: python -m ruff check runtime/telegram/app.py runtime/telegram/state.py tests/test_telegram_runtime_production.py
+      - run: python -m pytest -q tests/test_telegram_runtime_production.py tests/test_telegram_runtime_state.py tests/test_telegram_runtime_v1.py tests/test_telegram_runtime_maintenance.py
+      - run: python -m json.tool runtime/telegram/railway.json > /dev/null
