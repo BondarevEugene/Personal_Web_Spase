@@ -46,7 +46,7 @@
 </button>
 {% endfor %}
 </div>
-<div class="demo-flow-progress"><div class="demo-progress-track"><div data-demo-progress style="width:20%"></div></div><span data-demo-counter>01 / 05</span></div>
+<div class="demo-flow-progress"><div class="demo-progress-track"><div data-demo-progress style="width:{{ (100 / journey.steps|length)|round(1) }}%"></div></div><span data-demo-counter>01 / {{ "%02d"|format(journey.steps|length) }}</span></div>
 </div>
 <div class="demo-inspector" id="demo-inspector-{{ journey.slug }}" aria-live="polite" aria-atomic="true">
 <div class="demo-inspector-header"><span>ENGINEERING INSPECTOR</span><span>READ-ONLY</span></div>
