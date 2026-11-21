@@ -8,12 +8,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
 from api.automation import csrf, require_user
 from portal.db import session_factory
-from portal.models import AutomationConnection, AutomationConnectionEvent, utcnow
+from portal.models import (AutomationConnection, AutomationConnectionEvent,
+                           AutomationCredential, AutomationOAuthState, utcnow)
 
 router = APIRouter(prefix="/api/v1/automation/connections", tags=["Automation Connections"])
 PROVIDERS = {
@@ -55,7 +56,7 @@ def visible(row):
     return {
         "id": row.id, "provider": row.provider, "label": row.label,
         "status": row.status, "created_at": row.created_at.isoformat() + "Z",
-        "authorization": "not_implemented",
+        "authorization": "oauth" if row.provider != "http" else "not_implemented",
         "external_permissions_verified": False,
     }
 
@@ -63,7 +64,8 @@ def visible(row):
 @router.get("/catalog")
 def catalog():
     return {
-        "providers": [{"id": key, "name": name, "authorization": "not_implemented"}
+        "providers": [{"id": key, "name": name,
+                       "authorization": "oauth" if key != "http" else "not_implemented"}
                       for key, name in PROVIDERS.items()],
         "notice": "Registration does not authorize an external provider.",
     }
@@ -135,6 +137,12 @@ def disconnect(connection_id: str, request: Request):
         csrf(request)
         row = connection_for(db, user.id, connection_id)
         if row.status != "disconnected":
+            db.execute(delete(AutomationCredential).where(
+                AutomationCredential.connection_id == row.id,
+                AutomationCredential.customer_id == user.id))
+            db.execute(delete(AutomationOAuthState).where(
+                AutomationOAuthState.connection_id == row.id,
+                AutomationOAuthState.customer_id == user.id))
             row.status = "disconnected"
             row.updated_at = utcnow()
             db.add(AutomationConnectionEvent(
