@@ -108,6 +108,11 @@
   <h3>План Railway — без создания облачных ресурсов</h3>
   <label for="release-plan-name">Название развёртывания</label>
   <input id="release-plan-name" name="name" minlength="3" maxlength="40" required placeholder="Мой Telegram-бот">
+  <label for="release-plan-mode">Режим Railway</label>
+  <select id="release-plan-mode" name="mode">
+   <option value="managed">Managed — только планирование</option>
+   <option value="byoc">BYOC — существующий сервис клиента</option>
+  </select>
   <label for="release-plan-budget">Месячный лимит бюджета, USD</label>
   <input id="release-plan-budget" name="budget" type="number" min="5" max="10000" value="10" required>
   <button type="submit" id="release-plan-create" class="button button-line">Сохранить dry-run план</button>
@@ -123,6 +128,15 @@
   <button type="button" id="release-runtime-refresh" class="button button-line">Обновить задания</button>
   <p id="release-runtime-status" role="status" aria-live="polite"></p>
   <div id="release-runtime-jobs"></div>
+  <section id="release-live-gate" aria-label="Проверка готовности реального запуска">
+   <h3>Контроль допуска к реальному запуску</h3>
+   <p>Проверяем подключение Railway, подтверждение Telegram-бота, привязку сервиса и допустимость релиза. Этот экран не создаёт облачные ресурсы.</p>
+   <button type="button" id="release-gate-check" class="button button-line" disabled>Проверить допуск</button>
+   <p id="release-gate-status" role="status" aria-live="polite"></p>
+   <ul id="release-gate-checks"></ul>
+   <button type="button" id="release-gate-request" class="button button-line" disabled>Запросить согласование релиза</button>
+   <p id="release-gate-review-status" role="status" aria-live="polite"></p>
+  </section>
  </section>
  <a id="release-center-download" class="button button-primary" hidden>Скачать Python-бот ZIP</a>
  <p><small>Выпуск не означает, что бот запущен. Подключение Railway и подтверждение онлайн-статуса не выполняются.</small></p>
@@ -270,6 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <link rel="stylesheet" href="/studio-assets/graph_release_inspector.css?v=3">
 <script defer src="/studio-assets/graph_release_inspector.js?v=3"></script>
-<script defer src="/studio-assets/graph_release_center.js?v=3"></script>
+<script defer src="/studio-assets/graph_release_center.js?v=4"></script>
 <link rel="stylesheet" href="/studio-assets/graph_release_center.css?v=1">
 </body></html>
