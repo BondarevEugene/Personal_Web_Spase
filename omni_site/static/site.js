@@ -107,14 +107,14 @@
     if (!leadForm.reportValidity() || !submit) return;
     const formData = new FormData(leadForm);
     const data = Object.fromEntries(formData.entries());
-    if (data.website) return;  // Honeypot, do not alert bots.
+    if (data.website) return;  // Honeypot, do not alert bots.\n    const params = new URLSearchParams(window.location.search);\n    const attribution = {};\n    ['utm_source', 'utm_medium', 'utm_campaign'].forEach(key => {\n      attribution[key] = (params.get(key) || '').slice(0, 80);\n    });
     submit.disabled = true;
     setStatus('Отправляем заявку…');
     try {
       const response = await fetch('/studio/api/lead', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name: data.name, contact: data.contact, topic: data.topic, message: data.message, website: data.website}),
+        body: JSON.stringify({name: data.name, contact: data.contact, topic: data.topic, message: data.message, website: data.website,\n          consent: data.consent === 'on',\n          source_path: window.location.pathname.slice(0, 200),\n          ...attribution}),
       });
       let payload = {};
       try { payload = await response.json(); } catch (_) { /* Generic server/network error below. */ }
@@ -126,7 +126,7 @@
         throw new Error(response.status === 422 ? 'Проверь данные в форме.' : 'Не удалось отправить заявку. Попробуй позже.');
       }
       if (payload.ok !== true) throw new Error('Не получили подтверждение доставки. Попробуй позже.');
-      setStatus('Заявка отправлена! Сообщение доставлено в Telegram студии.', 'success');
+      setStatus('Заявка сохранена! Мы свяжемся с вами по указанному контакту.', 'success');
       leadForm.reset();
     } catch (error) {
       setStatus(error?.message || 'Ошибка сети. Повтори попытку позже.', 'error');

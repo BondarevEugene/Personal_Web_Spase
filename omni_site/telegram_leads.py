@@ -30,7 +30,7 @@ from typing import Deque
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator\n\nfrom portal.db import session_factory\nfrom portal.models import GrowthLead, utcnow
 
 router = APIRouter(prefix="/studio/api", tags=["Studio Leads"])
 
@@ -48,7 +48,7 @@ class StudioLead(BaseModel):
     contact: str = Field(min_length=4, max_length=200)
     topic: str = Field(min_length=2, max_length=160)
     message: str = Field(min_length=10, max_length=3000)
-    website: str = Field(default="", max_length=200)
+    website: str = Field(default="", max_length=200)\n    consent: bool = False\n    source_path: str = Field(default="/studio", max_length=200)\n    utm_source: str = Field(default="", max_length=80)\n    utm_medium: str = Field(default="", max_length=80)\n    utm_campaign: str = Field(default="", max_length=80)
 
     @field_validator("name", "contact", "topic", "message")
     @classmethod
@@ -93,34 +93,69 @@ async def _check_rate_limit(client: str) -> None:
 
 
 @router.post("/lead")
-async def create_lead(lead: StudioLead, request: Request) -> dict[str, bool]:
-    """Deliver an enquiry, returning success ONLY after Telegram confirms it."""
-    # Bots filling the hidden field receive a generic success with no outbound request.
+async def create_lead(lead: StudioLead, request: Request) -> dict[str, bool | str]:
+    """Save the opt-in lead first, then attempt best-effort Telegram delivery."""
     if lead.website:
-        return {"ok": True}
-
-    token = os.getenv("OMNI_STUDIO_BOT_TOKEN", "").strip()
-    chat_id = os.getenv("OMNI_STUDIO_CHAT_ID", "").strip()
-    if not token or not chat_id:
-        raise HTTPException(status_code=503, detail="Telegram lead delivery not configured")
-
-    # request.client.host is a connection IP. Do not blindly trust X-Forwarded-For.
+        return {"ok": True, "status": "accepted"}
+    if not lead.consent:
+        raise HTTPException(status_code=422, detail="Consent required")
     client_ip = request.client.host if request.client else "unknown"
     await _check_rate_limit(client_ip)
 
-    payload = {
-        "chat_id": chat_id,
-        "text": format_telegram_message(lead),
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True,
-    }
+    # Attribution is optional and explicitly supplied by the visitor's browser.
+    # Never store an arbitrary URL or trust external Host/forwarded headers.
+    path = lead.source_path.split("?", 1)[0].split("#", 1)[0]
+    if not path.startswith("/") or path.startswith("//"):
+        path = "/studio"
+    record = GrowthLead(
+        name=lead.name, contact=lead.contact, topic=lead.topic,
+        message=lead.message, source_path=path,
+        utm_source=lead.utm_source, utm_medium=lead.utm_medium,
+        utm_campaign=lead.utm_campaign, status="new",
+        telegram_status="pending",
+    )
     try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.post(f"https://api.telegram.org/bot{token}/sendMessage", json=payload)
-            response.raise_for_status()
-            delivered = response.json().get("ok") is True
-    except (httpx.HTTPError, ValueError) as exc:
-        raise HTTPException(status_code=502, detail="Telegram unavailable") from exc
-    if not delivered:
-        raise HTTPException(status_code=502, detail="Telegram rejected delivery")
-    return {"ok": True}
+        with session_factory()() as db:
+            db.add(record)
+            db.commit()
+            record_id = record.id
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503, detail="Lead storage unavailable"
+        ) from exc
+
+    token = os.getenv("OMNI_STUDIO_BOT_TOKEN", "").strip()
+    chat_id = os.getenv("OMNI_STUDIO_CHAT_ID", "").strip()
+    delivered = False
+    if token and chat_id:
+        payload = {
+            "chat_id": chat_id,
+            "text": format_telegram_message(lead),
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        }
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    json=payload,
+                )
+                response.raise_for_status()
+                delivered = response.json().get("ok") is True
+        except (httpx.HTTPError, ValueError):
+            delivered = False
+    try:
+        with session_factory()() as db:
+            saved = db.get(GrowthLead, record_id)
+            if saved is not None:
+                saved.telegram_status = "delivered" if delivered else "failed"
+                saved.updated_at = utcnow()
+                db.commit()
+    except Exception:
+        # The lead was already committed: never misreport it as lost.
+        pass
+    return {
+        "ok": True,
+        "status": "accepted",
+        "telegram_delivered": delivered,
+    }

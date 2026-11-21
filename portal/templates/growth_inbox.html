@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Growth CRM — OMNIFACTORY</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif}body{background:#0c1220;color:#edf2ff;margin:0}
+main{max-width:1200px;margin:auto;padding:clamp(18px,4vw,48px)}
+a{color:#a8d7ff}h1{font-size:clamp(30px,5vw,52px);margin:12px 0}
+nav,.metrics{display:flex;gap:12px;flex-wrap:wrap;margin:25px 0}
+nav a,.metrics div{border:1px solid #34425b;border-radius:12px;padding:12px 18px;background:#162237}
+.metrics strong{font-size:24px;display:block}small{color:#b5c6db}
+table{width:100%;border-collapse:collapse;min-width:800px}th,td{border-bottom:1px solid #34425b;padding:14px;text-align:left;vertical-align:top}
+section{overflow-x:auto;border:1px solid #34425b;border-radius:12px}
+button,select{padding:9px;border-radius:7px;background:#293b59;color:white;border:1px solid #617697}
+.message{max-width:350px;white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+</head><body><main>
+<a href="/support/desk">← Operator Desk</a>
+<h1>Growth CRM</h1><p>Заявки и источники привлечения. Данные доступны только уполномоченным операторам.</p>
+<div class="metrics">
+<div><small>Заявок в выборке (последние 250)</small><strong>{{ counts.values()|sum }}</strong></div>
+{% for status, count in counts.items() %}<div><small>{{ status }}</small><strong>{{ count }}</strong></div>{% endfor %}
+</div>
+<h2>Источники</h2><div class="metrics">
+{% for source, count in sources.items() %}<div><small>{{ source }}</small><strong>{{ count }}</strong></div>{% endfor %}
+</div>
+<nav aria-label="Фильтр заявок"><a href="/support/growth">Все</a>
+{% for status in statuses %}<a href="/support/growth?status={{ status }}">{{ status }}</a>{% endfor %}</nav>
+<section><table><thead><tr><th>Дата / ID</th><th>Контакт</th><th>Задача</th><th>Источник</th><th>Уведомление</th><th>Статус</th></tr></thead>
+<tbody>{% for lead in leads %}
+<tr><td><small>{{ lead.created_at }}</small><br><small>{{ lead.id }}</small></td>
+<td><strong>{{ lead.name }}</strong><br>{{ lead.contact }}</td>
+<td><strong>{{ lead.topic }}</strong><p class="message">{{ lead.message }}</p></td>
+<td>{{ lead.source_path }}<br><small>{{ lead.utm_source }} / {{ lead.utm_medium }} / {{ lead.utm_campaign }}</small></td>
+<td>{{ lead.telegram_status }}</td>
+<td><form method="post" action="/support/growth/{{ lead.id }}/status">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<select name="status" aria-label="Статус заявки">
+{% for status in statuses %}<option value="{{ status }}" {% if lead.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
+</select><button type="submit">Сохранить</button></form></td></tr>
+{% else %}<tr><td colspan="6">Нет заявок для выбранного фильтра.</td></tr>{% endfor %}
+</tbody></table></section>
+<p><small>Сводка основана на последних 250 заявках, а не на полном историческом объёме. Источник указывается браузером и не является подтверждённой атрибуцией рекламы.</small></p>
+</main></body></html>
