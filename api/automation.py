@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 import secrets
 from datetime import timedelta
 from uuid import UUID
@@ -141,6 +142,34 @@ def catalog():
 def review_workflow(definition: WorkflowDefinition):
     """Static quality analysis without running or publishing anything."""
     return analyze(definition)
+
+
+@router.get("/connectors/readiness")
+def connector_readiness(request: Request):
+    """Read-only, owner-scoped prerequisites; never return credential values."""
+    with session_factory()() as db:
+        require_user(request, db)
+    enabled = os.getenv("OMNI_AUTOMATION_LIVE_ENABLED") == "1"
+    configured = {
+        "google_docs": bool(os.getenv("OMNI_CREDENTIAL_GOOGLE")),
+        "google_sheets": bool(os.getenv("OMNI_CREDENTIAL_GOOGLE")),
+        "facebook_page": bool(os.getenv("OMNI_CREDENTIAL_FACEBOOK")),
+        "instagram": bool(os.getenv("OMNI_CREDENTIAL_INSTAGRAM")),
+        "http": bool(os.getenv("OMNI_AUTOMATION_ALLOWED_HOSTS"))
+        and bool(os.getenv("OMNI_AUTOMATION_EGRESS_PROXY"))
+        and os.getenv("OMNI_AUTOMATION_HTTP_LIVE_ENABLED") == "1",
+    }
+    return {
+        "live_enabled": enabled,
+        "connectors": [
+            {"kind": kind, "configured": ready,
+             "live_available": bool(enabled and ready)}
+            for kind, ready in configured.items()
+        ],
+        "configuration_mode": "operator_environment_only",
+        "credentials_exposed": False,
+        "notice": "Configured does not prove external API permissions or connectivity.",
+    }
 
 
 @router.get("/templates")
