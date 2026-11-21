@@ -11,6 +11,13 @@
   const trace = $('release-inspect-trace');
   if (!project || !run || !state || !summary || !issues || !cases || !trace) return;
   let serial = 0;
+  let inspected = null;
+  let debugAnswers = {choices: {}, inputs: {}};
+  const debugStart = $('release-debug-start');
+  const debugStatus = $('release-debug-status');
+  const debugHistory = $('release-debug-history');
+  const debugInputs = $('release-debug-inputs');
+  if (debugStart) debugStart.disabled = true;
   const coverage = $('release-inspect-coverage');
   const readiness = $('release-inspect-readiness');
   const edgeList = $('release-inspect-edges');
@@ -41,6 +48,12 @@
   };
   const clear = () => {
     serial++;
+    inspected = null;
+    debugAnswers = {choices: {}, inputs: {}};
+    if (debugStart) debugStart.disabled = true;
+    if (debugStatus) debugStatus.textContent = 'Сначала проверьте сохранённую ревизию.';
+    if (debugHistory) debugHistory.replaceChildren();
+    if (debugInputs) debugInputs.replaceChildren();
     run.disabled = false;
     for (const node of [summary, issues, cases, trace, coverage, readiness, edgeList])
       if (node) node.replaceChildren();
@@ -105,6 +118,8 @@
         state.textContent = 'Ревизия изменилась во время проверки. Запустите повторно.';
         return;
       }
+      inspected = {id, revision: evidence.revision};
+      if (debugStart) debugStart.disabled = false;
       const revision = evidence.revision.slice(0, 10);
       state.textContent = 'Проверена сохранённая ревизия ' + revision +
         ' · это симуляция, не работающий Telegram-бот.';
@@ -177,6 +192,81 @@
       if (ticket === serial) run.disabled = false;
     }
   }
+  async function replayDebug() {
+    if (!inspected || project.value !== inspected.id) return;
+    const current = inspected;
+    debugInputs.replaceChildren();
+    debugStatus.textContent = 'Выполняем серверную симуляцию…';
+    try {
+      const response = await fetch('/api/v1/builder/projects/' +
+        encodeURIComponent(current.id) + '/debug-session', {
+        method: 'POST', credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({revision: current.revision, ...debugAnswers})
+      });
+      if (response.status === 409) {
+        clear();
+        debugStatus.textContent = 'Проект изменился. Проверьте сохранённую ревизию заново.';
+        return;
+      }
+      if (!response.ok) throw Error('HTTP ' + response.status);
+      const result = await response.json();
+      if (!inspected || project.value !== current.id ||
+          inspected.revision !== result.revision) return;
+      debugHistory.replaceChildren();
+      for (const [index, step] of result.trace.entries()) {
+        const button = element('button', 'graph-release-trace-step',
+          (index + 1) + '. ' + step.id + ' · ' + step.kind +
+          (step.text ? ' · ' + step.text : ''));
+        button.type = 'button';
+        button.addEventListener('click', () => {
+          focus(step.id);
+          $('release-inspect-variables').textContent =
+            'До:\\n' + JSON.stringify(step.variables_before || {}, null, 2) +
+            '\\nПосле:\\n' + JSON.stringify(step.variables_after || {}, null, 2);
+        });
+        debugHistory.append(button);
+      }
+      debugStatus.textContent = 'Статус: ' + (statusLabels[result.status] || result.status) +
+        ' · ' + result.steps + ' шагов.';
+      if (result.status === 'awaiting_choice') {
+        for (const option of result.options) {
+          const button = element('button', 'graph-release-case', option.label);
+          button.type = 'button';
+          button.addEventListener('click', () => {
+            debugAnswers.choices[result.at] = option.index;
+            replayDebug();
+          });
+          debugInputs.append(button);
+        }
+      } else if (result.status === 'awaiting_input') {
+        const form = document.createElement('form');
+        const field = document.createElement('input');
+        field.type = 'text';
+        field.required = true;
+        field.maxLength = 300;
+        field.placeholder = 'Введите ' + result.variable;
+        field.setAttribute('aria-label', 'Ответ для ' + result.variable);
+        const submit = element('button', 'graph-release-case', 'Отправить ответ');
+        submit.type = 'submit';
+        form.append(field, submit);
+        form.addEventListener('submit', event => {
+          event.preventDefault();
+          if (!field.value.trim()) return;
+          debugAnswers.inputs[result.at] = field.value;
+          replayDebug();
+        });
+        debugInputs.append(form);
+        field.focus();
+      }
+    } catch (error) {
+      debugStatus.textContent = 'Ошибка симуляции: ' + error.message;
+    }
+  }
+  if (debugStart) debugStart.addEventListener('click', () => {
+    debugAnswers = {choices: {}, inputs: {}};
+    replayDebug();
+  });
   project.addEventListener('change', clear);
   run.addEventListener('click', inspect);
 })();
