@@ -16,6 +16,8 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, model_validator
 
+from api.export_contract import ExportContractError, verify_export_archive
+
 router = APIRouter(prefix="/api/v1/builder/simple", tags=["Simple Telegram Builder"])
 
 NODE_ID = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
@@ -730,6 +732,15 @@ def export_scenario(scenario: Scenario):
         output.writestr("requirements.txt", "aiogram>=3.0,<4.0\n")
         output.writestr(".env.example", "BOT_TOKEN=YOUR_BOTFATHER_TOKEN\n")
         output.writestr("README.md", _README)
+    try:
+        contract = verify_export_archive(mem.getvalue())
+    except ExportContractError as exc:
+        raise HTTPException(status_code=422, detail={
+            "code": "EXPORT_CONTRACT_FAILED",
+            "message": str(exc),
+        }) from exc
+    if not contract["verified"]:
+        raise HTTPException(status_code=422, detail="Export contract verification failed")
     mem.seek(0)
     return StreamingResponse(
         mem, media_type="application/zip",

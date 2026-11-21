@@ -57,6 +57,11 @@ def exported_module(tmp_path):
     spec = importlib.util.spec_from_file_location("acceptance_generated_bot", tmp_path / "bot.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    # The production entrypoint initializes SQLite before handling updates.
+    # Acceptance tests import handlers directly, so reproduce that bootstrap
+    # with an isolated database for each test.
+    module.DB_PATH = str(tmp_path / "acceptance_state.sqlite3")
+    module.init_state()
     return module
 
 
@@ -105,11 +110,13 @@ async def _test_exported_bot_user_journey_and_callback_replay(tmp_path):
     sent_text = [call.args[1] for call in bot.send_message.await_args_list]
     assert sent_text == ["Welcome!", "Proceed?", "Your name?", "Hello Alex", "Done"]
     assert user_key not in module.CURSORS
-    assert module.VALUES[user_key]["greeting"] == "Hello Alex"
+    # Completed conversations intentionally discard their variables and cursor.
+    assert user_key not in module.VALUES
 
     await module.start(message)
     assert module.CURSORS[user_key] == "choose"
-    assert user_key not in module.VALUES
+    # A new session starts with an empty variable dictionary.
+    assert module.VALUES[user_key] == {}
 
 
 async def _test_exported_bot_other_choice_finishes_without_input(tmp_path):
