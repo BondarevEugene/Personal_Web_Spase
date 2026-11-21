@@ -756,6 +756,34 @@ if __name__ == "__main__":
     main()
 '''
 
+_BOT_CI_WORKFLOW = """name: Generated Telegram Bot · verification
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install runtime dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile generated Python
+        run: python -m py_compile bot.py smoke.py
+      - name: Offline scenario and SQLite restart smoke
+        run: python smoke.py
+      - name: Verify Docker worker build
+        run: docker build --tag omni-generated-bot:ci .
+"""
+
 _DOCKERFILE = """FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
@@ -785,9 +813,12 @@ _DEPLOY_README = """# Railway deployment · Telegram bot
 4. Run exactly ONE replica. Polling and local SQLite are not multi-replica safe.
 5. Before deploying, run `python smoke.py` offline (no token or Telegram calls).
    The Docker build runs this same smoke test and fails on persistence errors.
-6. Deploy the service and inspect logs. Send /start to your bot and test
+6. Push these files to a private GitHub repository. The included GitHub Actions
+   workflow verifies Python, SQLite restart and Docker build on every PR/push.
+   Configure Railway auto-deploy only after this workflow is green.
+7. Deploy the service and inspect logs. Send /start to your bot and test
    all branches, inputs, variables and restart persistence.
-6. Revoke the bot token immediately if accidentally exposed.
+8. Revoke the bot token immediately if accidentally exposed.
 
 This ZIP is a runnable aiogram bot, not an automatically provisioned service.
 There is no HTTP health endpoint: it is a Telegram polling worker.
@@ -818,6 +849,7 @@ def export_scenario(scenario: Scenario):
         output.writestr("README.md", _README)
         output.writestr("Dockerfile", _DOCKERFILE)
         output.writestr("smoke.py", _SMOKE_SOURCE)
+        output.writestr(".github/workflows/verify.yml", _BOT_CI_WORKFLOW)
         output.writestr("railway.json", _RAILWAY_CONFIG)
         output.writestr("DEPLOY_RAILWAY.md", _DEPLOY_README)
     try:

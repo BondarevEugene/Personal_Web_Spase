@@ -26,6 +26,7 @@ def test_export_zip_contains_runnable_runtime_and_correct_persistence_docs():
         assert set(archive.namelist()) == {
             "scenario.json", "bot.py", "requirements.txt", ".env.example", "README.md",
             "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md", "smoke.py",
+            ".github/workflows/verify.yml",
         }
         bot = archive.read("bot.py").decode("utf-8")
         readme = archive.read("README.md").decode("utf-8")
