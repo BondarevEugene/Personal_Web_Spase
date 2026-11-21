@@ -100,14 +100,21 @@ def apply_update(spec: dict, state: Conversation, event: Update) -> None:
         state.queue_message(message.chat.id, "Начни с /start.")
 
 
-def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresStateStore) -> FastAPI:
+def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresStateStore | None = None) -> FastAPI:
+    holder: dict[str, PostgresStateStore] = {}
+
+    def active_store() -> PostgresStateStore:
+        return holder["store"]
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
+        holder["store"] = store or await PostgresStateStore.connect(
+            os.getenv("OMNI_RUNTIME_DATABASE_URL", ""),
+            os.getenv("OMNI_BOT_INSTANCE_ID", ""))
         try:
             yield
         finally:
             await bot.session.close()
-            await store.close()
+            await active_store().close()
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -119,7 +126,7 @@ def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresSta
     @app.get("/ready")
     async def ready():
         try:
-            async with store.pool.acquire() as conn:
+            async with active_store().pool.acquire() as conn:
                 await conn.fetchval("SELECT 1")
             return {"ready": True, "mode": "postgresql",
                     "telegram_delivery_verified": False}
@@ -130,7 +137,7 @@ def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresSta
     async def outbox_health():
         from runtime.telegram.outbox import counters
         try:
-            return {"outbox": await counters(store), "delivery_verified": False}
+            return {"outbox": await counters(active_store()), "delivery_verified": False}
         except Exception:
             return JSONResponse({"ready": False}, status_code=503)
 
@@ -155,7 +162,7 @@ def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresSta
         async def execute(state: Conversation):
             apply_update(spec, state, event)
         try:
-            status, _ = await store.process(
+            status, _ = await active_store().process(
                 event.update_id, message.chat.id, message.from_user.id, execute)
         except AmbiguousDelivery as exc:
             raise HTTPException(503, "Update requires operator reconciliation") from exc
