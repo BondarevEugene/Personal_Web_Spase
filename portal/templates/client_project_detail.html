@@ -46,5 +46,6 @@
 <textarea id="project-review-comment" name="comment" minlength="15" maxlength="2000" rows="4" required placeholder="{{ t('Опишите, что нужно исправить или дополнить') }}"></textarea></label>
 <button type="submit" class="button button-line">{{ t("Вернуть на доработку") }}</button>
 </form>
+<p>{{ t("Перед окончательной приёмкой согласуйте последнюю версию документа «Описание результата».") }}</p>
 <form method="post" action="/account/projects/{{ project.id }}/accept"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit" class="button button-primary">{{ t("Подтвердить приёмку ↗") }}</button></form>{% else %}<p>{{ t("Приёмку подтверждает владелец организации.") }}</p>{% endif %}</section>{% endif %}
 </main></body></html>
