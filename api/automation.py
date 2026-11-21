@@ -1,3 +1,5 @@
+from omni_site.automation_flagship import BY_SLUG, template_definition
+import os
 """OmniFactory Automation API: authenticated definitions, dry-runs and audits.
 
 Public webhooks are opt-in, per-workflow token-protected and dry-run-only.
@@ -117,6 +119,36 @@ def record_run(db, workflow: AutomationWorkflow, *, input_data: dict,
         raise
     return run_visible(row)
 
+@router.get("/connectors/readiness")
+def connector_readiness(request: Request):
+    """Read-only, owner-scoped prerequisites; never return credential values."""
+    with session_factory()() as db:
+        user = require_user(request, db)
+        if user.role != "owner":
+            raise HTTPException(403, "Owner access required")
+    enabled = os.getenv("OMNI_AUTOMATION_LIVE_ENABLED") == "1"
+    configured = {
+        "google_docs": bool(os.getenv("OMNI_CREDENTIAL_GOOGLE")),
+        "google_sheets": bool(os.getenv("OMNI_CREDENTIAL_GOOGLE")),
+        "facebook_page": bool(os.getenv("OMNI_CREDENTIAL_FACEBOOK")),
+        "instagram": bool(os.getenv("OMNI_CREDENTIAL_INSTAGRAM")),
+        "http": bool(os.getenv("OMNI_AUTOMATION_ALLOWED_HOSTS"))
+        and bool(os.getenv("OMNI_AUTOMATION_EGRESS_PROXY"))
+        and os.getenv("OMNI_AUTOMATION_HTTP_LIVE_ENABLED") == "1",
+    }
+    return {
+        "live_enabled": enabled,
+        "connectors": [
+            {"kind": kind, "configured": ready,
+             "live_available": bool(enabled and ready)}
+            for kind, ready in configured.items()
+        ],
+        "configuration_mode": "operator_environment_only",
+        "credentials_exposed": False,
+        "notice": "Configured does not prove external API permissions or connectivity.",
+    }
+
+
 @router.get("/connectors/diagnostics")
 def connector_diagnostics(request: Request):
     """Owner-only connector operator-gate preflight; no provider calls."""
@@ -164,6 +196,46 @@ def catalog():
 def review_workflow(definition: WorkflowDefinition):
     """Static quality analysis without running or publishing anything."""
     return analyze(definition)
+
+
+@router.get("/templates")
+def available_templates():
+    """Safe, server-maintained templates; no user credentials or dynamic code."""
+    return {"templates": [
+        {"slug": item.slug, "title": item.title, "audience": item.audience,
+         "description": item.description}
+        for item in BY_SLUG.values()
+    ]}
+
+
+@router.post("/templates/{slug}/install", status_code=201)
+def install_template(slug: str, request: Request):
+    """Clone a server-owned template into the authenticated customer's workspace."""
+    with session_factory()() as db:
+        user = require_user(request, db)
+        csrf(request)
+        if slug not in BY_SLUG:
+            raise HTTPException(404, "Template not found")
+        definition = template_definition(slug)
+        try:
+            count = db.scalar(
+                select(func.count()).select_from(AutomationWorkflow)
+                .where(AutomationWorkflow.customer_id == user.id)
+            )
+            if count >= 50:
+                raise HTTPException(409, "Maximum 50 workflows per account")
+            row = AutomationWorkflow(
+                customer_id=user.id, name=definition.name,
+                definition_json=definition.model_dump_json(),
+                revision=1, created_at=utcnow(), updated_at=utcnow(),
+            )
+            db.add(row)
+            db.commit()
+            db.refresh(row)
+            return visible(row, full=True)
+        except OperationalError:
+            db.rollback()
+            raise HTTPException(503, "Apply automation Alembic migration")
 
 
 @router.get("/workflows")
