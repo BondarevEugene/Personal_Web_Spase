@@ -726,3 +726,22 @@ class ClientProjectTimeEntry(Base):
     minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     note: Mapped[str] = mapped_column(String(500), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+
+
+class GrowthLead(Base):
+    """Opt-in public inquiry, separate from tenant-owned customers."""
+
+    __tablename__ = "portal_growth_leads"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    contact: Mapped[str] = mapped_column(String(200), nullable=False)
+    topic: Mapped[str] = mapped_column(String(160), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    source_path: Mapped[str] = mapped_column(String(200), nullable=False, default="/studio")
+    utm_source: Mapped[str] = mapped_column(String(80), nullable=False, default="")
+    utm_medium: Mapped[str] = mapped_column(String(80), nullable=False, default="")
+    utm_campaign: Mapped[str] = mapped_column(String(80), nullable=False, default="")
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="new")
+    telegram_status: Mapped[str] = mapped_column(String(24), nullable=False, default="pending")
+    created_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(), nullable=False, default=utcnow)
