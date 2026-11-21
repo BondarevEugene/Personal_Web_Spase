@@ -27,5 +27,7 @@ jobs:
         run: python -m ruff check api/automation_connections.py portal/migrations/versions/20261121_portal_20.py tests/test_automation_connections.py
       - name: Compile
         run: python -m py_compile api/automation_connections.py portal/models.py portal/migrations/versions/20261121_portal_20.py server.py tests/test_automation_connections.py
+      - name: Alembic heads (diagnostic)
+        run: python -m alembic -c portal_alembic.ini heads
       - name: Tests
         run: python -m pytest -q tests/test_automation_connections.py tests/test_connector_diagnostics.py
