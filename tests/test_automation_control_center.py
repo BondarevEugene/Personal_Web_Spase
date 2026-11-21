@@ -91,5 +91,7 @@ def test_control_page_and_browser_script_exist():
     )
     assert 'id="control-history"' in page
     assert "retry-dry-run" in script
-    assert "connectors/readiness" in script
+    assert "connectors/diagnostics" in script
+    assert "control-select-workflow" in page
+    assert "control-node-diagnostics" in page
     assert "window.confirm" in script
