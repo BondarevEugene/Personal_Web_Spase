@@ -106,3 +106,22 @@ def test_release_center_plan_ui_contract():
     assert "/deployment-plan" in js
     assert "/api/v1/builder/operations/" in js
     assert "planForm.hidden = !report.export_ready" in js
+
+
+def test_graph_release_runtime_queue_contract():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    html = (root / "templates/builder_pro_final.html").read_text(encoding="utf-8")
+    js = (root / "omni_site/static/graph_release_center.js").read_text(encoding="utf-8")
+    for identifier in ("release-runtime-plan", "release-runtime-run",
+                       "release-runtime-refresh", "release-runtime-status",
+                       "release-runtime-jobs"):
+        assert f'id="{identifier}"' in html
+        assert f"$('{identifier}')" in js
+    assert "'SIMULATE DEPLOYMENT'" in js
+    assert "'Idempotency-Key'" in js
+    assert "'X-Omni-CSRF'" in js
+    assert "/api/v1/cloud/provision/jobs" in js
+    assert "job.status === 'queued'" in js
+    assert "window.confirm" in js
