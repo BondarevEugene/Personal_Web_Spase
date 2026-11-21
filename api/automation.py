@@ -20,6 +20,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from automation.engine import RunRequest, WorkflowDefinition, bounded, execute
 from automation.diagnostics import analyze
+from omni_site.automation_flagship import BY_SLUG, template_definition
 from portal.db import session_factory
 from portal.models import AutomationRun, AutomationWorkflow, AutomationSchedule, utcnow
 from portal.routes import current_customer
@@ -140,6 +141,46 @@ def catalog():
 def review_workflow(definition: WorkflowDefinition):
     """Static quality analysis without running or publishing anything."""
     return analyze(definition)
+
+
+@router.get("/templates")
+def available_templates():
+    """Safe, server-maintained templates; no user credentials or dynamic code."""
+    return {"templates": [
+        {"slug": item.slug, "title": item.title, "audience": item.audience,
+         "description": item.description}
+        for item in BY_SLUG.values()
+    ]}
+
+
+@router.post("/templates/{slug}/install", status_code=201)
+def install_template(slug: str, request: Request):
+    """Clone a server-owned template into the authenticated customer's workspace."""
+    with session_factory()() as db:
+        user = require_user(request, db)
+        csrf(request)
+        if slug not in BY_SLUG:
+            raise HTTPException(404, "Template not found")
+        definition = template_definition(slug)
+        try:
+            count = db.scalar(
+                select(func.count()).select_from(AutomationWorkflow)
+                .where(AutomationWorkflow.customer_id == user.id)
+            )
+            if count >= 50:
+                raise HTTPException(409, "Maximum 50 workflows per account")
+            row = AutomationWorkflow(
+                customer_id=user.id, name=definition.name,
+                definition_json=definition.model_dump_json(),
+                revision=1, created_at=utcnow(), updated_at=utcnow(),
+            )
+            db.add(row)
+            db.commit()
+            db.refresh(row)
+            return visible(row, full=True)
+        except OperationalError:
+            db.rollback()
+            raise HTTPException(503, "Apply automation Alembic migration")
 
 
 @router.get("/workflows")
