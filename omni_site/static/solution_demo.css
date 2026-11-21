@@ -74,3 +74,16 @@
 @media(max-width:760px){.solution-demo-page .demo-selector,.solution-demo-page .demo-hero,.solution-demo-page .demo-problem-outcome,.solution-demo-page .demo-facts{grid-template-columns:1fr}.solution-demo-page .demo-hero-symbol{display:none}.solution-demo-page .demo-disclaimer{display:block}.solution-demo-page .demo-disclaimer span{display:block;margin-top:8px}.solution-demo-page .demo-tab{min-height:100px}.solution-demo-page .demo-flow-nodes{flex-wrap:wrap}.solution-demo-page .demo-node{flex:0 0 calc(50% - 6px);min-height:95px}.solution-demo-page .demo-node-connector{display:none}.solution-demo-page .demo-proof-links{flex-direction:column;align-items:stretch}.solution-demo-page .demo-proof-links>div:last-child{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:480px){.solution-demo-page .demo-shell{padding-top:27px}.solution-demo-page .demo-flow-label{flex-wrap:wrap}.solution-demo-page .demo-inspector-actions{flex-wrap:wrap}.solution-demo-page .demo-proof-links>div:last-child{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.solution-demo-page *{transition:none!important;animation:none!important}}
+
+/* Experience Lab / four-journey release: intentional editorial grid. */
+.solution-demo-page .demo-selector{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.solution-demo-page .demo-tab{min-height:160px;align-content:space-between;transition:background-color .18s,border-color .18s}
+.solution-demo-page .demo-tab:nth-child(4){background:#20243a}
+.solution-demo-page .demo-tab:hover{border-color:#a9bddb;background:#263348}
+.solution-demo-page .demo-tab:focus-visible,.solution-demo-page .demo-node:focus-visible,.solution-demo-page .demo-inspector-actions button:focus-visible{outline:3px solid #c6d9ff;outline-offset:3px}
+.solution-demo-page .demo-tab[aria-pressed=true]{background:#2c3951;border:2px solid #c8d8f3;box-shadow:none}
+.solution-demo-page .demo-journey[hidden]{display:none!important}
+@media(max-width:1100px){.solution-demo-page .demo-selector{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.solution-demo-page .demo-selector{grid-template-columns:repeat(2,minmax(0,1fr))}.solution-demo-page .demo-tab{min-height:130px;padding:15px}}
+@media(max-width:480px){.solution-demo-page .demo-selector{grid-template-columns:1fr}.solution-demo-page .demo-tab{min-height:105px}}
+@media(prefers-reduced-motion:reduce){.solution-demo-page .demo-tab{transition:none}}
