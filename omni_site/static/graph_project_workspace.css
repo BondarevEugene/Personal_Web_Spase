@@ -41,3 +41,14 @@ body>ol li{flex:0 0 210px;max-height:90px;overflow:hidden;line-height:1.4;margin
 #graph-backup{grid-column:2;min-width:0;background:linear-gradient(150deg,#142239,#0d1729);border:1px solid var(--omni-line);border-radius:16px;padding:18px;margin:0 0 16px;overflow-wrap:anywhere}#graph-backup a,#graph-backup input,#graph-backup button{display:block;margin:12px 0;max-width:100%}#graph-backup a{color:var(--omni-sky)}@media(max-width:900px){#graph-backup{grid-column:1}}
 
 #graph-queue-health{grid-column:2;min-width:0;background:linear-gradient(150deg,#142239,#0d1729);border:1px solid var(--omni-line);border-radius:16px;padding:18px;margin:0 0 16px}@media(max-width:900px){#graph-queue-health{grid-column:1}}
+
+/* Choice inspector: readable and touch-friendly on narrow screens. */
+#graph-inspector .graph-choice-option{display:grid;gap:10px;margin:12px 0;
+  padding:14px;border:1px solid #4c6182;border-radius:12px;background:#15243a}
+#graph-inspector .graph-choice-option label{display:block;min-width:0}
+#graph-inspector .graph-choice-option select{display:block;box-sizing:border-box;
+  width:100%;min-width:0;margin-top:8px;padding:11px;border-radius:8px;
+  border:1px solid #7184b0;background:#101c30;color:#f3f6ff;font:inherit}
+#graph-inspector .graph-choice-option button{justify-self:start;max-width:100%;
+  white-space:normal;text-align:left}
+@media(max-width:480px){#graph-inspector .graph-choice-option{padding:10px}}
