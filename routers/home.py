@@ -2,13 +2,13 @@
 from pathlib import Path
 
 from fastapi import APIRouter, Request
-from portal.db import session_factory
-from omni_site.creative_store import read_override, render_home_hero
-from portal.routes import current_customer
-from portal.security import secure_request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from core.templates import render
+from omni_site.creative_store import read_override, render_home_hero
+from portal.db import session_factory
+from portal.routes import current_customer
+from portal.security import secure_request
 
 router = APIRouter(tags=["OmniFactory Platform"])
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,6 +74,18 @@ async def cloud_deploy(request: Request):
 async def automation_studio(request: Request):
     """Real workflow editor with explicit dry-run execution controls."""
     return render(request, "automation_studio.html")
+
+
+@router.get("/automation/control", response_class=HTMLResponse)
+async def automation_control(request: Request):
+    """Authenticated operational console backed by Automation Engine API."""
+    secure_request(request)
+    with session_factory()() as db:
+        if current_customer(request, db) is None:
+            return RedirectResponse("/account/login", status_code=303)
+    response = render(request, "automation_control.html")
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @router.get("/robotization", response_class=HTMLResponse)
