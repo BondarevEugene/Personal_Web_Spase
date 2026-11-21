@@ -1,0 +1,16 @@
+**/.env
+**/.env.*
+**/.git
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/*.pem
+**/*.key
+**/*.sqlite
+**/*.sqlite3
+**/node_modules
+**/chroma_db_storage
+**/cie_data
+**/archive
+**/data
