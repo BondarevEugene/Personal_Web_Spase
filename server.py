@@ -39,6 +39,8 @@ from api.simple_builder import router as simple_builder_router
 from api.product_factory import router as product_factory_router
 from api.builder_projects import router as builder_projects_router
 from api.automation import router as automation_router, WEBHOOKS as automation_webhook_router
+from api.automation_connections import router as automation_connections_router
+from api.automation_oauth import router as automation_oauth_router
 from api.cloud_deploy import router as cloud_deploy_router
 from api.railway_connections import router as railway_connections_router
 from api.bot_lab import router as bot_lab_router
@@ -117,6 +119,8 @@ app.include_router(simple_builder_router)
 app.include_router(product_factory_router)
 app.include_router(builder_projects_router)
 app.include_router(automation_router)
+app.include_router(automation_connections_router)
+app.include_router(automation_oauth_router)
 app.include_router(automation_webhook_router)
 app.include_router(cloud_deploy_router)
 app.include_router(railway_connections_router)
