@@ -727,7 +727,7 @@ _RAILWAY_CONFIG = json.dumps({
     "$schema": "https://railway.app/railway.schema.json",
     "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
     "deploy": {"restartPolicyType": "ON_FAILURE", "restartPolicyMaxRetries": 10},
-}, indent=2) + "\\n"
+}, indent=2) + "\n"
 
 _DEPLOY_README = """# Railway deployment · Telegram bot
 
