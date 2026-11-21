@@ -1,0 +1,22 @@
+name: Telegram PostgreSQL Webhook Contract
+on:
+  pull_request:
+    paths:
+      - "runtime/telegram/**"
+      - "tests/test_telegram_postgres_webhook.py"
+      - ".github/workflows/telegram_postgres_webhook.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  postgres-webhook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r runtime/telegram/requirements.txt pytest ruff
+      - run: python -m ruff check runtime/telegram/postgres_webhook.py tests/test_telegram_postgres_webhook.py
+      - run: python -m pytest -q tests/test_telegram_postgres_webhook.py tests/test_telegram_runtime_production.py
