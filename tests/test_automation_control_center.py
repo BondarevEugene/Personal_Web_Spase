@@ -95,3 +95,19 @@ def test_control_page_and_browser_script_exist():
     assert "control-select-workflow" in page
     assert "control-node-diagnostics" in page
     assert "window.confirm" in script
+
+
+def test_connection_management_ui_wires_real_owner_api():
+    root = Path(__file__).resolve().parents[1]
+    page = (root / "templates" / "automation_control.html").read_text(encoding="utf-8")
+    script = (root / "omni_site" / "static" / "automation_control.js").read_text(encoding="utf-8")
+    assert 'id="control-connect-form"' in page
+    assert 'id="control-connections"' in page
+    assert "oauth/" in script
+    assert "/connections" in script
+    assert "/health" in script
+    assert "/disconnect" in script
+    assert "/audit" in script
+    assert "X-Omni-CSRF" in script
+    assert "window.confirm" in script
+    assert "textContent" in script
