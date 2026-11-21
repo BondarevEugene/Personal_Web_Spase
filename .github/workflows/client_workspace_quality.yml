@@ -3,7 +3,7 @@ name: OMNIFACTORY client workspace quality
 on:
   pull_request:
     branches:
-      - feat/founders-omni-editorial-20261116
+      - feat/graph-runtime-incident-triage-20261121
     paths:
       - "portal/**"
       - "server.py"
@@ -13,6 +13,7 @@ on:
       - "tests/test_project_revision_gate.py"
       - "tests/test_project_archive.py"
       - "tests/test_project_handover_verification.py"
+      - "tests/test_project_delivery_approval_gate.py"
       - "scripts/verify_project_archive.py"
       - ".github/workflows/client_workspace_quality.yml"
   workflow_dispatch:
