@@ -148,7 +148,9 @@ def review_workflow(definition: WorkflowDefinition):
 def connector_readiness(request: Request):
     """Read-only, owner-scoped prerequisites; never return credential values."""
     with session_factory()() as db:
-        require_user(request, db)
+        user = require_user(request, db)
+        if user.role != "owner":
+            raise HTTPException(403, "Owner access required")
     enabled = os.getenv("OMNI_AUTOMATION_LIVE_ENABLED") == "1"
     configured = {
         "google_docs": bool(os.getenv("OMNI_CREDENTIAL_GOOGLE")),
