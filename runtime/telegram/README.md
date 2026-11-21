@@ -20,11 +20,17 @@ secret/config system, **not** the visual builder JSON or Git:
 Use HTTPS termination and configure Telegram's `setWebhook` separately
 using your trusted deployment operator; it is deliberately not automatic.
 
-**Important limits:** dialogue state is in memory; no distributed lock,
-durable cursor, update deduplication, delayed queues, automatic bot token
-rotation or post-deploy cutover verification. Run one replica only in isolated
-development. Reboots lose conversation state. A production release still needs
-PostgreSQL/Redis state, auditing, idempotent update receipts and cost controls.
+**Persistence and staging:** optional SQLite-backed dialogue cursors and
+update receipts are implemented for a single replica. Set
+`OMNI_STATE_SQLITE_PATH` to a persistent volume path. With
+`OMNI_RUNTIME_PRODUCTION=1`, startup rejects a missing or relative SQLite
+path and rejects `WEB_CONCURRENCY` other than 1. The update receipt
+distinguishes in-flight and completed events; abandoned in-flight events can
+be retried after five minutes. Telegram delivery remains at-least-once,
+not exactly-once.
 
-Do not deploy this container to real clients until it passes threat modelling,
-reproducible image/SBOM/vulnerability checks and full Telegram E2E testing.
+See [RAILWAY_STAGING.md](RAILWAY_STAGING.md) for step-by-step Railway
+configuration, verification endpoints and Telegram E2E acceptance.
+
+Do not deploy to real clients before threat modelling, image provenance,
+backups and successful live Telegram testing.
