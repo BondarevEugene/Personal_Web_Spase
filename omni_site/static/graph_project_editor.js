@@ -341,17 +341,55 @@
       edit("Следующий блок", "next");
     }
     if (node.kind === "choice") {
+      const help = document.createElement("p");
+      help.textContent = "Каждая кнопка ведёт к конкретному блоку. " +
+        "Изменения сохраняются только после нажатия «Сохранить изменения».";
+      inspector.append(help);
       for (const [index, option] of node.options.entries()) {
-        inspector.append(field("Кнопка " + (index + 1), option.label,
-          value => { option.label = value; }));
-        inspector.append(field("Цель кнопки " + (index + 1), option.target,
-          value => { option.target = value; }));
+        const row = document.createElement("div");
+        row.className = "graph-choice-option";
+        const label = field("Кнопка " + (index + 1), option.label, value => {
+          option.label = value;
+          markDirty();
+        });
+        const destination = document.createElement("label");
+        destination.textContent = "Переход к блоку";
+        const select = document.createElement("select");
+        select.setAttribute("aria-label", "Переход кнопки " + (index + 1));
+        for (const target of project.scenario.nodes) {
+          const item = document.createElement("option");
+          item.value = target.id;
+          item.textContent = target.id + " · " + target.kind;
+          select.append(item);
+        }
+        select.value = option.target;
+        select.addEventListener("change", () => {
+          option.target = select.value;
+          renderCanvas();
+          markDirty();
+        });
+        destination.append(select);
+        row.append(label, destination);
+        if (node.options.length > 1) {
+          row.append(makeButton("Удалить кнопку " + (index + 1), () => {
+            node.options.splice(index, 1);
+            renderWorkbench();
+            renderCanvas();
+            markDirty();
+          }));
+        }
+        inspector.append(row);
       }
-      inspector.append(makeButton("+ Кнопка", () => {
+      const addOption = makeButton("+ Кнопка", () => {
         if (node.options.length >= 8) return;
-        node.options.push({label: "Вариант", target: project.scenario.start});
+        node.options.push({label: "Вариант " + (node.options.length + 1),
+          target: project.scenario.start});
         renderWorkbench();
-      }));
+        renderCanvas();
+        markDirty();
+      });
+      addOption.disabled = node.options.length >= 8;
+      inspector.append(addOption);
     }
     inspector.append(makeButton("Соединить с другим блоком", () => {
       connectingFrom = node.id;
