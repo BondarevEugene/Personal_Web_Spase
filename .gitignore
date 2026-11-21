@@ -89,3 +89,8 @@ portal_dev.sqlite3-*
 /.venv-clean/
 
 /.venv-clean/
+
+# Never commit Firebase / Google Cloud service-account credentials
+*firebase-adminsdk*.json
+*service-account*.json
+*service_account*.json
