@@ -56,7 +56,7 @@ def test_export_contains_compilable_source_and_no_secrets():
     with ZipFile(BytesIO(r.content)) as archive:
         assert set(archive.namelist()) == {
             "scenario.json", "bot.py", "requirements.txt", ".env.example", "README.md",
-            "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md"
+            "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md", "smoke.py"
         }
         source = archive.read("bot.py").decode()
         compile(source, "bot.py", "exec")
