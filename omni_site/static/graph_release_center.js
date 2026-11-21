@@ -26,6 +26,9 @@
   const gateChecks = $('release-gate-checks');
   const gateRequest = $('release-gate-request');
   const gateReviewStatus = $('release-gate-review-status');
+  const fleetRefresh = $('release-fleet-refresh');
+  const fleetStatus = $('release-fleet-status');
+  const fleetServices = $('release-fleet-services');
   let releaseGate = null;
   let inspected = null;
   let sequence = 0;
@@ -294,6 +297,44 @@
       gateReviewStatus.textContent = 'Запрос не создан: ' + error.message;
     } finally {
       gateRequest.disabled = !releaseGate;
+    }
+  });
+  fleetRefresh.addEventListener('click', async () => {
+    if (!inspected) return;
+    const current = inspected;
+    fleetRefresh.disabled = true;
+    fleetStatus.textContent = 'Проверяем подключённые Railway-сервисы…';
+    fleetServices.replaceChildren();
+    try {
+      const response = await fetch('/api/v1/cloud/fleet/services?refresh=true',
+        {credentials: 'same-origin'});
+      if (!response.ok) throw Error('HTTP ' + response.status);
+      const result = await response.json();
+      if (!inspected || inspected.id !== current.id ||
+          inspected.revision !== current.revision) return;
+      const plans = new Set([...runtimePlan.options].map(option => option.value));
+      const services = result.services.filter(service => plans.has(service.plan_id));
+      fleetStatus.textContent = 'Найдено сервисов: ' + services.length +
+        '. Проверка Telegram-доставки не выполнялась.';
+      if (!services.length)
+        fleetServices.append(item('p', 'Для этого проекта пока нет подключённых Railway-сервисов.'));
+      for (const service of services) {
+        const panel = document.createElement('div');
+        panel.className = 'graph-release-runtime-job';
+        panel.append(item('p', service.plan_name + ' · Railway: ' +
+          (service.provider_status || 'неизвестно')));
+        panel.append(item('p', 'Состояние: ' +
+          service.reconciliation.state +
+          ' · проверено: ' + (service.last_checked_at || 'никогда')));
+        if (service.provider_error)
+          panel.append(item('p', 'Ошибка: ' + service.provider_error));
+        panel.append(item('p', 'Работа Telegram-бота: не подтверждена'));
+        fleetServices.append(panel);
+      }
+    } catch (error) {
+      fleetStatus.textContent = 'Не удалось получить статус Railway: ' + error.message;
+    } finally {
+      fleetRefresh.disabled = false;
     }
   });
   project.addEventListener('change', reset);
