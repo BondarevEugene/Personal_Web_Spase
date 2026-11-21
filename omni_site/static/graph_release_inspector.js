@@ -11,6 +11,28 @@
   const trace = $('release-inspect-trace');
   if (!project || !run || !state || !summary || !issues || !cases || !trace) return;
   let serial = 0;
+  const coverage = $('release-inspect-coverage');
+  const readiness = $('release-inspect-readiness');
+  const edgeList = $('release-inspect-edges');
+  const statusLabels = {
+    completed: 'Завершён', awaiting_choice: 'Ожидает кнопку',
+    awaiting_input: 'Ожидает ввод', step_limit: 'Лимит шагов',
+    invalid_input: 'Неверный ввод', invalid_choice: 'Неверная кнопка'
+  };
+  const markNodes = (ids, className) => {
+    const lookup = new Set(ids);
+    for (const node of document.querySelectorAll('.graph-node')) {
+      if (lookup.has(node.dataset.nodeId)) node.classList.add(className);
+    }
+  };
+  const removeMarkers = () => {
+    for (const node of document.querySelectorAll(
+      '.graph-release-focus,.graph-release-blocker,.graph-release-untested,.graph-release-unreachable'
+    )) node.classList.remove(
+      'graph-release-focus', 'graph-release-blocker',
+      'graph-release-untested', 'graph-release-unreachable'
+    );
+  };
   const element = (tag, className, content) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -20,10 +42,10 @@
   const clear = () => {
     serial++;
     run.disabled = false;
-    for (const node of [summary, issues, cases, trace]) node.replaceChildren();
+    for (const node of [summary, issues, cases, trace, coverage, readiness, edgeList])
+      if (node) node.replaceChildren();
     state.textContent = 'Выберите сохранённый проект и запустите проверку.';
-    for (const node of document.querySelectorAll('.graph-release-focus'))
-      node.classList.remove('graph-release-focus');
+    removeMarkers();
   };
   function focus(id) {
     const node = [...document.querySelectorAll('.graph-node')]
@@ -92,6 +114,45 @@
       summary.append(element('p', '', matrix.completed_cases + ' завершённых из ' +
         matrix.case_count + ' тестов · экспорт ' +
         (evidence.export_ready ? 'разрешён' : 'заблокирован')));
+      if (coverage) {
+        coverage.append(element('strong', '', 'Покрытие переходов: ' +
+          matrix.covered_edge_count + ' / ' + matrix.reachable_edge_count +
+          ' · ' + matrix.edge_coverage_percent + '%'));
+        coverage.append(element('p', '', 'Недостижимых блоков: ' +
+          matrix.unreachable_nodes.length + ' · достижимых без теста: ' +
+          matrix.untested_reachable_nodes.length + ' · непроверенных кнопок: ' +
+          matrix.untested_choice_options.length));
+      }
+      if (readiness) {
+        readiness.append(element('strong', '',
+          evidence.export_ready ? '✓ Экспорт доступен' : '✕ Экспорт заблокирован'));
+        readiness.append(element('p', '',
+          evidence.blockers.length + ' блокирующих ошибок · ' +
+          evidence.warnings.length + ' предупреждений'));
+        readiness.append(element('p', '', 'Запуск в Telegram требует ручной настройки хостинга и BOT_TOKEN.'));
+      }
+      markNodes(matrix.unreachable_nodes, 'graph-release-unreachable');
+      markNodes(matrix.untested_reachable_nodes, 'graph-release-untested');
+      markNodes(evidence.blockers.map(item => item.node_id), 'graph-release-blocker');
+      if (edgeList) {
+        for (const edge of matrix.uncovered_edges) {
+          const button = element('button', 'graph-release-issue',
+            'Не проверен переход: ' + edge.source + ' → ' + edge.target);
+          button.type = 'button';
+          button.addEventListener('click', () => focus(edge.source));
+          edgeList.append(button);
+        }
+        for (const option of matrix.untested_choice_options) {
+          const button = element('button', 'graph-release-issue',
+            'Не проверена кнопка ' + (option.option_index + 1) +
+            ': ' + option.node_id + ' → ' + option.target);
+          button.type = 'button';
+          button.addEventListener('click', () => focus(option.node_id));
+          edgeList.append(button);
+        }
+        if (!edgeList.children.length) edgeList.append(
+          element('p', '', 'Все статически достижимые переходы проверены.'));
+      }
       if (matrix.truncated) summary.append(element('p', 'graph-release-warning',
         'Достигнут лимит тестовых путей: ' + matrix.max_cases));
       for (const issue of [...evidence.blockers, ...evidence.warnings]) {
@@ -104,7 +165,7 @@
       if (!issues.children.length) issues.append(element('p', '', 'Нет ошибок и предупреждений.'));
       for (const test of matrix.cases) {
         const button = element('button', 'graph-release-case',
-          'Тест ' + test.number + ' · ' + test.status + ' · ' + test.path.join(' → '));
+          'Тест ' + test.number + ' · ' + (statusLabels[test.status] || test.status) + ' · ' + test.path.join(' → '));
         button.type = 'button';
         button.addEventListener('click', () => renderTrace(test));
         cases.append(button);
