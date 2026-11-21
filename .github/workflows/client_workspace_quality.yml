@@ -6,6 +6,8 @@ on:
       - feat/graph-runtime-incident-triage-20261121
     paths:
       - "portal/**"
+      - "omni_site/static/client_workspace.css"
+      - "tests/test_client_workspace_premium_shell.py"
       - "server.py"
       - "tests/test_client_workspace_center.py"
       - "tests/test_client_decisions.py"
@@ -39,8 +41,8 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install "pytest>=8,<10" "ruff>=0.9,<1"
       - name: Ruff workspace and regression tests
-        run: python -m ruff check scripts/verify_project_archive.py tests/test_project_handover_verification.py portal/workspace_center.py portal/client_decisions.py portal/project_dialogue.py portal/project_archive.py tests/test_project_archive.py tests/test_project_revision_gate.py tests/test_project_dialogue.py tests/test_client_workspace_center.py tests/test_client_decisions.py tests/test_project_dialogue.py tests/test_project_revision_gate.py tests/test_project_archive.py
+        run: python -m ruff check scripts/verify_project_archive.py tests/test_project_handover_verification.py portal/workspace_center.py portal/client_decisions.py portal/project_dialogue.py portal/project_archive.py tests/test_project_archive.py tests/test_project_revision_gate.py tests/test_project_dialogue.py tests/test_client_workspace_center.py tests/test_client_decisions.py tests/test_project_dialogue.py tests/test_project_revision_gate.py tests/test_project_archive.py tests/test_client_workspace_premium_shell.py
       - name: Alembic migrations
         run: python -m alembic -c portal_alembic.ini upgrade head
       - name: Client workspace regressions
-        run: python -m pytest -q --tb=short tests/test_project_handover_verification.py tests/test_client_workspace_center.py tests/test_client_decisions.py
+        run: python -m pytest -q --tb=short tests/test_project_handover_verification.py tests/test_client_workspace_center.py tests/test_client_decisions.py tests/test_client_workspace_premium_shell.py
