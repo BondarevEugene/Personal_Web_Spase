@@ -222,6 +222,7 @@ class AutomationOAuthState(Base):
 
     __tablename__ = "portal_automation_oauth_states"
     nonce_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    pkce_verifier_ciphertext: Mapped[bytes | None] = mapped_column(LargeBinary(), nullable=True)
     connection_id: Mapped[str] = mapped_column(
         ForeignKey("portal_automation_connections.id"), index=True, nullable=False)
     customer_id: Mapped[str] = mapped_column(
