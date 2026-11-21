@@ -19,6 +19,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from automation.engine import RunRequest, WorkflowDefinition, bounded, execute
+from automation.connector_diagnostics import diagnose, operator_overview
 from automation.diagnostics import analyze
 from portal.db import session_factory
 from portal.models import AutomationRun, AutomationWorkflow, AutomationSchedule, utcnow
@@ -115,6 +116,29 @@ def record_run(db, workflow: AutomationWorkflow, *, input_data: dict,
         db.commit()
         raise
     return run_visible(row)
+
+@router.get("/connectors/diagnostics")
+def connector_diagnostics(request: Request):
+    """Owner-only connector operator-gate preflight; no provider calls."""
+    with session_factory()() as db:
+        user = require_user(request, db)
+        if user.role != "owner":
+            raise HTTPException(403, "Owner access required")
+    return operator_overview()
+
+
+@router.get("/workflows/{workflow_id}/connectors/diagnostics")
+def workflow_connector_diagnostics(workflow_id: str, request: Request):
+    """Owner-only, tenant-scoped workflow connector configuration preflight."""
+    with session_factory()() as db:
+        user = require_user(request, db)
+        if user.role != "owner":
+            raise HTTPException(403, "Owner access required")
+        workflow = row_for(db, user.id, workflow_id)
+        definition = WorkflowDefinition.model_validate_json(workflow.definition_json)
+        result = diagnose(definition)
+        return {"workflow_id": workflow.id, "revision": workflow.revision, **result}
+
 
 @router.get("/catalog")
 def catalog():
