@@ -49,23 +49,38 @@
       }
       if(!data.runs.length)history.append(el('p','Запусков пока нет.'));
       const workflows=$('control-workflow-list');workflows.replaceChildren();
+      const chooser=$('control-select-workflow');const previous=chooser.value;
+      chooser.replaceChildren(new Option('Выберите сценарий',''));
       for(const flow of data.workflows){
+        chooser.add(new Option(flow.name+' · v'+flow.revision,flow.id));
         const box=item(flow.name,'Версия '+flow.revision+' · обновлён '+flow.updated_at);
         const link=el('a','Открыть в Studio ↗');link.href='/automation/studio';box.append(link);workflows.append(box);
       }
+      if(data.workflows.some(flow=>flow.id===previous))chooser.value=previous;
       if(!data.workflows.length)workflows.append(el('p','Сценариев пока нет.'));
       state('Данные обновлены. Показаны только сохранённые события вашего аккаунта.');
     }catch(error){state('Не удалось загрузить данные: '+error.message,true);}
     try{
-      const data=await get('/connectors/readiness');
+      const data=await get('/connectors/diagnostics');
       const root=$('control-readiness');root.replaceChildren();
       for(const connector of data.connectors){
-        root.append(item(connector.kind,connector.configured?'Настройки присутствуют · live '+(connector.live_available?'разрешён':'выключен'):'Настройки отсутствуют'));
+        root.append(item(connector.label,connector.status==='operator_gate_ready'?'Операторские ограничения готовы · доступ API не проверен':'Ограничения: '+connector.reasons.join(', ')));
       }
     }catch(error){
       $('control-readiness').textContent='Доступно только владельцу аккаунта. Данные о секретах не раскрываются.';
     }finally{$('control-refresh').disabled=false;}
   }
+  $('control-diagnose').addEventListener('click',async()=>{
+    const id=$('control-select-workflow').value;
+    const root=$('control-node-diagnostics');root.replaceChildren();
+    if(!id){root.textContent='Выберите сценарий.';return;}
+    try{
+      const data=await get('/workflows/'+encodeURIComponent(id)+'/connectors/diagnostics');
+      root.append(el('p','Версия '+data.revision+' · готово '+data.ready+' · требуется настройка '+data.blocked));
+      for(const node of data.nodes){root.append(item(node.label+' · '+node.node_id,node.status==='configuration_ready'?'Настройки готовы; разрешения внешнего API не проверены':'Требуется настройка: '+node.reasons.join(', ')));}
+      if(!data.nodes.length)root.append(el('p','В этом сценарии нет узлов внешних интеграций.'));
+    }catch(error){root.textContent='Диагностика недоступна: '+error.message;}
+  });
   $('control-refresh').addEventListener('click',refresh);
   void refresh();
 })();

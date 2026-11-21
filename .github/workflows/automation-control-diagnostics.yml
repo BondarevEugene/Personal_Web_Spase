@@ -1,9 +1,11 @@
-name: Automation Control Center diagnostics
+name: Automation Flagship diagnostics
 
 on:
   pull_request:
     paths:
       - "api/automation.py"
+      - "automation/connector_diagnostics.py"
+      - "tests/test_connector_diagnostics.py"
       - "routers/home.py"
       - "templates/automation_control.html"
       - "templates/automation_studio.html"
@@ -12,7 +14,7 @@ on:
       - ".github/workflows/automation-control-diagnostics.yml"
   push:
     branches:
-      - "feat/automation-control-center-20261121"
+      - "feat/automation-integration-diagnostics-20261121"
   workflow_dispatch:
 
 permissions:
@@ -35,8 +37,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt pytest ruff
       - name: Ruff on changed Python files
-        run: python -m ruff check api/automation.py routers/home.py tests/test_automation_control_center.py
+        run: python -m ruff check api/automation.py routers/home.py automation/connector_diagnostics.py tests/test_automation_control_center.py tests/test_connector_diagnostics.py
       - name: Compile changed Python files
-        run: python -m py_compile api/automation.py routers/home.py tests/test_automation_control_center.py
+        run: python -m py_compile api/automation.py routers/home.py automation/connector_diagnostics.py tests/test_automation_control_center.py tests/test_connector_diagnostics.py
       - name: Automation regression tests
-        run: python -m pytest -q tests/test_automation_control_center.py tests/test_automation_template_install.py tests/test_automation_flagship.py
+        run: python -m pytest -q tests/test_automation_control_center.py tests/test_automation_template_install.py tests/test_automation_flagship.py tests/test_connector_diagnostics.py

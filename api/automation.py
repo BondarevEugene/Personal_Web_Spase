@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
+from automation.connector_diagnostics import diagnose, operator_overview
 from automation.diagnostics import analyze
 from automation.engine import RunRequest, WorkflowDefinition, bounded, execute
 from omni_site.automation_flagship import BY_SLUG, template_definition
@@ -172,6 +173,29 @@ def connector_readiness(request: Request):
         "credentials_exposed": False,
         "notice": "Configured does not prove external API permissions or connectivity.",
     }
+
+
+@router.get("/connectors/diagnostics")
+def connector_diagnostics(request: Request):
+    """Owner-only operator gate diagnostics, without network requests."""
+    with session_factory()() as db:
+        user = require_user(request, db)
+        if user.role != "owner":
+            raise HTTPException(403, "Owner access required")
+    return operator_overview()
+
+
+@router.get("/workflows/{workflow_id}/connectors/diagnostics")
+def workflow_connector_diagnostics(workflow_id: str, request: Request):
+    """Owner-only, customer-scoped node preflight for persisted workflows."""
+    with session_factory()() as db:
+        user = require_user(request, db)
+        if user.role != "owner":
+            raise HTTPException(403, "Owner access required")
+        workflow = row_for(db, user.id, workflow_id)
+        definition = WorkflowDefinition.model_validate_json(workflow.definition_json)
+        result = diagnose(definition)
+        return {"workflow_id": workflow.id, "revision": workflow.revision, **result}
 
 
 @router.get("/templates")
