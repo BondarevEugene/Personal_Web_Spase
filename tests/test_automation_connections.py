@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy.pool import StaticPool
 
 from api import automation_connections as connections
 from portal.db import Base
@@ -12,7 +13,7 @@ from portal.models import AutomationConnection, AutomationConnectionEvent
 
 
 def test_registry_is_tenant_scoped_and_append_only(monkeypatch):
-    engine = create_engine("sqlite://")
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)
     user = SimpleNamespace(id="00000000-0000-0000-0000-000000000001", role="owner")
     monkeypatch.setattr(connections, "session_factory", lambda: lambda: Session(engine))
@@ -53,7 +54,7 @@ def test_registry_is_tenant_scoped_and_append_only(monkeypatch):
 
 
 def test_connection_mutations_require_owner_and_csrf(monkeypatch):
-    engine = create_engine("sqlite://")
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     Base.metadata.create_all(engine)
     user = SimpleNamespace(id="00000000-0000-0000-0000-000000000003", role="member")
     monkeypatch.setattr(connections, "session_factory", lambda: lambda: Session(engine))
