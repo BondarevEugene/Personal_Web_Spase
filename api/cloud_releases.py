@@ -60,7 +60,7 @@ def snapshot(db, owner_id: str, bot_id: str, plan_id: str):
     # unpinned graph plans remain readable but cannot authorize a release.
     if spec.version.startswith("graph-"):
         from api.builder_projects import project_revision
-        expected = "graph-" + bot.id + "-r" + project_revision(bot)
+        expected = "graph-" + bot.id + "-r" + project_revision(bot)[:48]
         if spec.version != expected:
             raise HTTPException(409, "Graph plan revision changed; create a new plan")
     if spec.runtime != "telegram_aiogram":
