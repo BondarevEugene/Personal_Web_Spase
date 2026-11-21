@@ -27,7 +27,7 @@ class ContextFactory:
 
 
 def client(monkeypatch, *, db=None, user=None):
-    monkeypatch.setattr(automation, "session_factory", ContextFactory(db))
+    monkeypatch.setattr(automation, "session_factory", lambda: ContextFactory(db))
     if user is None:
         def reject(request, session):
             raise HTTPException(401, "Sign in")
