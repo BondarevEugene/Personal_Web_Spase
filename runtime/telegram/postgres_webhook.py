@@ -10,13 +10,19 @@ import re
 import secrets
 from contextlib import asynccontextmanager
 
+import asyncpg
+
 from aiogram import Bot
 from aiogram.types import Update
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 try:
-    from runtime.telegram.postgres_state import AmbiguousDelivery, Conversation, PostgresStateStore
+    from runtime.telegram.postgres_state import (
+        AmbiguousDelivery,
+        Conversation,
+        PostgresStateStore,
+    )
     from runtime.telegram.scenario import BODY_LIMIT
 except ModuleNotFoundError:
     from postgres_state import AmbiguousDelivery, Conversation, PostgresStateStore
@@ -134,7 +140,7 @@ def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresSta
                 await conn.fetchval("SELECT 1")
             return {"ready": True, "mode": "postgresql",
                     "telegram_delivery_verified": False}
-        except Exception:
+        except (asyncpg.PostgresError, OSError, TimeoutError):
             return JSONResponse({"ready": False, "mode": "postgresql"}, status_code=503)
 
     @app.get("/outbox/health")
@@ -145,7 +151,7 @@ def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresSta
             from outbox import counters
         try:
             return {"outbox": await counters(active_store()), "delivery_verified": False}
-        except Exception:
+        except (asyncpg.PostgresError, OSError, TimeoutError):
             return JSONResponse({"ready": False}, status_code=503)
 
     @app.post("/telegram/webhook")
