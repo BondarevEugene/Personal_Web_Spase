@@ -9,12 +9,18 @@ import asyncio
 import os
 import re
 import secrets
+import sqlite3
 from contextlib import asynccontextmanager
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.filters import CommandStart
-from aiogram.types import (CallbackQuery, InlineKeyboardButton,
-                           InlineKeyboardMarkup, Message, Update)
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+    Update,
+)
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
@@ -196,7 +202,7 @@ def build_runtime(scenario: dict, bot: Bot, webhook_secret: str,
                                  "telegram_delivery_verified": False})
         try:
             healthy = store.check()
-        except Exception:
+        except (sqlite3.Error, OSError, ValueError):
             healthy = False
         return JSONResponse(
             {"ready": healthy, "mode": "persistent",
