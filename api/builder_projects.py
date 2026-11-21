@@ -425,7 +425,7 @@ def create_graph_deployment_plan(
         spec = DeploymentSpec(
             name=body.name, runtime="telegram_aiogram",
             mode=body.mode, provider="railway",
-            transport=body.transport, version="graph-" + row.id + "-r" + body.revision,
+            transport=body.transport, version="graph-" + row.id + "-r" + body.revision[:48],
             max_monthly_usd=body.max_monthly_usd,
             secret_refs=["BOT_TOKEN"],
         )
