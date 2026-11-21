@@ -15,6 +15,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from api.graph_release_evidence import release_evidence
+from api.graph_test_matrix import dialogue_matrix
 from api.simple_builder import (
     Scenario,
     SimulationRequest,
@@ -529,3 +530,22 @@ def saved_graph_release_evidence(id: str, request: Request):
             raise HTTPException(404, "Project not found")
         scenario = Scenario.model_validate_json(row.scenario_json)
         return release_evidence(scenario, row.id, project_revision(row))
+
+
+@router.get("/{id}/test-matrix")
+def saved_graph_test_matrix(id: str, request: Request):
+    """Owner-only reproducible branch simulation of the saved graph."""
+    with session_factory()() as db:
+        user = customer_required(request, db)
+        row = db.scalar(select(BuilderProject).where(
+            BuilderProject.id == project_id(id),
+            BuilderProject.customer_id == user.id,
+        ))
+        if row is None:
+            raise HTTPException(404, "Project not found")
+        scenario = Scenario.model_validate_json(row.scenario_json)
+        return {
+            "project_id": row.id,
+            "revision": project_revision(row),
+            **dialogue_matrix(scenario),
+        }
