@@ -15,6 +15,11 @@
   const planHistory = $('release-plan-history');
   const planName = $('release-plan-name');
   const planBudget = $('release-plan-budget');
+  const runtimePlan = $('release-runtime-plan');
+  const runtimeRun = $('release-runtime-run');
+  const runtimeRefresh = $('release-runtime-refresh');
+  const runtimeStatus = $('release-runtime-status');
+  const runtimeJobs = $('release-runtime-jobs');
   let inspected = null;
   let sequence = 0;
   const reset = () => {
@@ -24,6 +29,12 @@
     planForm.hidden = true;
     planStatus.textContent = '';
     planHistory.replaceChildren();
+    runtimePlan.replaceChildren();
+    runtimePlan.append(item('option', 'Сначала проверьте проект'));
+    runtimePlan.value = '';
+    runtimeRun.disabled = true;
+    runtimeJobs.replaceChildren();
+    runtimeStatus.textContent = '';
     steps.replaceChildren();
     summary.replaceChildren();
     instructions.replaceChildren();
@@ -45,11 +56,20 @@
     planHistory.replaceChildren();
     planHistory.append(item('h3', 'Сохранённые планы и фактические события'));
     if (!data.plans.length) planHistory.append(item('p', 'Планов пока нет.'));
+    runtimePlan.replaceChildren();
+    const placeholder = item('option', 'Выберите план');
+    placeholder.value = '';
+    runtimePlan.append(placeholder);
     for (const plan of data.plans) {
+      const option = item('option', plan.name + ' · ' + plan.status);
+      option.value = plan.id;
+      if (plan.status === 'planned') runtimePlan.append(option);
       planHistory.append(item('p', plan.name + ' · ' + plan.status +
         ' · заданий: ' + plan.jobs.length + ' · согласований: ' + plan.reviews.length));
     }
+    runtimeRun.disabled = !runtimePlan.value;
     planHistory.append(item('p', 'Планы не подтверждают работающий Telegram-бот.'));
+    await loadJobs(id, ticket);
   }
   planForm.addEventListener('submit', async event => {
     event.preventDefault();
@@ -91,6 +111,97 @@
       planStatus.textContent = 'Не удалось сохранить план: ' + error.message;
     } finally {
       submit.disabled = false;
+    }
+  });
+  runtimePlan.addEventListener('change', () => {
+    runtimeRun.disabled = !runtimePlan.value || !inspected || !inspected.ready;
+  });
+  async function loadJobs(id, ticket) {
+    const response = await fetch('/api/v1/cloud/provision/jobs',
+      {credentials: 'same-origin'});
+    if (!response.ok) return;
+    const data = await response.json();
+    if (ticket !== sequence || project.value !== id) return;
+    const allowed = new Set([...runtimePlan.options].map(option => option.value));
+    runtimeJobs.replaceChildren();
+    const related = data.jobs.filter(job => allowed.has(job.plan_id));
+    if (!related.length) runtimeJobs.append(item('p', 'Заданий для доступных планов нет.'));
+    for (const job of related) {
+      const panel = document.createElement('div');
+      panel.className = 'graph-release-runtime-job';
+      panel.append(item('p', 'Задание ' + job.id + ' · ' + job.status +
+        ' · режим: ' + job.mode));
+      const details = item('button', 'События');
+      details.type = 'button';
+      details.addEventListener('click', async () => {
+        const response = await fetch('/api/v1/cloud/provision/jobs/' +
+          encodeURIComponent(job.id), {credentials: 'same-origin'});
+        if (!response.ok) return;
+        const full = await response.json();
+        const log = document.createElement('ol');
+        for (const event of full.events)
+          log.append(item('li', event.code + ' · ' + event.message));
+        panel.querySelectorAll('ol').forEach(node => node.remove());
+        panel.append(log);
+      });
+      panel.append(details);
+      if (job.status === 'queued') {
+        const cancel = item('button', 'Отменить задание');
+        cancel.type = 'button';
+        cancel.addEventListener('click', async () => {
+          if (!window.confirm('Отменить ожидающую dry-run проверку?')) return;
+          const tokenResponse = await fetch('/api/v1/builder/projects/csrf',
+            {credentials: 'same-origin'});
+          if (!tokenResponse.ok) return;
+          const token = (await tokenResponse.json()).csrf_token;
+          const response = await fetch('/api/v1/cloud/provision/jobs/' +
+            encodeURIComponent(job.id) + '/cancel', {
+            method: 'POST', credentials: 'same-origin',
+            headers: {'X-Omni-CSRF': token}
+          });
+          if (response.ok) await loadJobs(id, sequence);
+          else runtimeStatus.textContent = 'Отмена не выполнена: HTTP ' + response.status;
+        });
+        panel.append(cancel);
+      }
+      runtimeJobs.append(panel);
+    }
+  }
+  runtimeRefresh.addEventListener('click', () => {
+    if (inspected && project.value === inspected.id)
+      loadPlans(inspected.id, sequence);
+  });
+  runtimeRun.addEventListener('click', async () => {
+    if (!inspected || !inspected.ready || !runtimePlan.value) return;
+    if (!window.confirm('Создать dry-run задание? Ресурсы Railway НЕ создаются.')) return;
+    const current = inspected;
+    const planId = runtimePlan.value;
+    runtimeRun.disabled = true;
+    runtimeStatus.textContent = 'Отправляем задание в очередь…';
+    try {
+      const csrfResponse = await fetch('/api/v1/builder/projects/csrf',
+        {credentials: 'same-origin'});
+      if (!csrfResponse.ok) throw Error('CSRF HTTP ' + csrfResponse.status);
+      const csrf = (await csrfResponse.json()).csrf_token;
+      const key = 'graph-' + planId.replace(/-/g, '') + '-' +
+        Date.now().toString(36);
+      const response = await fetch('/api/v1/cloud/provision/jobs', {
+        method: 'POST', credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json', 'X-Omni-CSRF': csrf,
+          'Idempotency-Key': key},
+        body: JSON.stringify({plan_id: planId, confirmation: 'SIMULATE DEPLOYMENT'})
+      });
+      if (!response.ok) throw Error('HTTP ' + response.status);
+      const result = await response.json();
+      if (inspected && inspected.id === current.id) {
+        runtimeStatus.textContent = 'Задание ' + result.id +
+          ' добавлено в очередь. Выполнение требует отдельного worker.';
+        await loadJobs(current.id, sequence);
+      }
+    } catch (error) {
+      runtimeStatus.textContent = 'Ошибка очереди: ' + error.message;
+    } finally {
+      runtimeRun.disabled = !runtimePlan.value;
     }
   });
   project.addEventListener('change', reset);
