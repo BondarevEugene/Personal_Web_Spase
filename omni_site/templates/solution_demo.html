@@ -2,10 +2,10 @@
 <html lang="ru"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index,follow">
-<meta name="description" content="Интерактивная демонстрация OMNIFACTORY: от задачи бизнеса к архитектуре CRM, Telegram-бота или автоматизации. Схемы, этапы, технические решения и честные ограничения.">
+<meta name="description" content="Интерактивная демонстрация OMNIFACTORY: от задачи бизнеса к архитектуре CRM, Telegram-бота, автоматизации или AI-ассистента. Схемы, этапы, технические решения и честные ограничения.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="OMNIFACTORY · Интерактивная инженерная демонстрация">
-<title>Интерактивная демонстрация CRM, Telegram и автоматизации · OMNIFACTORY</title>
+<title>Интерактивная демонстрация CRM, Telegram, AI и автоматизации · OMNIFACTORY</title>
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/journal.css?v=1">
 <link rel="stylesheet" href="/studio-assets/solution_demo.css?v=1">
@@ -46,7 +46,7 @@
 </button>
 {% endfor %}
 </div>
-<div class="demo-flow-progress"><div class="demo-progress-track"><div data-demo-progress style="width:20%"></div></div><span data-demo-counter>01 / 05</span></div>
+<div class="demo-flow-progress"><div class="demo-progress-track"><div data-demo-progress style="width:{{ (100 / journey.steps|length)|round(1) }}%"></div></div><span data-demo-counter>01 / {{ "%02d"|format(journey.steps|length) }}</span></div>
 </div>
 <div class="demo-inspector" id="demo-inspector-{{ journey.slug }}" aria-live="polite" aria-atomic="true">
 <div class="demo-inspector-header"><span>ENGINEERING INSPECTOR</span><span>READ-ONLY</span></div>
@@ -60,7 +60,7 @@
 </div>
 <div class="demo-facts"><div><span>ИЗ ИСХОДНОГО ПРОЕКТА</span><ul>{% for fact in journey.facts %}<li>{{ fact }}</li>{% endfor %}</ul></div><div><span>ГРАНИЦЫ РЕШЕНИЯ</span><ul>{% for limitation in journey.constraints %}<li>{{ limitation }}</li>{% endfor %}</ul></div></div>
 <div class="demo-proof-links"><div><strong>Не просто схема — изучите работающие части продукта.</strong><p>Перейдите к архитектурному кейсу, услуге или соответствующему рабочему разделу.</p></div>
-<div><a href="{{ journey.case_url }}">Проверить кейс ↗</a><a href="{{ journey.service_url }}">Услуга ↗</a><a href="{{ journey.product_url }}">Открыть инструмент ↗</a></div></div>
+<div><a href="{{ journey.case_url }}">Проверить кейс ↗</a><a href="{{ journey.service_url }}">Услуга ↗</a><a href="/demo/blueprint?sector={{ journey.slug }}">Собрать бриф по сценарию ↗</a><a href="{{ journey.product_url }}">Открыть инструмент ↗</a></div></div>
 </section>
 {% endfor %}
 <section class="blueprint-demo-entry" aria-labelledby="blueprint-demo-entry-title"><div><span class="eyebrow">NEXT LEVEL / BLUEPRINT STUDIO</span><h2 id="blueprint-demo-entry-title">НЕ ТОЛЬКО СМОТРЕТЬ.<br><em>СПРОЕКТИРОВАТЬ.</em></h2><p>После знакомства с архитектурой соберите собственный предварительный бриф: команда, текущий процесс, приоритеты и интеграции. Без регистрации, оплаты или хранения введённых данных.</p><a href="/demo/blueprint">Собрать мой архитектурный бриф ↗</a></div><div class="blueprint-demo-entry-sign" aria-hidden="true">◈</div></section>
