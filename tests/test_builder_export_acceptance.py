@@ -49,10 +49,12 @@ def exported_module(tmp_path):
         names = set(archive.namelist())
         assert names == {"bot.py", "scenario.json", "requirements.txt",
                          ".env.example", "README.md",
-                         "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md", "smoke.py",
-            ".github/workflows/verify.yml"}
+                         "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md",
+                         "smoke.py", ".github/workflows/verify.yml"}
         for name in names:
-            (tmp_path / name).write_bytes(archive.read(name))
+            destination = tmp_path / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(archive.read(name))
     assert json.loads((tmp_path / "scenario.json").read_text(
         encoding="utf-8"
     ))["start"] == "welcome"
