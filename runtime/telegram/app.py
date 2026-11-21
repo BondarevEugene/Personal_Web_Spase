@@ -24,8 +24,12 @@ from aiogram.types import (
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from scenario import BODY_LIMIT, read_scenario
-from state import DialogueStore
+if __package__:
+    from .scenario import BODY_LIMIT, read_scenario
+    from .state import DialogueStore
+else:
+    from scenario import BODY_LIMIT, read_scenario
+    from state import DialogueStore
 
 TOKEN_PATTERN = re.compile(r"^[0-9]{5,15}:[A-Za-z0-9_-]{30,100}$")
 PLACEHOLDER = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
