@@ -711,6 +711,42 @@ Type /start in your Telegram bot to begin the conversation.
 """
 
 
+_DOCKERFILE = """FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY bot.py scenario.json ./
+RUN useradd --create-home --uid 10001 omni && mkdir -p /data && chown omni:omni /data
+USER omni
+ENV OMNI_STATE_DB=/data/bot_state.sqlite3
+CMD ["python", "bot.py"]
+"""
+
+_RAILWAY_CONFIG = json.dumps({
+    "$schema": "https://railway.app/railway.schema.json",
+    "build": {"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile"},
+    "deploy": {"restartPolicyType": "ON_FAILURE", "restartPolicyMaxRetries": 10},
+}, indent=2) + "\n"
+
+_DEPLOY_README = """# Railway deployment · Telegram bot
+
+1. Create a NEW Railway service from the extracted ZIP files in a private
+   GitHub repository (or upload the files using Railway's supported workflow).
+2. Add BOT_TOKEN as a Railway secret; never put the token in Git.
+3. Attach a Railway volume mounted at /data BEFORE starting the bot.
+   The generated Dockerfile stores SQLite state at /data/bot_state.sqlite3.
+4. Run exactly ONE replica. Polling and local SQLite are not multi-replica safe.
+5. Deploy the service and inspect logs. Send /start to your bot and test
+   all branches, inputs, variables and restart persistence.
+6. Revoke the bot token immediately if accidentally exposed.
+
+This ZIP is a runnable aiogram bot, not an automatically provisioned service.
+There is no HTTP health endpoint: it is a Telegram polling worker.
+Railway configuration intentionally does not set a web healthcheck.
+Do not connect this bot to the OmniFactory production service/database.
+"""
+
 @router.post("/export")
 def export_scenario(scenario: Scenario):
     """Return a fixed-template ZIP, never executing user content as Python."""
@@ -732,6 +768,9 @@ def export_scenario(scenario: Scenario):
         output.writestr("requirements.txt", "aiogram>=3.0,<4.0\n")
         output.writestr(".env.example", "BOT_TOKEN=YOUR_BOTFATHER_TOKEN\n")
         output.writestr("README.md", _README)
+        output.writestr("Dockerfile", _DOCKERFILE)
+        output.writestr("railway.json", _RAILWAY_CONFIG)
+        output.writestr("DEPLOY_RAILWAY.md", _DEPLOY_README)
     try:
         contract = verify_export_archive(mem.getvalue())
     except ExportContractError as exc:

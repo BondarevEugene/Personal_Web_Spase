@@ -48,7 +48,8 @@ def exported_module(tmp_path):
         # Verify exact contents and that the export does not contain secrets.
         names = set(archive.namelist())
         assert names == {"bot.py", "scenario.json", "requirements.txt",
-                         ".env.example", "README.md"}
+                         ".env.example", "README.md",
+                         "Dockerfile", "railway.json", "DEPLOY_RAILWAY.md"}
         for name in names:
             (tmp_path / name).write_bytes(archive.read(name))
     assert json.loads((tmp_path / "scenario.json").read_text(
