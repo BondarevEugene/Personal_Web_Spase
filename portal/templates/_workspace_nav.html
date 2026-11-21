@@ -1,6 +1,7 @@
 <nav class="workspace-nav" aria-label="Рабочие разделы OMNIFACTORY">
+  <div class="workspace-nav-caption"><span class="workspace-nav-label">OMNIFACTORY <span class="workspace-nav-slash">/</span> CLIENT WORKSPACE</span><span class="workspace-nav-caption-note">{{ t("Проекты, решения и коммуникации в одном месте") }}</span></div>
   <div class="workspace-nav-inner">
-    <a href="/account" {% if request.url.path == "/account" or request.url.path == "/account/" %}aria-current="page"{% endif %}>{{ t("Обзор") }}</a>
+    <a class="workspace-nav-home" href="/account" {% if request.url.path == "/account" or request.url.path == "/account/" %}aria-current="page"{% endif %}>{{ t("Обзор") }}</a>
     <a href="/account/workspace" {% if request.url.path.startswith("/account/workspace") %}aria-current="page"{% endif %}>{{ t("Центр проектов") }}</a>
     <a href="/account/projects" {% if request.url.path.startswith("/account/projects") %}aria-current="page"{% endif %}>{{ t("Заказы") }}</a>
     <a href="/account/decisions" {% if request.url.path.startswith("/account/decisions") %}aria-current="page"{% endif %}>{{ t("Согласования") }}</a>
@@ -10,8 +11,8 @@
     <a href="/account/billing" {% if request.url.path.startswith("/account/billing") %}aria-current="page"{% endif %}>{{ t("Тарифы") }}</a>
     <a href="/account/security" {% if request.url.path.startswith("/account/security") %}aria-current="page"{% endif %}>{{ t("Безопасность") }}</a>
     <span class="workspace-nav-separator" aria-hidden="true"></span>
-    <a href="/architect">Graph Studio</a>
-    <a href="/automation/studio">Automation Studio</a>
+    <a class="workspace-nav-tool" href="/architect">Graph Studio</a>
+    <a class="workspace-nav-tool" href="/automation/studio">Automation Studio</a>
     <form class="workspace-language" action="/account/language" method="post" aria-label="Interface language">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button type="submit" name="language" value="uk" {% if ui_lang == "uk" %}aria-pressed="true"{% endif %}>UA</button>
