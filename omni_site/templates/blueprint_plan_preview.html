@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Предпросмотр Blueprint · OMNIFACTORY</title>
+<link rel="stylesheet" href="/studio-assets/site.css?v=3">
+<link rel="stylesheet" href="/studio-assets/public_shell.css?v=1">
+<link rel="stylesheet" href="/studio-assets/blueprint_plan_preview.css?v=1">
+</head>
+<body class="platform-app blueprint-preview-page">
+<a class="skip-link" href="#main">К содержанию</a>
+{% include "_public_header.html" %}
+<main id="main" class="container blueprint-preview-main">
+<nav class="blueprint-preview-nav" aria-label="Путь"><a href="/">OMNIFACTORY</a> / <a href="/demo/blueprint">Blueprint Studio</a> / Предпросмотр</nav>
+<header class="blueprint-preview-hero">
+<span class="eyebrow">PROJECT BLUEPRINT / READ-ONLY REVIEW</span>
+<h1>Паспорт проекта</h1>
+<p>Редакция <code>{{ preview.revision }}</code>. Структура файла проверена. Проект не сохранён и не создан; сценарии и интеграции не выполнялись.</p>
+<strong class="blueprint-preview-state">Проверено · Не импортировано</strong>
+</header>
+<section class="blueprint-preview-stats" aria-label="Сводка проекта">
+<div><strong>{{ preview.components }}</strong><span>Компонентов</span></div>
+<div><strong>{{ preview.connections }}</strong><span>Связей</span></div>
+<div><strong>{{ preview.milestones }}</strong><span>Этапов</span></div>
+<div><strong>{{ preview.checks }}</strong><span>Проверок</span></div>
+<div><strong>{{ preview.risks }}</strong><span>Рисков</span></div>
+</section>
+<section class="blueprint-preview-panel">
+<h2>01 / Архитектура</h2>
+<p>Предварительная последовательность компонентов. Это не исполняемый граф автоматизации.</p>
+<div class="blueprint-preview-table-wrap"><table><thead><tr><th>Компонент</th><th>Назначение</th></tr></thead><tbody>
+{% for node in architecture.nodes %}<tr><td><code>{{ node.id }}</code></td><td>{{ node.label }}</td></tr>{% endfor %}
+</tbody></table></div>
+<h3>Интеграции</h3>
+{% if architecture.integrations %}<ul>{% for item in architecture.integrations %}<li>{{ item.name }} — не подключена</li>{% endfor %}</ul>{% else %}<p>Не выбраны.</p>{% endif %}
+</section>
+<section class="blueprint-preview-panel">
+<h2>02 / План реализации</h2>
+<div class="blueprint-preview-table-wrap"><table><thead><tr><th>Этап</th><th>Результат</th><th>Зависимости</th></tr></thead><tbody>
+{% for item in milestones %}<tr><td><strong>{{ item.id }}</strong> {{ item.title }}</td><td>{{ item.deliverable }}</td><td>{{ item.depends_on|join(", ") if item.depends_on else "—" }}</td></tr>{% endfor %}
+</tbody></table></div>
+</section>
+<section class="blueprint-preview-panel">
+<h2>03 / Критерии проверки</h2>
+<div class="blueprint-preview-table-wrap"><table><thead><tr><th>ID</th><th>Проверка</th><th>Результат</th></tr></thead><tbody>
+{% for item in checks %}<tr><td><code>{{ item.id }}</code></td><td>{{ item.description }}</td><td>Не выполнялась</td></tr>{% endfor %}
+</tbody></table></div>
+</section>
+<section class="blueprint-preview-panel">
+<h2>04 / Риски</h2>
+<div class="blueprint-preview-table-wrap"><table><thead><tr><th>ID</th><th>Описание</th><th>Статус</th></tr></thead><tbody>
+{% for item in risks %}<tr><td><code>{{ item.id }}</code></td><td>{{ item.description }}</td><td>Открыт</td></tr>{% endfor %}
+</tbody></table></div>
+</section>
+<footer class="blueprint-preview-actions"><a href="/demo/blueprint">Вернуться в Blueprint Studio</a><p>Для сохранения проекта или создания workflow необходим отдельный авторизованный шаг. Этот экран не меняет данные.</p></footer>
+</main>
+{% include "_public_footer.html" %}
+</body></html>
