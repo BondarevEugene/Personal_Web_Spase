@@ -81,6 +81,81 @@
       if(!data.nodes.length)root.append(el('p','В этом сценарии нет узлов внешних интеграций.'));
     }catch(error){root.textContent='Диагностика недоступна: '+error.message;}
   });
+  async function csrfToken(){
+    const response=await fetch('/api/v1/builder/projects/csrf',{credentials:'same-origin'});
+    if(!response.ok)throw Error('Требуется вход в аккаунт');
+    const data=await response.json();
+    return data.csrf_token;
+  }
+  async function connectionPost(path,payload){
+    const headers={'X-Omni-CSRF':await csrfToken()};
+    if(payload!==undefined)headers['Content-Type']='application/json';
+    const response=await fetch('/api/v1/automation/'+path,{method:'POST',credentials:'same-origin',headers,
+      ...(payload===undefined?{}:{body:JSON.stringify(payload)})});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    return response.json();
+  }
+  const connectionStatus=message=>{$('control-connections-status').textContent=message;};
+  async function refreshConnections(){
+    const root=$('control-connections');root.replaceChildren();
+    try{
+      const response=await fetch('/api/v1/automation/connections',{credentials:'same-origin'});
+      if(!response.ok)throw Error('HTTP '+response.status);
+      const data=await response.json();
+      for(const connection of data.connections){
+        const card=item(connection.label,connection.provider+' · '+connection.status);
+        const actions=el('div');actions.className='control-connection-actions';
+        if(connection.authorization==='oauth'&&connection.status!=='disconnected'){
+          const auth=el('button','Авторизовать');auth.type='button';auth.className='control-action';
+          auth.addEventListener('click',async()=>{
+            auth.disabled=true;
+            try{const result=await connectionPost('oauth/'+encodeURIComponent(connection.id)+'/start');
+              const target=new URL(result.authorization_url);
+              if(target.protocol!=='https:')throw Error('Некорректный адрес OAuth');
+              window.location.assign(target.href);
+            }catch(error){connectionStatus('Авторизация недоступна: '+error.message);auth.disabled=false;}
+          });actions.append(auth);
+        }
+        if(connection.status!=='disconnected'){
+          const health=el('button','Проверить доступ');health.type='button';health.className='control-action';
+          health.addEventListener('click',async()=>{
+            health.disabled=true;
+            try{const result=await connectionPost('connections/'+encodeURIComponent(connection.id)+'/health');
+              connectionStatus(connection.label+': '+result.health+' · permissions_verified='+result.permissions_verified);
+              await refreshConnections();
+            }catch(error){connectionStatus('Проверка не выполнена: '+error.message);}finally{health.disabled=false;}
+          });actions.append(health);
+          const disconnect=el('button','Отключить');disconnect.type='button';disconnect.className='control-action';
+          disconnect.addEventListener('click',async()=>{
+            if(!window.confirm('Отключить интеграцию и удалить сохранённый токен?'))return;
+            disconnect.disabled=true;
+            try{await connectionPost('connections/'+encodeURIComponent(connection.id)+'/disconnect');
+              connectionStatus('Подключение отключено.');await refreshConnections();
+            }catch(error){connectionStatus('Отключение не выполнено: '+error.message);disconnect.disabled=false;}
+          });actions.append(disconnect);
+        }
+        const audit=el('button','Журнал');audit.type='button';audit.className='control-action';
+        audit.addEventListener('click',async()=>{
+          audit.disabled=true;
+          try{const data=await get('/connections/'+encodeURIComponent(connection.id)+'/audit');
+            const detail=el('pre',data.events.map(e=>e.created_at+' · '+e.action).join('\\n')||'Событий нет');
+            card.querySelectorAll('pre').forEach(node=>node.remove());card.append(detail);
+          }catch(error){connectionStatus('Журнал недоступен: '+error.message);}finally{audit.disabled=false;}
+        });actions.append(audit);card.append(actions);root.append(card);
+      }
+      if(!data.connections.length)root.append(el('p','Подключений пока нет. Создайте первое выше.'));
+      connectionStatus('Подключения загружены. Авторизация и проверка разрешений — разные этапы.');
+    }catch(error){connectionStatus('Управление подключениями доступно владельцу после входа: '+error.message);}
+  }
+  $('control-connect-form').addEventListener('submit',async event=>{
+    event.preventDefault();const button=event.currentTarget.querySelector('button[type=submit]');
+    button.disabled=true;
+    try{await connectionPost('connections',{provider:$('control-provider').value,
+      label:$('control-connection-label').value.trim()});
+      $('control-connection-label').value='';await refreshConnections();
+    }catch(error){connectionStatus('Создание не выполнено: '+error.message);}finally{button.disabled=false;}
+  });
   $('control-refresh').addEventListener('click',refresh);
   void refresh();
+  void refreshConnections();
 })();
