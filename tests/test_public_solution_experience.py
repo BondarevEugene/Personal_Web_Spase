@@ -10,17 +10,17 @@ ROOT = Path(__file__).resolve().parents[1]
 CLIENT = TestClient(app)
 
 
-def test_three_real_scenarios_and_guarded_claims():
+def test_four_real_scenarios_and_guarded_claims():
     assert {item.slug for item in JOURNEYS} == {
-        "crm", "telegram", "automation",
+        "crm", "telegram", "automation", "ai",
     }
     assert len(BY_SLUG) == len(JOURNEYS)
     for item in JOURNEYS:
-        assert len(item.steps) == 5
+        assert len(item.steps) >= 5
         assert len(item.constraints) >= 2
         assert len(item.facts) >= 3
         assert {step.code for step in item.steps} == {
-            "01", "02", "03", "04", "05",
+            f"{index:02d}" for index in range(1, len(item.steps) + 1)
         }
         assert {step.node_type for step in item.steps} <= {
             "input", "database", "workflow", "decision", "output",
