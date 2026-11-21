@@ -15,6 +15,7 @@
   const planHistory = $('release-plan-history');
   const planName = $('release-plan-name');
   const planBudget = $('release-plan-budget');
+  const planMode = $('release-plan-mode');
   const runtimePlan = $('release-runtime-plan');
   const runtimeRun = $('release-runtime-run');
   const runtimeRefresh = $('release-runtime-refresh');
@@ -106,7 +107,7 @@
         body: JSON.stringify({
           revision: current.revision,
           name: planName.value.trim(),
-          mode: 'managed',
+          mode: planMode.value,
           transport: 'worker',
           max_monthly_usd: Number(planBudget.value)
         })
@@ -244,18 +245,13 @@
       const result = await response.json();
       if (!inspected || inspected.revision !== current.revision ||
           runtimePlan.value !== planId) return;
-      const checks = [
-        ['Готовность согласования', result.ready_for_review],
-        ['Подтверждённый образ', Boolean(result.approved_image)],
-        ['Подключение и привязка', result.binding_verified],
-        ['OAuth Railway', result.oauth_current],
-        ['Токен Telegram', result.token_verified]
-      ];
-      for (const [label, value] of checks)
-        gateChecks.append(item('li', label + ': ' +
-          (value === true ? 'готово' : value === false ? 'не готово' : 'см. детали проверки')));
-      for (const issue of (result.blockers || []))
-        gateChecks.append(item('li', typeof issue === 'string' ? issue : JSON.stringify(issue)));
+      for (const check of result.checks || [])
+        gateChecks.append(item('li', (check.ok ? '✓ ' : '✕ ') +
+          check.message));
+      gateChecks.append(item('li', 'Подтверждённый образ: ' +
+        (result.approved_image ? 'задан оператором' : 'не задан')));
+      gateChecks.append(item('li', 'Платный запуск: ' +
+        (result.ready_for_paid_deployment ? 'допущен' : 'заблокирован')));
       gateStatus.textContent = result.ready_for_review ?
         'Предварительная проверка пройдена. Можно запросить согласование.' :
         'Публикация заблокирована: устраните замечания.';
