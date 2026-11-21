@@ -182,6 +182,20 @@ def audit(base_url: str, output: Path) -> int:
                             ).inner_text()
                             if heading != "Условия":
                                 issues.append("demo inspector stale")
+                    if route == "/demo/blueprint" and width <= 430:
+                        file_picker = page.locator("#blueprint-plan-file")
+                        if not file_picker.count():
+                            issues.append("Blueprint JSON import picker missing")
+                        else:
+                            bounds = file_picker.bounding_box()
+                            if (
+                                bounds is None
+                                or bounds["x"] < -2
+                                or bounds["x"] + bounds["width"] > width + 2
+                            ):
+                                issues.append(
+                                    "Blueprint JSON import picker overflows mobile viewport"
+                                )
                     if route == "/demo/blueprint":
                         if page.locator("#blueprint-form").count() != 1:
                             issues.append("Blueprint form missing")
