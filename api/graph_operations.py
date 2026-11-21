@@ -46,7 +46,9 @@ def operations(project_id: UUID, request: Request):
                 spec = json.loads(plan.manifest_json)
             except (ValueError, TypeError):
                 continue
-            if spec.get("version") == "graph-" + project.id:
+            if (spec.get("version") == "graph-" + project.id or
+                    str(spec.get("version", "")).startswith(
+                        "graph-" + project.id + "-r")):
                 relevant.append(plan)
         result = []
         for plan in relevant:
