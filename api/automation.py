@@ -1,5 +1,3 @@
-from omni_site.automation_flagship import BY_SLUG, template_definition
-import os
 """OmniFactory Automation API: authenticated definitions, dry-runs and audits.
 
 Public webhooks are opt-in, per-workflow token-protected and dry-run-only.
@@ -11,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 import secrets
 from datetime import timedelta
 from uuid import UUID
@@ -23,6 +22,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from automation.engine import RunRequest, WorkflowDefinition, bounded, execute
 from automation.connector_diagnostics import diagnose, operator_overview
 from automation.diagnostics import analyze
+from omni_site.automation_flagship import BY_SLUG, template_definition
 from portal.db import session_factory
 from portal.models import AutomationRun, AutomationWorkflow, AutomationSchedule, utcnow
 from portal.routes import current_customer
