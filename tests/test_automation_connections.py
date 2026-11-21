@@ -29,7 +29,7 @@ def test_registry_is_tenant_scoped_and_append_only(monkeypatch):
     assert created.status_code == 201, created.text
     payload = created.json()
     assert payload["status"] == "pending_setup"
-    assert payload["authorization"] == "not_implemented"
+    assert payload["authorization"] == "oauth"
     assert client.get("/api/v1/automation/connections").json()["connections"][0]["id"] == payload["id"]
     assert client.post("/api/v1/automation/connections", json={
         "provider": "google_sheets", "label": "Main spreadsheet",
