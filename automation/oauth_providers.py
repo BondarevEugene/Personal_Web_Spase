@@ -56,5 +56,5 @@ def exchange_code(provider: str, code: str, verifier: str) -> dict:
         response.raise_for_status()
         result = response.json()
     if not isinstance(result, dict) or not isinstance(result.get("access_token"), str):
-        raise RuntimeError("OAuth provider returned no access token")
+        raise TypeError("OAuth provider returned no access token")
     return result
