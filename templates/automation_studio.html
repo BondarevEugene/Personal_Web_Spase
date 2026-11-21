@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="/studio-assets/site.css?v=3">
 <link rel="stylesheet" href="/studio-assets/legacy_refresh.css?v=1">
 <link rel="stylesheet" href="/studio-assets/automation_studio.css?v=3">
-<script defer src="/studio-assets/automation_studio.js?v=3"></script>
+<script defer src="/studio-assets/automation_studio.js?v=4"></script>
 <link rel="stylesheet" href="/studio-assets/unified_shell.css?v=1">
 </head>
 <body class="omni-revamp automation-app">
@@ -21,10 +21,13 @@
  <div><p class="omni-eyebrow">AUTOMATION STUDIO / GRAPH RUNTIME</p>
  <h1>Создай процесс. <span>Проверь каждый шаг.</span></h1>
  <p>Python-first движок с проверяемой логикой, контролем внешних операций и журналом исполнений. По умолчанию работа в безопасном режиме симуляции.</p></div>
+ <a class="auto-guide" href="/integrations">Каталог интеграций ↗</a>
  <a class="auto-guide" href="/robotization">Возможности и ограничения ↗</a>
 </div>
 <section class="auto-toolbar" aria-label="Управление workflow">
  <label>Название сценария<input id="auto-name" maxlength="100" value="Новая автоматизация"></label>
+ <label>Готовый шаблон<select id="auto-templates"><option value="">— Загрузка —</option></select></label>
+ <button id="auto-install-template">Установить шаблон</button>
  <button id="auto-new">＋ Новый</button><button id="auto-demo">Пример</button>
  <button id="auto-save" class="primary">Сохранить в аккаунте</button>
  <label>Сохранённые сценарии<select id="auto-workflows"><option value="">— Выбрать —</option></select></label>
