@@ -1,6 +1,6 @@
 """Connector diagnostics must be safe, deterministic and owner-scoped."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
 from api import automation
@@ -71,6 +71,11 @@ def test_diagnostic_endpoints_require_authentication(monkeypatch):
             return False
 
     monkeypatch.setattr(automation, "session_factory", lambda: lambda: Context())
+
+    def reject(request, db):
+        raise HTTPException(401, "Sign in")
+
+    monkeypatch.setattr(automation, "require_user", reject)
     app = FastAPI()
     app.include_router(automation.router)
     client = TestClient(app)
