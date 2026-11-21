@@ -141,7 +141,7 @@ def audit(base_url: str, output: Path) -> int:
                     if route == "/":
                         if page.locator(
                             ".omni-hero-pathways a"
-                        ).count() != 4:
+                        ).count() != 3:
                             issues.append("hero business routes missing")
                         if width <= 430:
                             contact = page.locator(".omni-mobile-contact")
@@ -161,7 +161,7 @@ def audit(base_url: str, output: Path) -> int:
                     if route in ("/demo", "/demo/telegram"):
                         if page.locator(
                             "[data-demo-tab]"
-                        ).count() != 3:
+                        ).count() != 4:
                             issues.append("demo scenarios missing")
                         else:
                             page.locator(
@@ -194,7 +194,7 @@ def audit(base_url: str, output: Path) -> int:
                                 issues.append("Blueprint result text missing")
                             if page.locator(
                                 ".blueprint-content-grid .blueprint-block"
-                            ).count() != 4:
+                            ).count() != 3:
                                 issues.append("Blueprint architecture panels missing")
                     if route == "/services" and not page.locator(
                         'a[href="/services/custom-crm"]'
