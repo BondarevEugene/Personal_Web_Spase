@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 from xml.sax.saxutils import escape
 
 from fastapi import APIRouter
@@ -20,6 +20,7 @@ PUBLIC_PATHS = (
 )
 PRIVATE_PREFIXES = (
     "/account", "/support", "/api", "/bots", "/admin", "/cloud",
+    "/dashboard", "/automation/studio", "/docs", "/redoc", "/openapi.json",
 )
 
 
@@ -30,6 +31,8 @@ def canonical_origin(value: str) -> str | None:
         if (parsed.scheme != "https" or not parsed.hostname
                 or parsed.username or parsed.password
                 or parsed.path not in {"", "/"} or parsed.query or parsed.fragment):
+            return None
+        if any(char.isspace() for char in value) or parsed.port == 0:
             return None
         # This origin is configured by the operator, never inferred from Host.
         return value.strip().rstrip("/")
@@ -53,14 +56,14 @@ def sitemap():
     origin = canonical_origin(os.getenv("OMNI_PUBLIC_BASE_URL", ""))
     if origin is None:
         return Response(status_code=404)
-    paths = (*PUBLIC_PATHS, *(f"/journal/{article.slug}" for article in ARTICLES),
-             *(f"/cases/{item.slug}" for item in CASES),
-             *(f"/services/{service.slug}" for service in SERVICES),
-             *(f"/trust/{page.slug}" for page in PAGES),
-             *(f"/demo/{journey.slug}" for journey in JOURNEYS))
+    paths = (*PUBLIC_PATHS, *(f"/journal/{quote(article.slug, safe='')}" for article in ARTICLES),
+             *(f"/cases/{quote(item.slug, safe='')}" for item in CASES),
+             *(f"/services/{quote(service.slug, safe='')}" for service in SERVICES),
+             *(f"/trust/{quote(page.slug, safe='')}" for page in PAGES),
+             *(f"/demo/{quote(journey.slug, safe='')}" for journey in JOURNEYS))
     urls = "\n".join(
         "  <url><loc>" + escape(origin + path) + "</loc></url>"
-        for path in paths
+        for path in dict.fromkeys(paths)
     )
     body = '<?xml version="1.0" encoding="UTF-8"?>\n'
     body += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
