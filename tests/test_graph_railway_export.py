@@ -30,6 +30,7 @@ def test_export_contains_runnable_worker_and_persistent_state_contract():
     with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
         dockerfile = archive.read("Dockerfile").decode()
         railway = json.loads(archive.read("railway.json"))
+        assert "RUN python smoke.py" in dockerfile
         assert "USER omni" in dockerfile
         assert "OMNI_STATE_DB=/data/bot_state.sqlite3" in dockerfile
         assert railway["build"]["builder"] == "DOCKERFILE"
