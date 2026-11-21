@@ -312,8 +312,20 @@ def export_saved_project(id: str, request: Request):
         ))
         if row is None:
             raise HTTPException(404, "Project not found")
+        expected = request.headers.get("If-Match")
+        if not expected:
+            raise HTTPException(428, detail={
+                "code": "REVISION_REQUIRED",
+                "message": "Укажите ревизию сохранённого проекта перед выпуском.",
+            })
+        ensure_revision(request, row)
         scenario = Scenario.model_validate_json(row.scenario_json)
-    return export_scenario(scenario)
+        revision = project_revision(row)
+    response = export_scenario(scenario)
+    response.headers["X-Omni-Project-Revision"] = revision
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 
 @router.post("/{id}/duplicate", status_code=201)
