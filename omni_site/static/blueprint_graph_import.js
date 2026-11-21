@@ -16,7 +16,9 @@
   const previewResult = document.getElementById("blueprint-graph-preview-result");
   previewButton?.addEventListener("click", async () => {
     if (!previewResult || previewButton.disabled) return;
-    if (!form.reportValidity()) return;
+    const file = form.querySelector("#blueprint-import-file");
+    const name = form.querySelector("#blueprint-import-name");
+    if (!file?.reportValidity() || !name?.reportValidity()) return;
     previewButton.disabled = true;
     previewResult.textContent = "Проверяем схему…";
     try {
