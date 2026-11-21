@@ -1,0 +1,37 @@
+name: OMNIFACTORY Railway release readiness
+
+on:
+  pull_request:
+    branches:
+      - feat/graph-runtime-incident-triage-20261121
+      - main
+    paths:
+      - "Dockerfile"
+      - "railway.json"
+      - "server.py"
+      - "routers/home.py"
+      - "docs/RAILWAY_PLATFORM_RELEASE.md"
+      - "tests/test_railway_platform_release.py"
+      - ".github/workflows/railway_platform_release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install regression dependencies
+        run: python -m pip install "pytest>=8,<10" "ruff>=0.9,<1"
+      - name: Lint release contracts
+        run: python -m ruff check tests/test_railway_platform_release.py
+      - name: Verify release contracts
+        run: python -m pytest -q tests/test_railway_platform_release.py
+      - name: Validate Railway JSON
+        run: python -m json.tool railway.json > /dev/null
