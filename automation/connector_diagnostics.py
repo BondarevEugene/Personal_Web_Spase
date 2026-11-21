@@ -43,9 +43,8 @@ def _gate(kind: str) -> list[str]:
 
 def _node_issues(kind: str, config: dict) -> list[str]:
     issues = []
-    if kind != "http":
-        if config.get("action") != ACTIONS[kind]:
-            issues.append("unsupported_action")
+    if kind != "http" and config.get("action") != ACTIONS[kind]:
+        issues.append("unsupported_action")
     credential = config.get("credential")
     if credential:
         if not os.getenv(credential):
