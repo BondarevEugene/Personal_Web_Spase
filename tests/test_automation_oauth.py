@@ -25,6 +25,7 @@ def test_oauth_flow_encrypted_and_one_time(monkeypatch):
     monkeypatch.setattr(automation_connections, "session_factory", lambda: lambda: Session(engine))
     monkeypatch.setattr(automation_connections, "require_user", lambda req, db: user)
     monkeypatch.setattr(automation_connections, "csrf", lambda req: None)
+    monkeypatch.setattr(automation_oauth, "csrf", lambda req: None)
     monkeypatch.setenv("OMNI_CONNECTION_VAULT_KEYS", Fernet.generate_key().decode())
     monkeypatch.setenv("OMNI_GOOGLE_CLIENT_ID", "test-client")
     monkeypatch.setenv("OMNI_GOOGLE_CLIENT_SECRET", "test-secret")
