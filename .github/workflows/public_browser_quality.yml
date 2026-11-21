@@ -3,19 +3,21 @@ name: OMNIFACTORY public browser quality gate
 on:
   pull_request:
     branches:
-      - feat/founders-omni-editorial-20261116
+      - feat/graph-runtime-incident-triage-20261121
     paths:
       - "index.html"
       - "omni_site/**"
       - "routers/home.py"
       - "scripts/public_ux_audit.py"
       - "scripts/build_home_css.py"
+      - "scripts/build_home_page_css.py"
+      - "omni_site/static/home_page.bundle.css"
       - "scripts/public_asset_budget.py"
       - "tests/test_public_*.py"
       - ".github/workflows/public_browser_quality.yml"
   push:
     branches:
-      - feat/founders-omni-editorial-20261116
+      - feat/graph-runtime-incident-triage-20261121
   workflow_dispatch:
 
 permissions:
