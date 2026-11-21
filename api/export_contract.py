@@ -49,7 +49,7 @@ def verify_export_archive(archive_bytes: bytes) -> dict:
             deploy_guide = archive.read("DEPLOY_RAILWAY.md").decode("utf-8")
     except ExportContractError:
         raise
-    except (zipfile.BadZipFile, UnicodeError, OSError, RuntimeError, ValueError) as exc:
+    except (zipfile.BadZipFile, UnicodeError, OSError, RuntimeError, ValueError, SyntaxError) as exc:
         raise ExportContractError("Unreadable generated archive") from exc
     try:
         scenario = read_scenario(base64.b64encode(scenario_bytes).decode("ascii"))
