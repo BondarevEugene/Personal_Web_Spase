@@ -2,13 +2,13 @@
 from pathlib import Path
 
 from fastapi import APIRouter, Request
-from portal.db import session_factory
-from omni_site.creative_store import read_override, render_home_hero
-from portal.routes import current_customer
-from portal.security import secure_request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from core.templates import render
+from omni_site.creative_store import read_override, render_home_hero
+from portal.db import session_factory
+from portal.routes import current_customer
+from portal.security import secure_request
 
 router = APIRouter(tags=["OmniFactory Platform"])
 BASE_DIR = Path(__file__).resolve().parent.parent
