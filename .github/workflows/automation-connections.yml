@@ -1,0 +1,33 @@
+name: Automation Connection Manager checks
+on:
+  pull_request:
+    paths:
+      - "api/automation_connections.py"
+      - "portal/models.py"
+      - "portal/migrations/versions/20261121_portal_20.py"
+      - "server.py"
+      - "tests/test_automation_connections.py"
+      - ".github/workflows/automation-connections.yml"
+  push:
+    branches:
+      - "feat/automation-connection-manager-20261121"
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install pytest ruff
+      - name: Ruff
+        run: python -m ruff check api/automation_connections.py portal/migrations/versions/20261121_portal_20.py tests/test_automation_connections.py
+      - name: Compile
+        run: python -m py_compile api/automation_connections.py portal/models.py portal/migrations/versions/20261121_portal_20.py server.py tests/test_automation_connections.py
+      - name: Tests
+        run: python -m pytest -q tests/test_automation_connections.py tests/test_connector_diagnostics.py
+      - name: Migration smoke
+        run: python -m alembic -c portal/alembic.ini upgrade head
