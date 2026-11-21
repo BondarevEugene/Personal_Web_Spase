@@ -33,6 +33,18 @@ async def home(request: Request):
     return render(request, "index.html")
 
 
+@router.get("/automation/control", response_class=HTMLResponse)
+async def automation_control(request: Request):
+    """Authenticated operational console backed by Automation Engine API."""
+    secure_request(request)
+    with session_factory()() as db:
+        if current_customer(request, db) is None:
+            return RedirectResponse("/account/login", status_code=303)
+    response = render(request, "automation_control.html")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Truthful system dashboard; previous fragment was not a complete page."""
