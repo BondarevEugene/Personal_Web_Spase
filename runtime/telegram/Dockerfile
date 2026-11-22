@@ -10,6 +10,7 @@ COPY runtime/telegram/state.py /app/state.py
 COPY runtime/telegram/postgres_state.py /app/postgres_state.py
 COPY runtime/telegram/postgres_webhook.py /app/postgres_webhook.py
 COPY runtime/telegram/outbox.py /app/outbox.py
+COPY runtime/telegram/outbox_worker.py /app/outbox_worker.py
 COPY runtime/telegram/maintenance.py /app/maintenance.py
 COPY runtime/telegram/backup.py /app/backup.py
 RUN mkdir -p /data && chown 10001:10001 /data
