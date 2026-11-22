@@ -8,12 +8,12 @@ delivery. An outbox can now atomically stage commands; outbound delivery still n
 """
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import json
 import re
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Awaitable, Callable, TypeVar
+from typing import TypeVar
 
 import asyncpg
 
@@ -92,7 +92,12 @@ class Conversation:
         payload = {"text": text}
         if reply_markup is not None:
             payload["reply_markup"] = reply_markup
-        self.queue_action(chat_id, "send_message", payload)
+        if reply_markup is None:
+            if len(self.outbox) >= 50:
+                raise ValueError("Too many outbound operations in one update")
+            self.outbox.append({"chat_id": chat_id, "method": "send_message", "text": text})
+        else:
+            self.queue_action(chat_id, "send_message", payload)
 
 
 class PostgresStateStore:
@@ -104,7 +109,7 @@ class PostgresStateStore:
 
     @classmethod
     async def connect(cls, dsn: str, bot_instance_id: str,
-                      *, bootstrap_schema: bool = False) -> "PostgresStateStore":
+                      *, bootstrap_schema: bool = False) -> PostgresStateStore:
         if not dsn or not dsn.startswith(("postgresql://", "postgres://")):
             raise StoreUnavailable("PostgreSQL runtime DSN required")
         if not INSTANCE_ID.fullmatch(bot_instance_id):
@@ -120,7 +125,7 @@ class PostgresStateStore:
                     await conn.fetchval("SELECT count(*) FROM omni_telegram_update_receipts")
                     await conn.fetchval("SELECT count(*) FROM omni_telegram_outbox")
             return cls(pool, bot_instance_id)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             if "pool" in locals():
                 await pool.close()
             raise StoreUnavailable("Telegram runtime storage unavailable or schema missing") from exc
@@ -164,7 +169,7 @@ class PostgresStateStore:
                 raise AmbiguousDelivery("Update already claimed; manual reconciliation required")
         try:
             async with self.pool.acquire() as conn:
-                async with conn.transaction():
+                async with conn.transaction():  # noqa: SIM117
                     # Serialize edits to a single conversation, even across
                     # instances. Never call Telegram outside this lock.
                     await conn.execute("SELECT pg_advisory_xact_lock($1)",
@@ -201,14 +206,14 @@ class PostgresStateStore:
                             "(bot_instance_id,update_id,seq,chat_id,method,payload_json,status) "
                             "VALUES ($1,$2,$3,$4,$5,$6::jsonb,'pending')",
                             self.bot_instance_id, update_id, seq, action["chat_id"],
-                            action["method"], json.dumps(action["payload"]))
+                            action["method"], json.dumps(action.get("payload", {"text": action["text"]}) if "payload" not in action else action["payload"]))
                     await conn.execute(
                         "UPDATE omni_telegram_update_receipts "
                         "SET status='processed',updated_at=now() "
                         "WHERE bot_instance_id=$1 AND update_id=$2 AND status='processing'",
                         self.bot_instance_id, update_id)
                     return "processed", result
-        except Exception:
+        except Exception:  # noqa: BLE001
             # Any Telegram calls made before failure have uncertain outcome.
             # Do not automatically replay the same update.
             async with self.pool.acquire() as conn:
