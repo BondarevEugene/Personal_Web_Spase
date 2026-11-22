@@ -125,7 +125,7 @@ class PostgresStateStore:
                     await conn.fetchval("SELECT count(*) FROM omni_telegram_update_receipts")
                     await conn.fetchval("SELECT count(*) FROM omni_telegram_outbox")
             return cls(pool, bot_instance_id)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             if "pool" in locals():
                 await pool.close()
             raise StoreUnavailable("Telegram runtime storage unavailable or schema missing") from exc
@@ -168,8 +168,8 @@ class PostgresStateStore:
                     return "duplicate", None
                 raise AmbiguousDelivery("Update already claimed; manual reconciliation required")
         try:
-            async with self.pool.acquire() as conn:
-                async with conn.transaction():  # noqa: SIM117
+            async with self.pool.acquire() as conn:  # noqa: SIM117
+                async with conn.transaction():
                     # Serialize edits to a single conversation, even across
                     # instances. Never call Telegram outside this lock.
                     await conn.execute("SELECT pg_advisory_xact_lock($1)",
