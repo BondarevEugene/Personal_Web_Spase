@@ -5,6 +5,7 @@ on:
       - "runtime/telegram/**"
       - "tests/test_telegram_postgres_webhook.py"
       - "tests/test_telegram_outbox_worker.py"
+      - "tests/test_telegram_delivery_engine.py"
       - ".github/workflows/telegram_postgres_webhook.yml"
   workflow_dispatch:
 permissions:
@@ -19,5 +20,5 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install -r runtime/telegram/requirements.txt pytest ruff
-      - run: python -m ruff check runtime/telegram/postgres_webhook.py runtime/telegram/outbox_worker.py tests/test_telegram_postgres_webhook.py tests/test_telegram_outbox_worker.py
-      - run: python -m pytest -q tests/test_telegram_postgres_webhook.py tests/test_telegram_runtime_production.py tests/test_telegram_outbox_worker.py
+      - run: python -m ruff check runtime/telegram/postgres_webhook.py runtime/telegram/outbox_worker.py runtime/telegram/outbox.py runtime/telegram/postgres_state.py tests/test_telegram_delivery_engine.py tests/test_telegram_postgres_webhook.py tests/test_telegram_outbox_worker.py
+      - run: python -m pytest -q tests/test_telegram_postgres_webhook.py tests/test_telegram_runtime_production.py tests/test_telegram_outbox_worker.py tests/test_telegram_delivery_engine.py
