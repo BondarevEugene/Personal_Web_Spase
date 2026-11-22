@@ -11,9 +11,9 @@ import asyncio
 import logging
 import os
 import signal
+from collections.abc import Awaitable, Callable
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Awaitable, Callable
 
 from aiogram import Bot
 
@@ -64,7 +64,6 @@ async def run_worker(
 async def run_service(settings: WorkerSettings) -> None:
     if os.getenv("OMNI_OUTBOX_SEND_ENABLED") != "1":
         raise RuntimeError("Outbound delivery requires explicit OMNI_OUTBOX_SEND_ENABLED=1")
-    from aiogram import Bot
     try:
         from runtime.telegram.app import TOKEN_PATTERN
     except ModuleNotFoundError:
