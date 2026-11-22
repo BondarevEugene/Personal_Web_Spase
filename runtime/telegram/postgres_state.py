@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS omni_telegram_outbox (
     update_id bigint NOT NULL,
     seq smallint NOT NULL,
     chat_id bigint NOT NULL,
-    method varchar(30) NOT NULL CHECK (method IN ('send_message')),
+    method varchar(30) NOT NULL CHECK (method IN ('send_message','send_photo','send_document','answer_callback_query')),
     payload_json jsonb NOT NULL,
     status varchar(32) NOT NULL DEFAULT 'pending'
         CHECK (status IN ('pending','claimed','sent','needs_reconciliation')),
@@ -77,12 +77,22 @@ class Conversation:
     values: dict[str, str]
     outbox: list[dict] = field(default_factory=list)
 
-    def queue_message(self, chat_id: int, text: str) -> None:
-        if not isinstance(chat_id, int) or not isinstance(text, str) or not 1 <= len(text) <= 4000:
-            raise ValueError("Invalid outgoing Telegram text")
+    def queue_action(self, chat_id: int, method: str, payload: dict) -> None:
+        if not isinstance(chat_id, int) or method not in {
+            "send_message", "send_photo", "send_document", "answer_callback_query"
+        } or not isinstance(payload, dict):
+            raise ValueError("Invalid outgoing Telegram action")
         if len(self.outbox) >= 50:
             raise ValueError("Too many outbound operations in one update")
-        self.outbox.append({"chat_id": chat_id, "method": "send_message", "text": text})
+        self.outbox.append({"chat_id": chat_id, "method": method, "payload": payload})
+
+    def queue_message(self, chat_id: int, text: str, reply_markup: dict | None = None) -> None:
+        if not isinstance(chat_id, int) or not isinstance(text, str) or not 1 <= len(text) <= 4000:
+            raise ValueError("Invalid outgoing Telegram text")
+        payload = {"text": text}
+        if reply_markup is not None:
+            payload["reply_markup"] = reply_markup
+        self.queue_action(chat_id, "send_message", payload)
 
 
 class PostgresStateStore:
@@ -191,7 +201,7 @@ class PostgresStateStore:
                             "(bot_instance_id,update_id,seq,chat_id,method,payload_json,status) "
                             "VALUES ($1,$2,$3,$4,$5,$6::jsonb,'pending')",
                             self.bot_instance_id, update_id, seq, action["chat_id"],
-                            action["method"], json.dumps({"text": action["text"]}))
+                            action["method"], json.dumps(action["payload"]))
                     await conn.execute(
                         "UPDATE omni_telegram_update_receipts "
                         "SET status='processed',updated_at=now() "
