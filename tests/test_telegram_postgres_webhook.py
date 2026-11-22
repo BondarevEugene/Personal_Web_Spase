@@ -31,7 +31,7 @@ def test_full_dialogue_queues_without_network_calls():
     apply_update(SPEC, state, event("Alex"))
     assert state.cursor == "choose"
     assert state.values == {"name": "Alex"}
-    assert state.outbox[0]["text"] == "Pick\n1. Yes\n2. No"
+    assert state.outbox[0]["payload"]["text"] == "Pick\n1. Yes\n2. No"\n    assert len(state.outbox[0]["payload"]["reply_markup"]["inline_keyboard"]) == 2
     state.outbox.clear()
     apply_update(SPEC, state, event("1"))
     assert state.cursor is None
@@ -47,7 +47,7 @@ def test_invalid_choice_is_safe_and_does_not_advance():
 
 def test_media_queues_transactional_command():
     spec = {"start": "photo", "nodes": [
-        {"id": "photo", "kind": "photo", "media": "file-id", "text": ""}]}
+        {"id": "photo", "kind": "photo", "media": "file-id", "text": "", "next": "done"},\n        {"id": "done", "kind": "end", "text": ""}]}
     state = Conversation(None, {})
     advance(spec, state, 42, "photo")
     assert state.outbox[0]["method"] == "send_photo"
@@ -66,7 +66,7 @@ def test_callback_advances_and_acknowledges():
     assert [action["method"] for action in state.outbox] == [
         "answer_callback_query", "send_message"
     ]
-    assert state.outbox[1]["payload"]["text"] == "Thanks Alex"
+    assert state.outbox[1]["text"] == "Thanks Alex"
 
 
 def test_stale_callback_is_acknowledged_without_advance():
