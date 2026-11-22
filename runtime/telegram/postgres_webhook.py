@@ -11,7 +11,6 @@ import secrets
 from contextlib import asynccontextmanager
 
 import asyncpg
-
 from aiogram import Bot
 from aiogram.types import Update
 from fastapi import FastAPI, HTTPException, Request
