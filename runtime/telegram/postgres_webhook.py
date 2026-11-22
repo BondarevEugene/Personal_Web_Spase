@@ -27,7 +27,7 @@ except ModuleNotFoundError:
     from postgres_state import AmbiguousDelivery, Conversation, PostgresStateStore
     from scenario import BODY_LIMIT
 
-PLACEHOLDER = re.compile(r"\\{\\{([A-Za-z][A-Za-z0-9_-]{0,39})\\}\\}")
+PLACEHOLDER = re.compile(r"\{\{([A-Za-z][A-Za-z0-9_-]{0,39})\}\}")
 
 
 def render(text: str, values: dict[str, str]) -> str:
@@ -57,8 +57,8 @@ def advance(spec: dict, state: Conversation, chat_id: int, target: str) -> None:
             raise ValueError("PostgreSQL runtime does not support media delivery yet")
         if kind == "choice":
             # Explicit text-only options until transactional inline keyboards are supported.
-            options = "\\n".join(f"{i + 1}. {opt['label']}" for i, opt in enumerate(node["options"]))
-            state.queue_message(chat_id, f"{text}\\n{options}".strip())
+            options = "\n".join(f"{i + 1}. {opt['label']}" for i, opt in enumerate(node["options"]))
+            state.queue_message(chat_id, f"{text}\n{options}".strip())
             state.cursor = target
             return
         if kind == "input":
