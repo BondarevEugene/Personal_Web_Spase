@@ -11,10 +11,8 @@ import argparse
 import asyncio
 import json
 import os
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Awaitable, Callable
-
-import asyncpg
 
 try:
     from runtime.telegram.postgres_state import PostgresStateStore
@@ -35,7 +33,7 @@ class Command:
 
 async def claim_one(store: PostgresStateStore) -> Command | None:
     async with store.pool.acquire() as conn:
-        async with conn.transaction():
+        async with conn.transaction():  # noqa: SIM117
             row = await conn.fetchrow(
                 "SELECT bot_instance_id,update_id,seq,chat_id,method,payload_json "
                 "FROM omni_telegram_outbox "
@@ -86,7 +84,7 @@ def validate_command(item: Command) -> None:
     """Validate the persisted command before any external side effect."""
     p = item.payload
     if not isinstance(p, dict):
-        raise ValueError("Invalid outbox payload")
+        raise TypeError("Invalid outbox payload")
     if item.method == "send_message":
         text = p.get("text")
         if not isinstance(text, str) or not 1 <= len(text) <= 4000:
@@ -149,7 +147,7 @@ async def dispatch_once(
     try:
         validate_command(item)
         await sender(item)
-    except Exception:
+    except Exception:  # noqa: BLE001
         await finish(store, item, success=False)
         # Do not leak raw Bot API/network errors (possibly containing tokens).
         return "needs_reconciliation"
@@ -170,6 +168,7 @@ async def serve_one():
         raise RuntimeError("Outbox sending disabled. Explicit operator approval required.")
     token = os.getenv("BOT_TOKEN", "")
     from aiogram import Bot
+
     from app import TOKEN_PATTERN
     if not TOKEN_PATTERN.fullmatch(token):
         raise RuntimeError("Invalid Telegram bot credential")
