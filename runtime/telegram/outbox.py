@@ -82,6 +82,63 @@ async def finish(store: PostgresStateStore, item: Command, *, success: bool) -> 
             "sent" if success else "needs_reconciliation")
 
 
+def validate_command(item: Command) -> None:
+    """Validate the persisted command before any external side effect."""
+    p = item.payload
+    if not isinstance(p, dict):
+        raise ValueError("Invalid outbox payload")
+    if item.method == "send_message":
+        text = p.get("text")
+        if not isinstance(text, str) or not 1 <= len(text) <= 4000:
+            raise ValueError("Invalid outbox message")
+        markup = p.get("reply_markup")
+        if markup is not None:
+            rows = markup.get("inline_keyboard") if isinstance(markup, dict) else None
+            if not isinstance(rows, list) or not 1 <= len(rows) <= 20:
+                raise ValueError("Invalid inline keyboard")
+            for row in rows:
+                if not isinstance(row, list) or not 1 <= len(row) <= 8:
+                    raise ValueError("Invalid inline keyboard row")
+                for button in row:
+                    if not isinstance(button, dict) or not (
+                        isinstance(button.get("text"), str)
+                        and 1 <= len(button["text"]) <= 80
+                        and isinstance(button.get("callback_data"), str)
+                        and 1 <= len(button["callback_data"].encode()) <= 64
+                    ):
+                        raise ValueError("Invalid inline button")
+    elif item.method in {"send_photo", "send_document"}:
+        media = p.get(item.method.removeprefix("send_"))
+        caption = p.get("caption", "")
+        if not isinstance(media, str) or not 1 <= len(media) <= 2048:
+            raise ValueError("Invalid media reference")
+        if not isinstance(caption, str) or len(caption) > 1024:
+            raise ValueError("Invalid media caption")
+    elif item.method == "answer_callback_query":
+        cid = p.get("callback_query_id")
+        if not isinstance(cid, str) or not 1 <= len(cid) <= 256:
+            raise ValueError("Invalid callback ID")
+        if not isinstance(p.get("text", ""), str) or len(p.get("text", "")) > 200:
+            raise ValueError("Invalid callback response")
+    else:
+        raise ValueError("Unrecognized outbox method")
+
+
+async def send_command(bot, item: Command) -> None:
+    """Single Bot API adapter shared by one-shot and continuous workers."""
+    validate_command(item)
+    p = item.payload
+    if item.method == "send_message":
+        await bot.send_message(item.chat_id, p["text"], reply_markup=p.get("reply_markup"))
+    elif item.method == "send_photo":
+        await bot.send_photo(item.chat_id, p["photo"], caption=p.get("caption"))
+    elif item.method == "send_document":
+        await bot.send_document(item.chat_id, p["document"], caption=p.get("caption"))
+    elif item.method == "answer_callback_query":
+        await bot.answer_callback_query(p["callback_query_id"],
+                                        text=p.get("text"), show_alert=p.get("show_alert", False))
+
+
 async def dispatch_once(
     store: PostgresStateStore,
     sender: Callable[[Command], Awaitable[None]],
@@ -90,11 +147,7 @@ async def dispatch_once(
     if item is None:
         return "empty"
     try:
-        if item.method != "send_message":
-            raise ValueError("Unrecognized outbox method")
-        text = item.payload.get("text") if isinstance(item.payload, dict) else None
-        if not isinstance(text, str) or not 1 <= len(text) <= 4000:
-            raise ValueError("Invalid outbox message")
+        validate_command(item)
         await sender(item)
     except Exception:
         await finish(store, item, success=False)
@@ -126,7 +179,7 @@ async def serve_one():
     bot = Bot(token)
     try:
         async def send(item: Command):
-            await bot.send_message(item.chat_id, item.payload["text"])
+            await send_command(bot, item)
         return await dispatch_once(store, send)
     finally:
         await bot.session.close()
