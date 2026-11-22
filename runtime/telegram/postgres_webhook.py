@@ -1,8 +1,4 @@
-"""PostgreSQL transactional Telegram webhook: commit dialogue and outbox together.
-
-This mode intentionally supports text/choice/input/conditions only. Media nodes
-fail closed until media commands have their own transactional sender contract.
-"""
+"""PostgreSQL webhook: atomic dialogue, media, callback and outbound actions."""
 from __future__ import annotations
 
 import os
@@ -54,11 +50,23 @@ def advance(spec: dict, state: Conversation, chat_id: int, target: str) -> None:
             target = node["next"]
             continue
         if kind in {"photo", "document"}:
-            raise ValueError("PostgreSQL runtime does not support media delivery yet")
+            media = node.get("media")
+            if not isinstance(media, str) or not media or len(media) > 2048:
+                raise ValueError("Invalid media reference")
+            payload = {kind: media}
+            if text:
+                if len(text) > 1024:
+                    raise ValueError("Media caption too long")
+                payload["caption"] = text
+            state.queue_action(chat_id, "send_" + kind, payload)
+            target = node["next"]
+            continue
         if kind == "choice":
-            # Explicit text-only options until transactional inline keyboards are supported.
             options = "\n".join(f"{i + 1}. {opt['label']}" for i, opt in enumerate(node["options"]))
-            state.queue_message(chat_id, f"{text}\n{options}".strip())
+            buttons = [[{"text": opt["label"], "callback_data": f"omni:{target}:{i}"}]
+                       for i, opt in enumerate(node["options"])]
+            state.queue_message(chat_id, f"{text}\n{options}".strip(),
+                                {"inline_keyboard": buttons})
             state.cursor = target
             return
         if kind == "input":
@@ -79,7 +87,26 @@ def apply_update(spec: dict, state: Conversation, event: Update) -> None:
     message = event.message
     callback = event.callback_query
     if callback is not None:
-        raise ValueError("Callback delivery unsupported in PostgreSQL text mode")
+        data = callback.data or ""
+        chat_id = callback.message.chat.id
+        nodes = {node["id"]: node for node in spec["nodes"]}
+        node = nodes.get(state.cursor) if state.cursor else None
+        parts = data.split(":")
+        valid = (len(parts) == 3 and parts[0] == "omni"
+                 and node is not None and node["kind"] == "choice"
+                 and parts[1] == state.cursor and parts[2].isascii()
+                 and parts[2].isdecimal())
+        index = int(parts[2]) if valid else -1
+        if not valid or not 0 <= index < len(node["options"]):
+            state.queue_action(chat_id, "answer_callback_query",
+                               {"callback_query_id": callback.id,
+                                "text": "Выбор устарел. Используй /start.",
+                                "show_alert": True})
+            return
+        state.queue_action(chat_id, "answer_callback_query",
+                           {"callback_query_id": callback.id})
+        advance(spec, state, chat_id, node["options"][index]["target"])
+        return
     if message is None or message.from_user is None:
         return
     text = message.text or ""
@@ -169,13 +196,18 @@ def build_postgres_runtime(spec: dict, bot: Bot, secret: str, store: PostgresSta
         except (TypeError, ValueError) as exc:
             raise HTTPException(400, "Invalid Telegram update") from exc
         message = event.message
-        if message is None or message.from_user is None:
-            raise HTTPException(422, "Only message updates are supported in PostgreSQL mode")
+        callback = event.callback_query
+        if message is not None and message.from_user is not None:
+            chat_id, user_id = message.chat.id, message.from_user.id
+        elif callback is not None and callback.message is not None:
+            chat_id, user_id = callback.message.chat.id, callback.from_user.id
+        else:
+            raise HTTPException(422, "Unsupported Telegram update")
         async def execute(state: Conversation):
             apply_update(spec, state, event)
         try:
             status, _ = await active_store().process(
-                event.update_id, message.chat.id, message.from_user.id, execute)
+                event.update_id, chat_id, user_id, execute)
         except AmbiguousDelivery as exc:
             raise HTTPException(503, "Update requires operator reconciliation") from exc
         return {"ok": True, "duplicate": status == "duplicate", "queued": status == "processed"}

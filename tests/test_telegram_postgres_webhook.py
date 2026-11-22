@@ -1,8 +1,6 @@
 """Contract tests for the PostgreSQL transactional webhook interpreter."""
 from types import SimpleNamespace
 
-import pytest
-
 from runtime.telegram.postgres_state import Conversation
 from runtime.telegram.postgres_webhook import advance, apply_update, render
 
@@ -33,7 +31,8 @@ def test_full_dialogue_queues_without_network_calls():
     apply_update(SPEC, state, event("Alex"))
     assert state.cursor == "choose"
     assert state.values == {"name": "Alex"}
-    assert state.outbox[0]["text"] == "Pick\n1. Yes\n2. No"
+    assert state.outbox[0]["payload"]["text"] == "Pick\n1. Yes\n2. No"
+    assert len(state.outbox[0]["payload"]["reply_markup"]["inline_keyboard"]) == 2
     state.outbox.clear()
     apply_update(SPEC, state, event("1"))
     assert state.cursor is None
@@ -47,20 +46,35 @@ def test_invalid_choice_is_safe_and_does_not_advance():
     assert state.outbox[0]["text"] == "Выбери номер варианта."
 
 
-def test_media_fails_closed_without_queueing_partial_actions():
+def test_media_queues_transactional_command():
     spec = {"start": "photo", "nodes": [
-        {"id": "photo", "kind": "photo", "media": "file-id", "text": ""}]}
+        {"id": "photo", "kind": "photo", "media": "file-id", "text": "", "next": "done"},
+        {"id": "done", "kind": "end", "text": ""}]}
     state = Conversation(None, {})
-    with pytest.raises(ValueError, match="media"):
-        advance(spec, state, 42, "photo")
-    assert not state.outbox
+    advance(spec, state, 42, "photo")
+    assert state.outbox[0]["method"] == "send_photo"
+    assert state.outbox[0]["payload"] == {"photo": "file-id"}
 
 
 def test_template_does_not_leak_unknown_variables():
     assert render("Hello {{name}} {{secret}}", {"name": "Alex"}) == "Hello Alex "
 
 
-def test_callback_fails_closed():
-    state = Conversation(None, {})
-    with pytest.raises(ValueError, match="Callback"):
-        apply_update(SPEC, state, SimpleNamespace(message=None, callback_query=object()))
+def test_callback_advances_and_acknowledges():
+    state = Conversation("choose", {"name": "Alex"})
+    call = SimpleNamespace(id="callback-1", data="omni:choose:0",
+                           message=SimpleNamespace(chat=SimpleNamespace(id=42)))
+    apply_update(SPEC, state, SimpleNamespace(message=None, callback_query=call))
+    assert [action["method"] for action in state.outbox] == [
+        "answer_callback_query", "send_message"
+    ]
+    assert state.outbox[1]["text"] == "Thanks Alex"
+
+
+def test_stale_callback_is_acknowledged_without_advance():
+    state = Conversation("choose", {"name": "Alex"})
+    call = SimpleNamespace(id="callback-2", data="omni:other:0",
+                           message=SimpleNamespace(chat=SimpleNamespace(id=42)))
+    apply_update(SPEC, state, SimpleNamespace(message=None, callback_query=call))
+    assert state.cursor == "choose"
+    assert state.outbox[0]["payload"]["show_alert"] is True

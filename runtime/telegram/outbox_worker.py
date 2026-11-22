@@ -18,10 +18,10 @@ from dataclasses import dataclass
 from aiogram import Bot
 
 try:
-    from runtime.telegram.outbox import Command, counters, dispatch_once
+    from runtime.telegram.outbox import Command, counters, dispatch_once, send_command
     from runtime.telegram.postgres_state import PostgresStateStore
 except ModuleNotFoundError:
-    from outbox import Command, counters, dispatch_once
+    from outbox import Command, counters, dispatch_once, send_command
     from postgres_state import PostgresStateStore
 
 LOG = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ async def run_service(settings: WorkerSettings) -> None:
                 loop.add_signal_handler(sig, stop.set)
 
     async def send(item: Command) -> None:
-        await bot.send_message(item.chat_id, item.payload["text"])
+        await send_command(bot, item)
 
     try:
         counts = await counters(store)
