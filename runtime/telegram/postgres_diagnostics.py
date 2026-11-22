@@ -10,7 +10,10 @@ import asyncio
 import json
 import os
 
-from runtime.telegram.postgres_state import PostgresStateStore
+try:
+    from runtime.telegram.postgres_state import PostgresStateStore
+except ModuleNotFoundError:
+    from postgres_state import PostgresStateStore
 
 
 async def snapshot(store: PostgresStateStore, *, stale_seconds: int = 300) -> dict:
