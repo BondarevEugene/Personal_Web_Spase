@@ -32,8 +32,8 @@ class Command:
 
 
 async def claim_one(store: PostgresStateStore) -> Command | None:
-    async with store.pool.acquire() as conn:
-        async with conn.transaction():  # noqa: SIM117
+    async with store.pool.acquire() as conn:  # noqa: SIM117
+        async with conn.transaction():
             row = await conn.fetchrow(
                 "SELECT bot_instance_id,update_id,seq,chat_id,method,payload_json "
                 "FROM omni_telegram_outbox "
