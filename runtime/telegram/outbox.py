@@ -72,8 +72,8 @@ async def claim_one(store: PostgresStateStore) -> Command | None:
 async def finish(store: PostgresStateStore, item: Command, *, success: bool) -> None:
     async with store.pool.acquire() as conn:
         await conn.execute(
-            "UPDATE omni_telegram_outbox SET status=$4,"
-            "sent_at=CASE WHEN $4='sent' THEN now() ELSE NULL END,"
+            "UPDATE omni_telegram_outbox SET status=$4::varchar,"
+            "sent_at=CASE WHEN $4::varchar='sent' THEN now() ELSE NULL END,"
             "updated_at=now() WHERE bot_instance_id=$1 AND update_id=$2 "
             "AND seq=$3 AND status='claimed'",
             item.bot_instance_id, item.update_id, item.seq,
