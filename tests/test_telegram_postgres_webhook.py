@@ -31,7 +31,8 @@ def test_full_dialogue_queues_without_network_calls():
     apply_update(SPEC, state, event("Alex"))
     assert state.cursor == "choose"
     assert state.values == {"name": "Alex"}
-    assert state.outbox[0]["payload"]["text"] == "Pick\n1. Yes\n2. No"\n    assert len(state.outbox[0]["payload"]["reply_markup"]["inline_keyboard"]) == 2
+    assert state.outbox[0]["payload"]["text"] == "Pick\n1. Yes\n2. No"
+    assert len(state.outbox[0]["payload"]["reply_markup"]["inline_keyboard"]) == 2
     state.outbox.clear()
     apply_update(SPEC, state, event("1"))
     assert state.cursor is None
@@ -47,7 +48,8 @@ def test_invalid_choice_is_safe_and_does_not_advance():
 
 def test_media_queues_transactional_command():
     spec = {"start": "photo", "nodes": [
-        {"id": "photo", "kind": "photo", "media": "file-id", "text": "", "next": "done"},\n        {"id": "done", "kind": "end", "text": ""}]}
+        {"id": "photo", "kind": "photo", "media": "file-id", "text": "", "next": "done"},
+        {"id": "done", "kind": "end", "text": ""}]}
     state = Conversation(None, {})
     advance(spec, state, 42, "photo")
     assert state.outbox[0]["method"] == "send_photo"
